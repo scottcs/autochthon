@@ -94,6 +94,9 @@
             if (event.key !== 'Meta' && event.key !== 'Alt') {
                 keys_down.push(event.key);
             }
+            if (!keys_down.includes('Control')) {
+                sendKeys()
+            }
         });
 
         document.addEventListener("keyup", function(event) {
@@ -103,7 +106,7 @@
         function sendKeys() {
             if (keys_down.length > 0) {
                 const payload = {
-                    "keys": keys_down
+                    "keys": Array.from(new Set(keys_down))
                 };
                 ws.send(JSON.stringify(payload));
                 while (keys_down.length > 0) {

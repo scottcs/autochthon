@@ -13,6 +13,7 @@ class Game:
 
     def on_keyboard_input(self, keys) -> dict:
         """Core game loop."""
+        print(f'got keys {keys}')
         if self.check_for_time_passed():
             # self.world.update()
             ...
@@ -24,28 +25,34 @@ class Game:
             return {'game_over': True}
 
         map_deltas = []
-        map_deltas.append({
-            'x': self.x,
-            'y': self.y,
-            'tileset': None,
-            'tile': None,
-        })
 
-        if 'l' in keys or 'u' in keys or 'n' in keys:
-            self.x += 1
-        if 'h' in keys or 'y' in keys or 'b' in keys:
-            self.x -= 1
-        if 'k' in keys or 'y' in keys or 'u' in keys:
-            self.y -= 1
-        if 'j' in keys or 'b' in keys or 'n' in keys:
-            self.y += 1
+        if 'Control' in keys:
+            print('control')
+            return {}
 
-        map_deltas.append({
-            'x': self.x,
-            'y': self.y,
-            'tileset': self.tileset,
-            'tile': self.tile,
-        })
+        for key in keys:
+            map_deltas.append({
+                'x': self.x,
+                'y': self.y,
+                'tileset': None,
+                'tile': None,
+            })
+
+            if 'l' == key or 'u' == key or 'n' == key:
+                self.x += 1
+            if 'h' == key or 'y' == key or 'b' == key:
+                self.x -= 1
+            if 'k' == key or 'y' == key or 'u' == key:
+                self.y -= 1
+            if 'j' == key or 'b' == key or 'n' == key:
+                self.y += 1
+
+            map_deltas.append({
+                'x': self.x,
+                'y': self.y,
+                'tileset': self.tileset,
+                'tile': self.tile,
+            })
         return {'map_deltas': map_deltas}
 
     def on_mouse_input(self, mouse) -> dict:
