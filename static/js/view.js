@@ -84,20 +84,32 @@
             }
         }
 
+        let keys_down = [];
         const ws = new WebSocket("ws://localhost:19999/websocket");
+
         document.addEventListener("keydown", function(event) {
             if (event.defaultPrevented) {
                 return;
             }
-            sendKey(event.key);
+            if (event.key !== 'Meta' && event.key !== 'Alt') {
+                keys_down.push(event.key);
+            }
         });
 
-        function sendKey(key) {
-            const payload = {
-                "key": key
-            };
+        document.addEventListener("keyup", function(event) {
+            sendKeys();
+        });
 
-            ws.send(JSON.stringify(payload))
+        function sendKeys() {
+            if (keys_down.length > 0) {
+                const payload = {
+                    "keys": keys_down
+                };
+                ws.send(JSON.stringify(payload));
+                while (keys_down.length > 0) {
+                    keys_down.pop();
+                }
+            }
         }
 
         ws.onmessage = function(evt) {
