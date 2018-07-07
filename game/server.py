@@ -56,7 +56,8 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
     """Hook the game loop into tornado's io loop."""
 
     def __init__(self, websocket: GameWebSocket):
-        super().__init__(self.process_events, MOMENTS_PER_TURN)
+        ms = 1000 // MOMENTS_PER_TURN
+        super().__init__(self.process_events, ms)
         self.websocket = websocket
         self.game = Game()
         self.input_events = []
