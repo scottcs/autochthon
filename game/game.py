@@ -7,7 +7,7 @@ class Game:
     def __init__(self):
         self.game_over = False
         self.x = 0
-        self.y = 10
+        self.y = 0
         self.tileset = 'static/img/oryx_ur/Monsters.json'
         self.tile = 'orc2_1'
 
@@ -31,13 +31,22 @@ class Game:
             'tile': None,
         })
 
-        self.x += 1
-        return {'map_deltas': [{
+        if 'l' in keys or 'u' in keys or 'n' in keys:
+            self.x += 1
+        if 'h' in keys or 'y' in keys or 'b' in keys:
+            self.x -= 1
+        if 'k' in keys or 'y' in keys or 'u' in keys:
+            self.y -= 1
+        if 'j' in keys or 'b' in keys or 'n' in keys:
+            self.y += 1
+
+        map_deltas.append({
             'x': self.x,
             'y': self.y,
             'tileset': self.tileset,
             'tile': self.tile,
-        }]}
+        })
+        return {'map_deltas': map_deltas}
 
     def on_mouse_input(self, mouse) -> dict:
         return {}

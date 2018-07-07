@@ -15,9 +15,9 @@
         const map_tile_width = 70;
         const map_tile_height = 26;
 
-        let view_map = new Array(map_tile_height);
-        for (let i = 0; i < map_tile_height; i++) {
-            view_map[i] = new Array(map_tile_width)
+        let view_map = new Array(map_tile_width);
+        for (let i = 0; i < map_tile_width; i++) {
+            view_map[i] = new Array(map_tile_height)
         }
 
         // noinspection JSValidateTypes
@@ -54,8 +54,8 @@
             updateMap({
                 tileset: tileset_monsters,
                 tile: 'orc2_2',
-                x: 6,
-                y: 10,
+                x: 0,
+                y: 0,
             });
         }
 
@@ -70,6 +70,7 @@
             const old_sprite = view_map[cell.x][cell.y];
             if (old_sprite !== null) {
                 app.stage.removeChild(old_sprite);
+                view_map[cell.x][cell.y] = null;
             }
 
             if (cell.tileset !== null) {
@@ -78,7 +79,6 @@
                 const sprite = new PIXI.Sprite(new_tex);
                 sprite.x = tile_width * cell.x;
                 sprite.y = tile_height * cell.y;
-
                 view_map[cell.x][cell.y] = sprite;
                 app.stage.addChild(sprite);
             }
