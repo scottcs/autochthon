@@ -99,9 +99,7 @@
             }
         });
 
-        document.addEventListener("keyup", function(event) {
-            sendKeys();
-        });
+        document.addEventListener("keyup", sendKeys);
 
         function sendKeys() {
             if (keys_down.length > 0) {

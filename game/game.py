@@ -1,5 +1,7 @@
 """Temporary game file."""
 
+MOMENTS_PER_TURN = 10
+
 
 class Game:
     """Main game object."""
@@ -65,3 +67,14 @@ class Game:
     def check_for_time_passed(self) -> bool:
         """Return True if time has passed."""
         return True
+
+    def process_input_event(self, event) -> dict:
+        """Process an input event."""
+        keys = event.get('keys')
+        mouse = event.get('mouse')
+        results = {}
+        if keys:
+            results.update(self.on_keyboard_input(keys))
+        if mouse:
+            results.update(self.on_mouse_input(mouse))
+        return results
