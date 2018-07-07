@@ -10,6 +10,7 @@
         const tileset_terrain = tileset_dir + 'Terrain.png';
         const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
 
+        // TODO: get rid of these
         const tile_width = 16;
         const tile_height = 24;
         const map_tile_width = 70;
@@ -50,13 +51,7 @@
         }
 
         function setup() {
-            // noinspection JSUnresolvedVariable
-            updateMap({
-                tileset: tileset_monsters,
-                tile: 'orc2_2',
-                x: 0,
-                y: 0,
-            });
+            console.log('Done loading.')
         }
 
         function updateView(message) {
@@ -67,10 +62,10 @@
         }
 
         function updateMap(cell) {
-            const old_sprite = view_map[cell.x][cell.y];
+            const old_sprite = view_map[cell.prev_x][cell.prev_y];
             if (old_sprite !== null) {
                 app.stage.removeChild(old_sprite);
-                view_map[cell.x][cell.y] = null;
+                view_map[cell.prev_x][cell.prev_y] = null;
             }
 
             if (cell.tileset !== null) {

@@ -2,11 +2,13 @@
 import json
 from typing import Optional
 
+import esper
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
 from game.game import Game, MOMENTS_PER_TURN
+from game.component.renderable import Renderable
 
 DEFAULT_PORT = 19999
 
@@ -22,13 +24,11 @@ class MainHandler(tornado.web.RequestHandler):
 class GameWebSocket(tornado.websocket.WebSocketHandler):
     """Websocket handler."""
     connections = set()
-    game_callback = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.game_callback is None:
-            self.game_callback = GameCallback(self)
-            self.game_callback.start()
+        self.game_callback = GameCallback(self)
+        self.game_callback.start()
 
     def open(self):
         """Open a connection."""
@@ -52,35 +52,42 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         self.connections.remove(self)
 
 
+class WebRenderProcessor(esper.Processor):
+    """Game render processor for web socket."""
+
+    def __init__(self, socket):
+        super().__init__()
+        self.socket = socket
+        self.deltas = []
+
+    def process(self):
+        """Process all renderables."""
+        new_deltas = []
+        for ent, renderable in self.world.get_component(Renderable):
+            delta = renderable.__dict__.copy()
+            if delta not in self.deltas:
+                new_deltas.append(delta)
+        if new_deltas:
+            self.socket.write_all({'deltas': new_deltas})
+            self.deltas = new_deltas
+
+
 class GameCallback(tornado.ioloop.PeriodicCallback):
     """Hook the game loop into tornado's io loop."""
+    game = None
 
     def __init__(self, websocket: GameWebSocket):
         ms = 1000 // MOMENTS_PER_TURN
-        super().__init__(self.process_events, ms)
-        self.websocket = websocket
-        self.game = Game()
+        if GameCallback.game is None:
+            GameCallback.game = Game(WebRenderProcessor(websocket))
         self.input_events = []
-        self.display_events = []
+        super().__init__(self.process_events, ms)
 
     def process_events(self):
         """Send game events to the game."""
         while self.input_events:
-            self.process_input_event(self.input_events.pop())
-        while self.display_events:
-            self.process_display_event(self.display_events.pop())
-
-    def process_input_event(self, event: dict):
-        """Process a single input event."""
-        display_event = self.game.process_input_event(event)
-        if display_event:
-            self.display_events.append(display_event)
-
-    def process_display_event(self, event: dict):
-        """Process a single display event."""
-        map_deltas = event.get('map_deltas')
-        if map_deltas:
-            self.websocket.write_all({'deltas': map_deltas})
+            GameCallback.game.process_input_event(self.input_events.pop())
+        GameCallback.game.update()
 
 
 def make_app() -> tornado.web.Application:
