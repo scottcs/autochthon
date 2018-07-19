@@ -19,7 +19,7 @@ class Game:
             0
         ))
         self.crab = self.world.create_entity(Renderable(
-            2,
+            39,
             10, 10,
             0xffff33,
             1
