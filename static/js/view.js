@@ -65,10 +65,10 @@
 
         function updateMap(map) {
             for (const cell of map.cells) {
-                if (cells[cell.id] !== undefined) {
-                    updateSprite(cell);
-                } else {
+                if (cells[cell.id] === undefined) {
                     makeSprite(cell);
+                } else {
+                    updateSprite(cell);
                 }
             }
         }
@@ -78,6 +78,7 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
+            console.log(cell.id, sprite.x, sprite.y)
         }
 
         function makeSprite(cell) {
