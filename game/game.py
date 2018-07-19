@@ -33,7 +33,6 @@ class Game:
 
     def on_keyboard_input(self, keys) -> dict:
         """Core game loop."""
-        print(f'got keys {keys}')
         if self.check_for_time_passed():
             # self.world.update()
             ...
@@ -45,7 +44,6 @@ class Game:
             return {'game_over': True}
 
         if 'Control' in keys:
-            print('control')
             return {}
 
         # TODO: Separate position from renderable?
