@@ -16,7 +16,8 @@ class Game:
             'static/img/oryx_ur/Monsters.json',
             'orc2_1',
             0, 0,
-            0xff3333
+            0xff3333,
+            0
         ))
 
         self.world.add_processor(render_processor)

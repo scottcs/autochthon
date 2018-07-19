@@ -16,7 +16,7 @@
         const map_tile_width = 70;
         const map_tile_height = 26;
 
-        let view_map = [];
+        let cells = {};
 
         // noinspection JSValidateTypes
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
@@ -64,24 +64,31 @@
         }
 
         function updateMap(map) {
-            app.stage.removeChildren();
             for (const cell of map.cells) {
-                makeSpriteGroup(cell);
+                if (cells[cell.id] !== undefined) {
+                    updateSprite(cell);
+                } else {
+                    makeSprite(cell);
+                }
             }
         }
 
-        function makeSpriteGroup(cell) {
-            const container = new PIXI.Container();
-            container.x = tile_width * cell.x;
-            container.y = tile_height * cell.y;
-            for (const layer of cell.layers) {
-                // TODO: make this a lookup by number (to compress data)
-                const tex = PIXI.loader.resources[layer.tileset].textures[layer.tile];
-                const sprite = new PIXI.Sprite(tex);
-                sprite.tint = layer.tint;
-                container.addChild(sprite);
-            }
-            app.stage.addChild(container);
+        function updateSprite(cell) {
+            const sprite = cells[cell.id];
+            sprite.x = tile_width * cell.x;
+            sprite.y = tile_height * cell.y;
+            sprite.tint = cell.tint;
+        }
+
+        function makeSprite(cell) {
+            // TODO: make this a lookup by number (to compress data)
+            const tex = PIXI.loader.resources[cell.tileset].textures[cell.tile];
+            const sprite = new PIXI.Sprite(tex);
+            sprite.x = tile_width * cell.x;
+            sprite.y = tile_height * cell.y;
+            sprite.tint = cell.tint;
+            app.stage.addChild(sprite);
+            cells[cell.id] = sprite;
         }
 
         let keys_down = [];

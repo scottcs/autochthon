@@ -62,29 +62,23 @@ class WebRenderProcessor(esper.Processor):
     def process(self):
         """Process all renderables."""
         # cell.id
-        # cell.recreate
         # cell.x, cell.y
-        # cell.layers = []
-        #   layer.tileset
-        #   layer.tile
-        #   layer.tint
+        # cell.tileset
+        # cell.tile
+        # cell.tint
         map_data = {}
-        cells = {}
-        for ent, renderable in self.world.get_component(Renderable):
-            index = f'{renderable.x:05}{renderable.y:05}'
-            cells.setdefault(index, {
-                'id': index,
-                'recreate': True,
+        cells = []
+        for ent, renderable in sorted(self.world.get_component(Renderable),
+                                      key=lambda x: x[1].layer):
+            cells.append({
+                'id': ent,
                 'x': renderable.x,
                 'y': renderable.y,
-                'layers': [],
-            })
-            cells[index]['layers'].append({
                 'tileset': renderable.tileset,
                 'tile': renderable.tile,
                 'tint': renderable.tint,
             })
-        map_data['cells'] = list(cells.values())
+        map_data['cells'] = cells
         self.socket.write_all({'map': map_data})
 
 
