@@ -70,13 +70,7 @@ class WebRenderProcessor(esper.Processor):
         cells = []
         for ent, renderable in sorted(self.world.get_component(Renderable),
                                       key=lambda x: x[1].layer):
-            cells.append({
-                'id': ent,
-                'x': renderable.x,
-                'y': renderable.y,
-                'tile_id': renderable.tile_id,
-                'tint': renderable.tint,
-            })
+            cells.append([ent, renderable.x, renderable.y, renderable.tile_id, renderable.tint])
         map_data['cells'] = cells
         self.socket.write_all({'map': map_data})
 

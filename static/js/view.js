@@ -68,7 +68,14 @@
         }
 
         function updateMap(map) {
-            for (const cell of map.cells) {
+            for (const data of map.cells) {
+                const cell = {
+                    id: data[0],
+                    x: data[1],
+                    y: data[2],
+                    tile_id: data[3],
+                    tint: data[4]
+                };
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
                 } else {
