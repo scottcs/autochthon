@@ -74,8 +74,7 @@ class WebRenderProcessor(esper.Processor):
                 'id': ent,
                 'x': renderable.x,
                 'y': renderable.y,
-                'tileset': renderable.tileset,
-                'tile': renderable.tile,
+                'tile_id': renderable.tile_id,
                 'tint': renderable.tint,
             })
         map_data['cells'] = cells

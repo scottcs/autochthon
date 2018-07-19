@@ -9,6 +9,7 @@
         const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.png';
         const tileset_terrain = tileset_dir + 'Terrain.png';
         const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
+        const tile_id_table = tileset_dir + 'tile_ids.json';
 
         // TODO: get rid of these
         const tile_width = 16;
@@ -16,6 +17,7 @@
         const map_tile_width = 70;
         const map_tile_height = 26;
 
+        let tile_info;
         let cells = {};
 
         // noinspection JSValidateTypes
@@ -37,7 +39,8 @@
                 tileset_monsters,
                 tileset_monsters_scifi,
                 tileset_terrain,
-                tileset_terrain_objects
+                tileset_terrain_objects,
+                tile_id_table
             ])
             .on("progress", loadProgressHandler)
             .load(setup);
@@ -47,7 +50,8 @@
             console.log("progress: " + loader.progress + "%");
         }
 
-        function setup() {
+        function setup(loader, resources) {
+            tile_info = resources[tile_id_table].data;
             console.log('Done loading.');
             app.ticker.add(delta => gameLoop(delta));
         }
@@ -78,12 +82,11 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
-            console.log(cell.id, sprite.x, sprite.y)
         }
 
         function makeSprite(cell) {
-            // TODO: make this a lookup by number (to compress data)
-            const tex = PIXI.loader.resources[cell.tileset].textures[cell.tile];
+            const tile = tile_info[cell.tile_id];
+            const tex = PIXI.loader.resources[tile.tileset].textures[tile.tiles[0]];
             const sprite = new PIXI.Sprite(tex);
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;

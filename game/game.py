@@ -13,15 +13,13 @@ class Game:
         self.game_over = False
         self.world = esper.World()
         self.player = self.world.create_entity(Renderable(
-            'static/img/oryx_ur/Monsters.json',
-            'orc2_1',
+            1,
             40, 10,
             0xff3333,
             0
         ))
         self.crab = self.world.create_entity(Renderable(
-            'static/img/oryx_ur/Monsters.json',
-            'crab_1',
+            2,
             10, 10,
             0xffff33,
             1
