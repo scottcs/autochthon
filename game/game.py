@@ -15,7 +15,8 @@ class Game:
         self.player = self.world.create_entity(Renderable(
             'static/img/oryx_ur/Monsters.json',
             'orc2_1',
-            0, 0
+            0, 0,
+            0xff3333
         ))
 
         self.world.add_processor(render_processor)

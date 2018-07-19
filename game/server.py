@@ -58,18 +58,34 @@ class WebRenderProcessor(esper.Processor):
     def __init__(self, socket):
         super().__init__()
         self.socket = socket
-        self.deltas = []
 
     def process(self):
         """Process all renderables."""
-        new_deltas = []
+        # cell.id
+        # cell.recreate
+        # cell.x, cell.y
+        # cell.layers = []
+        #   layer.tileset
+        #   layer.tile
+        #   layer.tint
+        map_data = {}
+        cells = {}
         for ent, renderable in self.world.get_component(Renderable):
-            delta = renderable.__dict__.copy()
-            if delta not in self.deltas:
-                new_deltas.append(delta)
-        if new_deltas:
-            self.socket.write_all({'deltas': new_deltas})
-            self.deltas = new_deltas
+            index = f'{renderable.x:05}{renderable.y:05}'
+            cells.setdefault(index, {
+                'id': index,
+                'recreate': True,
+                'x': renderable.x,
+                'y': renderable.y,
+                'layers': [],
+            })
+            cells[index]['layers'].append({
+                'tileset': renderable.tileset,
+                'tile': renderable.tile,
+                'tint': renderable.tint,
+            })
+        map_data['cells'] = list(cells.values())
+        self.socket.write_all({'map': map_data})
 
 
 class GameCallback(tornado.ioloop.PeriodicCallback):

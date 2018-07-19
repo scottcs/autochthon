@@ -16,10 +16,7 @@
         const map_tile_width = 70;
         const map_tile_height = 26;
 
-        let view_map = new Array(map_tile_width);
-        for (let i = 0; i < map_tile_width; i++) {
-            view_map[i] = new Array(map_tile_height)
-        }
+        let view_map = [];
 
         // noinspection JSValidateTypes
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
@@ -51,32 +48,40 @@
         }
 
         function setup() {
-            console.log('Done loading.')
+            console.log('Done loading.');
+            app.ticker.add(delta => gameLoop(delta));
         }
 
-        function updateView(message) {
+        function gameLoop(delta) {
+
+        }
+
+        function handleMessage(message) {
             // noinspection JSUnresolvedVariable
-            for (const cell of message.deltas) {
-                updateMap(cell);
+            if (message.map !== null) {
+                updateMap(message.map);
             }
         }
 
-        function updateMap(cell) {
-            const old_sprite = view_map[cell.prev_x][cell.prev_y];
-            if (old_sprite !== null) {
-                app.stage.removeChild(old_sprite);
-                view_map[cell.prev_x][cell.prev_y] = null;
+        function updateMap(map) {
+            app.stage.removeChildren();
+            for (const cell of map.cells) {
+                makeSpriteGroup(cell);
             }
+        }
 
-            if (cell.tileset !== null) {
-                // noinspection JSUnresolvedVariable
-                const new_tex = PIXI.loader.resources[cell.tileset].textures[cell.tile];
-                const sprite = new PIXI.Sprite(new_tex);
-                sprite.x = tile_width * cell.x;
-                sprite.y = tile_height * cell.y;
-                view_map[cell.x][cell.y] = sprite;
-                app.stage.addChild(sprite);
+        function makeSpriteGroup(cell) {
+            const container = new PIXI.Container();
+            container.x = tile_width * cell.x;
+            container.y = tile_height * cell.y;
+            for (const layer of cell.layers) {
+                // TODO: make this a lookup by number (to compress data)
+                const tex = PIXI.loader.resources[layer.tileset].textures[layer.tile];
+                const sprite = new PIXI.Sprite(tex);
+                sprite.tint = layer.tint;
+                container.addChild(sprite);
             }
+            app.stage.addChild(container);
         }
 
         let keys_down = [];
@@ -111,7 +116,7 @@
         ws.onmessage = function(evt) {
             const message = JSON.parse(evt.data);
             if (message) {
-                updateView(message);
+                handleMessage(message);
             }
         };
     };
