@@ -9,6 +9,7 @@
         const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.png';
         const tileset_terrain = tileset_dir + 'Terrain.png';
         const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
+        const tile_id_table = tileset_dir + 'tile_ids.json';
 
         // TODO: get rid of these
         const tile_width = 16;
@@ -16,10 +17,8 @@
         const map_tile_width = 70;
         const map_tile_height = 26;
 
-        let view_map = new Array(map_tile_width);
-        for (let i = 0; i < map_tile_width; i++) {
-            view_map[i] = new Array(map_tile_height)
-        }
+        let tile_info;
+        let cells = {};
 
         // noinspection JSValidateTypes
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
@@ -40,7 +39,8 @@
                 tileset_monsters,
                 tileset_monsters_scifi,
                 tileset_terrain,
-                tileset_terrain_objects
+                tileset_terrain_objects,
+                tile_id_table
             ])
             .on("progress", loadProgressHandler)
             .load(setup);
@@ -50,33 +50,56 @@
             console.log("progress: " + loader.progress + "%");
         }
 
-        function setup() {
-            console.log('Done loading.')
+        function setup(loader, resources) {
+            tile_info = resources[tile_id_table].data;
+            console.log('Done loading.');
+            app.ticker.add(delta => gameLoop(delta));
         }
 
-        function updateView(message) {
+        function gameLoop(delta) {
+
+        }
+
+        function handleMessage(message) {
             // noinspection JSUnresolvedVariable
-            for (const cell of message.deltas) {
-                updateMap(cell);
+            if (message.map !== null) {
+                updateMap(message.map);
             }
         }
 
-        function updateMap(cell) {
-            const old_sprite = view_map[cell.prev_x][cell.prev_y];
-            if (old_sprite !== null) {
-                app.stage.removeChild(old_sprite);
-                view_map[cell.prev_x][cell.prev_y] = null;
+        function updateMap(map) {
+            for (const data of map.cells) {
+                const cell = {
+                    id: data[0],
+                    x: data[1],
+                    y: data[2],
+                    tile_id: data[3],
+                    tint: data[4]
+                };
+                if (cells[cell.id] === undefined) {
+                    makeSprite(cell);
+                } else {
+                    updateSprite(cell);
+                }
             }
+        }
 
-            if (cell.tileset !== null) {
-                // noinspection JSUnresolvedVariable
-                const new_tex = PIXI.loader.resources[cell.tileset].textures[cell.tile];
-                const sprite = new PIXI.Sprite(new_tex);
-                sprite.x = tile_width * cell.x;
-                sprite.y = tile_height * cell.y;
-                view_map[cell.x][cell.y] = sprite;
-                app.stage.addChild(sprite);
-            }
+        function updateSprite(cell) {
+            const sprite = cells[cell.id];
+            sprite.x = tile_width * cell.x;
+            sprite.y = tile_height * cell.y;
+            sprite.tint = cell.tint;
+        }
+
+        function makeSprite(cell) {
+            const tile = tile_info[cell.tile_id];
+            const tex = PIXI.loader.resources[tile.tileset].textures[tile.tiles[0]];
+            const sprite = new PIXI.Sprite(tex);
+            sprite.x = tile_width * cell.x;
+            sprite.y = tile_height * cell.y;
+            sprite.tint = cell.tint;
+            app.stage.addChild(sprite);
+            cells[cell.id] = sprite;
         }
 
         let keys_down = [];
@@ -111,7 +134,7 @@
         ws.onmessage = function(evt) {
             const message = JSON.parse(evt.data);
             if (message) {
-                updateView(message);
+                handleMessage(message);
             }
         };
     };

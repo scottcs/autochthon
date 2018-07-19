@@ -13,9 +13,16 @@ class Game:
         self.game_over = False
         self.world = esper.World()
         self.player = self.world.create_entity(Renderable(
-            'static/img/oryx_ur/Monsters.json',
-            'orc2_1',
-            0, 0
+            1,
+            40, 10,
+            0xff3333,
+            0
+        ))
+        self.crab = self.world.create_entity(Renderable(
+            2,
+            10, 10,
+            0xffff33,
+            1
         ))
 
         self.world.add_processor(render_processor)
@@ -26,7 +33,6 @@ class Game:
 
     def on_keyboard_input(self, keys) -> dict:
         """Core game loop."""
-        print(f'got keys {keys}')
         if self.check_for_time_passed():
             # self.world.update()
             ...
@@ -38,19 +44,17 @@ class Game:
             return {'game_over': True}
 
         if 'Control' in keys:
-            print('control')
             return {}
 
+        # TODO: Separate position from renderable?
         player_renderable = self.world.component_for_entity(self.player, Renderable)
+        crab_renderable = self.world.component_for_entity(self.crab, Renderable)
 
         for key in keys:
             move_up = key in 'kyu'
             move_down = key in 'jbn'
             move_left = key in 'hyb'
             move_right = key in 'lun'
-            if move_up or move_down or move_left or move_right:
-                player_renderable.prev_x = player_renderable.x
-                player_renderable.prev_y = player_renderable.y
             if move_up:
                 player_renderable.y -= 1
             if move_down:
@@ -59,6 +63,9 @@ class Game:
                 player_renderable.x -= 1
             if move_right:
                 player_renderable.x += 1
+
+        crab_renderable.x = player_renderable.x
+        crab_renderable.y = player_renderable.y
 
     def on_mouse_input(self, mouse) -> dict:
         return {}

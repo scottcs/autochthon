@@ -33,6 +33,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
         """Open a connection."""
         self.connections.add(self)
+        self.set_nodelay(True)
 
     def write_all(self, *args, **kwargs):
         """Write to all connections."""
@@ -51,6 +52,16 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         """Called when closing a connection."""
         self.connections.remove(self)
 
+    def get_compression_options(self):
+        """Override default class to turn on compression.
+
+        Returning None disables compression. Returning a dict enables it,
+        even if the dict is empty. Possibly want to mess with `compression_level`
+        in the dict.
+
+        """
+        return {}
+
 
 class WebRenderProcessor(esper.Processor):
     """Game render processor for web socket."""
@@ -58,18 +69,21 @@ class WebRenderProcessor(esper.Processor):
     def __init__(self, socket):
         super().__init__()
         self.socket = socket
-        self.deltas = []
 
     def process(self):
         """Process all renderables."""
-        new_deltas = []
-        for ent, renderable in self.world.get_component(Renderable):
-            delta = renderable.__dict__.copy()
-            if delta not in self.deltas:
-                new_deltas.append(delta)
-        if new_deltas:
-            self.socket.write_all({'deltas': new_deltas})
-            self.deltas = new_deltas
+        # cell.id
+        # cell.x, cell.y
+        # cell.tileset
+        # cell.tile
+        # cell.tint
+        map_data = {}
+        cells = []
+        for ent, renderable in sorted(self.world.get_component(Renderable),
+                                      key=lambda x: x[1].layer):
+            cells.append([ent, renderable.x, renderable.y, renderable.tile_id, renderable.tint])
+        map_data['cells'] = cells
+        self.socket.write_all({'map': map_data})
 
 
 class GameCallback(tornado.ioloop.PeriodicCallback):
