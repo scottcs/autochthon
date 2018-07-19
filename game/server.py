@@ -33,6 +33,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
         """Open a connection."""
         self.connections.add(self)
+        self.set_nodelay(True)
 
     def write_all(self, *args, **kwargs):
         """Write to all connections."""
@@ -50,6 +51,16 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def on_close(self):
         """Called when closing a connection."""
         self.connections.remove(self)
+
+    def get_compression_options(self):
+        """Override default class to turn on compression.
+
+        Returning None disables compression. Returning a dict enables it,
+        even if the dict is empty. Possibly want to mess with `compression_level`
+        in the dict.
+
+        """
+        return {}
 
 
 class WebRenderProcessor(esper.Processor):
