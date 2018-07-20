@@ -9,6 +9,7 @@ import tornado.websocket
 
 from game.events import InputEvent
 from game.game import Game, MOMENTS_PER_TURN
+from game.component.positional import Positional
 from game.component.renderable import Renderable
 
 DEFAULT_PORT = 19999
@@ -79,9 +80,10 @@ class WebRenderProcessor(esper.Processor):
         """Process all renderables."""
         map_data = {}
         cells = []
-        for ent, renderable in sorted(self.world.get_component(Renderable),
-                                      key=lambda x: x[1].layer):
-            cells.append([ent, renderable.x, renderable.y, renderable.tile_id, renderable.tint])
+        for ent, components in sorted(self.world.get_components(Positional, Renderable),
+                                      key=lambda x: x[1][1].layer):
+            positional, renderable = components
+            cells.append([ent, positional.x, positional.y, renderable.tile_id, renderable.tint])
         map_data['cells'] = cells
         self.socket.write_all({'map': map_data})
 

@@ -2,7 +2,7 @@
 
 import esper
 
-from game.component.renderable import Renderable
+from game.component.positional import Positional
 from game.events import PlayerMovementEvent
 
 
@@ -15,9 +15,9 @@ class PlayerMovementProcessor(esper.Processor):
 
     def on_move(self, dx, dy):
         """Enqueue a movement event."""
-        player_renderable = self.world.component_for_entity(self.player, Renderable)
-        player_renderable.x += dx
-        player_renderable.y += dy
+        player_pos = self.world.component_for_entity(self.player, Positional)
+        player_pos.x += dx
+        player_pos.y += dy
 
     def process(self):
         """Process player movement events."""
