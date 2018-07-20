@@ -7,6 +7,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
+from game.events import InputEvent
 from game.game import Game, MOMENTS_PER_TURN
 from game.component.renderable import Renderable
 
@@ -46,7 +47,11 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         :param message: Message received.
 
         """
-        self.game_callback.input_events.append(json.loads(message))
+        data = json.loads(message)
+        keys = data.get('keys')
+        mouse = data.get('mouse')
+        if keys or mouse:
+            InputEvent(keys=keys, mouse=mouse, state=self.game_callback.game.state)
 
     def on_close(self):
         """Called when closing a connection."""
@@ -89,13 +94,11 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
         ms = 1000 // MOMENTS_PER_TURN
         if GameCallback.game is None:
             GameCallback.game = Game(WebRenderProcessor(websocket))
-        self.input_events = []
         super().__init__(self.process_events, ms)
 
-    def process_events(self):
+    @staticmethod
+    def process_events():
         """Send game events to the game."""
-        while self.input_events:
-            GameCallback.game.process_input_event(self.input_events.pop())
         GameCallback.game.update()
 
 
