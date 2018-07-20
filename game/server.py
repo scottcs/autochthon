@@ -90,7 +90,8 @@ def make_app() -> tornado.web.Application:
         (r'/websocket', GameWebSocket),
     ],
         static_path='static',
-        template_path='templates')
+        template_path='templates',
+        compress_response=True)
 
 
 def run_server(port: Optional[int]=None):
