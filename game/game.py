@@ -2,8 +2,9 @@
 import esper
 
 from game.component.renderable import Renderable
-from game.events import GameOverEvent, InputEvent, PlayerMovementEvent
+from game.component.positional import Positional
 from game.input import InputHandler
+from game.processor.playermovement import PlayerMovementProcessor
 from game.state import GameState
 
 MOMENTS_PER_TURN = 10
@@ -18,32 +19,18 @@ class Game:
         self.world = esper.World()
         self.input_handler = InputHandler()
         self.state = GameState.PLAYING
-        self.player = self.world.create_entity(Renderable(
-            1,
-            40, 10,
-            0xff3333,
-            0
-        ))
-        self.crab = self.world.create_entity(Renderable(
-            39,
-            10, 10,
-            0xffff33,
-            1
-        ))
+        self.player = self.world.create_entity(
+            Renderable(1, 0xff3333, 0),
+            Positional(40, 10)
+        )
+        self.crab = self.world.create_entity(
+            Renderable(39, 0xffff33, 1),
+            Positional(10, 10)
+        )
 
         self.world.add_processor(render_processor)
-        # TODO: Make this a processor?
-        PlayerMovementEvent.handle(self.player_movement)
+        self.world.add_processor(PlayerMovementProcessor(self.player))
 
     def update(self):
         """Update the game world."""
         self.world.process()
-
-    def player_movement(self, dx, dy):
-        """Move the player."""
-        player_renderable = self.world.component_for_entity(self.player, Renderable)
-        crab_renderable = self.world.component_for_entity(self.crab, Renderable)
-        player_renderable.x += dx
-        player_renderable.y += dy
-        crab_renderable.x = player_renderable.x
-        crab_renderable.y = player_renderable.y

@@ -2,14 +2,13 @@
 import json
 from typing import Optional
 
-import esper
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
 from game.events import InputEvent
 from game.game import Game, MOMENTS_PER_TURN
-from game.component.renderable import Renderable
+from game.processor.render import WebRenderProcessor
 
 DEFAULT_PORT = 19999
 
@@ -66,24 +65,6 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
 
         """
         return {}
-
-
-class WebRenderProcessor(esper.Processor):
-    """Game render processor for web socket."""
-
-    def __init__(self, socket):
-        super().__init__()
-        self.socket = socket
-
-    def process(self):
-        """Process all renderables."""
-        map_data = {}
-        cells = []
-        for ent, renderable in sorted(self.world.get_component(Renderable),
-                                      key=lambda x: x[1].layer):
-            cells.append([ent, renderable.x, renderable.y, renderable.tile_id, renderable.tint])
-        map_data['cells'] = cells
-        self.socket.write_all({'map': map_data})
 
 
 class GameCallback(tornado.ioloop.PeriodicCallback):
