@@ -72,11 +72,6 @@ class WebRenderProcessor(esper.Processor):
 
     def process(self):
         """Process all renderables."""
-        # cell.id
-        # cell.x, cell.y
-        # cell.tileset
-        # cell.tile
-        # cell.tint
         map_data = {}
         cells = []
         for ent, renderable in sorted(self.world.get_component(Renderable),

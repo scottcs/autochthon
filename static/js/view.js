@@ -16,6 +16,8 @@
         const tile_height = 24;
         const map_tile_width = 70;
         const map_tile_height = 26;
+        const world_width = map_tile_width * tile_width;
+        const world_height = map_tile_height * tile_height;
 
         let tile_info;
         let cells = {};
@@ -89,6 +91,12 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
+            sprite.visible = (
+                (sprite.x + tile_width) > 0 &&
+                (sprite.y + tile_height) > 0 &&
+                sprite.x < world_width &&
+                sprite.y < world_height
+            );
         }
 
         function makeSprite(cell) {
