@@ -33,4 +33,4 @@ class InputHandler:
                     dx -= 1
                 if move_right:
                     dx += 1
-                PlayerMovementEvent.fire(dx, dy)
+                PlayerMovementEvent(dx, dy)

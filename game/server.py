@@ -51,7 +51,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         keys = data.get('keys')
         mouse = data.get('mouse')
         if keys or mouse:
-            InputEvent.fire(keys=keys, mouse=mouse, state=self.game_callback.game.state)
+            InputEvent(keys=keys, mouse=mouse, state=self.game_callback.game.state)
 
     def on_close(self):
         """Called when closing a connection."""
