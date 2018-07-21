@@ -90,16 +90,15 @@ def make_app() -> tornado.web.Application:
         (r'/websocket', GameWebSocket),
     ],
         static_path='static',
-        template_path='templates')
+        template_path='templates',
+        compress_response=True)
 
 
-def run_server(port: Optional[int]=None):
+def run_server(config: dict):
     """Run the game as a websockets server."""
-    port = port and int(port) or DEFAULT_PORT
+    port = config['server'].get('port', DEFAULT_PORT)
     app = make_app()
     app.listen(port)
+    print(f'Listening on port {port}...')
     tornado.ioloop.IOLoop.current().start()
 
-
-if __name__ == '__main__':
-    run_server()
