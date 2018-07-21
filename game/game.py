@@ -3,6 +3,7 @@ import esper
 
 from game.component.renderable import Renderable
 from game.component.positional import Positional
+from game.events import GameOverEvent
 from game.input import InputHandler
 from game.processor.playermovement import PlayerMovementProcessor
 from game.state import GameState
@@ -28,9 +29,16 @@ class Game:
             Positional(10, 10)
         )
 
+        GameOverEvent.handle(self.shutdown)
+
         self.world.add_processor(render_processor)
         self.world.add_processor(PlayerMovementProcessor(self.player))
 
     def update(self):
         """Update the game world."""
         self.world.process()
+
+    def shutdown(self, *_):
+        """Shut down the game."""
+        print('Shutting down.')
+        self.game_over = True
