@@ -5,16 +5,15 @@ import esper
 
 from game.component.positional import Positional
 from game.component.renderable import Renderable
-from game.server import GameWebSocket
+from game.events import WebsocketWriteAllEvent
 from game.types import GameMapCellData, GameMapData
 
 
 class WebRenderProcessor(esper.Processor):
     """Game render processor for web socket."""
 
-    def __init__(self, socket: GameWebSocket) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.socket: GameWebSocket = socket
 
     def process(self, *args: Any) -> None:
         """Process all renderables."""
@@ -25,7 +24,7 @@ class WebRenderProcessor(esper.Processor):
             positional, renderable = components
             cells.append([ent, positional.x, positional.y, renderable.tile_id, renderable.tint])
         map_data['cells'] = cells
-        self.socket.write_all({'map': map_data})
+        WebsocketWriteAllEvent.fire({'map': map_data})
 
 
 class TCODRenderProcessor(esper.Processor):

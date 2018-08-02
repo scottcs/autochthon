@@ -45,3 +45,4 @@ class Event:
 InputEvent: Event = Event()
 GameOverEvent: Event = Event()
 PlayerMovementEvent: Event = Event()
+WebsocketWriteAllEvent: Event = Event()
