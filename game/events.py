@@ -1,4 +1,8 @@
 """Game Events."""
+from __future__ import annotations
+from typing import Dict
+
+from game.types import EventHandler, EventType
 
 
 class Event:
@@ -9,15 +13,15 @@ class Event:
     also guaranteed to be ordered.
 
     """
-    def __init__(self):
-        self.handlers = dict()
+    def __init__(self) -> None:
+        self.handlers: Dict[EventHandler, bool] = dict()
 
-    def handle(self, handler):
+    def handle(self, handler: EventHandler) -> Event:
         """Register a handler."""
         self.handlers[handler] = True
         return self
 
-    def unhandle(self, handler):
+    def unhandle(self, handler: EventHandler) -> Event:
         """Unregister a handler."""
         try:
             del self.handlers[handler]
@@ -25,21 +29,19 @@ class Event:
             raise ValueError("Handler is not handling this event, so cannot unhandle it.")
         return self
 
-    def fire(self, *args, **kwargs):
+    def fire(self, event: EventType) -> None:
         """Fire the event."""
         for handler in self.handlers.keys():
-            handler(*args, **kwargs)
+            handler(event)
 
-    def num_handlers(self):
+    def num_handlers(self) -> int:
         """Get the number of handlers."""
         return len(self.handlers)
 
-    __iadd__ = handle
-    __isub__ = unhandle
     __call__ = fire
     __len__ = num_handlers
 
 
-InputEvent = Event()
-GameOverEvent = Event()
-PlayerMovementEvent = Event()
+InputEvent: Event = Event()
+GameOverEvent: Event = Event()
+PlayerMovementEvent: Event = Event()

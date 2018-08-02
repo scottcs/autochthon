@@ -1,21 +1,25 @@
 """Render processors."""
+from typing import Any
+
 import esper
 
 from game.component.positional import Positional
 from game.component.renderable import Renderable
+from game.server import GameWebSocket
+from game.types import GameMapCellData, GameMapData
 
 
 class WebRenderProcessor(esper.Processor):
     """Game render processor for web socket."""
 
-    def __init__(self, socket):
+    def __init__(self, socket: GameWebSocket) -> None:
         super().__init__()
-        self.socket = socket
+        self.socket: GameWebSocket = socket
 
-    def process(self):
+    def process(self, *args: Any) -> None:
         """Process all renderables."""
-        map_data = {}
-        cells = []
+        map_data: GameMapData = {}
+        cells: GameMapCellData = []
         for ent, components in sorted(self.world.get_components(Positional, Renderable),
                                       key=lambda x: x[1][1].layer):
             positional, renderable = components
@@ -27,11 +31,11 @@ class WebRenderProcessor(esper.Processor):
 class TCODRenderProcessor(esper.Processor):
     """Game render processor for local TCOD console."""
 
-    def __init__(self, title, width=80, height=40):
+    def __init__(self, title: str, width: int=80, height: int=40) -> None:
         super().__init__()
         # Someday, implement this?
         print("Wouldn't that be nice?")
 
-    def process(self):
+    def process(self, *args: Any) -> None:
         """Process all renderables."""
         pass

@@ -1,21 +1,23 @@
 """Input handling."""
+from typing import Optional
 
 from game.events import InputEvent, PlayerMovementEvent
 from game.state import GameState
+from game.types import EventType
 
 
 class InputHandler:
     """Handle input and issue events."""
-    def __init__(self):
+    def __init__(self) -> None:
         InputEvent.handle(self.handle)
 
-    def handle(self, keys=None, mouse=None, state=None):
+    def handle(self, event: EventType) -> None:
         """Handle input event."""
-        if state == GameState.PLAYING:
-            self.handle_playing(keys, mouse)
+        if event.get('state', GameState.UNKNOWN) == GameState.PLAYING:
+            self.handle_playing(event.get('keys'), event.get('mouse'))
 
     @staticmethod
-    def handle_playing(keys, mouse):
+    def handle_playing(keys: Optional[list]=None, mouse: Optional[list]=None) -> None:
         """Handle input event in the PLAYING state."""
         if keys:
             for key in keys:
@@ -33,4 +35,4 @@ class InputHandler:
                     dx -= 1
                 if move_right:
                     dx += 1
-                PlayerMovementEvent(dx, dy)
+                PlayerMovementEvent({'dx': dx, 'dy': dy})

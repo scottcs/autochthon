@@ -1,4 +1,5 @@
 """Player movement processor."""
+from typing import Any
 
 import esper
 
@@ -8,16 +9,16 @@ from game.events import PlayerMovementEvent
 
 class PlayerMovementProcessor(esper.Processor):
     """Player movement processor."""
-    def __init__(self, player):
+    def __init__(self, player: int) -> None:
         super().__init__()
-        self.player = player
+        self.player: int = player
         PlayerMovementEvent.handle(self.on_move)
 
-    def on_move(self, dx, dy):
+    def on_move(self, event: dict) -> None:
         """Enqueue a movement event."""
         player_pos = self.world.component_for_entity(self.player, Positional)
-        player_pos.x += dx
-        player_pos.y += dy
+        player_pos.x += event.get('dx', 0)
+        player_pos.y += event.get('dy', 0)
 
-    def process(self):
+    def process(self, *args: Any) -> None:
         """Process player movement events."""
