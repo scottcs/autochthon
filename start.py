@@ -7,7 +7,7 @@ from game.local import run_local
 from game.server import run_server
 
 
-def run_game(args: argparse.Namespace):
+def run_game(args: argparse.Namespace) -> None:
     """Run the game."""
     with open(args.config) as f:
         config = toml.load(f)
