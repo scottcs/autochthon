@@ -13,17 +13,17 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main(args: argparse.Namespace):
+def main(args: argparse.Namespace) -> None:
     """The main function."""
-    output = {}
-    frames = {}
-    x = 0
-    y = 0
-    w = 0
-    h = 0
-    rows = 0
-    cols = 0
-    num_anim_frames = 1
+    output: dict = {}
+    frames: dict = {}
+    x: int = 0
+    y: int = 0
+    w: int = 0
+    h: int = 0
+    rows: int = 0
+    cols: int = 0
+    num_anim_frames: int = 1
 
     with open(args.names) as f:
         for line in f.readlines():

@@ -2,6 +2,7 @@
 import argparse
 import json
 import pathlib
+from typing import List, Dict
 
 
 def parse_args() -> argparse.Namespace:
@@ -11,11 +12,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def get_atlas_info(atlas_file):
+def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
     """Parse a tile atlas."""
-    tileset = atlas_file.with_suffix('.json').as_posix(),
-    atlas_data = []
-    num_anim_frames = 1
+    tileset: str = atlas_file.with_suffix('.json').as_posix()
+    atlas_data: list = []
+    num_anim_frames: int = 1
 
     with atlas_file.open() as f:
         for line in f.readlines():
@@ -30,9 +31,9 @@ def get_atlas_info(atlas_file):
                 num_anim_frames = int(line.split()[-1])
                 continue
 
-            tiles = []
+            tiles: list = []
             for i in range(num_anim_frames):
-                name = f'{line}_{i + 1}'
+                name: str = f'{line}_{i + 1}'
                 tiles.append(name)
 
             atlas_data.append({
@@ -43,7 +44,7 @@ def get_atlas_info(atlas_file):
     return atlas_data
 
 
-def main(args: argparse.Namespace):
+def main(args: argparse.Namespace) -> None:
     """The main function."""
     directory = pathlib.Path(args.directory)
     tile_ids = []
