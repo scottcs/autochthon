@@ -1,10 +1,12 @@
 """Game map."""
 from random import randint
-from typing import List
+from typing import List, Optional
 
+import esper
 import numpy as np
 import tcod.map
 
+from game.types import GameMapCellData, GameMapData
 from game.utils.geometry import Rect, Point
 from game.utils.random import coin_flip
 
@@ -12,10 +14,10 @@ from game.utils.random import coin_flip
 class Map(tcod.map.Map):
     """Game map."""
 
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, world: esper.World) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
-        # self._explored: list = [[False for _ in range(height)] for _ in range(width)]
+        self.world: esper.World = world
         self._buffer2: np.array = np.zeros((height, width, 1), dtype=np.bool_)
         
     @property
@@ -32,11 +34,14 @@ class Map(tcod.map.Map):
 class ClassicMap(Map):
     """Classic rogue-style map."""
 
-    def __init__(self, width: int, height: int, config: dict) -> None:
-        super().__init__(width, height)
+    def __init__(self, width: int, height: int, world: esper.World,
+                 config: Optional[dict]=None) -> None:
+        super().__init__(width, height, world)
+        config = config or {}
         self.max_rooms: int = config.get('max_rooms', 1)
         self.room_min_size: int = config.get('room_min_size', 3)
         self.room_max_size: int = config.get('room_max_size', 5)
+        self.start_pos = Point(0, 0)
 
     def create_room(self, room: Rect) -> None:
         """Create a new room in the map at the given coordinates."""
@@ -77,7 +82,7 @@ class ClassicMap(Map):
                 self.create_room(new_room)
 
                 if len(rooms) == 0:  # first room
-                    pass  # TODO: place player here
+                    self.start_pos = new_room.center
                 else:
                     prev_center: Point = rooms[-1].center
                     if coin_flip():

@@ -5,13 +5,14 @@ import esper
 
 from game.component.positional import Positional
 from game.events import PlayerMovementEvent
+from game.types import Entity
 
 
 class PlayerMovementProcessor(esper.Processor):
     """Player movement processor."""
-    def __init__(self, player: int) -> None:
+    def __init__(self, player: Entity) -> None:
         super().__init__()
-        self.player: int = player
+        self.player: Entity = player
         PlayerMovementEvent.handle(self.on_move)
 
     def on_move(self, event: dict) -> None:

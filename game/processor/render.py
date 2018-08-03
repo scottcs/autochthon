@@ -20,7 +20,7 @@ class WebRenderProcessor(esper.Processor):
         map_data: GameMapData = {}
         cells: GameMapCellData = []
         for ent, components in sorted(self.world.get_components(Positional, Renderable),
-                                      key=lambda x: x[1][1].layer):
+                                      key=lambda x: x[1][1].layer.value):
             positional, renderable = components
             cells.append([ent, positional.x, positional.y, renderable.tile_id, renderable.tint])
         map_data['cells'] = cells
