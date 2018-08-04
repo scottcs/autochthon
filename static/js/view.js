@@ -62,21 +62,19 @@
 
         }
 
-        function handleMessage(message) {
-            // noinspection JSUnresolvedVariable
-            if (message.map !== null) {
-                updateMap(message.map);
-            }
-        }
-
-        function updateMap(map) {
-            for (const data of map.cells) {
+        function handleBinaryData(data) {
+            const view = new DataView(data);
+            const num_cells = view.getUint16(0);
+            const offset = 2;      // header is 2 bytes
+            const cell_size = 12;  // cell size in bytes
+            for (let i = 0; i < num_cells; i++) {
+                const cell_offset = offset + (i * cell_size);
                 const cell = {
-                    id: data[0],
-                    x: data[1],
-                    y: data[2],
-                    tile_id: data[3],
-                    tint: data[4]
+                    id: view.getUint16(cell_offset),
+                    x: view.getUint16(cell_offset + 2),
+                    y: view.getUint16(cell_offset + 4),
+                    tile_id: view.getUint16(cell_offset + 6),
+                    tint: view.getUint32(cell_offset + 8),
                 };
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
@@ -112,6 +110,7 @@
 
         let keys_down = [];
         const ws = new WebSocket("ws://localhost:19999/websocket");
+        ws.binaryType = 'arraybuffer';
 
         document.addEventListener("keydown", function(event) {
             if (event.defaultPrevented) {
@@ -128,6 +127,7 @@
         document.addEventListener("keyup", sendKeys);
 
         function sendKeys() {
+            // TODO: improve performance - send binary?
             if (keys_down.length > 0) {
                 const payload = {
                     "keys": Array.from(new Set(keys_down))
@@ -140,10 +140,7 @@
         }
 
         ws.onmessage = function(evt) {
-            const message = JSON.parse(evt.data);
-            if (message) {
-                handleMessage(message);
-            }
+            handleBinaryData(evt.data)
         };
     };
 }());

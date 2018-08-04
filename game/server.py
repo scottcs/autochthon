@@ -1,6 +1,6 @@
 """Autochthon server."""
 import json
-from typing import Optional, Any
+from typing import Optional, Any, Union
 
 import tornado.ioloop
 import tornado.web
@@ -12,7 +12,7 @@ from game.processor.render import WebRenderProcessor
 from game.state import GameState
 from game.types import EventType
 
-DEFAULT_PORT = 19999
+DEFAULT_PORT: int = 19999
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -53,7 +53,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.game_callback = GameCallback()
+        self.game_callback: GameCallback = GameCallback()
         self.game_callback.start()
         WebsocketWriteAllEvent.handle(self.on_websocket_write_all)
 
@@ -64,7 +64,9 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
 
     def on_websocket_write_all(self, event: EventType) -> None:
         """Handle WebsocketWriteAllEvent"""
-        self.write_all(event)
+        binary: bool = event.pop('binary', False)
+        message: Union[str, bytes] = event.pop('message')
+        self.write_all(message, binary=binary)
 
     def write_all(self, *args: Any, **kwargs: Any) -> None:
         """Write to all connections."""
@@ -72,14 +74,10 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
             client.write_message(*args, **kwargs)
 
     def on_message(self, message: str) -> None:
-        """Called when a message is received over the connection.
-
-        :param message: Message received.
-
-        """
-        data = json.loads(message)
-        keys = data.get('keys')
-        mouse = data.get('mouse')
+        """Called when a message is received over the connection."""
+        data: dict = json.loads(message)
+        keys: list = data.get('keys')
+        mouse: list = data.get('mouse')
         if keys or mouse:
             InputEvent(dict(keys=keys, mouse=mouse, state=self.game_callback.get_game_state()))
 
@@ -87,7 +85,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         """Called when closing a connection."""
         self.connections.remove(self)
 
-    def get_compression_options(self) -> dict:
+    def get_compression_options(self) -> Optional[dict]:
         """Override default class to turn on compression.
 
         Returning None disables compression. Returning a dict enables it,
@@ -95,7 +93,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         in the dict.
 
         """
-        return {}
+        return None
 
 
 def make_app() -> tornado.web.Application:
@@ -106,13 +104,13 @@ def make_app() -> tornado.web.Application:
     ],
         static_path='static',
         template_path='templates',
-        compress_response=True)
+        compress_response=False)
 
 
 def run_server(config: dict) -> None:
     """Run the game as a websockets server."""
-    port = config['server'].get('port', DEFAULT_PORT)
-    app = make_app()
+    port: int = config['server'].get('port', DEFAULT_PORT)
+    app: tornado.web.Application = make_app()
     app.listen(port)
     print(f'Listening on port {port}...')
     tornado.ioloop.IOLoop.current().start()
