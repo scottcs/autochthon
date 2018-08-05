@@ -11,16 +11,7 @@
         const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
         const tile_id_table = tileset_dir + 'tile_ids.json';
         const config_json = 'static/config.json';
-
-        const MOD_SHIFT = 1 << 0;
-        const MOD_CTRL  = 1 << 1;
-        const MOD_ALT   = 1 << 2;
-        const SPECIAL_KEYS = {
-            "Enter": 1,
-            "Space": 32,
-            "Tab": 24,
-            "Backtick": 28
-        };
+        const keys_json = 'static/keys.json';
 
         // TODO: get rid of these
         const tile_width = 16;
@@ -47,6 +38,7 @@
         PIXI.loader
             .add([
                 config_json,
+                keys_json,
                 tileset_avatar,
                 tileset_avatar_equipment,
                 tileset_items,
@@ -67,7 +59,7 @@
         function setup(loader, resources) {
             tile_info = resources[tile_id_table].data;
             console.log('Done loading.');
-            setupWebsockets(resources[config_json].data);
+            setupWebsockets(resources[config_json].data, resources[keys_json].data);
             app.ticker.add(delta => gameLoop(delta));
         }
 
@@ -121,8 +113,7 @@
             cells[cell.id] = sprite;
         }
 
-        function setupWebsockets(config) {
-            let keys_down = [];
+        function setupWebsockets(config, keys) {
             const host = config.server.host;
             const port = config.server.port;
             const ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
@@ -134,45 +125,36 @@
                 }
                 let modifiers = 0;
                 if (event.shiftKey) {
-                    modifiers |= MOD_SHIFT;
+                    modifiers |= keys.Modifiers.Shift;
                 }
                 if (event.ctrlKey) {
-                    modifiers |= MOD_CTRL;
+                    modifiers |= keys.Modifiers.Ctrl;
                 }
                 if (event.altKey) {
-                    modifiers |= MOD_ALT;
+                    modifiers |= keys.Modifiers.Alt;
                 }
                 const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
                 let code = 0;
                 if (key.length === 1) {
                     code = key.charCodeAt(0);
                 } else {
-                    code = SPECIAL_KEYS[event.code] || 0;
+                    code = keys.Keys[event.code] || 0;
                 }
-                console.log(event);
-                console.log(event.code, key, code, modifiers);
-                if (event.key !== 'Meta' && event.key !== 'Alt') {
-                    keys_down.push(event.key);
-                }
-                if (!keys_down.includes('Control')) {
-                    sendKeys()
-                }
+                let buffer = new ArrayBuffer(7);
+                const view = new DataView(buffer);
+                // byte 0: event type
+                // byte 1: modifier keys
+                // byte 2: key/button code
+                // byte 3-4: x coordinate
+                // byte 5-6: y coordinate
+                view.setUint8(0, keys.Events.KeyPress);
+                view.setUint8(1, modifiers);
+                view.setUint8(2, code);
+                view.setUint16(3, 0);
+                view.setUint16(5, 0);
+                const data = new Uint8Array(buffer);
+                ws.send(data);
             });
-
-            document.addEventListener("keyup", sendKeys);
-
-            function sendKeys() {
-                // TODO: improve performance - send binary?
-                if (keys_down.length > 0) {
-                    const payload = {
-                        "keys": Array.from(new Set(keys_down))
-                    };
-                    ws.send(JSON.stringify(payload));
-                    while (keys_down.length > 0) {
-                        keys_down.pop();
-                    }
-                }
-            }
 
             ws.onmessage = function (evt) {
                 handleBinaryData(evt.data)

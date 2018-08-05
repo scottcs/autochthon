@@ -1,5 +1,4 @@
 """Autochthon server."""
-import json
 from typing import Optional, Any, Union
 
 import tornado.ioloop
@@ -72,13 +71,22 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         for client in self.connections:
             client.write_message(*args, **kwargs)
 
-    def on_message(self, message: str) -> None:
+    def on_message(self, message: Union[str, bytes]) -> None:
         """Called when a message is received over the connection."""
-        data: dict = json.loads(message)
-        keys: list = data.get('keys')
-        mouse: list = data.get('mouse')
-        if keys or mouse:
-            InputEvent(dict(keys=keys, mouse=mouse, state=self.game_callback.get_game_state()))
+        if isinstance(message, bytes):
+            # byte 0: event type
+            # byte 1: modifiers
+            # byte 2: key/button code
+            # byte 3-4: x coordinate
+            # byte 5-6: y coordinate
+            InputEvent({
+                'event': message[0],
+                'modifiers': message[1],
+                'code': message[2],
+                'x_coord': int.from_bytes(message[3:5], byteorder='big'),
+                'y_coord': int.from_bytes(message[5:7], byteorder='big'),
+                'state': self.game_callback.get_game_state(),
+            })
 
     def on_close(self) -> None:
         """Called when closing a connection."""
