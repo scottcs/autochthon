@@ -29,9 +29,7 @@ class InputHandler:
         key: str = self._get_key(event['code'])
         coords: Point = Point(event['x_coord'], event['y_coord'])
         if event.get('state', GameState.UNKNOWN) == GameState.PLAYING:
-            print('playing')
             if event['event'] == self.events['KeyPress']:
-                print('KeyPress')
                 self.handle_keypress_playing(modifiers, key, coords)
 
     def _unpack_modifiers(self, modifiers: int) -> dict:

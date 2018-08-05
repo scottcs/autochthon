@@ -12,27 +12,13 @@
         const tile_id_table = tileset_dir + 'tile_ids.json';
         const config_json = 'static/config.json';
         const keys_json = 'static/keys.json';
-
-        // TODO: get rid of these
-        const tile_width = 16;
-        const tile_height = 24;
-        const map_tile_width = 70;
-        const map_tile_height = 26;
-        const world_width = map_tile_width * tile_width;
-        const world_height = map_tile_height * tile_height;
-
         let tile_info;
         let cells = {};
-
-        // noinspection JSValidateTypes
-        PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-
-        let app = new PIXI.Application({
-            width: tile_width * map_tile_width,
-            height: tile_height * map_tile_height
-        });
-
-        document.body.appendChild(app.view);
+        let tile_width;
+        let tile_height;
+        let world_width;
+        let world_height;
+        let app;
 
         // noinspection JSUnresolvedFunction
         PIXI.loader
@@ -57,9 +43,27 @@
         }
 
         function setup(loader, resources) {
+            const config = resources[config_json].data;
+            tile_width = config.tiles.width;
+            tile_height = config.tiles.height;
+            const map_tile_width = config.server.width;
+            const map_tile_height = config.server.height;
+            world_width = map_tile_width * tile_width;
+            world_height = map_tile_height * tile_height;
+
+            // noinspection JSValidateTypes
+            PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+
+            app = new PIXI.Application({
+                width: tile_width * map_tile_width,
+                height: tile_height * map_tile_height
+            });
+
+            document.body.appendChild(app.view);
+
             tile_info = resources[tile_id_table].data;
             console.log('Done loading.');
-            setupWebsockets(resources[config_json].data, resources[keys_json].data);
+            setupWebsockets(config, resources[keys_json].data);
             app.ticker.add(delta => gameLoop(delta));
         }
 
