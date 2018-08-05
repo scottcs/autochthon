@@ -5,8 +5,8 @@ import esper
 
 from game.component.positional import Positional
 from game.component.renderable import Renderable
-from game.events import WebsocketWriteAllEvent
-from game.types import GameMapCellData, GameMapData
+from game.events import WebsocketWriteAllEvent, ServerNeedsUpdateEvent
+from game.types import EventType
 
 
 class WebRenderProcessor(esper.Processor):
@@ -14,9 +14,18 @@ class WebRenderProcessor(esper.Processor):
 
     def __init__(self) -> None:
         super().__init__()
+        self.need_to_update: bool = False
+        ServerNeedsUpdateEvent.handle(self.on_server_needs_update)
+
+    def on_server_needs_update(self, event: EventType) -> None:
+        """Called when server needs to be updated."""
+        self.need_to_update = event.get('render', False)
 
     def process(self, *args: Any) -> None:
         """Process all renderables."""
+        if not self.need_to_update:
+            return
+
         b_cells: bytearray = bytearray()
         num_cells: int = 0
         b_cells.extend(num_cells.to_bytes(2, 'big'))
@@ -41,8 +50,8 @@ class WebRenderProcessor(esper.Processor):
         #        2 bytes: tile id
         #        3 bytes: tint
         ##########################################
-        # TODO: improve performance by sending message less often
         WebsocketWriteAllEvent.fire({'message': bytes(b_cells), 'binary': True})
+        self.need_to_update = False
 
 
 class TCODRenderProcessor(esper.Processor):

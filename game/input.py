@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-from game.events import InputEvent, PlayerMovementEvent
+from game.events import InputEvent, PlayerMovementEvent, ServerNeedsUpdateEvent
 from game.state import GameState
 from game.types import EventType
 from game.utils.geometry import Point
@@ -31,6 +31,7 @@ class InputHandler:
         if event.get('state', GameState.UNKNOWN) == GameState.PLAYING:
             if event['event'] == self.events['KeyPress']:
                 self.handle_keypress_playing(modifiers, key, coords)
+        ServerNeedsUpdateEvent.fire({'render': True})
 
     def _unpack_modifiers(self, modifiers: int) -> dict:
         return {

@@ -6,10 +6,12 @@ import tornado.web
 import tornado.websocket
 
 from game.events import InputEvent, WebsocketWriteAllEvent
-from game.game import Game, MOMENTS_PER_TURN
+from game.game import Game
 from game.processor.render import WebRenderProcessor
 from game.state import GameState
 from game.types import EventType
+
+DESIRED_FPS = 30
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -25,10 +27,9 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
     game: Optional[Game] = None
 
     def __init__(self) -> None:
-        ms = 1000 // MOMENTS_PER_TURN
         if GameCallback.game is None:
             GameCallback.game = Game(WebRenderProcessor())
-        super().__init__(self.process_events, ms)
+        super().__init__(self.process_events, 1000 / DESIRED_FPS)
 
     @staticmethod
     def get_game_state() -> GameState:
