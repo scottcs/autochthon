@@ -6,15 +6,12 @@ Create a virtual environment using Python 3.7+, and `pip install -r requirements
 
 ## Running
 
-To run as a web server:
+To run as a web server using the host and port defined in `static/config.json`:
 
 `python start`
 
-which uses the default port (19999), or to specify a port:
 
-`python start --port 1234`
-
-To run in a local tdl window:
+To run in a local window:
 
 `python start --local`
 

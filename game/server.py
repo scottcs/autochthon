@@ -12,8 +12,6 @@ from game.processor.render import WebRenderProcessor
 from game.state import GameState
 from game.types import EventType
 
-DEFAULT_PORT: int = 19999
-
 
 class MainHandler(tornado.web.RequestHandler):
     """Main server http handler."""
@@ -65,8 +63,9 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def on_websocket_write_all(self, event: EventType) -> None:
         """Handle WebsocketWriteAllEvent"""
         binary: bool = event.pop('binary', False)
-        message: Union[str, bytes] = event.pop('message')
-        self.write_all(message, binary=binary)
+        message: Union[str, bytes] = event.pop('message', None)
+        if message:
+            self.write_all(message, binary=binary)
 
     def write_all(self, *args: Any, **kwargs: Any) -> None:
         """Write to all connections."""
@@ -109,8 +108,9 @@ def make_app() -> tornado.web.Application:
 
 def run_server(config: dict) -> None:
     """Run the game as a websockets server."""
-    port: int = config['server'].get('port', DEFAULT_PORT)
+    port: int = config['server']['port']
+    host: str = config['server']['host']
     app: tornado.web.Application = make_app()
-    app.listen(port)
-    print(f'Listening on port {port}...')
+    app.listen(port, address=host)
+    print(f'Listening on {host}:{port}...')
     tornado.ioloop.IOLoop.current().start()

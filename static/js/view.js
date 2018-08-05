@@ -10,6 +10,17 @@
         const tileset_terrain = tileset_dir + 'Terrain.png';
         const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
         const tile_id_table = tileset_dir + 'tile_ids.json';
+        const config_json = 'static/config.json';
+
+        const MOD_SHIFT = 1 << 0;
+        const MOD_CTRL  = 1 << 1;
+        const MOD_ALT   = 1 << 2;
+        const SPECIAL_KEYS = {
+            "Enter": 1,
+            "Space": 32,
+            "Tab": 24,
+            "Backtick": 28
+        };
 
         // TODO: get rid of these
         const tile_width = 16;
@@ -35,6 +46,7 @@
         // noinspection JSUnresolvedFunction
         PIXI.loader
             .add([
+                config_json,
                 tileset_avatar,
                 tileset_avatar_equipment,
                 tileset_items,
@@ -55,6 +67,7 @@
         function setup(loader, resources) {
             tile_info = resources[tile_id_table].data;
             console.log('Done loading.');
+            setupWebsockets(resources[config_json].data);
             app.ticker.add(delta => gameLoop(delta));
         }
 
@@ -108,39 +121,62 @@
             cells[cell.id] = sprite;
         }
 
-        let keys_down = [];
-        const ws = new WebSocket("ws://localhost:19999/websocket");
-        ws.binaryType = 'arraybuffer';
+        function setupWebsockets(config) {
+            let keys_down = [];
+            const host = config.server.host;
+            const port = config.server.port;
+            const ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
+            ws.binaryType = 'arraybuffer';
 
-        document.addEventListener("keydown", function(event) {
-            if (event.defaultPrevented) {
-                return;
-            }
-            if (event.key !== 'Meta' && event.key !== 'Alt') {
-                keys_down.push(event.key);
-            }
-            if (!keys_down.includes('Control')) {
-                sendKeys()
-            }
-        });
+            document.addEventListener("keypress", function (event) {
+                if (event.defaultPrevented) {
+                    return;
+                }
+                let modifiers = 0;
+                if (event.shiftKey) {
+                    modifiers |= MOD_SHIFT;
+                }
+                if (event.ctrlKey) {
+                    modifiers |= MOD_CTRL;
+                }
+                if (event.altKey) {
+                    modifiers |= MOD_ALT;
+                }
+                const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
+                let code = 0;
+                if (key.length === 1) {
+                    code = key.charCodeAt(0);
+                } else {
+                    code = SPECIAL_KEYS[event.code] || 0;
+                }
+                console.log(event);
+                console.log(event.code, key, code, modifiers);
+                if (event.key !== 'Meta' && event.key !== 'Alt') {
+                    keys_down.push(event.key);
+                }
+                if (!keys_down.includes('Control')) {
+                    sendKeys()
+                }
+            });
 
-        document.addEventListener("keyup", sendKeys);
+            document.addEventListener("keyup", sendKeys);
 
-        function sendKeys() {
-            // TODO: improve performance - send binary?
-            if (keys_down.length > 0) {
-                const payload = {
-                    "keys": Array.from(new Set(keys_down))
-                };
-                ws.send(JSON.stringify(payload));
-                while (keys_down.length > 0) {
-                    keys_down.pop();
+            function sendKeys() {
+                // TODO: improve performance - send binary?
+                if (keys_down.length > 0) {
+                    const payload = {
+                        "keys": Array.from(new Set(keys_down))
+                    };
+                    ws.send(JSON.stringify(payload));
+                    while (keys_down.length > 0) {
+                        keys_down.pop();
+                    }
                 }
             }
-        }
 
-        ws.onmessage = function(evt) {
-            handleBinaryData(evt.data)
-        };
+            ws.onmessage = function (evt) {
+                handleBinaryData(evt.data)
+            };
+        }
     };
 }());
