@@ -26,9 +26,9 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
     """Hook the game loop into tornado's io loop."""
     game: Optional[Game] = None
 
-    def __init__(self) -> None:
+    def __init__(self, config: Optional[dict]=None) -> None:
         if GameCallback.game is None:
-            GameCallback.game = Game(WebRenderProcessor())
+            GameCallback.game = Game(WebRenderProcessor(), config=config)
         super().__init__(self.process_events, 1000 / DESIRED_FPS)
 
     @staticmethod
@@ -50,8 +50,9 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     connections: set = set()
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        config = kwargs.pop('config', None)
         super().__init__(*args, **kwargs)
-        self.game_callback: GameCallback = GameCallback()
+        self.game_callback: GameCallback = GameCallback(config=config)
         self.game_callback.start()
         WebsocketWriteAllEvent.handle(self.on_websocket_write_all)
 
@@ -104,11 +105,11 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         return None
 
 
-def make_app() -> tornado.web.Application:
+def make_app(config: dict) -> tornado.web.Application:
     """Make a new tornado app."""
     return tornado.web.Application([
         (r'/', MainHandler),
-        (r'/websocket', GameWebSocket),
+        (r'/websocket', GameWebSocket, {'config': config}),
     ],
         static_path='static',
         template_path='templates',
@@ -119,7 +120,7 @@ def run_server(config: dict) -> None:
     """Run the game as a websockets server."""
     port: int = config['server']['port']
     host: str = config['server']['host']
-    app: tornado.web.Application = make_app()
+    app: tornado.web.Application = make_app(config)
     app.listen(port, address=host)
     print(f'Listening on {host}:{port}...')
     tornado.ioloop.IOLoop.current().start()

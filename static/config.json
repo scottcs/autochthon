@@ -13,5 +13,9 @@
   "tiles": {
     "width": 16,
     "height": 24
+  },
+  "map": {
+    "max_tiles_w": 100,
+    "max_tiles_h": 100
   }
 }

@@ -42,9 +42,10 @@ class Event:
     __len__ = num_handlers
 
 
-InputEvent: Event = Event()
 GameOverEvent: Event = Event()
+InputEvent: Event = Event()
+MapResizeEvent: Event = Event()
 PlayerMovementEvent: Event = Event()
-WebsocketWriteAllEvent: Event = Event()
+WorkEnqueueEvent: Event = Event()
 ServerNeedsUpdateEvent: Event = Event()
-QueueWorkEvent: Event = Event()
+WebsocketWriteAllEvent: Event = Event()

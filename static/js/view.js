@@ -66,6 +66,8 @@
                 width: tile_width * map_tile_width,
                 height: tile_height * map_tile_height
             });
+            camera.position.x = world_width / 2;
+            camera.position.y = world_height / 2;
             app.stage.addChild(camera);
             document.body.appendChild(app.view);
 
@@ -80,10 +82,9 @@
 
         function handleBinaryData(data) {
             const view = new DataView(data);
-            const player_x = view.getUint16(0);
-            const player_y = view.getUint16(2);
+            const player_x = view.getUint16(0) * tile_width;
+            const player_y = view.getUint16(2) * tile_height;
             const num_cells = view.getUint16(4);
-            console.log(player_x, player_y, num_cells);
             const offset = 6;      // header size in bytes
             const cell_size = 12;  // cell size in bytes
             for (let i = 0; i < num_cells; i++) {
@@ -101,6 +102,8 @@
                     updateSprite(cell);
                 }
             }
+            camera.pivot.x = player_x;
+            camera.pivot.y = player_y;
         }
 
         function updateSprite(cell) {

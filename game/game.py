@@ -1,11 +1,12 @@
 """Main game class."""
-from random import randint
+import json
+from typing import Optional
 
 import esper
 
 from game.component.renderable import Renderable
 from game.component.positional import Positional
-from game.events import GameOverEvent, ServerNeedsUpdateEvent, QueueWorkEvent
+from game.events import GameOverEvent, ServerNeedsUpdateEvent, WorkEnqueueEvent
 from game.input import InputHandler
 from game.map import ClassicMap
 from game.processor.enemymovement import EnemyMovementProcessor
@@ -19,7 +20,8 @@ MOMENTS_PER_TURN = 10
 class Game:
     """Main game object."""
 
-    def __init__(self, render_processor: esper.Processor) -> None:
+    def __init__(self, render_processor: esper.Processor, config: Optional[dict]=None) -> None:
+        self.config: dict = config or {}
         self.game_over: bool = False
         self.world: esper.World = esper.World()
         self.input_handler: InputHandler = InputHandler()
@@ -29,7 +31,9 @@ class Game:
         self.turn: int = 0
         self.anim_tick: int = 0
 
-        self.map = ClassicMap(100, 100, self.world)
+        self.map = ClassicMap(self.config['map']['max_tiles_w'],
+                              self.config['map']['max_tiles_h'],
+                              self.world)
         self.map.create()
 
         self.world.player: Entity = self.world.create_entity(
@@ -62,11 +66,11 @@ class Game:
         #     )
 
         GameOverEvent.handle(self.shutdown)
-        QueueWorkEvent.handle(self.on_queue_work)
+        WorkEnqueueEvent.handle(self.on_work_enqueue)
         self.work_to_process.append('draw')
 
         self.world.add_processor(render_processor)
-        self.world.add_processor(PlayerMovementProcessor())
+        self.world.add_processor(PlayerMovementProcessor(self.map.width, self.map.height))
         # self.world.add_processor(EnemyMovementProcessor())
 
     def update(self) -> None:
@@ -87,8 +91,9 @@ class Game:
         if self.moment > 10:
             self.moment = 0
             self.turn += 1
+        print(f'tick: {self.turn}.{self.moment}')
 
-    def on_queue_work(self, event: EventType) -> None:
+    def on_work_enqueue(self, event: EventType) -> None:
         """Handle a work unit queue request."""
         work = event.get('work', None)
         if work:
