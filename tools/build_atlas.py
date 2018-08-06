@@ -38,8 +38,17 @@ def main(args: argparse.Namespace) -> None:
                 w, h, rows, cols, num_anim_frames = [int(x) for x in line[2:].split()]
                 continue
 
+            if line == '>>':
+                # skip to next row
+                x = 0
+                y += num_anim_frames
+                continue
+
             for i in range(num_anim_frames):
-                name = f'{line}_{i + 1}'
+                if num_anim_frames == 1:
+                    name = line
+                else:
+                    name = f'{line}_{i + 1}'
                 frames[name] = {
                     'frame': {'x': x*w, 'y': (y+i)*h, 'w': w, 'h': h},
                     'rotated': False,

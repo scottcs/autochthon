@@ -7,7 +7,8 @@ from typing import List, Dict
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description='build master tile ids file')
+    parser = argparse.ArgumentParser(
+        description='build master tile ids file from all of the tile atlases')
     parser.add_argument('directory')
     return parser.parse_args()
 
