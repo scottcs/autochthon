@@ -21,7 +21,7 @@
         let tile_height;
         let world_width;
         let world_height;
-        let app;
+        let camera = new PIXI.Container();
 
         // noinspection JSUnresolvedFunction
         PIXI.loader
@@ -62,10 +62,11 @@
             // noinspection JSValidateTypes
             PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-            app = new PIXI.Application({
+            const app = new PIXI.Application({
                 width: tile_width * map_tile_width,
                 height: tile_height * map_tile_height
             });
+            app.stage.addChild(camera);
             document.body.appendChild(app.view);
 
             setupWebsockets(config, resources[keys_json].data);
@@ -119,7 +120,7 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
-            app.stage.addChild(sprite);
+            camera.addChild(sprite);
             cells[cell.id] = sprite;
         }
 

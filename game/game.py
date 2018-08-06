@@ -33,8 +33,7 @@ class Game:
 
         self.player: Entity = self.world.create_entity(
             Renderable(1, 0xffff33, RenderLayer.PLAYER),
-            # Positional(self.map.start_pos.x, self.map.start_pos.y)
-            Positional(40, 10)
+            Positional(self.map.start_pos.x, self.map.start_pos.y)
         )
         self.crab: Entity = self.world.create_entity(
             Renderable(39, 0xff3333, RenderLayer.ENEMY),
