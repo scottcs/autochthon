@@ -17,6 +17,7 @@ def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
     """Parse a tile atlas."""
     tileset: str = atlas_file.with_suffix('.json').as_posix()
     atlas_data: list = []
+    tiles_data: dict = {}
     num_anim_frames: int = 1
 
     with atlas_file.open() as f:
@@ -32,15 +33,24 @@ def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
                 num_anim_frames = int(line.split()[-1])
                 continue
 
-            tiles: list = []
-            for i in range(num_anim_frames):
-                name: str = f'{line}_{i + 1}'
-                tiles.append(name)
+            if line == '>>':
+                # skip to next row
+                continue
 
-            atlas_data.append({
-                'tileset': tileset,
-                'tiles': tiles,
-            })
+            key = line.split('_')[0]
+            tiles_data.setdefault(key, [])
+
+            if num_anim_frames == 1:
+                tiles_data[key].append(line)
+            else:
+                for i in range(num_anim_frames):
+                    tiles_data[key].append(f'{line}_{i + 1}')
+
+    for data in tiles_data.values():
+        atlas_data.append({
+            'tileset': tileset,
+            'tiles': sorted(data),
+        })
 
     return atlas_data
 
