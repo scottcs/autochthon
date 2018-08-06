@@ -2,12 +2,15 @@
     window.onload = function() {
         const img_dir = 'static/img/';
         const tileset_dir = img_dir + 'oryx_ur/';
-        const tileset_avatar = tileset_dir + 'Avatar.png';
-        const tileset_avatar_equipment = tileset_dir + 'Avatar_Equipment.png';
+        const tileset_avatar = tileset_dir + 'Avatar.json';
+        const tileset_avatar_equipment = tileset_dir + 'Avatar_Equipment.json';
+        const tileset_fx_blood = tileset_dir + 'FX_Blood.json';
+        const tileset_fx_general = tileset_dir + 'FX_General.json';
+        const tileset_fx_projectiles = tileset_dir + 'FX_Projectiles.json';
         const tileset_items = tileset_dir + 'Items.png';
         const tileset_monsters = tileset_dir + 'Monsters.json';
         const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.png';
-        const tileset_terrain = tileset_dir + 'Terrain.png';
+        const tileset_terrain = tileset_dir + 'Terrain.json';
         const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
         const tile_id_table = tileset_dir + 'tile_ids.json';
         const config_json = 'static/config.json';
@@ -27,6 +30,9 @@
                 keys_json,
                 tileset_avatar,
                 tileset_avatar_equipment,
+                tileset_fx_blood,
+                tileset_fx_general,
+                tileset_fx_projectiles,
                 tileset_items,
                 tileset_monsters,
                 tileset_monsters_scifi,
@@ -44,6 +50,8 @@
 
         function setup(loader, resources) {
             const config = resources[config_json].data;
+            tile_info = resources[tile_id_table].data;
+
             tile_width = config.tiles.width;
             tile_height = config.tiles.height;
             const map_tile_width = config.server.width;
@@ -58,13 +66,11 @@
                 width: tile_width * map_tile_width,
                 height: tile_height * map_tile_height
             });
-
             document.body.appendChild(app.view);
 
-            tile_info = resources[tile_id_table].data;
-            console.log('Done loading.');
             setupWebsockets(config, resources[keys_json].data);
             app.ticker.add(delta => gameLoop(delta));
+            console.log('Done loading.');
         }
 
         function gameLoop(delta) {

@@ -1,4 +1,5 @@
 """Game map."""
+from __future__ import annotations
 from random import randint
 from typing import List, Optional
 
@@ -6,7 +7,7 @@ import esper
 import numpy as np
 import tcod.map
 
-from game.types import GameMapCellData, GameMapData
+from game.types import MapCell
 from game.utils.geometry import Rect, Point
 from game.utils.random import coin_flip
 
@@ -18,8 +19,10 @@ class Map(tcod.map.Map):
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
         self.world: esper.World = world
+        self._iter_x: int = 0
+        self._iter_y: int = 0
         self._buffer2: np.array = np.zeros((height, width, 1), dtype=np.bool_)
-        
+
     @property
     def explored(self) -> np.array:
         """Array of cells that have been explored."""
@@ -30,6 +33,28 @@ class Map(tcod.map.Map):
         """Create the map using the map's algorithm."""
         raise NotImplementedError('This class must be subclassed.')
 
+    def __iter__(self) -> Map:
+        self._iter_x = 0
+        self._iter_y = 0
+        return self
+
+    def __next__(self) -> MapCell:
+        cell: MapCell = MapCell(
+            self._iter_x,
+            self._iter_y,
+            self.transparent[self._iter_y, self._iter_x],
+            self.walkable[self._iter_y, self._iter_x],
+            self.fov[self._iter_y, self._iter_x],
+            self.explored[self._iter_y, self._iter_x],
+        )
+        self._iter_y += 1
+        if self._iter_y >= self.height:
+            self._iter_y = 0
+            self._iter_x += 1
+        if self._iter_x >= self.width:
+            raise StopIteration
+        return cell
+
 
 class ClassicMap(Map):
     """Classic rogue-style map."""
@@ -38,7 +63,7 @@ class ClassicMap(Map):
                  config: Optional[dict]=None) -> None:
         super().__init__(width, height, world)
         config = config or {}
-        self.max_rooms: int = config.get('max_rooms', 1)
+        self.max_rooms: int = config.get('max_rooms', 20)
         self.room_min_size: int = config.get('room_min_size', 3)
         self.room_max_size: int = config.get('room_max_size', 5)
         self.start_pos = Point(0, 0)

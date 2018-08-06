@@ -40,20 +40,35 @@ class Game:
             Renderable(39, 0xff3333, RenderLayer.ENEMY),
             Positional(10, 10)
         )
-        for _ in range(10000):
-            self.world.create_entity(
-                Renderable(randint(2, 38), randint(0, 0x888888), RenderLayer.FLOOR),
-                Positional(randint(0, 99), randint(0, 99))
-            )
+
+        for cell in self.map:
+            if cell.transparent:
+                # floor
+                self.world.create_entity(
+                    Renderable(220, 0x202020, RenderLayer.FLOOR),
+                    Positional(cell.x, cell.y)
+                )
+            else:
+                # wall
+                self.world.create_entity(
+                    Renderable(234, 0x332811, RenderLayer.WALL),
+                    Positional(cell.x, cell.y)
+                )
+
+        # for _ in range(10000):
+        #     self.world.create_entity(
+        #         Renderable(randint(2, 38), randint(0, 0x888888), RenderLayer.FLOOR),
+        #         Positional(randint(0, 99), randint(0, 99))
+        #     )
+
         GameOverEvent.handle(self.shutdown)
 
         self.world.add_processor(render_processor)
         self.world.add_processor(PlayerMovementProcessor(self.player))
-        self.world.add_processor(EnemyMovementProcessor(self.player))
+        # self.world.add_processor(EnemyMovementProcessor(self.player))
 
     def update(self) -> None:
         """Update the game world."""
-        # TODO: Possibly complicate this; only if key pressed or animation needs to happen.
         ServerNeedsUpdateEvent.fire({'render': True})
         self.world.process()
 
