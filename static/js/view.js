@@ -21,7 +21,8 @@
         let tile_height;
         let world_width;
         let world_height;
-        let camera = new PIXI.Container();
+        let viewport;
+        let app;
 
         // noinspection JSUnresolvedFunction
         PIXI.loader
@@ -62,18 +63,30 @@
             // noinspection JSValidateTypes
             PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-            const app = new PIXI.Application({
-                width: tile_width * map_tile_width,
-                height: tile_height * map_tile_height
+            app = new PIXI.Application({
+                transparent: true,
+                width: window.innerWidth,
+                height: window.innerHeight,
+                resolution: window.devicePixelRatio
             });
-            camera.position.x = world_width / 2;
-            camera.position.y = world_height / 2;
-            app.stage.addChild(camera);
+            app.view.style.position = 'fixed';
+            app.view.style.width = '100vw';
+            app.view.style.height = '100vh';
+            viewport = app.stage.addChild(new PIXI.extras.Viewport());
+            viewport
+                .drag({clampWheel: true});
             document.body.appendChild(app.view);
+            resize();
+            window.addEventListener('resize', resize)
 
             setupWebsockets(config, resources[keys_json].data);
             app.ticker.add(delta => gameLoop(delta));
             console.log('Done loading.');
+        }
+
+        function resize() {
+            app.renderer.resize(window.innerWidth, window.innerHeight);
+            viewport.resize(window.innerWidth, window.innerHeight, world_width, world_height);
         }
 
         function gameLoop(delta) {
@@ -84,6 +97,7 @@
             const view = new DataView(data);
             const player_x = view.getUint16(0) * tile_width;
             const player_y = view.getUint16(2) * tile_height;
+            viewport.moveCenter(player_x, player_y);
             const num_cells = view.getUint16(4);
             const offset = 6;      // header size in bytes
             const cell_size = 12;  // cell size in bytes
@@ -102,8 +116,6 @@
                     updateSprite(cell);
                 }
             }
-            camera.pivot.x = player_x;
-            camera.pivot.y = player_y;
         }
 
         function updateSprite(cell) {
@@ -112,10 +124,10 @@
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
             sprite.visible = (
-                (sprite.x + tile_width) > 0 &&
-                (sprite.y + tile_height) > 0 &&
-                sprite.x < world_width &&
-                sprite.y < world_height
+                sprite.x > (viewport.left - 3*tile_width) &&
+                sprite.y > (viewport.top - 3*tile_height) &&
+                sprite.x < (viewport.right + 3*tile_width) &&
+                sprite.y < (viewport.bottom + 3*tile_height)
             );
         }
 
@@ -126,7 +138,7 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
-            camera.addChild(sprite);
+            viewport.addChild(sprite);
             cells[cell.id] = sprite;
         }
 

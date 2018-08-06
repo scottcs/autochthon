@@ -45,7 +45,9 @@ class Game:
             Positional(10, 10)
         )
 
+        count = 0
         for cell in self.map:
+            count += 1
             if cell.transparent:
                 # floor
                 self.world.create_entity(

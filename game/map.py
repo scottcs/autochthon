@@ -34,26 +34,30 @@ class Map(tcod.map.Map):
         raise NotImplementedError('This class must be subclassed.')
 
     def __iter__(self) -> Map:
-        self._iter_x = 0
-        self._iter_y = 0
+        self._iter_x: int = 0
+        self._iter_y: int = 0
         return self
 
     def __next__(self) -> MapCell:
-        cell: MapCell = MapCell(
-            self._iter_x,
-            self._iter_y,
-            self.transparent[self._iter_y, self._iter_x],
-            self.walkable[self._iter_y, self._iter_x],
-            self.fov[self._iter_y, self._iter_x],
-            self.explored[self._iter_y, self._iter_x],
-        )
+        try:
+            cell: MapCell = MapCell(
+                self._iter_x,
+                self._iter_y,
+                self.transparent[self._iter_y, self._iter_x],
+                self.walkable[self._iter_y, self._iter_x],
+                self.fov[self._iter_y, self._iter_x],
+                self.explored[self._iter_y, self._iter_x],
+            )
+        except IndexError:
+            raise StopIteration
         self._iter_y += 1
-        if self._iter_y >= self.height:
+        if self._iter_y == self.height:
             self._iter_y = 0
             self._iter_x += 1
-        if self._iter_x >= self.width:
-            raise StopIteration
         return cell
+
+    def __len__(self) -> int:
+        return self.width * self.height
 
 
 class ClassicMap(Map):
