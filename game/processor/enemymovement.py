@@ -11,13 +11,12 @@ from game.types import Entity
 class EnemyMovementProcessor(esper.Processor):
     """Enemy movement processor."""
 
-    def __init__(self, player: Entity):
+    def __init__(self):
         super().__init__()
-        self.player: Entity = player
 
-    def process(self, *args: Any) -> None:
+    def process(self, data: dict) -> None:
         """Process player movement events."""
         for enemy, enemy_pos in self.world.get_component(Positional):
-            if enemy != self.player:
+            if enemy != self.world.player:
                 enemy_pos.x = randint(0, 99)
                 enemy_pos.y = randint(0, 99)

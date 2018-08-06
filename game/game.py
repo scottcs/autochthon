@@ -5,7 +5,7 @@ import esper
 
 from game.component.renderable import Renderable
 from game.component.positional import Positional
-from game.events import GameOverEvent, ServerNeedsUpdateEvent
+from game.events import GameOverEvent, ServerNeedsUpdateEvent, QueueWorkEvent
 from game.input import InputHandler
 from game.map import ClassicMap
 from game.processor.enemymovement import EnemyMovementProcessor
@@ -24,6 +24,7 @@ class Game:
         self.world: esper.World = esper.World()
         self.input_handler: InputHandler = InputHandler()
         self.state: GameState = GameState.PLAYING
+        self.work_to_process: list = []
         self.moment: int = 0
         self.turn: int = 0
         self.anim_tick: int = 0
@@ -31,7 +32,7 @@ class Game:
         self.map = ClassicMap(100, 100, self.world)
         self.map.create()
 
-        self.player: Entity = self.world.create_entity(
+        self.world.player: Entity = self.world.create_entity(
             Renderable(1, 0xffff33, RenderLayer.PLAYER),
             Positional(self.map.start_pos.x, self.map.start_pos.y)
         )
@@ -61,15 +62,37 @@ class Game:
         #     )
 
         GameOverEvent.handle(self.shutdown)
+        QueueWorkEvent.handle(self.on_queue_work)
+        self.work_to_process.append('draw')
 
         self.world.add_processor(render_processor)
-        self.world.add_processor(PlayerMovementProcessor(self.player))
-        # self.world.add_processor(EnemyMovementProcessor(self.player))
+        self.world.add_processor(PlayerMovementProcessor())
+        # self.world.add_processor(EnemyMovementProcessor())
 
     def update(self) -> None:
         """Update the game world."""
         ServerNeedsUpdateEvent.fire({'render': True})
-        self.world.process()
+        if self.work_to_process:
+            work = self.work_to_process.pop()
+            self.tick()
+            self.world.process({
+                'turn': self.turn,
+                'moment': self.moment,
+                'work': work,
+            })
+
+    def tick(self) -> None:
+        """Update moment/turn counters."""
+        self.moment += 1
+        if self.moment > 10:
+            self.moment = 0
+            self.turn += 1
+
+    def on_queue_work(self, event: EventType) -> None:
+        """Handle a work unit queue request."""
+        work = event.get('work', None)
+        if work:
+            self.work_to_process.append(work)
 
     def shutdown(self, event: EventType) -> None:
         """Shut down the game."""

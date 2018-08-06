@@ -80,8 +80,11 @@
 
         function handleBinaryData(data) {
             const view = new DataView(data);
-            const num_cells = view.getUint16(0);
-            const offset = 2;      // header is 2 bytes
+            const player_x = view.getUint16(0);
+            const player_y = view.getUint16(2);
+            const num_cells = view.getUint16(4);
+            console.log(player_x, player_y, num_cells);
+            const offset = 6;      // header size in bytes
             const cell_size = 12;  // cell size in bytes
             for (let i = 0; i < num_cells; i++) {
                 const cell_offset = offset + (i * cell_size);
