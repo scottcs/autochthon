@@ -1,18 +1,18 @@
 """Main game class."""
-import json
 from typing import Optional
 
 import esper
 
 from game.component.renderable import Renderable
 from game.component.positional import Positional
-from game.events import GameOverEvent, ServerNeedsUpdateEvent, WorkEnqueueEvent
+from game.events import GameOverEvent, ServerNeedsUpdateEvent, WorkEnqueueEvent, TimePassedEvent
 from game.input import InputHandler
 from game.map import ClassicMap
-from game.processor.enemymovement import EnemyMovementProcessor
+# from game.processor.enemymovement import EnemyMovementProcessor
 from game.processor.playermovement import PlayerMovementProcessor
 from game.state import GameState
 from game.types import EventType, Entity, RenderLayer
+from game.utils.time import GameTime
 
 MOMENTS_PER_TURN = 10
 
@@ -27,18 +27,16 @@ class Game:
         self.input_handler: InputHandler = InputHandler()
         self.state: GameState = GameState.PLAYING
         self.work_to_process: list = []
-        self.moment: int = 0
-        self.turn: int = 0
-        self.anim_tick: int = 0
+        self.game_time: GameTime = GameTime()
 
-        self.map = ClassicMap(self.config['map']['max_tiles_w'],
-                              self.config['map']['max_tiles_h'],
-                              self.world)
-        self.map.create()
+        self.world.current_map = ClassicMap(self.config['map']['max_tiles_w'],
+                                            self.config['map']['max_tiles_h'],
+                                            self.world)
+        self.world.current_map.create()
 
-        self.world.player: Entity = self.world.create_entity(
+        self.world.player = self.world.create_entity(
             Renderable(1, 0xffff33, RenderLayer.PLAYER),
-            Positional(self.map.start_pos.x, self.map.start_pos.y)
+            Positional(self.world.current_map.start_pos.x, self.world.current_map.start_pos.y)
         )
         self.crab: Entity = self.world.create_entity(
             Renderable(39, 0xff3333, RenderLayer.ENEMY),
@@ -46,7 +44,7 @@ class Game:
         )
 
         count = 0
-        for cell in self.map:
+        for cell in self.world.current_map:
             count += 1
             if cell.transparent:
                 # floor
@@ -69,10 +67,11 @@ class Game:
 
         GameOverEvent.handle(self.shutdown)
         WorkEnqueueEvent.handle(self.on_work_enqueue)
+        TimePassedEvent.handle(self.on_time_passed)
         self.work_to_process.append('draw')
 
         self.world.add_processor(render_processor)
-        self.world.add_processor(PlayerMovementProcessor(self.map.width, self.map.height))
+        self.world.add_processor(PlayerMovementProcessor())
         # self.world.add_processor(EnemyMovementProcessor())
 
     def update(self) -> None:
@@ -80,26 +79,24 @@ class Game:
         ServerNeedsUpdateEvent.fire({'render': True})
         if self.work_to_process:
             work = self.work_to_process.pop()
-            self.tick()
+            # TODO: work is a command
+            # TODO: process the command
+            # TODO: if anything takes time, process sends a TimePassedEvent and we update the clock
             self.world.process({
-                'turn': self.turn,
-                'moment': self.moment,
+                'game_time': self.game_time,
                 'work': work,
             })
-
-    def tick(self) -> None:
-        """Update moment/turn counters."""
-        self.moment += 1
-        if self.moment > 10:
-            self.moment = 0
-            self.turn += 1
-        print(f'tick: {self.turn}.{self.moment}')
 
     def on_work_enqueue(self, event: EventType) -> None:
         """Handle a work unit queue request."""
         work = event.get('work', None)
         if work:
             self.work_to_process.append(work)
+
+    def on_time_passed(self, event: EventType) -> None:
+        """Handle the passage of game time."""
+        self.game_time += event.get('time_passed', 0)
+        print(f'time is now: {self.game_time}')
 
     def shutdown(self, event: EventType) -> None:
         """Shut down the game."""

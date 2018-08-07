@@ -21,7 +21,7 @@ class WebRenderProcessor(esper.Processor):
         """Called when server needs to be updated."""
         self.need_to_update = event.get('render', False)
 
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any) -> None:
         """Process all renderables."""
         if not self.need_to_update:
             return

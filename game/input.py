@@ -42,7 +42,7 @@ class InputHandler:
 
     def _get_key(self, code: int) -> str:
         try:
-            return self.keys_reverse[code].lower()
+            return str(self.keys_reverse[code]).lower()
         except KeyError:
             return chr(code).lower()
 

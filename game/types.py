@@ -1,6 +1,6 @@
 """Typing for the game module."""
 from enum import Enum, auto
-from typing import Dict, List, Callable, Any, NamedTuple
+from typing import Dict, Callable, Any, NamedTuple
 
 
 class MapCell(NamedTuple):
