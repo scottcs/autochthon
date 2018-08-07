@@ -3,7 +3,8 @@ from typing import Any
 
 import esper
 
-from game.component.positional import Positional
+from game.component.playercontrolled import PlayerControlled
+from game.component.position import Position
 from game.component.renderable import Renderable
 from game.events import WebsocketWriteAllEvent, ServerNeedsUpdateEvent
 from game.types import EventType
@@ -28,11 +29,20 @@ class WebRenderProcessor(esper.Processor):
 
         b_cells: bytearray = bytearray()
         num_cells: int = 0
-        player_pos = self.world.component_for_entity(self.world.player, Positional)
-        b_cells.extend(player_pos.x.to_bytes(2, 'big'))
-        b_cells.extend(player_pos.y.to_bytes(2, 'big'))
+        player_x: int = 0
+        player_y: int = 0
+
+        for ent, components in self.world.get_components(PlayerControlled, Renderable, Position):
+            position = components[-1]
+            player_x = position.x
+            player_y = position.y
+            # TODO: handle more than one player controlled object?
+            break
+
+        b_cells.extend(player_x.to_bytes(2, 'big'))
+        b_cells.extend(player_y.to_bytes(2, 'big'))
         b_cells.extend(num_cells.to_bytes(2, 'big'))
-        for ent, components in sorted(self.world.get_components(Positional, Renderable),
+        for ent, components in sorted(self.world.get_components(Position, Renderable),
                                       key=lambda x: x[1][1].layer.value):
             positional, renderable = components
             b_cells.extend(ent.to_bytes(2, 'big'))
@@ -63,7 +73,7 @@ class WebRenderProcessor(esper.Processor):
 class TCODRenderProcessor(esper.Processor):
     """Game render processor for local TCOD console."""
 
-    def __init__(self, title: str, width: int=80, height: int=40) -> None:
+    def __init__(self, _title: str, _width: int=80, _height: int=40) -> None:
         super().__init__()
         # Someday, implement this?
         print("Wouldn't that be nice?")
