@@ -1,6 +1,6 @@
 """Game Events."""
 from __future__ import annotations
-from typing import Dict
+from typing import Dict, Optional
 
 from game.types import EventHandler, EventType
 
@@ -29,10 +29,10 @@ class Event:
             raise ValueError("Handler is not handling this event, so cannot unhandle it.")
         return self
 
-    def fire(self, event: EventType) -> None:
+    def fire(self, event: Optional[EventType]=None) -> None:
         """Fire the event."""
         for handler in self.handlers.keys():
-            handler(event)
+            handler(event or {})
 
     def num_handlers(self) -> int:
         """Get the number of handlers."""
@@ -45,8 +45,10 @@ class Event:
 CollisionCheckEvent: Event = Event()
 GameOverEvent: Event = Event()
 InputEvent: Event = Event()
+MoveEntityEvent: Event = Event()
 PlayerMovementEvent: Event = Event()
 ServerNeedsUpdateEvent: Event = Event()
 TimePassedEvent: Event = Event()
 WebsocketWriteAllEvent: Event = Event()
 WorkEnqueueEvent: Event = Event()
+WorldNeedsUpdateEvent: Event = Event()
