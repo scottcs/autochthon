@@ -8,13 +8,10 @@ from game.component.positional import Positional
 from game.events import GameOverEvent, ServerNeedsUpdateEvent, WorkEnqueueEvent, TimePassedEvent
 from game.input import InputHandler
 from game.map import ClassicMap
-# from game.processor.enemymovement import EnemyMovementProcessor
 from game.processor.playermovement import PlayerMovementProcessor
 from game.state import GameState
 from game.types import EventType, Entity, RenderLayer
 from game.utils.time import GameTime
-
-MOMENTS_PER_TURN = 10
 
 
 class Game:
@@ -59,12 +56,6 @@ class Game:
                     Positional(cell.x, cell.y)
                 )
 
-        # for _ in range(10000):
-        #     self.world.create_entity(
-        #         Renderable(randint(2, 38), randint(0, 0x888888), RenderLayer.FLOOR),
-        #         Positional(randint(0, 99), randint(0, 99))
-        #     )
-
         GameOverEvent.handle(self.shutdown)
         WorkEnqueueEvent.handle(self.on_work_enqueue)
         TimePassedEvent.handle(self.on_time_passed)
@@ -72,7 +63,6 @@ class Game:
 
         self.world.add_processor(render_processor)
         self.world.add_processor(PlayerMovementProcessor())
-        # self.world.add_processor(EnemyMovementProcessor())
 
     def update(self) -> None:
         """Update the game world."""
