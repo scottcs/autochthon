@@ -44,6 +44,7 @@ class Event:
 
 CollisionCheckEvent: Event = Event()
 GameOverEvent: Event = Event()
+GameTimeEvent: Event = Event()
 InputEvent: Event = Event()
 MoveEntityEvent: Event = Event()
 PlayerMovementEvent: Event = Event()

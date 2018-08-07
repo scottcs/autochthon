@@ -7,7 +7,7 @@ import esper
 from game.component.position import Position
 from game.component.playercontrolled import PlayerControlled
 from game.component.velocity import Velocity
-from game.events import InputEvent, MoveEntityEvent, WorldNeedsUpdateEvent
+from game.events import InputEvent, MoveEntityEvent, GameTimeEvent
 from game.state import GameState
 from game.types import EventType
 from game.utils.geometry import Point
@@ -80,3 +80,4 @@ class InputProcessor(esper.Processor):
             dx += 1
         for entity, components in self.world.get_components(PlayerControlled, Position, Velocity):
             MoveEntityEvent({'entity': entity, 'velocity': components[-1], 'dx': dx, 'dy': dy})
+        GameTimeEvent.fire()

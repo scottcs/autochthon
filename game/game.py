@@ -3,17 +3,18 @@ from typing import Optional
 
 import esper
 
+from game.component.actor import Actor
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
 from game.component.velocity import Velocity
-from game.events import (GameOverEvent, ServerNeedsUpdateEvent, WorkEnqueueEvent, TimePassedEvent,
-                         WorldNeedsUpdateEvent)
+from game.events import GameOverEvent, ServerNeedsUpdateEvent, WorkEnqueueEvent, TimePassedEvent
 from game.map import ClassicMap
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
+from game.processor.time import TimeProcessor
 from game.state import GameState
-from game.types import EventType, Entity, RenderLayer
+from game.types import EventType, RenderLayer
 from game.utils.time import GameTime
 
 
@@ -35,6 +36,7 @@ class Game:
         current_map.create()
 
         self.world.create_entity(
+            Actor(),
             PlayerControlled(),
             Renderable(1, 0xffff33, RenderLayer.PLAYER),
             Position(current_map.start_pos.x, current_map.start_pos.y),
@@ -42,6 +44,7 @@ class Game:
         )
         # crab
         self.world.create_entity(
+            Actor(),
             Renderable(39, 0xff3333, RenderLayer.ENEMY),
             Position(10, 10),
             Velocity(0, 0, GameTime()),
@@ -66,9 +69,9 @@ class Game:
         GameOverEvent.handle(self.shutdown)
         TimePassedEvent.handle(self.on_time_passed)
         WorkEnqueueEvent.handle(self.on_work_enqueue)
-        WorldNeedsUpdateEvent.handle(self.on_needs_update)
         self.work_to_process.append('draw')
 
+        self.world.add_processor(TimeProcessor(), priority=4)
         self.world.add_processor(InputProcessor(), priority=3)
         self.world.add_processor(MovementProcessor(), priority=2)
         self.world.add_processor(render_processor)
@@ -80,9 +83,6 @@ class Game:
     def update(self) -> None:
         """Update the game world."""
         ServerNeedsUpdateEvent.fire({'render': True})
-        # TODO: work is a command
-        # TODO: process the command
-        # TODO: if anything takes time, process sends a TimePassedEvent and we update the clock
         self.world.process({'game_time': self.game_time})
 
     def on_work_enqueue(self, event: EventType) -> None:
@@ -94,7 +94,7 @@ class Game:
 
     def on_time_passed(self, event: EventType) -> None:
         """Handle the passage of game time."""
-        self.game_time += event.get('time_passed', 0)
+        self.game_time += event.get('time', 0)
         print(f'time is now: {self.game_time}')
 
     def shutdown(self, event: EventType) -> None:
