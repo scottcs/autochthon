@@ -1,16 +1,18 @@
 """Start the game."""
 import argparse
-
-import toml
+import json
+from pathlib import Path
 
 from game.local import run_local
 from game.server import run_server
+
+CONFIG_FILE = Path('static') / Path('config.json')
 
 
 def run_game(args: argparse.Namespace) -> None:
     """Run the game."""
     with open(args.config) as f:
-        config = toml.load(f)
+        config = json.load(f)
     if args.local:
         run_local(config)
     else:
@@ -25,8 +27,8 @@ def parse_command_line() -> argparse.Namespace:
                         help='run in local window instead of web server')
     parser.add_argument('-c', '--config',
                         action='store',
-                        default='config.toml',
-                        help='configuration TOML file')
+                        default=CONFIG_FILE,
+                        help='configuration JSON file')
     return parser.parse_args()
 
 

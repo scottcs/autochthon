@@ -5,8 +5,8 @@ import esper
 
 from game.component.positional import Positional
 from game.component.renderable import Renderable
-from game.events import WebsocketWriteAllEvent
-from game.types import GameMapCellData, GameMapData
+from game.events import WebsocketWriteAllEvent, ServerNeedsUpdateEvent
+from game.types import EventType
 
 
 class WebRenderProcessor(esper.Processor):
@@ -14,17 +14,50 @@ class WebRenderProcessor(esper.Processor):
 
     def __init__(self) -> None:
         super().__init__()
+        self.need_to_update: bool = False
+        ServerNeedsUpdateEvent.handle(self.on_server_needs_update)
+
+    def on_server_needs_update(self, event: EventType) -> None:
+        """Called when server needs to be updated."""
+        self.need_to_update = event.get('render', False)
 
     def process(self, *args: Any) -> None:
         """Process all renderables."""
-        map_data: GameMapData = {}
-        cells: GameMapCellData = []
+        if not self.need_to_update:
+            return
+
+        b_cells: bytearray = bytearray()
+        num_cells: int = 0
+        player_pos = self.world.component_for_entity(self.world.player, Positional)
+        b_cells.extend(player_pos.x.to_bytes(2, 'big'))
+        b_cells.extend(player_pos.y.to_bytes(2, 'big'))
+        b_cells.extend(num_cells.to_bytes(2, 'big'))
         for ent, components in sorted(self.world.get_components(Positional, Renderable),
-                                      key=lambda x: x[1][1].layer):
+                                      key=lambda x: x[1][1].layer.value):
             positional, renderable = components
-            cells.append([ent, positional.x, positional.y, renderable.tile_id, renderable.tint])
-        map_data['cells'] = cells
-        WebsocketWriteAllEvent.fire({'map': map_data})
+            b_cells.extend(ent.to_bytes(2, 'big'))
+            b_cells.extend(positional.x.to_bytes(2, 'big'))
+            b_cells.extend(positional.y.to_bytes(2, 'big'))
+            b_cells.extend(renderable.tile_id.to_bytes(2, 'big'))
+            b_cells.extend(renderable.tint.to_bytes(4, 'big'))
+            num_cells += 1
+        # Overwrite num_cells now that we've counted them
+        b_cells[4:6] = num_cells.to_bytes(2, 'big')
+        ##########################################
+        # Map Data:
+        #     Header:
+        #        2 bytes: player x position
+        #        2 bytes: player y position
+        #        2 bytes: num cells
+        #     Each Cell:
+        #        2 bytes: entity id
+        #        2 bytes: position x
+        #        2 bytes: position y
+        #        2 bytes: tile id
+        #        3 bytes: tint
+        ##########################################
+        WebsocketWriteAllEvent.fire({'message': bytes(b_cells), 'binary': True})
+        self.need_to_update = False
 
 
 class TCODRenderProcessor(esper.Processor):

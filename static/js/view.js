@@ -2,41 +2,38 @@
     window.onload = function() {
         const img_dir = 'static/img/';
         const tileset_dir = img_dir + 'oryx_ur/';
-        const tileset_avatar = tileset_dir + 'Avatar.png';
-        const tileset_avatar_equipment = tileset_dir + 'Avatar_Equipment.png';
+        const tileset_avatar = tileset_dir + 'Avatar.json';
+        const tileset_avatar_equipment = tileset_dir + 'Avatar_Equipment.json';
+        const tileset_fx_blood = tileset_dir + 'FX_Blood.json';
+        const tileset_fx_general = tileset_dir + 'FX_General.json';
+        const tileset_fx_projectiles = tileset_dir + 'FX_Projectiles.json';
         const tileset_items = tileset_dir + 'Items.png';
         const tileset_monsters = tileset_dir + 'Monsters.json';
         const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.png';
-        const tileset_terrain = tileset_dir + 'Terrain.png';
+        const tileset_terrain = tileset_dir + 'Terrain.json';
         const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
         const tile_id_table = tileset_dir + 'tile_ids.json';
-
-        // TODO: get rid of these
-        const tile_width = 16;
-        const tile_height = 24;
-        const map_tile_width = 70;
-        const map_tile_height = 26;
-        const world_width = map_tile_width * tile_width;
-        const world_height = map_tile_height * tile_height;
-
+        const config_json = 'static/config.json';
+        const keys_json = 'static/keys.json';
         let tile_info;
         let cells = {};
-
-        // noinspection JSValidateTypes
-        PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-
-        let app = new PIXI.Application({
-            width: tile_width * map_tile_width,
-            height: tile_height * map_tile_height
-        });
-
-        document.body.appendChild(app.view);
+        let tile_width;
+        let tile_height;
+        let world_width;
+        let world_height;
+        let viewport;
+        let app;
 
         // noinspection JSUnresolvedFunction
         PIXI.loader
             .add([
+                config_json,
+                keys_json,
                 tileset_avatar,
                 tileset_avatar_equipment,
+                tileset_fx_blood,
+                tileset_fx_general,
+                tileset_fx_projectiles,
                 tileset_items,
                 tileset_monsters,
                 tileset_monsters_scifi,
@@ -53,30 +50,65 @@
         }
 
         function setup(loader, resources) {
+            const config = resources[config_json].data;
             tile_info = resources[tile_id_table].data;
-            console.log('Done loading.');
+
+            tile_width = config.tiles.width;
+            tile_height = config.tiles.height;
+            const map_tile_width = config.server.width;
+            const map_tile_height = config.server.height;
+            world_width = map_tile_width * tile_width;
+            world_height = map_tile_height * tile_height;
+
+            // noinspection JSValidateTypes
+            PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+
+            app = new PIXI.Application({
+                transparent: true,
+                width: window.innerWidth,
+                height: window.innerHeight,
+                resolution: window.devicePixelRatio
+            });
+            app.view.style.position = 'fixed';
+            app.view.style.width = '100vw';
+            app.view.style.height = '100vh';
+            viewport = app.stage.addChild(new PIXI.extras.Viewport());
+            viewport
+                .drag({clampWheel: true});
+            document.body.appendChild(app.view);
+            resize();
+            window.addEventListener('resize', resize)
+
+            setupWebsockets(config, resources[keys_json].data);
             app.ticker.add(delta => gameLoop(delta));
+            console.log('Done loading.');
+        }
+
+        function resize() {
+            app.renderer.resize(window.innerWidth, window.innerHeight);
+            viewport.resize(window.innerWidth, window.innerHeight, world_width, world_height);
         }
 
         function gameLoop(delta) {
 
         }
 
-        function handleMessage(message) {
-            // noinspection JSUnresolvedVariable
-            if (message.map !== null) {
-                updateMap(message.map);
-            }
-        }
-
-        function updateMap(map) {
-            for (const data of map.cells) {
+        function handleBinaryData(data) {
+            const view = new DataView(data);
+            const player_x = view.getUint16(0) * tile_width;
+            const player_y = view.getUint16(2) * tile_height;
+            viewport.moveCenter(player_x, player_y);
+            const num_cells = view.getUint16(4);
+            const offset = 6;      // header size in bytes
+            const cell_size = 12;  // cell size in bytes
+            for (let i = 0; i < num_cells; i++) {
+                const cell_offset = offset + (i * cell_size);
                 const cell = {
-                    id: data[0],
-                    x: data[1],
-                    y: data[2],
-                    tile_id: data[3],
-                    tint: data[4]
+                    id: view.getUint16(cell_offset),
+                    x: view.getUint16(cell_offset + 2),
+                    y: view.getUint16(cell_offset + 4),
+                    tile_id: view.getUint16(cell_offset + 6),
+                    tint: view.getUint32(cell_offset + 8),
                 };
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
@@ -92,10 +124,10 @@
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
             sprite.visible = (
-                (sprite.x + tile_width) > 0 &&
-                (sprite.y + tile_height) > 0 &&
-                sprite.x < world_width &&
-                sprite.y < world_height
+                sprite.x > (viewport.left - 3*tile_width) &&
+                sprite.y > (viewport.top - 3*tile_height) &&
+                sprite.x < (viewport.right + 3*tile_width) &&
+                sprite.y < (viewport.bottom + 3*tile_height)
             );
         }
 
@@ -106,44 +138,56 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
-            app.stage.addChild(sprite);
+            viewport.addChild(sprite);
             cells[cell.id] = sprite;
         }
 
-        let keys_down = [];
-        const ws = new WebSocket("ws://localhost:19999/websocket");
+        function setupWebsockets(config, keys) {
+            const host = config.server.host;
+            const port = config.server.port;
+            const ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
+            ws.binaryType = 'arraybuffer';
 
-        document.addEventListener("keydown", function(event) {
-            if (event.defaultPrevented) {
-                return;
-            }
-            if (event.key !== 'Meta' && event.key !== 'Alt') {
-                keys_down.push(event.key);
-            }
-            if (!keys_down.includes('Control')) {
-                sendKeys()
-            }
-        });
-
-        document.addEventListener("keyup", sendKeys);
-
-        function sendKeys() {
-            if (keys_down.length > 0) {
-                const payload = {
-                    "keys": Array.from(new Set(keys_down))
-                };
-                ws.send(JSON.stringify(payload));
-                while (keys_down.length > 0) {
-                    keys_down.pop();
+            document.addEventListener("keypress", function (event) {
+                if (event.defaultPrevented) {
+                    return;
                 }
-            }
-        }
+                let modifiers = 0;
+                if (event.shiftKey) {
+                    modifiers |= keys.Modifiers.Shift;
+                }
+                if (event.ctrlKey) {
+                    modifiers |= keys.Modifiers.Ctrl;
+                }
+                if (event.altKey) {
+                    modifiers |= keys.Modifiers.Alt;
+                }
+                const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
+                let code = 0;
+                if (key.length === 1) {
+                    code = key.charCodeAt(0);
+                } else {
+                    code = keys.Keys[event.code] || 0;
+                }
+                let buffer = new ArrayBuffer(7);
+                const view = new DataView(buffer);
+                // byte 0: event type
+                // byte 1: modifier keys
+                // byte 2: key/button code
+                // byte 3-4: x coordinate
+                // byte 5-6: y coordinate
+                view.setUint8(0, keys.Events.KeyPress);
+                view.setUint8(1, modifiers);
+                view.setUint8(2, code);
+                view.setUint16(3, 0);
+                view.setUint16(5, 0);
+                const data = new Uint8Array(buffer);
+                ws.send(data);
+            });
 
-        ws.onmessage = function(evt) {
-            const message = JSON.parse(evt.data);
-            if (message) {
-                handleMessage(message);
-            }
-        };
+            ws.onmessage = function (evt) {
+                handleBinaryData(evt.data)
+            };
+        }
     };
 }());

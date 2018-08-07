@@ -1,0 +1,21 @@
+{
+  "title": "Autochthon",
+  "server": {
+    "host": "127.0.0.1",
+    "port": 19999,
+    "width": 80,
+    "height": 26
+  },
+  "local": {
+    "width": 80,
+    "height": 50
+  },
+  "tiles": {
+    "width": 16,
+    "height": 24
+  },
+  "map": {
+    "max_tiles_w": 100,
+    "max_tiles_h": 100
+  }
+}

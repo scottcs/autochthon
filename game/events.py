@@ -42,7 +42,11 @@ class Event:
     __len__ = num_handlers
 
 
-InputEvent: Event = Event()
+CollisionCheckEvent: Event = Event()
 GameOverEvent: Event = Event()
+InputEvent: Event = Event()
 PlayerMovementEvent: Event = Event()
+ServerNeedsUpdateEvent: Event = Event()
+TimePassedEvent: Event = Event()
 WebsocketWriteAllEvent: Event = Event()
+WorkEnqueueEvent: Event = Event()
