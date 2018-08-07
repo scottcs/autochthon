@@ -29,15 +29,15 @@ class Game:
         self.game_time: GameTime = GameTime()
         self.needs_update: bool = True
 
-        self.world.current_map = ClassicMap(self.config['map']['max_tiles_w'],
-                                            self.config['map']['max_tiles_h'],
-                                            self.world)
-        self.world.current_map.create()
+        current_map = ClassicMap(self.config['map']['max_tiles_w'],
+                                 self.config['map']['max_tiles_h'],
+                                 self.world)
+        current_map.create()
 
         self.world.create_entity(
             PlayerControlled(),
             Renderable(1, 0xffff33, RenderLayer.PLAYER),
-            Position(self.world.current_map.start_pos.x, self.world.current_map.start_pos.y),
+            Position(current_map.start_pos.x, current_map.start_pos.y),
             Velocity(0, 0, GameTime()),
         )
         # crab
@@ -48,7 +48,7 @@ class Game:
         )
 
         count = 0
-        for cell in self.world.current_map:
+        for cell in current_map:
             count += 1
             if cell.transparent:
                 # floor
