@@ -1,12 +1,14 @@
 """Autochthon server."""
+import json
 from typing import Optional, Any, Union
 
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-from game.events import InputEvent, WebsocketWriteAllEvent
+from game.events import InputEvent, WebsocketWriteAllEvent, RefreshMapEvent
 from game.game import Game
+from game.processor.input import KEYS_JSON
 from game.processor.render import WebRenderProcessor
 from game.state import GameState
 from game.types import EventType
@@ -52,9 +54,9 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         config = kwargs.pop('config', None)
         super().__init__(*args, **kwargs)
+        WebsocketWriteAllEvent.handle(self.on_websocket_write_all)
         self.game_callback: GameCallback = GameCallback(config=config)
         self.game_callback.start()
-        WebsocketWriteAllEvent.handle(self.on_websocket_write_all)
 
     def open(self, *args: Any, **kwargs: Any) -> None:
         """Open a connection."""
@@ -76,19 +78,26 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def on_message(self, message: Union[str, bytes]) -> None:
         """Called when a message is received over the connection."""
         if isinstance(message, bytes):
-            # byte 0: event type
-            # byte 1: modifiers
-            # byte 2: key/button code
-            # byte 3-4: x coordinate
-            # byte 5-6: y coordinate
-            InputEvent({
-                'event': message[0],
-                'modifiers': message[1],
-                'code': message[2],
-                'x_coord': int.from_bytes(message[3:5], byteorder='big'),
-                'y_coord': int.from_bytes(message[5:7], byteorder='big'),
-                'state': self.game_callback.get_game_state(),
-            })
+            with open(KEYS_JSON) as f:
+                keys: dict = json.load(f)
+            # ---- refresh event
+            if message[0] == keys['Events']['Refresh']:
+                RefreshMapEvent.fire()
+            else:
+                # ---- input event
+                # byte 0: event type
+                # byte 1: modifiers
+                # byte 2: key/button code
+                # byte 3-4: x coordinate
+                # byte 5-6: y coordinate
+                InputEvent.fire({
+                    'event': message[0],
+                    'modifiers': message[1],
+                    'code': message[2],
+                    'x_coord': int.from_bytes(message[3:5], byteorder='big'),
+                    'y_coord': int.from_bytes(message[5:7], byteorder='big'),
+                    'state': self.game_callback.get_game_state(),
+                })
 
     def on_close(self) -> None:
         """Called when closing a connection."""

@@ -19,6 +19,7 @@ class Map(tcod.map.Map):
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
         self.world: esper.World = world
+        self.start_pos = Point(0, 0)
         self._iter_x: int = 0
         self._iter_y: int = 0
         self._buffer2: np.array = np.zeros((height, width, 1), dtype=np.bool_)
@@ -67,10 +68,9 @@ class ClassicMap(Map):
                  config: Optional[dict]=None) -> None:
         super().__init__(width, height, world)
         config = config or {}
-        self.max_rooms: int = config.get('max_rooms', 20)
-        self.room_min_size: int = config.get('room_min_size', 3)
-        self.room_max_size: int = config.get('room_max_size', 5)
-        self.start_pos = Point(0, 0)
+        self.max_rooms: int = config.get('max_rooms', 50)
+        self.room_min_size: int = config.get('room_min_size', 5)
+        self.room_max_size: int = config.get('room_max_size', 20)
 
     def create_room(self, room: Rect) -> None:
         """Create a new room in the map at the given coordinates."""

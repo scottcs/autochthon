@@ -47,6 +47,7 @@
   "Events": {
     "KeyPress": 1,
     "MousePress": 2,
-    "MouseHover": 4
+    "MouseHover": 4,
+    "Refresh": 8
   }
 }

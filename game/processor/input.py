@@ -7,7 +7,7 @@ import esper
 from game.component.position import Position
 from game.component.playercontrolled import PlayerControlled
 from game.component.velocity import Velocity
-from game.events import InputEvent, MoveEntityEvent, GameTimeEvent
+from game.events import InputEvent
 from game.state import GameState
 from game.types import EventType
 from game.utils.geometry import Point
@@ -41,13 +41,18 @@ class InputProcessor(esper.Processor):
             'coords': coords,
         })
 
-    def process(self, *args, **kwargs):
+    def process(self, data: dict) -> None:
         """Process the input queue."""
+        time_passed = data['time_passed']
         while self._input_queue:
             event = self._input_queue.pop()
             if event['event'] == self.events['KeyPress']:
                 if event['state'] == GameState.PLAYING:
-                    self.handle_keypress_playing(event['modifiers'], event['key'], event['coords'])
+                    result = self.handle_keypress_playing(event['modifiers'],
+                                                          event['key'],
+                                                          event['coords'])
+                    time_passed = result or time_passed
+        data['time_passed'] = time_passed
 
     def _unpack_modifiers(self, modifiers: int) -> dict:
         return {
@@ -62,12 +67,14 @@ class InputProcessor(esper.Processor):
         except KeyError:
             return chr(code).lower()
 
-    def handle_keypress_playing(self, _modifiers: dict, key: str, _coords: Point) -> None:
+    def handle_keypress_playing(self, _modifiers: dict, key: str, _coords: Point) -> bool:
         """Handle input event in the PLAYING state."""
         move_up = key in 'kyu'
         move_down = key in 'jbn'
         move_left = key in 'hyb'
         move_right = key in 'lun'
+        wait = key == 'period'
+
         dx = 0
         dy = 0
         if move_up:
@@ -78,6 +85,11 @@ class InputProcessor(esper.Processor):
             dx -= 1
         if move_right:
             dx += 1
-        for entity, components in self.world.get_components(PlayerControlled, Position, Velocity):
-            MoveEntityEvent({'entity': entity, 'velocity': components[-1], 'dx': dx, 'dy': dy})
-        GameTimeEvent.fire()
+
+        if not (dx or dy or wait):
+            return False
+
+        if dx or dy:
+            for ent, components in self.world.get_components(PlayerControlled, Position):
+                self.world.add_component(ent, Velocity(dx, dy, 100))
+        return True

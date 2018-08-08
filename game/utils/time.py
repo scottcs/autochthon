@@ -72,8 +72,12 @@ class GameTime:
     def __le__(self, other: Any) -> bool:
         return self._time <= GameTime(other)._time
 
+    def __neg__(self) -> GameTime:
+        return GameTime(-self._time)
+
     def __bool__(self) -> bool:
         return bool(self._time)
 
     def __repr__(self) -> str:
         return f'{self._time / MOMENTS_PER_TURN}'
+

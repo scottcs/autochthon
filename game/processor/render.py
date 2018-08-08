@@ -6,8 +6,7 @@ import esper
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
-from game.events import WebsocketWriteAllEvent, ServerNeedsUpdateEvent
-from game.types import EventType
+from game.events import WebsocketWriteAllEvent
 
 
 class WebRenderProcessor(esper.Processor):
@@ -15,16 +14,10 @@ class WebRenderProcessor(esper.Processor):
 
     def __init__(self) -> None:
         super().__init__()
-        self.need_to_update: bool = False
-        ServerNeedsUpdateEvent.handle(self.on_server_needs_update)
 
-    def on_server_needs_update(self, event: EventType) -> None:
-        """Called when server needs to be updated."""
-        self.need_to_update = event.get('render', False)
-
-    def process(self, *args: Any) -> None:
+    def process(self, data: dict) -> None:
         """Process all renderables."""
-        if not self.need_to_update:
+        if not data['time_passed']:
             return
 
         b_cells: bytearray = bytearray()
@@ -67,7 +60,6 @@ class WebRenderProcessor(esper.Processor):
         #        3 bytes: tint
         ##########################################
         WebsocketWriteAllEvent.fire({'message': bytes(b_cells), 'binary': True})
-        self.need_to_update = False
 
 
 class TCODRenderProcessor(esper.Processor):
@@ -78,6 +70,6 @@ class TCODRenderProcessor(esper.Processor):
         # Someday, implement this?
         print("Wouldn't that be nice?")
 
-    def process(self, *args: Any) -> None:
+    def process(self, data: dict) -> None:
         """Process all renderables."""
         pass
