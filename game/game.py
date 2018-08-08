@@ -44,10 +44,12 @@ class Game:
         current_map.create()
 
         self.make_player(current_map)
-        self.make_enemy(10, 10, 39, 0xff3333, 200)
-        self.make_enemy(15, 15, 39, 0x33ff33, 50)
-        self.make_enemy(35, 35, 39, 0x33ffff, 500)
-        self.make_enemy(45, 45, 39, 0xff33ff, 10)
+        self.make_enemy(50, 50, 39, 0xff3333, 200)
+        self.make_enemy(50, 50, 39, 0x33ff33, 50)
+        self.make_enemy(50, 50, 39, 0xff33ff, 500)
+        self.make_enemy(50, 50, 39, 0x33ffff, 110)
+        self.make_enemy(50, 50, 39, 0x33ffbb, 90)
+        self.make_enemy(50, 50, 39, 0x33ffdd, 100)
 
         count = 0
         for cell in current_map:
