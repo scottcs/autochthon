@@ -13,12 +13,10 @@ class MovementProcessor(esper.Processor):
 
     def process(self, data: dict) -> None:
         """Process player movement events."""
-        if data['time_passed']:
-            for entity, components in self.world.get_components(Position, Velocity, Actor):
-                position, velocity, actor = components
-                # TODO: check if movement can happen? Or else add a collision system before this
-                if actor.time_units >= velocity.cost:
-                    position.x += velocity.x
-                    position.y += velocity.y
-                    actor.time_units -= velocity.cost
-                    self.world.remove_component(entity, Velocity)
+        for entity, components in self.world.get_components(Position, Velocity, Actor):
+            position, velocity, actor = components
+            if actor.time_units >= velocity.cost:
+                position.x += velocity.x
+                position.y += velocity.y
+                actor.time_units -= velocity.cost
+                self.world.remove_component(entity, Velocity)
