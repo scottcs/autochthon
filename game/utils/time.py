@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Optional, Union, Any
 
-MOMENTS_PER_TURN = 10
+MOMENTS_PER_TURN = 100
 
 
 class GameTime:
@@ -12,36 +12,30 @@ class GameTime:
     considered as TURNS.MOMENTS, while integers are simply MOMENTS.
 
     """
-    def __init__(self,
-                 turn: Optional[Union[GameTime, float, int]]=None,
-                 moment: Optional[int]=None) -> None:
+    def __init__(self, time: Optional[Union[GameTime, int]]=None) -> None:
         self._last_time = 0
-        if turn is None:
-            turn = 0
-        if not isinstance(turn, (GameTime, float, int)):
-            raise TypeError(f'Cannot convert {type(turn)} to GameTime')
-        if isinstance(turn, GameTime):
-            moment = turn._time
-            turn = 0
-        elif isinstance(turn, float):
-            turn, moment = [int(x) for x in str(turn).split('.')]
-        else:
-            if moment is None:
-                moment = turn
-                turn = 0
-            else:
-                moment = moment or 0
-        self._time: int = turn * MOMENTS_PER_TURN + moment
+        if time is None:
+            time = 0
+        if not isinstance(time, (GameTime, int)):
+            raise TypeError(f'Cannot convert {type(time)} to GameTime')
+        if isinstance(time, GameTime):
+            time = time.total_moments
+        self._time: int = time
 
     @property
     def turn(self) -> int:
         """Current turn."""
-        return self._time // MOMENTS_PER_TURN
+        return int(self._time / MOMENTS_PER_TURN)
 
     @property
     def moment(self) -> int:
         """Current moment."""
-        return self._time - self.turn * MOMENTS_PER_TURN
+        return abs(self._time - self.turn * MOMENTS_PER_TURN)
+
+    @property
+    def total_moments(self):
+        """Total moments."""
+        return self._time
 
     @property
     def last_change(self) -> GameTime:
@@ -78,8 +72,12 @@ class GameTime:
     def __le__(self, other: Any) -> bool:
         return self._time <= GameTime(other)._time
 
+    def __neg__(self) -> GameTime:
+        return GameTime(-self._time)
+
     def __bool__(self) -> bool:
         return bool(self._time)
 
     def __repr__(self) -> str:
-        return f'{self.turn}.{self.moment}'
+        return f'{self._time / MOMENTS_PER_TURN}'
+

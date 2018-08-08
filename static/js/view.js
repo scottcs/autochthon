@@ -15,6 +15,8 @@
         const tile_id_table = tileset_dir + 'tile_ids.json';
         const config_json = 'static/config.json';
         const keys_json = 'static/keys.json';
+        let keys_data;
+        let ws;
         let tile_info;
         let cells = {};
         let tile_width;
@@ -52,6 +54,7 @@
         function setup(loader, resources) {
             const config = resources[config_json].data;
             tile_info = resources[tile_id_table].data;
+            keys_data = resources[keys_json].data;
 
             tile_width = config.tiles.width;
             tile_height = config.tiles.height;
@@ -76,17 +79,18 @@
             viewport
                 .drag({clampWheel: true});
             document.body.appendChild(app.view);
-            resize();
-            window.addEventListener('resize', resize)
+            window.addEventListener('resize', resize);
 
-            setupWebsockets(config, resources[keys_json].data);
+            setupWebsockets(config);
             app.ticker.add(delta => gameLoop(delta));
             console.log('Done loading.');
+            resize();
         }
 
         function resize() {
             app.renderer.resize(window.innerWidth, window.innerHeight);
             viewport.resize(window.innerWidth, window.innerHeight, world_width, world_height);
+            requestRefresh();
         }
 
         function gameLoop(delta) {
@@ -142,10 +146,10 @@
             cells[cell.id] = sprite;
         }
 
-        function setupWebsockets(config, keys) {
+        function setupWebsockets(config) {
             const host = config.server.host;
             const port = config.server.port;
-            const ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
+            ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
             ws.binaryType = 'arraybuffer';
 
             document.addEventListener("keypress", function (event) {
@@ -154,20 +158,20 @@
                 }
                 let modifiers = 0;
                 if (event.shiftKey) {
-                    modifiers |= keys.Modifiers.Shift;
+                    modifiers |= keys_data.Modifiers.Shift;
                 }
                 if (event.ctrlKey) {
-                    modifiers |= keys.Modifiers.Ctrl;
+                    modifiers |= keys_data.Modifiers.Ctrl;
                 }
                 if (event.altKey) {
-                    modifiers |= keys.Modifiers.Alt;
+                    modifiers |= keys_data.Modifiers.Alt;
                 }
                 const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
                 let code = 0;
                 if (key.length === 1) {
                     code = key.charCodeAt(0);
                 } else {
-                    code = keys.Keys[event.code] || 0;
+                    code = keys_data.Keys[event.code] || 0;
                 }
                 let buffer = new ArrayBuffer(7);
                 const view = new DataView(buffer);
@@ -176,7 +180,7 @@
                 // byte 2: key/button code
                 // byte 3-4: x coordinate
                 // byte 5-6: y coordinate
-                view.setUint8(0, keys.Events.KeyPress);
+                view.setUint8(0, keys_data.Events.KeyPress);
                 view.setUint8(1, modifiers);
                 view.setUint8(2, code);
                 view.setUint16(3, 0);
@@ -188,6 +192,18 @@
             ws.onmessage = function (evt) {
                 handleBinaryData(evt.data)
             };
+
+            ws.onopen = function(evt) {
+                requestRefresh();
+            };
+        }
+
+        function requestRefresh() {
+            if (ws.readyState === 1) {
+                let refresh = new Uint8Array(1);
+                refresh[0] = keys_data.Events.Refresh;
+                ws.send(refresh);
+            }
         }
     };
 }());

@@ -8,6 +8,8 @@ from game.types import EventHandler, EventType
 class Event:
     """Event class.
 
+    Events should not be used for game logic! That's what systems and components are for!
+
     Rather than a list or a set, this uses a dict to keep track of handlers.
     Only the dict's keys are used, which will be unique, and in Python 3.7 are
     also guaranteed to be ordered.
@@ -42,13 +44,7 @@ class Event:
     __len__ = num_handlers
 
 
-CollisionCheckEvent: Event = Event()
 GameOverEvent: Event = Event()
 InputEvent: Event = Event()
-MoveEntityEvent: Event = Event()
-PlayerMovementEvent: Event = Event()
-ServerNeedsUpdateEvent: Event = Event()
-TimePassedEvent: Event = Event()
+RefreshMapEvent: Event = Event()
 WebsocketWriteAllEvent: Event = Event()
-WorkEnqueueEvent: Event = Event()
-WorldNeedsUpdateEvent: Event = Event()

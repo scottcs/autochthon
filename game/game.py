@@ -3,17 +3,19 @@ from typing import Optional
 
 import esper
 
+from game.component.actor import Actor
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
 from game.component.velocity import Velocity
-from game.events import (GameOverEvent, ServerNeedsUpdateEvent, WorkEnqueueEvent, TimePassedEvent,
-                         WorldNeedsUpdateEvent)
-from game.map import ClassicMap
+from game.events import GameOverEvent, RefreshMapEvent
+from game.map import ClassicMap, Map
+from game.processor import Priority
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
+from game.processor.time import TimeProcessor
 from game.state import GameState
-from game.types import EventType, Entity, RenderLayer
+from game.types import EventType, RenderLayer
 from game.utils.time import GameTime
 
 
@@ -21,31 +23,28 @@ class Game:
     """Main game object."""
 
     def __init__(self, render_processor: esper.Processor, config: Optional[dict]=None) -> None:
+        self.render_processor = render_processor
         self.config: dict = config or {}
         self.game_over: bool = False
         self.world: esper.World = esper.World()
         self.state: GameState = GameState.PLAYING
-        self.work_to_process: list = []
-        self.game_time: GameTime = GameTime()
-        self.needs_update: bool = True
+
+        RefreshMapEvent.handle(self.on_refresh_map)
+
+        self.world.add_processor(InputProcessor(), priority=Priority.input)
+        # TODO: check collisions / anything else that can change whether time passed
+        self.world.add_processor(TimeProcessor(), priority=Priority.time)
+        # TODO: add AI processor here right after time processor
+        self.world.add_processor(MovementProcessor(), priority=Priority.movement)
+        self.world.add_processor(self.render_processor, priority=Priority.render)
 
         current_map = ClassicMap(self.config['map']['max_tiles_w'],
                                  self.config['map']['max_tiles_h'],
                                  self.world)
         current_map.create()
 
-        self.world.create_entity(
-            PlayerControlled(),
-            Renderable(1, 0xffff33, RenderLayer.PLAYER),
-            Position(current_map.start_pos.x, current_map.start_pos.y),
-            Velocity(0, 0, GameTime()),
-        )
-        # crab
-        self.world.create_entity(
-            Renderable(39, 0xff3333, RenderLayer.ENEMY),
-            Position(10, 10),
-            Velocity(0, 0, GameTime()),
-        )
+        self.make_player(current_map)
+        self.make_enemy(10, 10, 39, 0xff3333)
 
         count = 0
         for cell in current_map:
@@ -64,38 +63,31 @@ class Game:
                 )
 
         GameOverEvent.handle(self.shutdown)
-        TimePassedEvent.handle(self.on_time_passed)
-        WorkEnqueueEvent.handle(self.on_work_enqueue)
-        WorldNeedsUpdateEvent.handle(self.on_needs_update)
-        self.work_to_process.append('draw')
 
-        self.world.add_processor(InputProcessor(), priority=3)
-        self.world.add_processor(MovementProcessor(), priority=2)
-        self.world.add_processor(render_processor)
+    def make_player(self, game_map: Map) -> None:
+        """Make a player entity."""
+        self.world.create_entity(
+            Actor(),
+            PlayerControlled(),
+            Renderable(1, 0xffff33, RenderLayer.PLAYER),
+            Position(game_map.start_pos.x, game_map.start_pos.y),
+        )
 
-    def on_needs_update(self, event: EventType) -> None:
-        """Notification that we need to update."""
-        self.needs_update = True
+    def make_enemy(self, x: int, y: int, tile: int, color: int) -> None:
+        """Make an enemy entity."""
+        self.world.create_entity(
+            Actor(),
+            Renderable(tile, color, RenderLayer.ENEMY),
+            Position(x, y),
+        )
+
+    def on_refresh_map(self, _event: EventType) -> None:
+        """Handle OnRefreshMapEvent."""
+        self.render_processor.process({'time_passed': True})
 
     def update(self) -> None:
         """Update the game world."""
-        ServerNeedsUpdateEvent.fire({'render': True})
-        # TODO: work is a command
-        # TODO: process the command
-        # TODO: if anything takes time, process sends a TimePassedEvent and we update the clock
-        self.world.process({'game_time': self.game_time})
-
-    def on_work_enqueue(self, event: EventType) -> None:
-        """Handle a work unit queue request."""
-        self.needs_update = True
-        work = event.get('work', None)
-        if work:
-            self.work_to_process.append(work)
-
-    def on_time_passed(self, event: EventType) -> None:
-        """Handle the passage of game time."""
-        self.game_time += event.get('time_passed', 0)
-        print(f'time is now: {self.game_time}')
+        self.world.process({'time_passed': False})
 
     def shutdown(self, event: EventType) -> None:
         """Shut down the game."""
