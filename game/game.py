@@ -8,12 +8,11 @@ from game.component.ai_simplemind import AISimpleMind
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
-from game.component.solid import Solid
+from game.component.solid import Solid, SolidFlavor
 from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor import Priority
 from game.processor.ai import AIProcessor
-from game.processor.collision import CollisionProcessor
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.time import TimeProcessor
@@ -26,7 +25,6 @@ class Game:
 
     def __init__(self, render_processor: esper.Processor, config: Optional[dict]=None) -> None:
         self.render_processor = render_processor
-        self.collision_processor = CollisionProcessor()
         self.config: dict = config or {}
         self.game_over: bool = False
         self.world: esper.World = esper.World()
@@ -36,7 +34,6 @@ class Game:
 
         self.world.add_processor(InputProcessor(), priority=Priority.input)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
-        self.world.add_processor(self.collision_processor, priority=Priority.collision)
         # TODO: anything else that can change whether time passed
         self.world.add_processor(TimeProcessor(), priority=Priority.time)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
@@ -46,7 +43,6 @@ class Game:
                                  self.config['map']['max_tiles_h'],
                                  self.world)
         current_map.create()
-        self.collision_processor.map = current_map
 
         self.make_player(current_map)
         self.make_enemy(current_map, 39, 0xff3333, 200)
@@ -69,7 +65,7 @@ class Game:
                 # wall
                 self.world.create_entity(
                     Renderable(234, 0x332811, RenderLayer.WALL),
-                    Solid(),
+                    Solid(SolidFlavor.wall),
                     Position(cell.x, cell.y)
                 )
 
@@ -79,7 +75,7 @@ class Game:
         """Make a player entity."""
         self.world.create_entity(
             Actor(),
-            Solid(),
+            Solid(SolidFlavor.player),
             PlayerControlled(),
             Renderable(1, 0xffff33, RenderLayer.PLAYER),
             Position(game_map.start_pos.x, game_map.start_pos.y),
@@ -89,7 +85,7 @@ class Game:
         """Make an enemy entity."""
         self.world.create_entity(
             Actor(),
-            Solid(),
+            Solid(SolidFlavor.enemy),
             AISimpleMind(speed),
             Renderable(tile, color, RenderLayer.ENEMY),
             Position(game_map.start_pos.x, game_map.start_pos.y),
