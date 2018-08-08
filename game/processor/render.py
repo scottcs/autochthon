@@ -1,6 +1,4 @@
 """Render processors."""
-from typing import Any
-
 import esper
 
 from game.component.playercontrolled import PlayerControlled
@@ -65,10 +63,10 @@ class WebRenderProcessor(esper.Processor):
 class TCODRenderProcessor(esper.Processor):
     """Game render processor for local TCOD console."""
 
-    def __init__(self, _title: str, _width: int=80, _height: int=40) -> None:
+    def __init__(self, _title: str, width: int=80, height: int=40) -> None:
         super().__init__()
         # Someday, implement this?
-        print("Wouldn't that be nice?")
+        print(f'Someday maybe this will be a {width}x{height} console.')
 
     def process(self, data: dict) -> None:
         """Process all renderables."""

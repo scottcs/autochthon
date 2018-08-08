@@ -80,4 +80,3 @@ class GameTime:
 
     def __repr__(self) -> str:
         return f'{self._time / MOMENTS_PER_TURN}'
-

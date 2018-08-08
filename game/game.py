@@ -7,7 +7,6 @@ from game.component.actor import Actor
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
-from game.component.velocity import Velocity
 from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor import Priority
@@ -16,7 +15,6 @@ from game.processor.movement import MovementProcessor
 from game.processor.time import TimeProcessor
 from game.state import GameState
 from game.types import EventType, RenderLayer
-from game.utils.time import GameTime
 
 
 class Game:
