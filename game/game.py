@@ -8,10 +8,12 @@ from game.component.ai_simplemind import AISimpleMind
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
+from game.component.solid import Solid
 from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor import Priority
 from game.processor.ai import AIProcessor
+from game.processor.collision import CollisionProcessor
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.time import TimeProcessor
@@ -24,6 +26,7 @@ class Game:
 
     def __init__(self, render_processor: esper.Processor, config: Optional[dict]=None) -> None:
         self.render_processor = render_processor
+        self.collision_processor = CollisionProcessor()
         self.config: dict = config or {}
         self.game_over: bool = False
         self.world: esper.World = esper.World()
@@ -32,8 +35,9 @@ class Game:
         RefreshMapEvent.handle(self.on_refresh_map)
 
         self.world.add_processor(InputProcessor(), priority=Priority.input)
-        # TODO: check collisions / anything else that can change whether time passed
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
+        self.world.add_processor(self.collision_processor, priority=Priority.collision)
+        # TODO: anything else that can change whether time passed
         self.world.add_processor(TimeProcessor(), priority=Priority.time)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
         self.world.add_processor(self.render_processor, priority=Priority.render)
@@ -42,14 +46,15 @@ class Game:
                                  self.config['map']['max_tiles_h'],
                                  self.world)
         current_map.create()
+        self.collision_processor.map = current_map
 
         self.make_player(current_map)
-        self.make_enemy(50, 50, 39, 0xff3333, 200)
-        self.make_enemy(50, 50, 39, 0x33ff33, 50)
-        self.make_enemy(50, 50, 39, 0xff33ff, 500)
-        self.make_enemy(50, 50, 39, 0x33ffff, 110)
-        self.make_enemy(50, 50, 39, 0x33ffbb, 90)
-        self.make_enemy(50, 50, 39, 0x33ffdd, 100)
+        self.make_enemy(current_map, 39, 0xff3333, 200)
+        self.make_enemy(current_map, 39, 0x33ff33, 5)
+        self.make_enemy(current_map, 39, 0xff33ff, 500)
+        self.make_enemy(current_map, 39, 0x33ffff, 110)
+        self.make_enemy(current_map, 39, 0x33ffbb, 90)
+        self.make_enemy(current_map, 39, 0x33ffdd, 100)
 
         count = 0
         for cell in current_map:
@@ -64,6 +69,7 @@ class Game:
                 # wall
                 self.world.create_entity(
                     Renderable(234, 0x332811, RenderLayer.WALL),
+                    Solid(),
                     Position(cell.x, cell.y)
                 )
 
@@ -73,18 +79,20 @@ class Game:
         """Make a player entity."""
         self.world.create_entity(
             Actor(),
+            Solid(),
             PlayerControlled(),
             Renderable(1, 0xffff33, RenderLayer.PLAYER),
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
-    def make_enemy(self, x: int, y: int, tile: int, color: int, speed: int) -> None:
+    def make_enemy(self, game_map: Map, tile: int, color: int, speed: int) -> None:
         """Make an enemy entity."""
         self.world.create_entity(
             Actor(),
+            Solid(),
             AISimpleMind(speed),
             Renderable(tile, color, RenderLayer.ENEMY),
-            Position(x, y),
+            Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
     def on_refresh_map(self, _event: EventType) -> None:

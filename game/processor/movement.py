@@ -19,4 +19,4 @@ class MovementProcessor(esper.Processor):
                 position.x += velocity.x
                 position.y += velocity.y
                 actor.time_units -= velocity.cost
-                self.world.remove_component(entity, Velocity)
+            self.world.remove_component(entity, Velocity)
