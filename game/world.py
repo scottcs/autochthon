@@ -4,6 +4,8 @@ from enum import Enum, auto
 import esper
 
 from game.component.playercontrolled import PlayerControlled
+from game.component.position import Position
+from game.component.solid import Solid
 
 
 class ProcessGroup(Enum):
@@ -18,6 +20,7 @@ class World(esper.World):
     def __init__(self, timed=False):
         super().__init__(timed)
         self._processor_groups = {}
+        self.occupied = {}
         self.stop_processing = False
 
     def add_processor(self, processor_instance, priority=0, group=None):
@@ -44,11 +47,19 @@ class World(esper.World):
     def process_group(self, group, *args, **kwargs):
         """Process a group of processors."""
         self._clear_dead_entities()
+        self.calculate_occupied()
         for processor in self._processor_groups[group]:
             if self.stop_processing:
                 self.stop_processing = False
                 return
             processor.process(*args, **kwargs)
+
+    def calculate_occupied(self):
+        """Calculate occupied map positions."""
+        self.occupied.clear()
+        for ent, components in self.get_components(Position, Solid):
+            position = components[0]
+            self.occupied[(position.x, position.y)] = ent
 
     def _get_component(self, component_type):
         """Get an iterator for Entity, Component pairs.

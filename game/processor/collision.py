@@ -16,50 +16,23 @@ class CollisionProcessor(esper.Processor):
     This is basically just a validation step. Actual effects of the collision will
     happen in later processes.
     """
-    def __init__(self) -> None:
-        super().__init__()
-        self.occupied: dict = {}
-
     def process(self, data: dict) -> None:
         """Process Collision-related components."""
-        self.occupied.clear()
-        for ent, components in self.world.get_components(Position, Solid):
-            position = components[0]
-            self.occupied[(position.x, position.y)] = ent
         for ent, components in self.world.get_components(Position, Velocity, Solid):
             position, velocity = components[:2]
-            if self.world.has_component(ent, PlayerControlled):
-                self.resolve_player_action(ent, position, velocity)
-            else:
+            # Ignore player entities (these are handled in PlayerActionProcessor)
+            if not self.world.has_component(ent, PlayerControlled):
                 self.resolve_move(ent, position, velocity)
             # TODO: resolve other kinds of collisions (WantToAttack, etc)
-
-    def resolve_player_action(self, entity: Entity, position: Position, velocity: Velocity):
-        """Resolve collisions for the player, converting them to other actions."""
-        # TODO: should this be a separate processor altogether? Run before collision?
-        if self.world.has_component(entity, WantToMove):
-            new_position = (position.x + velocity.x, position.y + velocity.y)
-            found = self.occupied.get(new_position, None)
-            if found:
-                self.world.remove_component(entity, WantToMove)
-                self.world.remove_component(entity, Velocity)
-                if self.world.has_component(found, HP):
-                    # TODO: add WantToAttack
-                    pass
-                else:
-                    self.world.stop_processing = True
-            else:
-                self.occupied[(position.x, position.y)] = None
-                self.occupied[new_position] = entity
 
     def resolve_move(self, entity: Entity, position: Position, velocity: Velocity):
         """Resolve any WantToMove collisions."""
         if self.world.has_component(entity, WantToMove):
             new_position = (position.x + velocity.x, position.y + velocity.y)
-            found = self.occupied.get(new_position, None)
+            found = self.world.occupied.get(new_position, None)
             if found:
                 self.world.remove_component(entity, WantToMove)
                 self.world.remove_component(entity, Velocity)
             else:
-                self.occupied[(position.x, position.y)] = None
-                self.occupied[new_position] = entity
+                self.world.occupied[(position.x, position.y)] = None
+                self.world.occupied[new_position] = entity

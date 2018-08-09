@@ -8,5 +8,6 @@ class Priority(IntEnum):
     movement = auto()
     time = auto()
     collision = auto()
+    player_action = auto()
     ai = auto()
     input = auto()

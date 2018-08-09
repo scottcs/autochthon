@@ -18,6 +18,7 @@ from game.processor.ai import AIProcessor
 from game.processor.collision import CollisionProcessor
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
+from game.processor.player_action import PlayerActionProcessor
 from game.processor.time import TimeProcessor
 from game.state import GameState
 from game.types import EventType, RenderLayer
@@ -41,6 +42,7 @@ class Game:
                                  group=ProcessGroup.pre_turn)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         # TODO: anything else that can change whether time passed
+        self.world.add_processor(PlayerActionProcessor(), priority=Priority.player_action)
         self.world.add_processor(CollisionProcessor(), priority=Priority.collision)
         self.world.add_processor(TimeProcessor(), priority=Priority.time)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
