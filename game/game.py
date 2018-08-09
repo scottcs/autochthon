@@ -20,6 +20,7 @@ from game.processor.movement import MovementProcessor
 from game.processor.time import TimeProcessor
 from game.state import GameState
 from game.types import EventType, RenderLayer
+from game.world import World
 
 
 class Game:
@@ -29,7 +30,7 @@ class Game:
         self.render_processor = render_processor
         self.config: dict = config or {}
         self.game_over: bool = False
-        self.world: esper.World = esper.World()
+        self.world: World = World()
         self.state: GameState = GameState.PLAYING
 
         RefreshMapEvent.handle(self.on_refresh_map)
