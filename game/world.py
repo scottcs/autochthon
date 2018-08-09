@@ -18,6 +18,7 @@ class World(esper.World):
     def __init__(self, timed=False):
         super().__init__(timed)
         self._processor_groups = {}
+        self.stop_processing = False
 
     def add_processor(self, processor_instance, priority=0, group=None):
         """Add a Processor instance to the World.
@@ -44,6 +45,9 @@ class World(esper.World):
         """Process a group of processors."""
         self._clear_dead_entities()
         for processor in self._processor_groups[group]:
+            if self.stop_processing:
+                self.stop_processing = False
+                return
             processor.process(*args, **kwargs)
 
     def _get_component(self, component_type):
