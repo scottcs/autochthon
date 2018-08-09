@@ -94,5 +94,5 @@ class InputProcessor(esper.Processor):
         if dx or dy:
             for ent, components in self.world.get_components(PlayerControlled, Position):
                 self.world.add_component(ent, WantToMove())
-                self.world.add_component(ent, Velocity(dx, dy, 100))
+                self.world.add_component(ent, Velocity(dx, dy, 200))
         return True

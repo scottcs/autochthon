@@ -21,5 +21,6 @@ class MovementProcessor(esper.Processor):
             if actor.time_units >= velocity.cost:
                 position.x += velocity.x
                 position.y += velocity.y
+                actor.time_units -= velocity.cost
             self.world.remove_component(entity, Velocity)
             self.world.remove_component(entity, WantToMove)

@@ -24,7 +24,7 @@ from game.world import World
 from gamedata.palette import Palette
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 
 class Game:
@@ -115,6 +115,8 @@ class Game:
         data = {'time_passed': False}
         self.world.process_group(ProcessGroup.pre_turn, data)
         if data['time_passed']:
+            for ent, actor in self.world.get_component(Actor):
+                log.debug(f'E: {ent}   A:{actor}')
             self.world.process_group(ProcessGroup.turn, data)
         self.world.process_group(ProcessGroup.post_turn, data)
 

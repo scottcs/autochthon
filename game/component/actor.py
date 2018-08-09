@@ -10,3 +10,7 @@ class Actor:
                  rate: Optional[Union[GameTime, int]]=None) -> None:
         self.time_units: GameTime = GameTime(initial_units)
         self.rate: GameTime = GameTime(rate or MOMENTS_PER_TURN)
+
+    def __str__(self) -> str:
+        return f'{self.time_units} ({self.time_units.last_time}/{self.time_units.last_change}) (+{self.rate}/turn)'
+
