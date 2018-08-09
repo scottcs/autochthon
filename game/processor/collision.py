@@ -26,7 +26,7 @@ class CollisionProcessor(esper.Processor):
                 self.resolve_move(ent, position, velocity)
             # TODO: resolve other kinds of collisions (WantToAttack, etc)
 
-    def resolve_move(self, entity: Entity, position: Position, velocity: Velocity):
+    def resolve_move(self, entity: Entity, position: Position, velocity: Velocity) -> None:
         """Resolve any WantToMove collisions."""
         if self.world.has_component(entity, WantToMove):
             new_position = (position.x + velocity.x, position.y + velocity.y)
