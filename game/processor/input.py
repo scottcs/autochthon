@@ -8,6 +8,7 @@ import esper
 from game.component.position import Position
 from game.component.playercontrolled import PlayerControlled
 from game.component.velocity import Velocity
+from game.component.waiting import Waiting
 from game.component.want_to_move import WantToMove
 from game.events import InputEvent
 from game.types import EventType, GameState
@@ -95,4 +96,8 @@ class InputProcessor(esper.Processor):
             for ent, components in self.world.get_components(PlayerControlled, Position):
                 self.world.add_component(ent, WantToMove())
                 self.world.add_component(ent, Velocity(dx, dy, 200))
+
+        if wait:
+            for ent, _ in self.world.get_component(PlayerControlled):
+                self.world.add_component(ent, Waiting())
         return True

@@ -43,7 +43,6 @@ class Game:
                                  priority=Priority.input,
                                  group=ProcessGroup.pre_turn)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
-        # TODO: anything else that can change whether time passed
         self.world.add_processor(PlayerActionProcessor(), priority=Priority.player_action)
         self.world.add_processor(AIActionProcessor(), priority=Priority.ai_action)
         self.world.add_processor(TimeProcessor(), priority=Priority.time)
