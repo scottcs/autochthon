@@ -14,7 +14,7 @@ from game.component.solid import Solid
 from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
-from game.processor.collision import CollisionProcessor
+from game.processor.ai_action import AIActionProcessor
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.player_action import PlayerActionProcessor
@@ -45,7 +45,7 @@ class Game:
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         # TODO: anything else that can change whether time passed
         self.world.add_processor(PlayerActionProcessor(), priority=Priority.player_action)
-        self.world.add_processor(CollisionProcessor(), priority=Priority.collision)
+        self.world.add_processor(AIActionProcessor(), priority=Priority.ai_action)
         self.world.add_processor(TimeProcessor(), priority=Priority.time)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
         self.world.add_processor(self.render_processor,
