@@ -1,5 +1,5 @@
 """Typing for the game module."""
-from enum import Enum, auto
+from enum import Enum, auto, IntEnum
 from typing import Dict, Callable, Any, NamedTuple
 
 
@@ -29,3 +29,33 @@ class RenderLayer(Enum):
     ENEMY = auto()
     PLAYER = auto()
     EFFECT = auto()
+
+
+class DirectionType(Enum):
+    """Cardinal direction type."""
+    n = 1
+    ne = 2
+    e = 3
+    se = 4
+    s = 5
+    sw = 6
+    w = 7
+    nw = 8
+
+
+class Priority(IntEnum):
+    """Processor priorities."""
+    render = auto()
+    movement = auto()
+    time = auto()
+    collision = auto()
+    player_action = auto()
+    ai = auto()
+    input = auto()
+
+
+class ProcessGroup(Enum):
+    """Groups of processors."""
+    pre_turn = auto()
+    turn = auto()
+    post_turn = auto()

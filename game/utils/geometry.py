@@ -17,6 +17,12 @@ class Rect:
         self.p1: Point = Point(x, y)
         self.p2: Point = Point(x + w, y + h)
 
+    def __repr__(self) -> str:
+        return f'Rect<{self.p1}, {self.p2}>'
+
+    def __hash__(self) -> int:
+        return hash(repr(self))
+
     @property
     def center(self) -> Point:
         """Calculate the center point."""

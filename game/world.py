@@ -1,29 +1,26 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
-from enum import Enum, auto
+from typing import Any, Optional
 
 import esper
 
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.solid import Solid
-
-
-class ProcessGroup(Enum):
-    """Groups of processors."""
-    pre_turn = auto()
-    turn = auto()
-    post_turn = auto()
+from game.types import ProcessGroup, Entity
 
 
 class World(esper.World):
     """Esper's World class that always iterates the Player first."""
-    def __init__(self, timed=False):
+    def __init__(self, timed: bool=False) -> None:
         super().__init__(timed)
-        self._processor_groups = {}
-        self.occupied = {}
-        self.stop_processing = False
+        self._processor_groups: dict = {}
+        self.occupied: dict = {}
+        self.stop_processing: bool = False
 
-    def add_processor(self, processor_instance, priority=0, group=None):
+    def add_processor(self,
+                      processor_instance: esper.Processor,
+                      priority: int=0,
+                      group: Optional[ProcessGroup]=None) -> None:
         """Add a Processor instance to the World.
 
         :param processor_instance: An instance of a Processor,
@@ -36,7 +33,7 @@ class World(esper.World):
         self._processor_groups.setdefault(group, [])
         self._processor_groups[group].append(processor_instance)
 
-    def remove_processor(self, processor_type):
+    def remove_processor(self, processor_type: esper.Processor) -> None:
         """Remove a processor."""
         for group in self._processor_groups.values():
             for processor in group:
@@ -44,7 +41,7 @@ class World(esper.World):
                     group.remove(processor)
         super().remove_processor(processor_type)
 
-    def process_group(self, group, *args, **kwargs):
+    def process_group(self, group: ProcessGroup, *args: Any, **kwargs: Any) -> None:
         """Process a group of processors."""
         self._clear_dead_entities()
         self.calculate_occupied()
@@ -54,14 +51,14 @@ class World(esper.World):
                 return
             processor.process(*args, **kwargs)
 
-    def calculate_occupied(self):
+    def calculate_occupied(self) -> None:
         """Calculate occupied map positions."""
         self.occupied.clear()
         for ent, components in self.get_components(Position, Solid):
             position = components[0]
             self.occupied[(position.x, position.y)] = ent
 
-    def _get_component(self, component_type):
+    def _get_component(self, component_type: Any) -> Any:
         """Get an iterator for Entity, Component pairs.
 
         :param component_type: The Component type to retrieve.
@@ -80,7 +77,7 @@ class World(esper.World):
             if entity not in players:
                 yield entity, entity_db[entity][component_type]
 
-    def _get_components(self, *component_types):
+    def _get_components(self, *component_types: Any) -> Any:
         """Get an iterator for Entity and multiple Component sets.
 
         :param component_types: Two or more Component types.
@@ -105,7 +102,7 @@ class World(esper.World):
         except KeyError:
             pass
 
-    def try_component(self, entity, component_type):
+    def try_component(self, entity: Entity, component_type: Any) -> Any:
         """Try to get a single component type for an Entity.
 
           This method will return the requested Component if it exists, but
@@ -118,4 +115,3 @@ class World(esper.World):
           """
         if component_type in self._entities[entity]:
             yield self._entities[entity][component_type]
-

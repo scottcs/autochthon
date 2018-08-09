@@ -1,5 +1,6 @@
 """AI Processor."""
-from random import randint
+import random
+from typing import Any
 
 import esper
 
@@ -13,7 +14,7 @@ class AIProcessor(esper.Processor):
     def __init__(self) -> None:
         super().__init__()
 
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any, **kwargs: Any) -> None:
         """Process AI Components."""
         for ent, ai in self.world.get_component(AISimpleMind):
             dx = randint(-1, 1)

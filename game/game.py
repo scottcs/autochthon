@@ -12,7 +12,6 @@ from game.component.renderable import Renderable
 from game.component.solid import Solid
 from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
-from game.processor import Priority
 from game.processor.ai import AIProcessor
 from game.processor.collision import CollisionProcessor
 from game.processor.input import InputProcessor
@@ -20,8 +19,9 @@ from game.processor.movement import MovementProcessor
 from game.processor.player_action import PlayerActionProcessor
 from game.processor.time import TimeProcessor
 from game.state import GameState
-from game.types import EventType, RenderLayer
-from game.world import World, ProcessGroup
+from game.types import EventType, RenderLayer, Priority, ProcessGroup
+from game.utils.geometry import Point
+from game.world import World
 from gamedata.palette import Palette
 
 
