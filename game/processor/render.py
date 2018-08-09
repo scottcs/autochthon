@@ -1,4 +1,6 @@
 """Render processors."""
+from typing import Any
+
 import esper
 
 from game.component.playercontrolled import PlayerControlled
@@ -13,8 +15,9 @@ class WebRenderProcessor(esper.Processor):
     def __init__(self) -> None:
         super().__init__()
 
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
+        data = args[0]
         if not data['time_passed']:
             return
 
@@ -68,6 +71,6 @@ class TCODRenderProcessor(esper.Processor):
         # Someday, implement this?
         print(f'Someday maybe this will be a {width}x{height} console.')
 
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
         pass

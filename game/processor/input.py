@@ -1,15 +1,16 @@
 """User input processing."""
 import json
 from pathlib import Path
+from typing import Any
 
 import esper
 
 from game.component.position import Position
 from game.component.playercontrolled import PlayerControlled
 from game.component.velocity import Velocity
+from game.component.want_to_move import WantToMove
 from game.events import InputEvent
-from game.state import GameState
-from game.types import EventType
+from game.types import EventType, GameState
 from game.utils.geometry import Point
 
 KEYS_JSON = Path('static') / Path('keys.json')
@@ -19,7 +20,7 @@ class InputProcessor(esper.Processor):
     """Process user input and issue events."""
     def __init__(self) -> None:
         super().__init__()
-        self._input_queue = []
+        self._input_queue: list = []
         InputEvent.handle(self.on_input)
         with open(KEYS_JSON) as f:
             keys: dict = json.load(f)
@@ -41,8 +42,9 @@ class InputProcessor(esper.Processor):
             'coords': coords,
         })
 
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any, **kwargs: Any) -> None:
         """Process the input queue."""
+        data = args[0]
         time_passed = data['time_passed']
         while self._input_queue:
             event = self._input_queue.pop()
@@ -91,5 +93,6 @@ class InputProcessor(esper.Processor):
 
         if dx or dy:
             for ent, components in self.world.get_components(PlayerControlled, Position):
+                self.world.add_component(ent, WantToMove())
                 self.world.add_component(ent, Velocity(dx, dy, 100))
         return True

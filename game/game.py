@@ -5,18 +5,22 @@ import esper
 
 from game.component.actor import Actor
 from game.component.ai_simplemind import AISimpleMind
+from game.component.hp import HP
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
+from game.component.solid import Solid
 from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
-from game.processor import Priority
 from game.processor.ai import AIProcessor
+from game.processor.collision import CollisionProcessor
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
+from game.processor.player_action import PlayerActionProcessor
 from game.processor.time import TimeProcessor
-from game.state import GameState
-from game.types import EventType, RenderLayer
+from game.types import EventType, RenderLayer, Priority, ProcessGroup, GameState
+from game.world import World
+from gamedata.palette import Palette
 
 
 class Game:
@@ -26,17 +30,23 @@ class Game:
         self.render_processor = render_processor
         self.config: dict = config or {}
         self.game_over: bool = False
-        self.world: esper.World = esper.World()
+        self.world: World = World()
         self.state: GameState = GameState.PLAYING
 
         RefreshMapEvent.handle(self.on_refresh_map)
 
-        self.world.add_processor(InputProcessor(), priority=Priority.input)
-        # TODO: check collisions / anything else that can change whether time passed
+        self.world.add_processor(InputProcessor(),
+                                 priority=Priority.input,
+                                 group=ProcessGroup.pre_turn)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
+        # TODO: anything else that can change whether time passed
+        self.world.add_processor(PlayerActionProcessor(), priority=Priority.player_action)
+        self.world.add_processor(CollisionProcessor(), priority=Priority.collision)
         self.world.add_processor(TimeProcessor(), priority=Priority.time)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
-        self.world.add_processor(self.render_processor, priority=Priority.render)
+        self.world.add_processor(self.render_processor,
+                                 priority=Priority.render,
+                                 group=ProcessGroup.post_turn)
 
         current_map = ClassicMap(self.config['map']['max_tiles_w'],
                                  self.config['map']['max_tiles_h'],
@@ -44,12 +54,12 @@ class Game:
         current_map.create()
 
         self.make_player(current_map)
-        self.make_enemy(50, 50, 39, 0xff3333, 200)
-        self.make_enemy(50, 50, 39, 0x33ff33, 50)
-        self.make_enemy(50, 50, 39, 0xff33ff, 500)
-        self.make_enemy(50, 50, 39, 0x33ffff, 110)
-        self.make_enemy(50, 50, 39, 0x33ffbb, 90)
-        self.make_enemy(50, 50, 39, 0x33ffdd, 100)
+        self.make_enemy(current_map, 39, Palette.red, 200)
+        self.make_enemy(current_map, 39, Palette.green, 5)
+        self.make_enemy(current_map, 39, Palette.purple, 500)
+        self.make_enemy(current_map, 39, Palette.orange, 110)
+        self.make_enemy(current_map, 39, Palette.cyan, 90)
+        self.make_enemy(current_map, 39, Palette.cyan, 100)
 
         count = 0
         for cell in current_map:
@@ -57,13 +67,14 @@ class Game:
             if cell.transparent:
                 # floor
                 self.world.create_entity(
-                    Renderable(220, 0x202020, RenderLayer.FLOOR),
+                    Renderable(220, Palette.dark_grey, RenderLayer.FLOOR),
                     Position(cell.x, cell.y)
                 )
             else:
                 # wall
                 self.world.create_entity(
-                    Renderable(234, 0x332811, RenderLayer.WALL),
+                    Renderable(234, Palette.brown, RenderLayer.WALL),
+                    Solid(),
                     Position(cell.x, cell.y)
                 )
 
@@ -73,18 +84,22 @@ class Game:
         """Make a player entity."""
         self.world.create_entity(
             Actor(),
+            Solid(),
+            HP(10),
             PlayerControlled(),
-            Renderable(1, 0xffff33, RenderLayer.PLAYER),
+            Renderable(1, Palette.yellow, RenderLayer.PLAYER),
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
-    def make_enemy(self, x: int, y: int, tile: int, color: int, speed: int) -> None:
+    def make_enemy(self, game_map: Map, tile: int, color: int, speed: int) -> None:
         """Make an enemy entity."""
         self.world.create_entity(
             Actor(),
+            Solid(),
+            HP(10),
             AISimpleMind(speed),
             Renderable(tile, color, RenderLayer.ENEMY),
-            Position(x, y),
+            Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
     def on_refresh_map(self, _event: EventType) -> None:
@@ -93,7 +108,11 @@ class Game:
 
     def update(self) -> None:
         """Update the game world."""
-        self.world.process({'time_passed': False})
+        data = {'time_passed': False}
+        self.world.process_group(ProcessGroup.pre_turn, data)
+        if data['time_passed']:
+            self.world.process_group(ProcessGroup.turn, data)
+        self.world.process_group(ProcessGroup.post_turn, data)
 
     def shutdown(self, event: EventType) -> None:
         """Shut down the game."""

@@ -14,13 +14,7 @@ class GameTime:
     """
     def __init__(self, time: Optional[Union[GameTime, int]]=None) -> None:
         self._last_time = 0
-        if time is None:
-            time = 0
-        if not isinstance(time, (GameTime, int)):
-            raise TypeError(f'Cannot convert {type(time)} to GameTime')
-        if isinstance(time, GameTime):
-            time = time.total_moments
-        self._time: int = time
+        self._time: int = int(time or 0)
 
     @property
     def turn(self) -> int:
@@ -31,11 +25,6 @@ class GameTime:
     def moment(self) -> int:
         """Current moment."""
         return abs(self._time - self.turn * MOMENTS_PER_TURN)
-
-    @property
-    def total_moments(self):
-        """Total moments."""
-        return self._time
 
     @property
     def last_change(self) -> GameTime:
@@ -77,6 +66,9 @@ class GameTime:
 
     def __bool__(self) -> bool:
         return bool(self._time)
+
+    def __int__(self) -> int:
+        return self._time
 
     def __repr__(self) -> str:
         return f'{self._time / MOMENTS_PER_TURN}'
