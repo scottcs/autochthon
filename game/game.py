@@ -10,7 +10,6 @@ from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
 from game.component.solid import Solid
-# from game.component.toggleable import Toggleable
 from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor import Priority
@@ -23,6 +22,7 @@ from game.processor.time import TimeProcessor
 from game.state import GameState
 from game.types import EventType, RenderLayer
 from game.world import World, ProcessGroup
+from gamedata.palette import Palette
 
 
 class Game:
@@ -56,12 +56,12 @@ class Game:
         current_map.create()
 
         self.make_player(current_map)
-        self.make_enemy(current_map, 39, 0xff3333, 200)
-        self.make_enemy(current_map, 39, 0x33ff33, 5)
-        self.make_enemy(current_map, 39, 0xff33ff, 500)
-        self.make_enemy(current_map, 39, 0x33ffff, 110)
-        self.make_enemy(current_map, 39, 0x33ffbb, 90)
-        self.make_enemy(current_map, 39, 0x33ffdd, 100)
+        self.make_enemy(current_map, 39, Palette.red, 200)
+        self.make_enemy(current_map, 39, Palette.green, 5)
+        self.make_enemy(current_map, 39, Palette.purple, 500)
+        self.make_enemy(current_map, 39, Palette.orange, 110)
+        self.make_enemy(current_map, 39, Palette.cyan, 90)
+        self.make_enemy(current_map, 39, Palette.cyan, 100)
 
         count = 0
         for cell in current_map:
@@ -69,13 +69,13 @@ class Game:
             if cell.transparent:
                 # floor
                 self.world.create_entity(
-                    Renderable(220, 0x202020, RenderLayer.FLOOR),
+                    Renderable(220, Palette.dark_grey, RenderLayer.FLOOR),
                     Position(cell.x, cell.y)
                 )
             else:
                 # wall
                 self.world.create_entity(
-                    Renderable(234, 0x332811, RenderLayer.WALL),
+                    Renderable(234, Palette.brown, RenderLayer.WALL),
                     Solid(),
                     Position(cell.x, cell.y)
                 )
@@ -89,7 +89,7 @@ class Game:
             Solid(),
             HP(10),
             PlayerControlled(),
-            Renderable(1, 0xffff33, RenderLayer.PLAYER),
+            Renderable(1, Palette.yellow, RenderLayer.PLAYER),
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
