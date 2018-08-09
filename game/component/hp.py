@@ -8,6 +8,6 @@ class HP:
         self.current: int = initial
         self.max: int = maximum or initial
 
-    def set_to_max(self):
+    def set_to_max(self) -> None:
         """Set current HP to maximum."""
         self.current = self.max

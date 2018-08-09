@@ -1,6 +1,7 @@
 """User input processing."""
 import json
 from pathlib import Path
+from typing import Any
 
 import esper
 
@@ -20,7 +21,7 @@ class InputProcessor(esper.Processor):
     """Process user input and issue events."""
     def __init__(self) -> None:
         super().__init__()
-        self._input_queue = []
+        self._input_queue: list = []
         InputEvent.handle(self.on_input)
         with open(KEYS_JSON) as f:
             keys: dict = json.load(f)
@@ -42,8 +43,9 @@ class InputProcessor(esper.Processor):
             'coords': coords,
         })
 
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any, **kwargs: Any) -> None:
         """Process the input queue."""
+        data = args[0]
         time_passed = data['time_passed']
         while self._input_queue:
             event = self._input_queue.pop()

@@ -1,4 +1,6 @@
 """Movement processor."""
+from typing import Any
+
 import esper
 
 from game.component.actor import Actor
@@ -12,9 +14,8 @@ class MovementProcessor(esper.Processor):
     def __init__(self) -> None:
         super().__init__()
 
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any, **kwargs: Any) -> None:
         """Process movement components."""
-        # Process player first
         for entity, components in self.world.get_components(Position, Velocity, Actor, WantToMove):
             position, velocity, actor = components[:3]
             if actor.time_units >= velocity.cost:

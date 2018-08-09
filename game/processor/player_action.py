@@ -1,4 +1,6 @@
 """Player action processor."""
+from typing import Any
+
 import esper
 
 from game.component.hp import HP
@@ -15,7 +17,7 @@ class PlayerActionProcessor(esper.Processor):
 
     Determine what player action was meant.
     """
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any, **kwargs: Any) -> None:
         """Process player components."""
         for ent, components in self.world.get_component(PlayerControlled):
             self.world.stop_processing = self.process_player(ent)

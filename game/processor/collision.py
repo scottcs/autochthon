@@ -1,7 +1,8 @@
 """Collision Processor."""
+from typing import Any
+
 import esper
 
-from game.component.hp import HP
 from game.component.position import Position
 from game.component.playercontrolled import PlayerControlled
 from game.component.solid import Solid
@@ -16,7 +17,7 @@ class CollisionProcessor(esper.Processor):
     This is basically just a validation step. Actual effects of the collision will
     happen in later processes.
     """
-    def process(self, data: dict) -> None:
+    def process(self, *args: Any, **kwargs: Any) -> None:
         """Process Collision-related components."""
         for ent, components in self.world.get_components(Position, Velocity, Solid):
             position, velocity = components[:2]
