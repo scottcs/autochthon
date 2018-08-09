@@ -1,4 +1,5 @@
 """Main game class."""
+import logging
 from typing import Optional
 
 import esper
@@ -21,6 +22,9 @@ from game.processor.time import TimeProcessor
 from game.types import EventType, RenderLayer, Priority, ProcessGroup, GameState
 from game.world import World
 from gamedata.palette import Palette
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 class Game:
@@ -117,5 +121,5 @@ class Game:
     def shutdown(self, event: EventType) -> None:
         """Shut down the game."""
         if event.get('shutdown'):
-            print('Shutting down.')
+            log.info('Shutting down.')
             self.game_over = True

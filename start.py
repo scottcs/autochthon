@@ -1,12 +1,15 @@
 """Start the game."""
 import argparse
 import json
+import logging
 from pathlib import Path
 
 from game.local import run_local
 from game.server import run_server
 
 CONFIG_FILE = Path('static') / Path('config.json')
+
+logging.basicConfig(level=logging.CRITICAL)
 
 
 def run_game(args: argparse.Namespace) -> None:

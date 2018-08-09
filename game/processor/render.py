@@ -1,4 +1,5 @@
 """Render processors."""
+import logging
 from typing import Any
 
 import esper
@@ -7,6 +8,9 @@ from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
 from game.events import WebsocketWriteAllEvent
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 class WebRenderProcessor(esper.Processor):
@@ -69,7 +73,7 @@ class TCODRenderProcessor(esper.Processor):
     def __init__(self, _title: str, width: int=80, height: int=40) -> None:
         super().__init__()
         # Someday, implement this?
-        print(f'Someday maybe this will be a {width}x{height} console.')
+        log.error(f'Someday maybe this will be a {width}x{height} console.')
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
