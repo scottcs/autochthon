@@ -18,9 +18,7 @@ from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.player_action import PlayerActionProcessor
 from game.processor.time import TimeProcessor
-from game.state import GameState
-from game.types import EventType, RenderLayer, Priority, ProcessGroup
-from game.utils.geometry import Point
+from game.types import EventType, RenderLayer, Priority, ProcessGroup, GameState
 from game.world import World
 from gamedata.palette import Palette
 

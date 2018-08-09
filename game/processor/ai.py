@@ -17,11 +17,11 @@ class AIProcessor(esper.Processor):
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process AI Components."""
         for ent, ai in self.world.get_component(AISimpleMind):
-            dx = randint(-1, 1)
-            dy = randint(-1, 1)
+            dx = random.randint(-1, 1)
+            dy = random.randint(-1, 1)
             while dx == 0 and dy == 0:
-                dx = randint(-1, 1)
-                dy = randint(-1, 1)
+                dx = random.randint(-1, 1)
+                dy = random.randint(-1, 1)
             # WantToMove is not redundant with Velocity... maybe want to attack instead
             self.world.add_component(ent, WantToMove())
             self.world.add_component(ent, Velocity(dx, dy, ai.move_cost))

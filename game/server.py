@@ -10,8 +10,7 @@ from game.events import InputEvent, WebsocketWriteAllEvent, RefreshMapEvent
 from game.game import Game
 from game.processor.input import KEYS_JSON
 from game.processor.render import WebRenderProcessor
-from game.state import GameState
-from game.types import EventType
+from game.types import EventType, GameState
 
 DESIRED_FPS = 30
 

@@ -10,8 +10,7 @@ from game.component.playercontrolled import PlayerControlled
 from game.component.velocity import Velocity
 from game.component.want_to_move import WantToMove
 from game.events import InputEvent
-from game.state import GameState
-from game.types import EventType
+from game.types import EventType, GameState
 from game.utils.geometry import Point
 
 KEYS_JSON = Path('static') / Path('keys.json')
