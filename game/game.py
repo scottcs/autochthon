@@ -5,10 +5,12 @@ import esper
 
 from game.component.actor import Actor
 from game.component.ai_simplemind import AISimpleMind
+from game.component.hp import HP
 from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
-from game.component.solid import Solid, SolidFlavor
+from game.component.solid import Solid
+# from game.component.toggleable import Toggleable
 from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor import Priority
@@ -65,7 +67,7 @@ class Game:
                 # wall
                 self.world.create_entity(
                     Renderable(234, 0x332811, RenderLayer.WALL),
-                    Solid(SolidFlavor.wall),
+                    Solid(),
                     Position(cell.x, cell.y)
                 )
 
@@ -75,7 +77,8 @@ class Game:
         """Make a player entity."""
         self.world.create_entity(
             Actor(),
-            Solid(SolidFlavor.player),
+            Solid(),
+            HP(10),
             PlayerControlled(),
             Renderable(1, 0xffff33, RenderLayer.PLAYER),
             Position(game_map.start_pos.x, game_map.start_pos.y),
@@ -85,7 +88,8 @@ class Game:
         """Make an enemy entity."""
         self.world.create_entity(
             Actor(),
-            Solid(SolidFlavor.enemy),
+            Solid(),
+            HP(10),
             AISimpleMind(speed),
             Renderable(tile, color, RenderLayer.ENEMY),
             Position(game_map.start_pos.x, game_map.start_pos.y),
