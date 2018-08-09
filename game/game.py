@@ -15,12 +15,13 @@ from game.events import GameOverEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor import Priority
 from game.processor.ai import AIProcessor
+from game.processor.collision import CollisionProcessor
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.time import TimeProcessor
 from game.state import GameState
 from game.types import EventType, RenderLayer
-from game.world import World
+from game.world import World, ProcessGroup
 
 
 class Game:
@@ -35,12 +36,17 @@ class Game:
 
         RefreshMapEvent.handle(self.on_refresh_map)
 
-        self.world.add_processor(InputProcessor(), priority=Priority.input)
+        self.world.add_processor(InputProcessor(),
+                                 priority=Priority.input,
+                                 group=ProcessGroup.pre_turn)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         # TODO: anything else that can change whether time passed
+        self.world.add_processor(CollisionProcessor(), priority=Priority.collision)
         self.world.add_processor(TimeProcessor(), priority=Priority.time)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
-        self.world.add_processor(self.render_processor, priority=Priority.render)
+        self.world.add_processor(self.render_processor,
+                                 priority=Priority.render,
+                                 group=ProcessGroup.post_turn)
 
         current_map = ClassicMap(self.config['map']['max_tiles_w'],
                                  self.config['map']['max_tiles_h'],
@@ -102,7 +108,11 @@ class Game:
 
     def update(self) -> None:
         """Update the game world."""
-        self.world.process({'time_passed': False})
+        data = {'time_passed': False}
+        self.world.process_group(ProcessGroup.pre_turn, data)
+        if data['time_passed']:
+            self.world.process_group(ProcessGroup.turn, data)
+        self.world.process_group(ProcessGroup.post_turn, data)
 
     def shutdown(self, event: EventType) -> None:
         """Shut down the game."""

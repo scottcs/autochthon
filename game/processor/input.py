@@ -7,6 +7,7 @@ import esper
 from game.component.position import Position
 from game.component.playercontrolled import PlayerControlled
 from game.component.velocity import Velocity
+from game.component.want_to_move import WantToMove
 from game.events import InputEvent
 from game.state import GameState
 from game.types import EventType
@@ -91,5 +92,6 @@ class InputProcessor(esper.Processor):
 
         if dx or dy:
             for ent, components in self.world.get_components(PlayerControlled, Position):
+                self.world.add_component(ent, WantToMove())
                 self.world.add_component(ent, Velocity(dx, dy, 100))
         return True
