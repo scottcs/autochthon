@@ -9,7 +9,7 @@ from game.server import run_server
 
 CONFIG_FILE = Path('static') / Path('config.json')
 
-logging.basicConfig(level=logging.CRITICAL)
+logging.basicConfig(level=logging.ERROR)
 
 
 def run_game(args: argparse.Namespace) -> None:

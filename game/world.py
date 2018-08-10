@@ -3,7 +3,8 @@ from typing import Any, Optional
 
 import esper
 
-from game.component.playercontrolled import PlayerControlled
+from game.component.actor import Actor
+from game.component.player_controlled import PlayerControlled
 from game.component.position import Position
 from game.component.solid import Solid
 from game.types import ProcessGroup, Entity
@@ -14,7 +15,6 @@ class World(esper.World):
     def __init__(self, timed: bool=False) -> None:
         super().__init__(timed)
         self._processor_groups: dict = {}
-        self.occupied: dict = {}
 
     def add_processor(self,
                       processor_instance: esper.Processor,
@@ -43,16 +43,23 @@ class World(esper.World):
     def process_group(self, group: ProcessGroup, *args: Any, **kwargs: Any) -> None:
         """Process a group of processors."""
         self._clear_dead_entities()
-        self.calculate_occupied()
         for processor in self._processor_groups[group]:
             processor.process(*args, **kwargs)
 
-    def calculate_occupied(self) -> None:
-        """Calculate occupied map positions."""
-        self.occupied.clear()
+    def any_actors_can_act(self) -> bool:
+        """Return true if any actors can act."""
+        for ent, actor in self.get_component(Actor):
+            if actor.time_units >= 0:
+                return True
+        return False
+
+    def get_solid_entity_at_position(self, x: int, y: int) -> Optional[Entity]:
+        """Return any solid entity at the given position."""
         for ent, components in self.get_components(Position, Solid):
-            position = components[0]
-            self.occupied[(position.x, position.y)] = ent
+            other_pos = components[0]
+            if other_pos.x == x and other_pos.y == y:
+                return ent
+        return None
 
     def _get_component(self, component_type: Any) -> Any:
         """Get an iterator for Entity, Component pairs.

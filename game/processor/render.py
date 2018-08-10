@@ -4,7 +4,7 @@ from typing import Any
 
 import esper
 
-from game.component.playercontrolled import PlayerControlled
+from game.component.player_controlled import PlayerControlled
 from game.component.position import Position
 from game.component.renderable import Renderable
 from game.events import WebsocketWriteAllEvent

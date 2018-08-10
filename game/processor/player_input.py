@@ -5,11 +5,8 @@ from typing import Any
 
 import esper
 
-from game.component.position import Position
-from game.component.playercontrolled import PlayerControlled
-from game.component.velocity import Velocity
-from game.component.waiting import Waiting
-from game.component.want_to_move import WantToMove
+from game.component.player_bump import PlayerBump
+from game.component.player_controlled import PlayerControlled
 from game.events import InputEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
@@ -65,31 +62,25 @@ class PlayerInputProcessor(esper.Processor):
 
     def handle_keypress_playing(self, _modifiers: dict, key: str, _coords: Point):
         """Handle input event in the PLAYING state."""
-        move_up = key in 'kyu'
-        move_down = key in 'jbn'
-        move_left = key in 'hyb'
-        move_right = key in 'lun'
+        bump_up = key in 'kyu'
+        bump_down = key in 'jbn'
+        bump_left = key in 'hyb'
+        bump_right = key in 'lun'
         wait = key == 'period'
 
         dx = 0
         dy = 0
-        if move_up:
+        if bump_up:
             dy -= 1
-        if move_down:
+        if bump_down:
             dy += 1
-        if move_left:
+        if bump_left:
             dx -= 1
-        if move_right:
+        if bump_right:
             dx += 1
 
         if not (dx or dy or wait):
             return
 
-        if dx or dy:
-            for ent, components in self.world.get_components(PlayerControlled, Position):
-                self.world.add_component(ent, WantToMove())
-                self.world.add_component(ent, Velocity(dx, dy, 100))
-
-        if wait:
-            for ent, _ in self.world.get_component(PlayerControlled):
-                self.world.add_component(ent, Waiting())
+        for ent, _ in self.world.get_component(PlayerControlled):
+            self.world.add_component(ent, PlayerBump(dx, dy))
