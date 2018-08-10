@@ -18,8 +18,9 @@ class MovementProcessor(esper.Processor):
         """Process movement components."""
         for entity, components in self.world.get_components(Position, Velocity, Actor, WantToMove):
             position, velocity, actor = components[:3]
-            if actor.time_units >= velocity.cost:
+            if actor.time_units >= 0:
                 position.x += velocity.x
                 position.y += velocity.y
+                actor.time_units -= velocity.cost
             self.world.remove_component(entity, Velocity)
             self.world.remove_component(entity, WantToMove)

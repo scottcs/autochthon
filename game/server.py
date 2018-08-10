@@ -1,5 +1,6 @@
 """Autochthon server."""
 import json
+import logging
 from typing import Optional, Any, Union
 
 import tornado.ioloop
@@ -13,6 +14,8 @@ from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
 
 DESIRED_FPS = 30
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -130,5 +133,5 @@ def run_server(config: dict) -> None:
     host: str = config['server']['host']
     app: tornado.web.Application = make_app(config)
     app.listen(port, address=host)
-    print(f'Listening on {host}:{port}...')
+    log.info(f'Listening on {host}:{port}...')
     tornado.ioloop.IOLoop.current().start()

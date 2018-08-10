@@ -55,11 +55,20 @@ class GameTime:
     def __lt__(self, other: Any) -> bool:
         return self._time < GameTime(other)._time
 
+    def __gt__(self, other: Any) -> bool:
+        return self._time > GameTime(other)._time
+
     def __eq__(self, other: Any) -> bool:
         return self._time == GameTime(other)._time
 
+    def __ne__(self, other: Any) -> bool:
+        return self._time != GameTime(other)._time
+
     def __le__(self, other: Any) -> bool:
         return self._time <= GameTime(other)._time
+
+    def __ge__(self, other: Any) -> bool:
+        return self._time >= GameTime(other)._time
 
     def __neg__(self) -> GameTime:
         return GameTime(-self._time)

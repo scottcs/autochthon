@@ -3,11 +3,13 @@ from typing import Any
 
 import esper
 
+from game.component.actor import Actor
 from game.component.hp import HP
 from game.component.position import Position
 from game.component.playercontrolled import PlayerControlled
 from game.component.solid import Solid
 from game.component.velocity import Velocity
+from game.component.waiting import Waiting
 from game.component.want_to_move import WantToMove
 from game.types import Entity
 
@@ -20,10 +22,23 @@ class PlayerActionProcessor(esper.Processor):
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process player components."""
         for ent, components in self.world.get_component(PlayerControlled):
-            self.world.stop_processing = self.process_player(ent)
+            self.process_player(ent)
 
-    def process_player(self, ent: Entity) -> bool:
+    def process_player(self, ent: Entity):
         """Process the player entity."""
+        self._check_waiting(ent)
+        self._check_movement(ent)
+        self._check_attack(ent)
+        # TODO: resolve other kinds of collisions
+
+    def _check_waiting(self, ent: Entity):
+        for waiting in self.world.try_component(ent, Waiting):
+            for actor in self.world.try_component(ent, Actor):
+                # TODO: This should maybe be in the movement system
+                actor.time_units -= waiting.wait_time
+            self.world.remove_component(ent, Waiting)
+
+    def _check_movement(self, ent: Entity):
         if self.world.has_component(ent, WantToMove):
             position = self.world.component_for_entity(ent, Position)
             velocity = self.world.component_for_entity(ent, Velocity)
@@ -36,10 +51,9 @@ class PlayerActionProcessor(esper.Processor):
                     if self.world.has_component(found, HP):
                         # TODO: add WantToAttack
                         pass
-                    else:
-                        return True
                 else:
                     self.world.occupied[(position.x, position.y)] = None
                     self.world.occupied[new_position] = ent
-        # TODO: resolve other kinds of collisions (WantToAttack, etc)
-        return False
+
+    def _check_attack(self, ent: Entity):
+        pass
