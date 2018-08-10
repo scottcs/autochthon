@@ -48,8 +48,9 @@ class Priority(IntEnum):
     render = auto()
     movement = auto()
     ai_action = auto()
-    player_action = auto()
     ai = auto()
+    time = auto()
+    player_action = auto()
     input = auto()
 
 
@@ -57,6 +58,7 @@ class ProcessGroup(Enum):
     """Groups of processors."""
     default = auto()
     player = auto()
+    time = auto()
     render = auto()
 
 

@@ -15,9 +15,10 @@ from game.events import GameOverEvent, RefreshMapEvent, PlayerActedEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
 from game.processor.ai_action import AIActionProcessor
-from game.processor.input import InputProcessor
+from game.processor.player_input import PlayerInputProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.player_action import PlayerActionProcessor
+from game.processor.time import TimeProcessor
 from game.types import EventType, RenderLayer, Priority, ProcessGroup, GameState
 from game.world import World
 from gamedata.palette import Palette
@@ -36,14 +37,19 @@ class Game:
         self.world: World = World()
         self.state: GameState = GameState.PLAYING
 
-        RefreshMapEvent.handle(self.on_refresh_map)
+        GameOverEvent.handle(self._on_game_over)
+        PlayerActedEvent.handle(self._on_player_acted)
+        RefreshMapEvent.handle(self._on_refresh_map)
 
-        self.world.add_processor(InputProcessor(),
+        self.world.add_processor(PlayerInputProcessor(),
                                  priority=Priority.input,
                                  group=ProcessGroup.player)
         self.world.add_processor(PlayerActionProcessor(),
                                  priority=Priority.player_action,
                                  group=ProcessGroup.player)
+        self.world.add_processor(TimeProcessor(),
+                                 priority=Priority.time,
+                                 group=ProcessGroup.time)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(AIActionProcessor(), priority=Priority.ai_action)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
@@ -80,9 +86,6 @@ class Game:
                     Position(cell.x, cell.y)
                 )
 
-        PlayerActedEvent.handle(self.on_player_acted)
-        GameOverEvent.handle(self.shutdown)
-
     def make_player(self, game_map: Map) -> None:
         """Make a player entity."""
         self.world.create_entity(
@@ -105,17 +108,16 @@ class Game:
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
-    def on_refresh_map(self, _event: EventType) -> None:
-        """Handle RefreshMapEvent."""
+    def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)
 
-    def on_player_acted(self, _event: EventType) -> None:
-        """Handle PlayerActedEvent."""
+    def _on_player_acted(self, _event: EventType) -> None:
         self.player_acted = True
 
-    def _give_everyone_time_units(self) -> None:
-        for ent, actor in self.world.get_component(Actor):
-            actor.time_units += actor.rate
+    def _on_game_over(self, event: EventType) -> None:
+        if event.get('shutdown'):
+            log.info('Shutting down.')
+            self.game_over = True
 
     def _should_render(self) -> bool:
         # TODO: animation frames
@@ -126,13 +128,7 @@ class Game:
         self.player_acted = False
         self.world.process_group(ProcessGroup.player)
         if self.player_acted:
-            self._give_everyone_time_units()
+            self.world.process_group(ProcessGroup.time)
         self.world.process_group(ProcessGroup.default)
         if self._should_render():
             self.world.process_group(ProcessGroup.render)
-
-    def shutdown(self, event: EventType) -> None:
-        """Shut down the game."""
-        if event.get('shutdown'):
-            log.info('Shutting down.')
-            self.game_over = True
