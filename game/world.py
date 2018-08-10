@@ -7,7 +7,6 @@ from game.component.playercontrolled import PlayerControlled
 from game.component.position import Position
 from game.component.solid import Solid
 from game.types import ProcessGroup, Entity
-from game.utils.time import GameTime
 
 
 class World(esper.World):
@@ -29,7 +28,7 @@ class World(esper.World):
         :param group: Process group to add processor to.
         """
         super().add_processor(processor_instance, priority=priority)
-        group = group or ProcessGroup.turn
+        group = group or ProcessGroup.default
         self._processor_groups.setdefault(group, [])
         self._processor_groups[group].append(processor_instance)
 

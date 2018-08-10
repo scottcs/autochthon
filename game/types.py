@@ -55,9 +55,9 @@ class Priority(IntEnum):
 
 class ProcessGroup(Enum):
     """Groups of processors."""
+    default = auto()
     player = auto()
-    turn = auto()
-    post_turn = auto()
+    render = auto()
 
 
 class GameState(Enum):

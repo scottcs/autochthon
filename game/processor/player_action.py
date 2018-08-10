@@ -11,6 +11,7 @@ from game.component.solid import Solid
 from game.component.velocity import Velocity
 from game.component.waiting import Waiting
 from game.component.want_to_move import WantToMove
+from game.events import PlayerActedEvent
 from game.types import Entity
 
 
@@ -37,6 +38,7 @@ class PlayerActionProcessor(esper.Processor):
                 # TODO: This should maybe be in the movement system
                 actor.time_units -= waiting.wait_time
             self.world.remove_component(ent, Waiting)
+            PlayerActedEvent.fire()
 
     def _check_movement(self, ent: Entity):
         if self.world.has_component(ent, WantToMove):
@@ -54,6 +56,7 @@ class PlayerActionProcessor(esper.Processor):
                 else:
                     self.world.occupied[(position.x, position.y)] = None
                     self.world.occupied[new_position] = ent
+                    PlayerActedEvent.fire()
 
     def _check_attack(self, ent: Entity):
         pass

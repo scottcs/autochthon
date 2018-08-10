@@ -47,4 +47,5 @@ class Event:
 GameOverEvent: Event = Event()
 InputEvent: Event = Event()
 RefreshMapEvent: Event = Event()
+PlayerActedEvent: Event = Event()
 WebsocketWriteAllEvent: Event = Event()
