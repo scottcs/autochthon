@@ -1,12 +1,11 @@
 """Player bump processor."""
-from typing import Any, Optional
+from typing import Any
 
 import esper
 
 from game.component.hp import HP
 from game.component.position import Position
 from game.component.player_bump import PlayerBump
-from game.component.solid import Solid
 from game.component.waiting import Waiting
 from game.component.moving import Moving
 from game.events import PlayerActedEvent
@@ -43,8 +42,8 @@ class PlayerBumpProcessor(esper.Processor):
             return True
         return False
 
-    def _try_attacking(self, ent: Entity, other: Entity) -> None:
-        for hp in self.world.try_component(other, HP):
+    def _try_attacking(self, _ent: Entity, other: Entity) -> None:
+        for _ in self.world.try_component(other, HP):
             # TODO: add Attacking component
             PlayerActedEvent.fire()
 
