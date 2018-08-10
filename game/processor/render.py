@@ -21,10 +21,6 @@ class WebRenderProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
-        data = args[0]
-        if not data['time_passed']:
-            return
-
         b_cells: bytearray = bytearray()
         num_cells: int = 0
         player_x: int = 0

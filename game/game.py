@@ -18,8 +18,8 @@ from game.processor.ai_action import AIActionProcessor
 from game.processor.input import InputProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.player_action import PlayerActionProcessor
-from game.processor.time import TimeProcessor
 from game.types import EventType, RenderLayer, Priority, ProcessGroup, GameState
+from game.utils.time import GameTime
 from game.world import World
 from gamedata.palette import Palette
 
@@ -32,6 +32,7 @@ class Game:
 
     def __init__(self, render_processor: esper.Processor, config: Optional[dict]=None) -> None:
         self.render_processor = render_processor
+        self.input_processor = InputProcessor()
         self.config: dict = config or {}
         self.game_over: bool = False
         self.world: World = World()
@@ -39,16 +40,14 @@ class Game:
 
         RefreshMapEvent.handle(self.on_refresh_map)
 
-        self.world.add_processor(InputProcessor(),
-                                 priority=Priority.input,
-                                 group=ProcessGroup.pre_turn)
+        self.world.add_processor(self.input_processor, priority=Priority.input,
+                                 group=ProcessGroup.player)
+        self.world.add_processor(PlayerActionProcessor(), priority=Priority.player_action,
+                                 group=ProcessGroup.player)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
-        self.world.add_processor(PlayerActionProcessor(), priority=Priority.player_action)
         self.world.add_processor(AIActionProcessor(), priority=Priority.ai_action)
-        self.world.add_processor(TimeProcessor(), priority=Priority.time)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
-        self.world.add_processor(self.render_processor,
-                                 priority=Priority.render,
+        self.world.add_processor(self.render_processor, priority=Priority.render,
                                  group=ProcessGroup.post_turn)
 
         current_map = ClassicMap(self.config['map']['max_tiles_w'],
@@ -58,7 +57,6 @@ class Game:
 
         self.make_player(current_map)
         self.make_enemy(current_map, 39, Palette.red, 200)
-        self.make_enemy(current_map, 39, Palette.green, 5)
         self.make_enemy(current_map, 39, Palette.purple, 500)
         self.make_enemy(current_map, 39, Palette.orange, 110)
         self.make_enemy(current_map, 39, Palette.cyan, 90)
@@ -109,15 +107,42 @@ class Game:
         """Handle OnRefreshMapEvent."""
         self.render_processor.process({'time_passed': True})
 
+    def _actors_have_time_left(self) -> bool:
+        for ent, actor in self.world.get_component(Actor):
+            log.debug(f'E: {ent}   A:{actor}')
+            if actor.time_units > 0:
+                return True
+        return False
+
+    def _get_player_time_units(self) -> GameTime:
+        units = GameTime(0)
+        for ent, components in self.world.get_components(Actor, PlayerControlled):
+            units += components[0].time_units
+        return units
+
+    def _non_player_time_units_available(self) -> bool:
+        for ent, actor in self.world.get_component(Actor):
+            if self.world.has_component(ent, PlayerControlled):
+                continue
+            if actor.time_units > 0:
+                return True
+        return False
+
+    def _give_everyone_time_units(self) -> None:
+        for ent, actor in self.world.get_component(Actor):
+            actor.time_units += actor.rate
+
     def update(self) -> None:
         """Update the game world."""
-        data = {'time_passed': False}
-        self.world.process_group(ProcessGroup.pre_turn, data)
-        if data['time_passed']:
-            for ent, actor in self.world.get_component(Actor):
-                log.debug(f'E: {ent}   A:{actor}')
-            self.world.process_group(ProcessGroup.turn, data)
-        self.world.process_group(ProcessGroup.post_turn, data)
+        if self._get_player_time_units() >= 0:
+            if self.input_processor.input_queue:
+                self.world.process_group(ProcessGroup.player)
+                self.world.process_group(ProcessGroup.turn)
+        else:
+            self._give_everyone_time_units()
+        while self._non_player_time_units_available():
+            self.world.process_group(ProcessGroup.turn)
+        self.world.process_group(ProcessGroup.post_turn)
 
     def shutdown(self, event: EventType) -> None:
         """Shut down the game."""

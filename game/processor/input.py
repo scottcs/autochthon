@@ -21,7 +21,7 @@ class InputProcessor(esper.Processor):
     """Process user input and issue events."""
     def __init__(self) -> None:
         super().__init__()
-        self._input_queue: list = []
+        self.input_queue: list = []
         InputEvent.handle(self.on_input)
         with open(KEYS_JSON) as f:
             keys: dict = json.load(f)
@@ -35,7 +35,7 @@ class InputProcessor(esper.Processor):
         modifiers: dict = self._unpack_modifiers(event['modifiers'])
         key: str = self._get_key(event['code'])
         coords: Point = Point(event['x_coord'], event['y_coord'])
-        self._input_queue.append({
+        self.input_queue.append({
             'event': event['event'],
             'state': event.get('state', GameState.UNKNOWN),
             'modifiers': modifiers,
@@ -45,17 +45,11 @@ class InputProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process the input queue."""
-        data = args[0]
-        time_passed = data['time_passed']
-        while self._input_queue:
-            event = self._input_queue.pop()
+        while self.input_queue:
+            event = self.input_queue.pop()
             if event['event'] == self.events['KeyPress']:
                 if event['state'] == GameState.PLAYING:
-                    result = self.handle_keypress_playing(event['modifiers'],
-                                                          event['key'],
-                                                          event['coords'])
-                    time_passed = result or time_passed
-        data['time_passed'] = time_passed
+                    self.handle_keypress_playing(event['modifiers'], event['key'], event['coords'])
 
     def _unpack_modifiers(self, modifiers: int) -> dict:
         return {
@@ -70,7 +64,7 @@ class InputProcessor(esper.Processor):
         except KeyError:
             return chr(code).lower()
 
-    def handle_keypress_playing(self, _modifiers: dict, key: str, _coords: Point) -> bool:
+    def handle_keypress_playing(self, _modifiers: dict, key: str, _coords: Point):
         """Handle input event in the PLAYING state."""
         move_up = key in 'kyu'
         move_down = key in 'jbn'
@@ -90,14 +84,13 @@ class InputProcessor(esper.Processor):
             dx += 1
 
         if not (dx or dy or wait):
-            return False
+            return
 
         if dx or dy:
             for ent, components in self.world.get_components(PlayerControlled, Position):
                 self.world.add_component(ent, WantToMove())
-                self.world.add_component(ent, Velocity(dx, dy, 200))
+                self.world.add_component(ent, Velocity(dx, dy, 100))
 
         if wait:
             for ent, _ in self.world.get_component(PlayerControlled):
                 self.world.add_component(ent, Waiting())
-        return True
