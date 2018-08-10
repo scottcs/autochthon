@@ -46,7 +46,9 @@ class DirectionType(Enum):
 class Priority(IntEnum):
     """Processor priorities."""
     render = auto()
+    psychopomps = auto()
     movement = auto()
+    combat = auto()
     ai = auto()
     time = auto()
     player_bump = auto()

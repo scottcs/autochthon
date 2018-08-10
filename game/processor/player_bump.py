@@ -3,6 +3,7 @@ from typing import Any
 
 import esper
 
+from game.component.attacking import Attacking
 from game.component.hp import HP
 from game.component.position import Position
 from game.component.player_bump import PlayerBump
@@ -42,10 +43,11 @@ class PlayerBumpProcessor(esper.Processor):
             return True
         return False
 
-    def _try_attacking(self, _ent: Entity, other: Entity) -> None:
+    def _try_attacking(self, ent: Entity, other: Entity) -> None:
         for _ in self.world.try_component(other, HP):
-            # TODO: add Attacking component
-            PlayerActedEvent.fire()
+            for other_pos in self.world.try_component(other, Position):
+                self.world.add_component(ent, Attacking(other_pos.x, other_pos.y))
+                PlayerActedEvent.fire()
 
     def _try_moving(self, ent: Entity, destination: Position):
         self.world.add_component(ent, Moving(destination.x, destination.y))

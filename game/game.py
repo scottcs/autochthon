@@ -15,7 +15,9 @@ from game.component.solid import Solid
 from game.events import GameOverEvent, RefreshMapEvent, PlayerActedEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
+from game.processor.combat import CombatProcessor
 from game.processor.player_input import PlayerInputProcessor
+from game.processor.psychopomps import Psychopomps
 from game.processor.movement import MovementProcessor
 from game.processor.player_bump import PlayerBumpProcessor
 from game.processor.time import TimeProcessor
@@ -51,7 +53,9 @@ class Game:
                                  priority=Priority.time,
                                  group=ProcessGroup.time)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
+        self.world.add_processor(CombatProcessor(), priority=Priority.combat)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
+        self.world.add_processor(Psychopomps(), priority=Priority.psychopomps)
         self.world.add_processor(render_processor,
                                  priority=Priority.render,
                                  group=ProcessGroup.render)
