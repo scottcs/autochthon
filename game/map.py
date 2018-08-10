@@ -1,7 +1,7 @@
 """Game map."""
 from __future__ import annotations
 from random import randint
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import esper
 import numpy as np
@@ -63,6 +63,20 @@ class Map(tcod.map.Map):
             self._iter_y = 0
             self._iter_x += 1
         return cell
+
+    def __getitem__(self, item: Tuple[int, int]) -> MapCell:
+        x, y = item
+        try:
+            return MapCell(
+                x,
+                y,
+                self.transparent[y, x],
+                self.walkable[y, x],
+                self.fov[y, x],
+                self.explored[y, x],
+            )
+        except IndexError:
+            raise IndexError(f'Location ({x}, {y}) in map not found.')
 
     def __len__(self) -> int:
         return self.width * self.height

@@ -32,9 +32,9 @@ class PlayerBumpProcessor(esper.Processor):
             existing = self.world.get_solid_entity_at_position(destination.x, destination.y)
             if existing:
                 self._try_attacking(ent, existing)
-                # TODO: resolve other kinds of collisions? Digging?
-            else:
+            elif self.world.map[destination.x, destination.y].walkable:
                 self._try_moving(ent, destination)
+            # TODO: resolve other kinds of collisions? Digging?
 
     def _check_waiting(self, ent: Entity, bump: PlayerBump) -> bool:
         if bump.dx == 0 and bump.dy == 0:
