@@ -149,6 +149,8 @@
         function setupWebsockets(config) {
             const host = config.server.host;
             const port = config.server.port;
+            let pausingKeyPress = false;
+            let pausingKeyPressTimer = null;
             ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
             ws.binaryType = 'arraybuffer';
 
@@ -156,6 +158,20 @@
                 if (event.defaultPrevented) {
                     return;
                 }
+
+                if (pausingKeyPress) {
+                    return;
+                }
+
+                if (pausingKeyPressTimer === null) {
+                    pausingKeyPressTimer = setTimeout(function () {
+                        pausingKeyPress = false;
+                        clearTimeout(pausingKeyPressTimer);
+                        pausingKeyPressTimer = null;
+                    }, 110);
+                    pausingKeyPress = true;
+                }
+
                 let modifiers = 0;
                 if (event.shiftKey) {
                     modifiers |= keys_data.Modifiers.Shift;
@@ -186,6 +202,7 @@
                 view.setUint16(3, 0);
                 view.setUint16(5, 0);
                 const data = new Uint8Array(buffer);
+                console.log('sending');
                 ws.send(data);
             });
 
