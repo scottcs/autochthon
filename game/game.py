@@ -60,6 +60,7 @@ class Game:
                                  self.config['map']['max_tiles_h'],
                                  self.world)
         current_map.create()
+        self.world.map = current_map
 
         self.make_player(current_map)
         self.make_enemy(current_map, 39, Palette.red, 200)
@@ -67,24 +68,6 @@ class Game:
         self.make_enemy(current_map, 39, Palette.orange, 110)
         self.make_enemy(current_map, 39, Palette.cyan, 90)
         self.make_enemy(current_map, 39, Palette.green, 100)
-
-        # TODO: Think this is really slowing it down
-        count = 0
-        for cell in current_map:
-            count += 1
-            if cell.transparent:
-                # floor
-                self.world.create_entity(
-                    Renderable(220, Palette.dark_grey, RenderLayer.FLOOR),
-                    Position(cell.x, cell.y)
-                )
-            else:
-                # wall
-                self.world.create_entity(
-                    Renderable(234, Palette.brown, RenderLayer.WALL),
-                    Solid(),
-                    Position(cell.x, cell.y)
-                )
 
     def make_player(self, game_map: Map) -> None:
         """Make a player entity."""

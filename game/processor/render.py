@@ -22,10 +22,11 @@ class WebRenderProcessor(esper.Processor):
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
         b_cells: bytearray = bytearray()
-        num_cells: int = 0
+        data_length: int = 0
         player_x: int = 0
         player_y: int = 0
 
+        # PLAYER POSITION
         for ent, components in self.world.get_components(PlayerControlled, Renderable, Position):
             position = components[-1]
             player_x = position.x
@@ -33,9 +34,28 @@ class WebRenderProcessor(esper.Processor):
             # TODO: handle more than one player controlled object?
             break
 
+        # HEADER
         b_cells.extend(player_x.to_bytes(2, 'big'))
         b_cells.extend(player_y.to_bytes(2, 'big'))
-        b_cells.extend(num_cells.to_bytes(2, 'big'))
+        b_cells.extend(data_length.to_bytes(2, 'big'))
+
+        # MAP
+        for cell in self.world.map:
+            data_length += 1
+            # WARNING: this will override any entities with ID >= 10000!
+            #          also limits map size to about 235x235
+            cell_id = 10000 + self.world.map.width * cell.x + cell.y
+            b_cells.extend(cell_id.to_bytes(2, 'big'))
+            b_cells.extend(cell.x.to_bytes(2, 'big'))
+            b_cells.extend(cell.y.to_bytes(2, 'big'))
+            if cell.walkable:
+                b_cells.extend(self.world.map.floor_tile_id.to_bytes(2, 'big'))
+                b_cells.extend(self.world.map.floor_color.to_bytes(4, 'big'))
+            else:
+                b_cells.extend(self.world.map.wall_tile_id.to_bytes(2, 'big'))
+                b_cells.extend(self.world.map.wall_color.to_bytes(4, 'big'))
+
+        # RENDERABLE ENTITIES
         for ent, components in sorted(self.world.get_components(Position, Renderable),
                                       key=lambda x: x[1][1].layer.value):
             positional, renderable = components
@@ -44,9 +64,9 @@ class WebRenderProcessor(esper.Processor):
             b_cells.extend(positional.y.to_bytes(2, 'big'))
             b_cells.extend(renderable.tile_id.to_bytes(2, 'big'))
             b_cells.extend(renderable.tint.to_bytes(4, 'big'))
-            num_cells += 1
-        # Overwrite num_cells now that we've counted them
-        b_cells[4:6] = num_cells.to_bytes(2, 'big')
+            data_length += 1
+        # Overwrite data_length now that we've counted them
+        b_cells[4:6] = data_length.to_bytes(2, 'big')
         ##########################################
         # Map Data:
         #     Header:
