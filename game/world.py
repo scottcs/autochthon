@@ -7,6 +7,7 @@ from game.component.actor import Actor
 from game.component.player_controlled import PlayerControlled
 from game.component.position import Position
 from game.component.solid import Solid
+from game.map import Map
 from game.types import ProcessGroup, Entity
 
 
@@ -15,6 +16,7 @@ class World(esper.World):
     def __init__(self, timed: bool=False) -> None:
         super().__init__(timed)
         self._processor_groups: dict = {}
+        self.map: Optional[Map] = None
 
     def add_processor(self,
                       processor_instance: esper.Processor,

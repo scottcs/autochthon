@@ -1,7 +1,7 @@
 """Game map."""
 from __future__ import annotations
 from random import randint
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import esper
 import numpy as np
@@ -10,6 +10,7 @@ import tcod.map
 from game.types import MapCell
 from game.utils.geometry import Rect, Point
 from game.utils.random import coin_flip
+from gamedata.palette import Palette
 
 
 class Map(tcod.map.Map):
@@ -23,6 +24,12 @@ class Map(tcod.map.Map):
         self._iter_x: int = 0
         self._iter_y: int = 0
         self._buffer2: np.array = np.zeros((height, width, 1), dtype=np.bool_)
+
+        # TODO: make these more dynamic
+        self.floor_tile_id = 220
+        self.floor_color: int = Palette.dark_grey
+        self.wall_tile_id = 234
+        self.wall_color: int = Palette.brown
 
     @property
     def explored(self) -> np.array:
@@ -56,6 +63,20 @@ class Map(tcod.map.Map):
             self._iter_y = 0
             self._iter_x += 1
         return cell
+
+    def __getitem__(self, item: Tuple[int, int]) -> MapCell:
+        x, y = item
+        try:
+            return MapCell(
+                x,
+                y,
+                self.transparent[y, x],
+                self.walkable[y, x],
+                self.fov[y, x],
+                self.explored[y, x],
+            )
+        except IndexError:
+            raise IndexError(f'Location ({x}, {y}) in map not found.')
 
     def __len__(self) -> int:
         return self.width * self.height

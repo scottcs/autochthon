@@ -1,12 +1,11 @@
 """Player bump processor."""
-from typing import Any, Optional
+from typing import Any
 
 import esper
 
 from game.component.hp import HP
 from game.component.position import Position
 from game.component.player_bump import PlayerBump
-from game.component.solid import Solid
 from game.component.waiting import Waiting
 from game.component.moving import Moving
 from game.events import PlayerActedEvent
@@ -32,9 +31,9 @@ class PlayerBumpProcessor(esper.Processor):
             existing = self.world.get_solid_entity_at_position(destination.x, destination.y)
             if existing:
                 self._try_attacking(ent, existing)
-                # TODO: resolve other kinds of collisions? Digging?
-            else:
+            elif self.world.map[destination.x, destination.y].walkable:
                 self._try_moving(ent, destination)
+            # TODO: resolve other kinds of collisions? Digging?
 
     def _check_waiting(self, ent: Entity, bump: PlayerBump) -> bool:
         if bump.dx == 0 and bump.dy == 0:
@@ -43,8 +42,8 @@ class PlayerBumpProcessor(esper.Processor):
             return True
         return False
 
-    def _try_attacking(self, ent: Entity, other: Entity) -> None:
-        for hp in self.world.try_component(other, HP):
+    def _try_attacking(self, _ent: Entity, other: Entity) -> None:
+        for _ in self.world.try_component(other, HP):
             # TODO: add Attacking component
             PlayerActedEvent.fire()
 

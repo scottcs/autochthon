@@ -23,7 +23,7 @@ class MovementProcessor(esper.Processor):
         for ent, components in self.world.get_components(Position, Actor, BaseActionCosts, Moving):
             position, actor, base_costs, moving = components
             other_solid = self.world.get_solid_entity_at_position(moving.x, moving.y)
-            if other_solid is None:
+            if other_solid is None and self.world.map[moving.x, moving.y].walkable:
                 position.x = moving.x
                 position.y = moving.y
                 # TODO: Calculate any moving cost modifiers
