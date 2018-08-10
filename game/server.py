@@ -56,7 +56,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         config = kwargs.pop('config', None)
         super().__init__(*args, **kwargs)
-        WebsocketWriteAllEvent.handle(self.on_websocket_write_all)
+        WebsocketWriteAllEvent.handle(self._on_websocket_write_all)
         self.game_callback: GameCallback = GameCallback(config=config)
         self.game_callback.start()
 
@@ -65,8 +65,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         self.connections.add(self)
         self.set_nodelay(True)
 
-    def on_websocket_write_all(self, event: EventType) -> None:
-        """Handle WebsocketWriteAllEvent"""
+    def _on_websocket_write_all(self, event: EventType) -> None:
         binary: bool = event.pop('binary', False)
         message: Union[str, bytes] = event.pop('message', None)
         if message:

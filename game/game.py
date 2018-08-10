@@ -37,7 +37,9 @@ class Game:
         self.world: World = World()
         self.state: GameState = GameState.PLAYING
 
-        RefreshMapEvent.handle(self.on_refresh_map)
+        GameOverEvent.handle(self._on_game_over)
+        PlayerActedEvent.handle(self._on_player_acted)
+        RefreshMapEvent.handle(self._on_refresh_map)
 
         self.world.add_processor(InputProcessor(),
                                  priority=Priority.input,
@@ -84,9 +86,6 @@ class Game:
                     Position(cell.x, cell.y)
                 )
 
-        PlayerActedEvent.handle(self.on_player_acted)
-        GameOverEvent.handle(self.shutdown)
-
     def make_player(self, game_map: Map) -> None:
         """Make a player entity."""
         self.world.create_entity(
@@ -109,13 +108,16 @@ class Game:
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
-    def on_refresh_map(self, _event: EventType) -> None:
-        """Handle RefreshMapEvent."""
+    def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)
 
-    def on_player_acted(self, _event: EventType) -> None:
-        """Handle PlayerActedEvent."""
+    def _on_player_acted(self, _event: EventType) -> None:
         self.player_acted = True
+
+    def _on_game_over(self, event: EventType) -> None:
+        if event.get('shutdown'):
+            log.info('Shutting down.')
+            self.game_over = True
 
     def _should_render(self) -> bool:
         # TODO: animation frames
@@ -130,9 +132,3 @@ class Game:
         self.world.process_group(ProcessGroup.default)
         if self._should_render():
             self.world.process_group(ProcessGroup.render)
-
-    def shutdown(self, event: EventType) -> None:
-        """Shut down the game."""
-        if event.get('shutdown'):
-            log.info('Shutting down.')
-            self.game_over = True

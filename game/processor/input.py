@@ -22,7 +22,7 @@ class InputProcessor(esper.Processor):
     def __init__(self) -> None:
         super().__init__()
         self.input_queue: list = []
-        InputEvent.handle(self.on_input)
+        InputEvent.handle(self._on_input)
         with open(KEYS_JSON) as f:
             keys: dict = json.load(f)
         self.keys: dict = keys['Keys']
@@ -30,8 +30,7 @@ class InputProcessor(esper.Processor):
         self.modifiers: dict = keys['Modifiers']
         self.events: dict = keys['Events']
 
-    def on_input(self, event: EventType) -> None:
-        """Handle input event."""
+    def _on_input(self, event: EventType) -> None:
         modifiers: dict = self._unpack_modifiers(event['modifiers'])
         key: str = self._get_key(event['code'])
         coords: Point = Point(event['x_coord'], event['y_coord'])
