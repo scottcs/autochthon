@@ -60,7 +60,7 @@ class Game:
         self.make_enemy(current_map, 39, Palette.purple, 500)
         self.make_enemy(current_map, 39, Palette.orange, 110)
         self.make_enemy(current_map, 39, Palette.cyan, 90)
-        self.make_enemy(current_map, 39, Palette.cyan, 100)
+        self.make_enemy(current_map, 39, Palette.gree, 100)
 
         count = 0
         for cell in current_map:
@@ -105,7 +105,7 @@ class Game:
 
     def on_refresh_map(self, _event: EventType) -> None:
         """Handle OnRefreshMapEvent."""
-        self.render_processor.process({'time_passed': True})
+        self.render_processor.process()
 
     def _actors_have_time_left(self) -> bool:
         for ent, actor in self.world.get_component(Actor):
@@ -138,11 +138,12 @@ class Game:
             if self.input_processor.input_queue:
                 self.world.process_group(ProcessGroup.player)
                 self.world.process_group(ProcessGroup.turn)
+                self.world.process_group(ProcessGroup.post_turn)
         else:
             self._give_everyone_time_units()
         while self._non_player_time_units_available():
             self.world.process_group(ProcessGroup.turn)
-        self.world.process_group(ProcessGroup.post_turn)
+            self.world.process_group(ProcessGroup.post_turn)
 
     def shutdown(self, event: EventType) -> None:
         """Shut down the game."""

@@ -16,8 +16,6 @@ class World(esper.World):
         super().__init__(timed)
         self._processor_groups: dict = {}
         self.occupied: dict = {}
-        self.stop_processing: bool = False
-        self.turn_time: GameTime = GameTime(0)
 
     def add_processor(self,
                       processor_instance: esper.Processor,
@@ -46,12 +44,8 @@ class World(esper.World):
     def process_group(self, group: ProcessGroup, *args: Any, **kwargs: Any) -> None:
         """Process a group of processors."""
         self._clear_dead_entities()
-        self.turn_time = GameTime(0)
         self.calculate_occupied()
         for processor in self._processor_groups[group]:
-            if self.stop_processing:
-                self.stop_processing = False
-                return
             processor.process(*args, **kwargs)
 
     def calculate_occupied(self) -> None:
