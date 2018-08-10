@@ -15,7 +15,7 @@ from game.events import GameOverEvent, RefreshMapEvent, PlayerActedEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
 from game.processor.ai_action import AIActionProcessor
-from game.processor.input import InputProcessor
+from game.processor.player_input import PlayerInputProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.player_action import PlayerActionProcessor
 from game.processor.time import TimeProcessor
@@ -41,7 +41,7 @@ class Game:
         PlayerActedEvent.handle(self._on_player_acted)
         RefreshMapEvent.handle(self._on_refresh_map)
 
-        self.world.add_processor(InputProcessor(),
+        self.world.add_processor(PlayerInputProcessor(),
                                  priority=Priority.input,
                                  group=ProcessGroup.player)
         self.world.add_processor(PlayerActionProcessor(),

@@ -17,7 +17,7 @@ from game.utils.geometry import Point
 KEYS_JSON = Path('static') / Path('keys.json')
 
 
-class InputProcessor(esper.Processor):
+class PlayerInputProcessor(esper.Processor):
     """Process user input and issue events."""
     def __init__(self) -> None:
         super().__init__()
