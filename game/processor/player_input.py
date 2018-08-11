@@ -5,8 +5,7 @@ from typing import Any
 
 import esper
 
-from game.component.player_bump import PlayerBump
-from game.component.player_controlled import PlayerControlled
+from game.component.player import PlayerBump, PlayerControlled
 from game.events import InputEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
@@ -60,7 +59,7 @@ class PlayerInputProcessor(esper.Processor):
         except KeyError:
             return chr(code).lower()
 
-    def handle_keypress_playing(self, _modifiers: dict, key: str, _coords: Point):
+    def handle_keypress_playing(self, _modifiers: dict, key: str, _coords: Point) -> None:
         """Handle input event in the PLAYING state."""
         bump_up = key in 'kyu'
         bump_down = key in 'jbn'

@@ -4,10 +4,10 @@ from typing import Any
 
 import esper
 
-from game.component.dead import Dead
-from game.component.player_controlled import PlayerControlled
-from game.component.position import Position
-from game.component.renderable import Renderable
+from game.component.status import Dead
+from game.component.player import PlayerControlled
+from game.component.movement import Position
+from game.component.render import Renderable
 from game.events import WebsocketWriteAllEvent
 
 log = logging.getLogger(__name__)

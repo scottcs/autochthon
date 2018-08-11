@@ -3,12 +3,9 @@ from typing import Any
 
 import esper
 
-from game.component.actor import Actor
-from game.component.base_action_costs import BaseActionCosts
-from game.component.dead import Dead
-from game.component.moving import Moving
-from game.component.position import Position
-from game.component.waiting import Waiting
+from game.component.action import BaseActionCosts, Actor
+from game.component.status import Dead
+from game.component.movement import Moving, Waiting, Position
 
 
 class MovementProcessor(esper.Processor):

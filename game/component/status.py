@@ -3,3 +3,7 @@
 
 class Dead:
     """Dead component."""
+
+
+class Solid:
+    """Solid Component."""

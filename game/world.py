@@ -3,11 +3,10 @@ from typing import Any, Optional
 
 import esper
 
-from game.component.actor import Actor
-from game.component.dead import Dead
-from game.component.player_controlled import PlayerControlled
-from game.component.position import Position
-from game.component.solid import Solid
+from game.component.action import Actor
+from game.component.status import Dead, Solid
+from game.component.player import PlayerControlled
+from game.component.movement import Position
 from game.map import Map
 from game.types import ProcessGroup, Entity
 

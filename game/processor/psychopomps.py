@@ -4,7 +4,7 @@ from typing import Any
 
 import esper
 
-from game.component.dead import Dead
+from game.component.status import Dead
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)

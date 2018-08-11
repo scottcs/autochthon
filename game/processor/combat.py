@@ -3,10 +3,10 @@ from typing import Any
 
 import esper
 
-from game.component.attacking import Attacking
-from game.component.actor import Actor
-from game.component.dead import Dead
-from game.component.hp import HP
+from game.component.combat import Attacking
+from game.component.action import Actor
+from game.component.status import Dead
+from game.component.attribute import HP
 
 
 class CombatProcessor(esper.Processor):
@@ -15,6 +15,7 @@ class CombatProcessor(esper.Processor):
         """Process combat."""
         for ent, components in self.world.get_components(Attacking, Actor):
             attacking, actor = components
+            self.world.remove_component(ent, Attacking)
             existing = self.world.get_solid_entity_at_position(attacking.target_x,
                                                                attacking.target_y)
             if not existing:
@@ -26,8 +27,5 @@ class CombatProcessor(esper.Processor):
                 if hp.current <= 0:
                     # TODO: clean up dead entities (convert to corpses? that decay?)
                     self.world.add_component(existing, Dead())
-            self.world.remove_component(ent, Attacking)
             # TODO: move attack cost elsewhere and calculate from other components
             actor.time_units -= 100
-
-

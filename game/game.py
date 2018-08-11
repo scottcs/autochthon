@@ -4,14 +4,13 @@ from typing import Optional
 
 import esper
 
-from game.component.actor import Actor
-from game.component.ai_simplemind import AISimpleMind
-from game.component.base_action_costs import BaseActionCosts
-from game.component.hp import HP
-from game.component.player_controlled import PlayerControlled
-from game.component.position import Position
-from game.component.renderable import Renderable
-from game.component.solid import Solid
+from game.component.ai import AISimpleMind
+from game.component.action import BaseActionCosts, Actor
+from game.component.attribute import HP
+from game.component.player import PlayerControlled
+from game.component.movement import Position
+from game.component.render import Renderable
+from game.component.status import Solid
 from game.events import GameOverEvent, RefreshMapEvent, PlayerActedEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
