@@ -1,4 +1,4 @@
-"""Renderable component."""
+"""Render components."""
 from game.types import RenderLayer
 
 

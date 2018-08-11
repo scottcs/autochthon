@@ -1,4 +1,4 @@
-"""Component indicating an entity wants to move."""
+"""Movement components."""
 from typing import Any
 
 

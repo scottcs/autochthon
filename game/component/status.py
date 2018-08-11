@@ -1,9 +1,9 @@
-"""Component to indicate something is dead."""
+"""Status components."""
 
 
 class Dead:
-    """Dead component."""
+    """Component indicating something is dead."""
 
 
 class Solid:
-    """Solid Component."""
+    """Component indicating something is solid."""

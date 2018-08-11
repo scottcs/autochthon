@@ -1,4 +1,4 @@
-"""Base action costs component."""
+"""Action components."""
 from typing import Union
 
 from game.utils.time import GameTime, MOMENTS_PER_TURN

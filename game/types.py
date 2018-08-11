@@ -1,6 +1,6 @@
 """Typing for the game module."""
 from enum import Enum, auto, IntEnum
-from typing import Dict, Callable, Any, NamedTuple
+from typing import Dict, Callable, Any, NamedTuple, Union
 
 
 class MapCell(NamedTuple):
@@ -72,3 +72,6 @@ class GameState(Enum):
     PLAYING = auto()
     IN_GAME_MENU = auto()
     SHUTDOWN = auto()
+
+
+Number = Union[int, float]

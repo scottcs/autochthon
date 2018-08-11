@@ -1,4 +1,4 @@
-"""Simple mind for AI."""
+"""AI components."""
 
 
 class AISimpleMind:

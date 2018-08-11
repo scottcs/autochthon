@@ -1,4 +1,4 @@
-"""Player bump component."""
+"""Player components."""
 
 
 class PlayerBump:

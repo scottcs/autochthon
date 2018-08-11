@@ -3,7 +3,7 @@ from typing import Any
 
 import esper
 
-from game.component.combat import Attacking
+from game.component.attack import AttackTargeting
 from game.component.action import Actor
 from game.component.status import Dead
 from game.component.attribute import HP
@@ -13,9 +13,9 @@ class CombatProcessor(esper.Processor):
     """Combat processor."""
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process combat."""
-        for ent, components in self.world.get_components(Attacking, Actor):
+        for ent, components in self.world.get_components(AttackTargeting, Actor):
             attacking, actor = components
-            self.world.remove_component(ent, Attacking)
+            self.world.remove_component(ent, AttackTargeting)
             existing = self.world.get_solid_entity_at_position(attacking.target_x,
                                                                attacking.target_y)
             if not existing:
