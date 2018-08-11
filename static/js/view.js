@@ -128,10 +128,11 @@
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
             sprite.visible = (
-                sprite.x > (viewport.left - 3*tile_width) &&
-                sprite.y > (viewport.top - 3*tile_height) &&
-                sprite.x < (viewport.right + 3*tile_width) &&
-                sprite.y < (viewport.bottom + 3*tile_height)
+                (cell.tile_id > 0) &&
+                (sprite.x > (viewport.left - 3*tile_width)) &&
+                (sprite.y > (viewport.top - 3*tile_height)) &&
+                (sprite.x < (viewport.right + 3*tile_width)) &&
+                (sprite.y < (viewport.bottom + 3*tile_height))
             );
         }
 
@@ -202,7 +203,6 @@
                 view.setUint16(3, 0);
                 view.setUint16(5, 0);
                 const data = new Uint8Array(buffer);
-                console.log('sending');
                 ws.send(data);
             });
 

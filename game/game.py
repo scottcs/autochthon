@@ -55,9 +55,11 @@ class Game:
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(CombatProcessor(), priority=Priority.combat)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
-        self.world.add_processor(Psychopomps(), priority=Priority.psychopomps)
         self.world.add_processor(render_processor,
                                  priority=Priority.render,
+                                 group=ProcessGroup.render)
+        self.world.add_processor(Psychopomps(),
+                                 priority=Priority.psychopomps,
                                  group=ProcessGroup.render)
 
         current_map = ClassicMap(self.config['map']['max_tiles_w'],
