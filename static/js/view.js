@@ -103,20 +103,31 @@
 
         function handleBinaryData(data) {
             const view = new DataView(data);
-            const player_x = view.getUint16(0) * tile_width;
-            const player_y = view.getUint16(2) * tile_height;
+            const header_size = 1;
+            switch (view.getUint8(0)){
+                case socket_events.FromServer.UpdateMap:
+                    handleUpdateMap(view, header_size);
+                    break;
+                default:
+                    console.error('Got unknown event from server.', view);
+            }
+        }
+
+        function handleUpdateMap(view, offset) {
+            const player_x = view.getUint16(offset) * tile_width;
+            const player_y = view.getUint16(offset + 2) * tile_height;
             viewport.moveCenter(player_x, player_y);
-            const num_cells = view.getUint16(4);
-            const offset = 6;      // header size in bytes
+            const num_cells = view.getUint16(offset + 4);
+            const new_offset = offset + 6;      // header size in bytes
             const cell_size = 12;  // cell size in bytes
             for (let i = 0; i < num_cells; i++) {
-                const cell_offset = offset + (i * cell_size);
+                const cell_new_offset = new_offset + (i * cell_size);
                 const cell = {
-                    id: view.getUint16(cell_offset),
-                    x: view.getUint16(cell_offset + 2),
-                    y: view.getUint16(cell_offset + 4),
-                    tile_id: view.getUint16(cell_offset + 6),
-                    tint: view.getUint32(cell_offset + 8),
+                    id: view.getUint16(cell_new_offset),
+                    x: view.getUint16(cell_new_offset + 2),
+                    y: view.getUint16(cell_new_offset + 4),
+                    tile_id: view.getUint16(cell_new_offset + 6),
+                    tint: view.getUint32(cell_new_offset + 8),
                 };
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
