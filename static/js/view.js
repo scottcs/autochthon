@@ -102,18 +102,25 @@
         }
 
         function handleBinaryData(data) {
-            const view = new DataView(data);
+            const byteView = new Uint8Array(data);
             const header_size = 1;
-            switch (view.getUint8(0)){
+            switch (byteView[0]){
+                case socket_events.FromServer.GameLog:
+                    handleGameLog(data, header_size);
+                    break;
                 case socket_events.FromServer.UpdateMap:
-                    handleUpdateMap(view, header_size);
+                    handleUpdateMap(data, header_size);
                     break;
                 default:
                     console.error('Got unknown event from server.', view);
             }
         }
 
-        function handleUpdateMap(view, offset) {
+        function handleGameLog(data, offset) {
+        }
+
+        function handleUpdateMap(data, offset) {
+            const view = new DataView(data);
             const player_x = view.getUint16(offset) * tile_width;
             const player_y = view.getUint16(offset + 2) * tile_height;
             viewport.moveCenter(player_x, player_y);
