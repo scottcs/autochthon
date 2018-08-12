@@ -124,8 +124,9 @@ class World(esper.World):
 
     def get_or_add_component(self, entity: Entity, component_type: Any) -> Any:
         """Get a component for the given entity if it exists, or else create a new one."""
-        for comp in self.try_component(entity, component_type):
+        try:
+            return self.component_for_entity(entity, component_type)
+        except KeyError:
+            comp = component_type()
+            self.add_component(entity, comp)
             return comp
-        comp = component_type()
-        self.add_component(entity, comp)
-        return comp

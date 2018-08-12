@@ -24,7 +24,8 @@ class AttackTargetingProcessor(esper.Processor):
                 continue
             actor.time_units -= self.get_action_cost(ent)
             combat_log = self.world.get_or_add_component(ent, CombatLog)
-            combat_log.lines.append(f'{ent} {target.attack} attacked {target.entity}.')
+            combat_log.add(f'{ent} {target.attack} attacked {target.entity}.')
+            self.world.add_component(ent, combat_log)
 
     def still_can_target(self, _ent: Entity, target: CurrentTarget) -> bool:
         """Determine if target is still valid."""
@@ -57,12 +58,12 @@ class AttackMissProcessor(esper.Processor):
                 modifier = accumulate_modifiers(*mods)
                 chance = HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
-                combat_log.lines.append(f' {ent} had a {chance * 100}% chance to hit')
+                combat_log.add(f'{ent} had a {chance * 100}% chance to hit')
                 if random.random() > chance:
-                    combat_log.lines.append(', but missed.')
+                    combat_log.append_last(', but missed.')
                     self.world.remove_component(ent, CurrentTarget)
                 else:
-                    combat_log.lines.append(', and HIT!')
+                    combat_log.append_last(', and HIT!')
 
 
 class AttackDefenseProcessor(esper.Processor):
@@ -85,7 +86,7 @@ class AttackDefenseProcessor(esper.Processor):
                 # This attack cannot be thwarted by this defense
                 self.world.remove_component(ent, self.immunity_component_class)
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
-                combat_log.lines.append(f' {ent}\'s attack is immune to {self.name}!')
+                combat_log.add(f'{ent}\'s attack is immune to {self.name}!')
                 continue
             if target.attack == AttackType.melee:
                 mods = []
@@ -96,12 +97,11 @@ class AttackDefenseProcessor(esper.Processor):
                 chance = self.base_chance + modifier.factor
                 if chance > 0:
                     combat_log = self.world.get_or_add_component(ent, CombatLog)
-                    combat_log.lines.append(f' {target.entity} had a {chance * 100}% chance to '
-                                            f'{self.name}')
+                    combat_log.add(f'{target.entity} had a {chance * 100}% chance to {self.name}')
                     if random.random() > chance:
-                        combat_log.lines.append(', but FAILED!')
+                        combat_log.append_last(', but FAILED!')
                     else:
-                        combat_log.lines.append(', and SUCCEEDED!')
+                        combat_log.append_last(', and SUCCEEDED!')
                         # TODO: Add success comp for other processors (DeflectSuccess -> Disarm)
                         self.world.remove_component(ent, CurrentTarget)
 

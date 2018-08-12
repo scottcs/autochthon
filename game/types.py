@@ -96,3 +96,9 @@ class Modifier(NamedTuple):
     """Modifier set."""
     addend: Number = 0
     factor: Number = 0
+
+
+class LogLine(NamedTuple):
+    """A Game log message with color."""
+    message: str = ''
+    color: int = 0xffffff
