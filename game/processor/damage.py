@@ -1,4 +1,5 @@
 """Damage processors."""
+import logging
 from typing import Any
 
 import esper
@@ -8,6 +9,9 @@ from game.component.base import accumulate_modifiers
 from game.component.damage import (TakeDamageBludgeoning, ModifierTakeDamageBludgeoning,
                                    ImmuneDamageBludgeoning)
 
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+
 
 class DamageBludgeoningMitigationProcessor(esper.Processor):
     """Processor for mitigating Bludgeoning damage."""
@@ -15,6 +19,7 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
         """Process TakeDamageBludgeoning components."""
         for ent, damage in self.world.get_component(TakeDamageBludgeoning):
             if self.world.has_component(ent, ImmuneDamageBludgeoning):
+                log.debug(f'{ent} is immune to Bludgeoning damage!')
                 self.world.remove_component(ent, TakeDamageBludgeoning)
             else:
                 mods = []
@@ -22,6 +27,7 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
                     mods.append(mod)
                 modifier = accumulate_modifiers(*mods)
                 damage.amount = (damage.amount + modifier.addend) * (1 + modifier.factor)
+                log.debug(f'{ent} takes {damage.amount} Bludgeoning damage!')
                 if damage.amount <= 0:
                     self.world.remove_component(ent, TakeDamageBludgeoning)
 

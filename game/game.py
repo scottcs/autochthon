@@ -6,7 +6,7 @@ import esper
 
 from game.component.action import Actor
 from game.component.ai import AISimpleMind
-from game.component.attack import AttackCostModifier, AttackHitModifier
+from game.component.attack import AttackCostModifier, AttackHitModifier, AttackDodgeModifier
 from game.component.attribute import HP
 from game.component.damage import (ImmuneDamageBludgeoning, ModifierInflictDamageBludgeoning,
                                    ModifierTakeDamageBludgeoning)
@@ -17,7 +17,8 @@ from game.component.status import Solid
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
-from game.processor.attack import AttackHitProcessor, AttackTargetingProcessor, AttackMissProcessor
+from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
+                                   AttackMissProcessor, AttackDodgeProcessor)
 from game.processor.attribute import HPProcessor
 from game.processor.damage import DamageBludgeoningMitigationProcessor, DamageBludgeoningProcessor
 from game.processor.movement import MovementProcessor
@@ -59,6 +60,7 @@ class Game:
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(AttackTargetingProcessor(), priority=Priority.targeting)
         self.world.add_processor(AttackMissProcessor(), priority=Priority.attack_miss)
+        self.world.add_processor(AttackDodgeProcessor(), priority=Priority.attack_dodge)
         self.world.add_processor(AttackHitProcessor(), priority=Priority.attack_hit)
         self.world.add_processor(DamageBludgeoningMitigationProcessor(), priority=Priority.defense)
         self.world.add_processor(DamageBludgeoningProcessor(), priority=Priority.damage_resolution)
@@ -80,9 +82,10 @@ class Game:
         self.make_player(current_map)
         self.make_enemy(current_map, 39, Palette.red, True, speed_factor=2.0)
         self.make_enemy(current_map, 39, Palette.purple, True, speed_factor=5.0)
-        self.make_enemy(current_map, 39, Palette.orange, True, speed_factor=1.1)
+        orange = self.make_enemy(current_map, 39, Palette.orange, True, speed_factor=1.1)
         cyan = self.make_enemy(current_map, 39, Palette.cyan, True, speed_factor=0.9)
         green = self.make_enemy(current_map, 39, Palette.green, False)
+        self.world.add_component(orange, AttackDodgeModifier(factor=0.4))
         self.world.add_component(cyan, ModifierTakeDamageBludgeoning(factor=-0.5))
         self.world.add_component(green, ImmuneDamageBludgeoning())
 

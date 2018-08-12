@@ -6,11 +6,12 @@ from typing import Any
 import esper
 
 from game.component.action import Actor
-from game.component.attack import CurrentTarget, AttackCostModifier, AttackHitModifier
+from game.component.attack import (CurrentTarget, AttackCostModifier, AttackHitModifier,
+                                   ImmuneToDodge, AttackDodgeModifier)
 from game.component.base import accumulate_modifiers
 from game.component.damage import TakeDamageBludgeoning, ModifierInflictDamageBludgeoning
 from game.types import Entity, AttackType
-from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE
+from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE, DODGE_CHANCE
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -56,14 +57,39 @@ class AttackMissProcessor(esper.Processor):
                     mods.append(mod)
                 # TODO: Gather other modifiers
                 modifier = accumulate_modifiers(*mods)
-                hit_chance = HIT_CHANCE + modifier.factor
-                log.debug(f'You have a {hit_chance * 100}% chance to hit...')
-                if random.random() > hit_chance:
+                chance = HIT_CHANCE + modifier.factor
+                log.debug(f'You have a {chance * 100}% chance to hit...')
+                if random.random() > chance:
                     # Miss
                     log.debug('MISS!')
                     self.world.remove_component(ent, CurrentTarget)
                 else:
                     log.debug('HIT!')
+
+
+class AttackDodgeProcessor(esper.Processor):
+    """Process whether attack was dodged."""
+    def process(self, *args: Any, **kwargs: Any) -> None:
+        """Process whether attack missed."""
+        for ent, target in self.world.get_component(CurrentTarget):
+            if self.world.has_component(ent, ImmuneToDodge):
+                # can't be dodged, so just remove component
+                self.world.remove_component(ent, ImmuneToDodge)
+                log.debug(f'{ent} Attack is immune to being dodged.')
+                continue
+            if target.attack == AttackType.melee:
+                mods = []
+                for mod in self.world.try_component(target.entity, AttackDodgeModifier):
+                    mods.append(mod)
+                # TODO: Gather other modifiers
+                modifier = accumulate_modifiers(*mods)
+                chance = DODGE_CHANCE + modifier.factor
+                log.debug(f'{target.entity} has a {chance * 100}% chance to dodge...')
+                if random.random() > chance:
+                    log.debug('NO DODGE!')
+                else:
+                    log.debug('DODGE!')
+                    self.world.remove_component(ent, CurrentTarget)
 
 
 class AttackHitProcessor(esper.Processor):
