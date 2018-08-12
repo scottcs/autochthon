@@ -1,57 +1,73 @@
 """Damage components."""
-from game.types import Entity
+from game.component.base import BaseModifierComponent
+from game.types import Number
 
 
 class BaseDamageComponent:
     """Base damage component."""
-    def __init__(self, target: Entity, amount: int) -> None:
-        self.target: Entity = target
-        self.amount: int = amount
-
-
-class DoDamageBludgeoning(BaseDamageComponent):
-    """Do bludgeoning damage."""
+    def __init__(self, amount: Number) -> None:
+        self.amount: Number = amount
 
 
 class TakeDamageBludgeoning(BaseDamageComponent):
-    """Take bludgeoning damage."""
+    """Take Bludgeoning damage."""
 
 
-class ImmuneToBludgeoningDamage:
-    """Entity is immune to bludgeoning damage."""
+class ModifierDamageBludgeoning(BaseModifierComponent):
+    """Bludgeoning damage modifier."""
 
 
-class DoDamagePiercing(BaseDamageComponent):
-    """Do piercing damage."""
+class ResistDamageBludgeoning(BaseModifierComponent):
+    """Bludgeoning damage resistance."""
+
+
+class ImmuneDamageBludgeoning:
+    """Entity is immune to Bludgeoning damage."""
 
 
 class TakeDamagePiercing(BaseDamageComponent):
-    """Take piercing damage."""
+    """Take Piercing damage."""
 
 
-class ImmuneToPiercingDamage:
-    """Entity is immune to piercing damage."""
+class ModifierDamagePiercing(BaseModifierComponent):
+    """Piercing damage modifier."""
 
 
-class DoDamageSlashing(BaseDamageComponent):
-    """Do slashing damage."""
+class ResistDamagePiercing(BaseModifierComponent):
+    """Piercing damage resistance."""
+
+
+class ImmuneDamagePiercing:
+    """Entity is immune to Piercing damage."""
 
 
 class TakeDamageSlashing(BaseDamageComponent):
-    """Take slashing damage."""
+    """Take Slashing damage."""
 
 
-class ImmuneToSlashingDamage:
-    """Entity is immune to slashing damage."""
+class ModifierDamageSlashing(BaseModifierComponent):
+    """Slashing damage modifier."""
 
 
-class DoDamageElectric(BaseDamageComponent):
-    """Do electric damage."""
+class ResistDamageSlashing(BaseModifierComponent):
+    """Slashing damage resistance."""
+
+
+class ImmuneDamageSlashing:
+    """Entity is immune to Slashing damage."""
 
 
 class TakeDamageElectric(BaseDamageComponent):
-    """Take electric damage."""
+    """Take Electric damage."""
 
 
-class ImmuneToElectricDamage:
-    """Entity is immune to electric damage."""
+class ModifierDamageElectric(BaseModifierComponent):
+    """Electric damage modifier."""
+
+
+class ResistDamageElectric(BaseModifierComponent):
+    """Electric damage resistance."""
+
+
+class ImmuneDamageElectric:
+    """Entity is immune to Electric damage."""

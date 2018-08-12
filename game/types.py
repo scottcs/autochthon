@@ -47,8 +47,12 @@ class Priority(IntEnum):
     """Processor priorities."""
     psychopomps = auto()
     render = auto()
+    attributes = auto()
     movement = auto()
-    combat = auto()
+    damage_resolution = auto()
+    defense = auto()
+    attack = auto()
+    targeting = auto()
     ai = auto()
     time = auto()
     player_bump = auto()
@@ -72,6 +76,12 @@ class GameState(Enum):
     PLAYING = auto()
     IN_GAME_MENU = auto()
     SHUTDOWN = auto()
+
+
+class AttackType(Enum):
+    """Attack types."""
+    melee = auto()
+    projectile = auto()
 
 
 Number = Union[int, float]

@@ -7,7 +7,7 @@ from game.types import Number
 
 class BaseModifierComponent:
     """Base modifier component."""
-    def __init__(self, addend: Number, factor: Number) -> None:
+    def __init__(self, addend: Number=0, factor: Number=1) -> None:
         self.addend: Number = addend
         self.factor: Number = factor
 
@@ -33,3 +33,10 @@ class BaseIntMinMaxComponent:
     def multiply_clamp(self, amount: Number) -> None:
         """Multiply the attribute by this amount, without going out of bounds."""
         self._set_clamp(self.value * amount)
+
+
+def apply_modifier(value: Number, mod: BaseModifierComponent) -> Number:
+    """Apply a modifier component to a value."""
+    value += mod.addend
+    value *= mod.factor
+    return value

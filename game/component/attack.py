@@ -1,40 +1,21 @@
 """Attack components."""
-from game.component.base_components import BaseModifierComponent
-from game.types import Entity
+from typing import Optional
+
+from game.component.base import BaseModifierComponent
+from game.types import Entity, AttackType
 
 
-class BaseAttackComponent:
-    """Base attack component class."""
-    def __init__(self, target: Entity) -> None:
-        self.target: Entity = target
-
-
-class AttackTargeting(BaseAttackComponent):
-    """Attack component for targeting."""
-    def __init__(self, target: Entity, x: int, y: int) -> None:
-        super().__init__(target)
+class CurrentTarget:
+    """Component for targeting an entity or location."""
+    def __init__(self, x: int, y: int, attack: AttackType, entity: Optional[Entity]=None) -> None:
         self.x: int = x
         self.y: int = y
-
-
-class AttackHappening(BaseAttackComponent):
-    """Attack is happening."""
-
-
-class AttackHit(BaseAttackComponent):
-    """Attack succeeded."""
+        self.attack = attack
+        self.entity: Optional[Entity] = entity
 
 
 class AttackHitModifier(BaseModifierComponent):
     """Attack modifier for hit chance."""
-
-
-class AttackMissed(BaseAttackComponent):
-    """Attack failed: attacker missed."""
-
-
-class AttackDodged(BaseAttackComponent):
-    """Attack failed: target dodged."""
 
 
 class AttackDodgeModifier(BaseModifierComponent):
@@ -45,20 +26,12 @@ class ImmuneToDodge:
     """Attack cannot be dodged."""
 
 
-class AttackBlocked(BaseAttackComponent):
-    """Attack failed: target blocked."""
-
-
 class AttackBlockModifier(BaseModifierComponent):
     """Attack modifier for block chance."""
 
 
 class ImmuneToBlock:
     """Attack cannot be blocked."""
-
-
-class AttackParried(BaseAttackComponent):
-    """Attack failed: target parried."""
 
 
 class AttackParryModifier(BaseModifierComponent):

@@ -1,5 +1,5 @@
 """Attribute components."""
-from game.component.base_components import BaseIntMinMaxComponent
+from game.component.base import BaseIntMinMaxComponent
 from game.types import Number
 
 

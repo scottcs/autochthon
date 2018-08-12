@@ -4,23 +4,28 @@ from typing import Optional
 
 import esper
 
+from game.component.action import Actor, BaseActionCosts
 from game.component.ai import AISimpleMind
-from game.component.action import BaseActionCosts, Actor
 from game.component.attribute import HP
-from game.component.player import PlayerControlled
+from game.component.damage import (ImmuneDamageBludgeoning, ModifierDamageBludgeoning,
+                                   ResistDamageBludgeoning)
 from game.component.movement import Position
+from game.component.player import PlayerControlled
 from game.component.render import Renderable
 from game.component.status import Solid
-from game.events import GameOverEvent, RefreshMapEvent, PlayerActedEvent
+from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
-from game.processor.combat import CombatProcessor
-from game.processor.player_input import PlayerInputProcessor
-from game.processor.psychopomps import Psychopomps
+from game.processor.attack_hit import AttackHitProcessor
+from game.processor.attack_targeting import AttackTargetingProcessor
+from game.processor.attribute import HPProcessor
+from game.processor.damage import DamageBludgeoningMitigationProcessor, DamageBludgeoningProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.player_bump import PlayerBumpProcessor
+from game.processor.player_input import PlayerInputProcessor
+from game.processor.psychopomps import Psychopomps
 from game.processor.time import TimeProcessor
-from game.types import EventType, RenderLayer, Priority, ProcessGroup, GameState
+from game.types import Entity, EventType, GameState, Priority, ProcessGroup, RenderLayer
 from game.world import World
 from gamedata.palette import Palette
 
@@ -52,8 +57,12 @@ class Game:
                                  priority=Priority.time,
                                  group=ProcessGroup.time)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
-        self.world.add_processor(CombatProcessor(), priority=Priority.combat)
+        self.world.add_processor(AttackTargetingProcessor(), priority=Priority.targeting)
+        self.world.add_processor(AttackHitProcessor(), priority=Priority.attack)
+        self.world.add_processor(DamageBludgeoningMitigationProcessor(), priority=Priority.defense)
+        self.world.add_processor(DamageBludgeoningProcessor(), priority=Priority.damage_resolution)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
+        self.world.add_processor(HPProcessor(), priority=Priority.attributes)
         self.world.add_processor(render_processor,
                                  priority=Priority.render,
                                  group=ProcessGroup.render)
@@ -71,8 +80,10 @@ class Game:
         self.make_enemy(current_map, 39, Palette.red, 200)
         self.make_enemy(current_map, 39, Palette.purple, 500)
         self.make_enemy(current_map, 39, Palette.orange, 110)
-        self.make_enemy(current_map, 39, Palette.cyan, 90)
-        self.make_enemy(current_map, 39, Palette.green, 100)
+        cyan = self.make_enemy(current_map, 39, Palette.cyan, 90)
+        green = self.make_enemy(current_map, 39, Palette.green, 100)
+        self.world.add_component(cyan, ResistDamageBludgeoning(factor=0.5))
+        self.world.add_component(green, ImmuneDamageBludgeoning())
 
     def make_player(self, game_map: Map) -> None:
         """Make a player entity."""
@@ -81,14 +92,15 @@ class Game:
             BaseActionCosts(moving=200),
             Solid(),
             HP(10),
+            ModifierDamageBludgeoning(5),
             PlayerControlled(),
             Renderable(1, Palette.yellow, RenderLayer.PLAYER),
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
-    def make_enemy(self, game_map: Map, tile: int, color: int, speed: int) -> None:
+    def make_enemy(self, game_map: Map, tile: int, color: int, speed: int) -> Entity:
         """Make an enemy entity."""
-        self.world.create_entity(
+        return self.world.create_entity(
             Actor(-100),
             BaseActionCosts(moving=speed),
             Solid(),
