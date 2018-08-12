@@ -16,8 +16,7 @@ from game.component.status import Solid
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
-from game.processor.attack_hit import AttackHitProcessor
-from game.processor.attack_targeting import AttackTargetingProcessor
+from game.processor.attack import AttackHitProcessor, AttackTargetingProcessor
 from game.processor.attribute import HPProcessor
 from game.processor.damage import DamageBludgeoningMitigationProcessor, DamageBludgeoningProcessor
 from game.processor.movement import MovementProcessor
