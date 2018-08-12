@@ -102,39 +102,44 @@
         }
 
         function handleBinaryData(data) {
-            const byteView = new Uint8Array(data);
-            const header_size = 1;
-            switch (byteView[0]){
+            const headerByte = new Uint8Array(data)[0];
+            const actualData = data.slice(1, data.length);
+            switch (headerByte) {
                 case socket_events.FromServer.GameLog:
-                    handleGameLog(data, header_size);
+                    handleGameLog(actualData);
                     break;
                 case socket_events.FromServer.UpdateMap:
-                    handleUpdateMap(data, header_size);
+                    handleUpdateMap(actualData);
                     break;
                 default:
-                    console.error('Got unknown event from server.', view);
+                    console.error('Got unknown event from server.', headerByte);
             }
         }
 
-        function handleGameLog(data, offset) {
+        function handleGameLog(data) {
+            const string = new TextDecoder().decode(data);
+            const parsed = JSON.parse(string);
+            parsed.lines.forEach(function(line) {
+                console.log(line[0]);
+            });
         }
 
-        function handleUpdateMap(data, offset) {
+        function handleUpdateMap(data) {
             const view = new DataView(data);
-            const player_x = view.getUint16(offset) * tile_width;
-            const player_y = view.getUint16(offset + 2) * tile_height;
+            const player_x = view.getUint16(0) * tile_width;
+            const player_y = view.getUint16(2) * tile_height;
             viewport.moveCenter(player_x, player_y);
-            const num_cells = view.getUint16(offset + 4);
-            const new_offset = offset + 6;      // header size in bytes
+            const num_cells = view.getUint16(4);
+            const offset = 6;      // header size in bytes
             const cell_size = 12;  // cell size in bytes
             for (let i = 0; i < num_cells; i++) {
-                const cell_new_offset = new_offset + (i * cell_size);
+                const cell_offset = offset + (i * cell_size);
                 const cell = {
-                    id: view.getUint16(cell_new_offset),
-                    x: view.getUint16(cell_new_offset + 2),
-                    y: view.getUint16(cell_new_offset + 4),
-                    tile_id: view.getUint16(cell_new_offset + 6),
-                    tint: view.getUint32(cell_new_offset + 8),
+                    id: view.getUint16(cell_offset),
+                    x: view.getUint16(cell_offset + 2),
+                    y: view.getUint16(cell_offset + 4),
+                    tile_id: view.getUint16(cell_offset + 6),
+                    tint: view.getUint32(cell_offset + 8),
                 };
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);

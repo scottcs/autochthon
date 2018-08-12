@@ -83,7 +83,11 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
 
     def _on_game_log(self, event: EventType) -> None:
         # TODO: send message to server (with colors)
-        print(' '.join([line.message for line in event['lines']]))
+        log_string = json.dumps(event)
+        ba = bytearray()
+        ba.append(self.socket_events['FromServer']['GameLog'])
+        ba.extend(log_string.encode('utf-8'))
+        self.write_all(ba)
 
     def write_all(self, ba: bytearray) -> None:
         """Write bytes to all connections."""
