@@ -3,8 +3,8 @@ from typing import Any
 
 import esper
 
-from game.component.actor import Actor
-from game.component.player_controlled import PlayerControlled
+from game.component.action import Actor
+from game.component.player import PlayerControlled
 
 
 class TimeProcessor(esper.Processor):

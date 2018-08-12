@@ -4,10 +4,9 @@ from typing import Any
 
 import esper
 
-from game.component.actor import Actor
-from game.component.ai_simplemind import AISimpleMind
-from game.component.moving import Moving
-from game.component.position import Position
+from game.component.action import Actor
+from game.component.ai import AISimpleMind
+from game.component.movement import Moving, Position
 from game.types import Entity
 
 

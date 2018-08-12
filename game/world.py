@@ -3,10 +3,10 @@ from typing import Any, Optional
 
 import esper
 
-from game.component.actor import Actor
-from game.component.player_controlled import PlayerControlled
-from game.component.position import Position
-from game.component.solid import Solid
+from game.component.action import Actor
+from game.component.status import Dead, Solid
+from game.component.player import PlayerControlled
+from game.component.movement import Position
 from game.map import Map
 from game.types import ProcessGroup, Entity
 
@@ -51,8 +51,9 @@ class World(esper.World):
     def any_actors_can_act(self) -> bool:
         """Return true if any actors can act."""
         for ent, actor in self.get_component(Actor):
-            if actor.time_units >= 0:
-                return True
+            if not self.has_component(ent, Dead):
+                if actor.time_units >= 0:
+                    return True
         return False
 
     def get_solid_entity_at_position(self, x: int, y: int) -> Optional[Entity]:

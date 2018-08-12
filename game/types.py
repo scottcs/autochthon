@@ -1,6 +1,6 @@
 """Typing for the game module."""
 from enum import Enum, auto, IntEnum
-from typing import Dict, Callable, Any, NamedTuple
+from typing import Dict, Callable, Any, NamedTuple, Union
 
 
 class MapCell(NamedTuple):
@@ -45,8 +45,18 @@ class DirectionType(Enum):
 
 class Priority(IntEnum):
     """Processor priorities."""
+    psychopomps = auto()
     render = auto()
+    attributes = auto()
     movement = auto()
+    damage_resolution = auto()
+    defense = auto()
+    attack_hit = auto()
+    attack_deflect = auto()
+    attack_block = auto()
+    attack_dodge = auto()
+    attack_miss = auto()
+    targeting = auto()
     ai = auto()
     time = auto()
     player_bump = auto()
@@ -70,3 +80,18 @@ class GameState(Enum):
     PLAYING = auto()
     IN_GAME_MENU = auto()
     SHUTDOWN = auto()
+
+
+class AttackType(Enum):
+    """Attack types."""
+    melee = auto()
+    projectile = auto()
+
+
+Number = Union[int, float]
+
+
+class Modifier(NamedTuple):
+    """Modifier set."""
+    addend: Number = 0
+    factor: Number = 0

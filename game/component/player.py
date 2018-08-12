@@ -1,4 +1,4 @@
-"""Player bump component."""
+"""Player components."""
 
 
 class PlayerBump:
@@ -6,3 +6,7 @@ class PlayerBump:
     def __init__(self, dx: int=0, dy: int=0) -> None:
         self.dx: int = dx
         self.dy: int = dy
+
+
+class PlayerControlled:
+    """Player controlled component."""

@@ -1,7 +1,8 @@
-"""Actor component - for storing time units of energy."""
+"""Action components."""
 from typing import Union
 
-from game.utils.time import GameTime, MOMENTS_PER_TURN
+from game.utils.time import GameTime
+from gamedata.base_engine_values import MOMENTS_PER_TURN
 
 
 class Actor:

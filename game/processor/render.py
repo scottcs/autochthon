@@ -4,9 +4,10 @@ from typing import Any
 
 import esper
 
-from game.component.player_controlled import PlayerControlled
-from game.component.position import Position
-from game.component.renderable import Renderable
+from game.component.status import Dead
+from game.component.player import PlayerControlled
+from game.component.movement import Position
+from game.component.render import Renderable
 from game.events import WebsocketWriteAllEvent
 
 log = logging.getLogger(__name__)
@@ -62,7 +63,11 @@ class WebRenderProcessor(esper.Processor):
             b_cells.extend(ent.to_bytes(2, 'big'))
             b_cells.extend(positional.x.to_bytes(2, 'big'))
             b_cells.extend(positional.y.to_bytes(2, 'big'))
-            b_cells.extend(renderable.tile_id.to_bytes(2, 'big'))
+            if self.world.has_component(ent, Dead):
+                tile_id = 0
+            else:
+                tile_id = renderable.tile_id
+            b_cells.extend(tile_id.to_bytes(2, 'big'))
             b_cells.extend(renderable.tint.to_bytes(4, 'big'))
             data_length += 1
         # Overwrite data_length now that we've counted them
