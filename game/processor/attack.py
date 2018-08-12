@@ -6,12 +6,11 @@ from typing import Any
 import esper
 
 from game.component.action import Actor
-from game.component.attack import (CurrentTarget, AttackCostModifier, AttackHitModifier,
-                                   ImmuneToDodge, AttackDodgeModifier)
+from game.component.attack import CurrentTarget, AttackCostModifier, AttackHitModifier
 from game.component.base import accumulate_modifiers
 from game.component.damage import TakeDamageBludgeoning, ModifierInflictDamageBludgeoning
-from game.types import Entity, AttackType
-from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE, DODGE_CHANCE
+from game.types import Entity, AttackType, Number
+from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -67,28 +66,40 @@ class AttackMissProcessor(esper.Processor):
                     log.debug('HIT!')
 
 
-class AttackDodgeProcessor(esper.Processor):
-    """Process whether attack was dodged."""
+class AttackDefenseProcessor(esper.Processor):
+    """Process whether attack was defended."""
+    def __init__(self,
+                 name: str,
+                 modifier_component_class: Any,
+                 immunity_component_class: Any,
+                 base_chance: Number) -> None:
+        super().__init__()
+        self.name = name
+        self.modifier_component_class: Any = modifier_component_class
+        self.immunity_component_class: Any = immunity_component_class
+        self.base_chance: Number = base_chance
+
     def process(self, *args: Any, **kwargs: Any) -> None:
-        """Process whether attack missed."""
+        """Process whether an attack was defended."""
         for ent, target in self.world.get_component(CurrentTarget):
-            if self.world.has_component(ent, ImmuneToDodge):
-                # can't be dodged, so just remove component
-                self.world.remove_component(ent, ImmuneToDodge)
-                log.debug(f'{ent} Attack is immune to being dodged.')
+            if self.world.has_component(ent, self.immunity_component_class):
+                # This attack cannot be thwarted by this defense
+                self.world.remove_component(ent, self.immunity_component_class)
+                log.debug(f'{ent} Attack is immune to {self.name}')
                 continue
             if target.attack == AttackType.melee:
                 mods = []
-                for mod in self.world.try_component(target.entity, AttackDodgeModifier):
+                for mod in self.world.try_component(target.entity, self.modifier_component_class):
                     mods.append(mod)
                 # TODO: Gather other modifiers
                 modifier = accumulate_modifiers(*mods)
-                chance = DODGE_CHANCE + modifier.factor
-                log.debug(f'{target.entity} has a {chance * 100}% chance to dodge...')
+                chance = self.base_chance + modifier.factor
+                log.debug(f'{target.entity} has a {chance * 100}% chance to defend by {self.name}')
                 if random.random() > chance:
-                    log.debug('NO DODGE!')
+                    log.debug(f'{self.name.upper()} FAILED!')
                 else:
-                    log.debug('DODGE!')
+                    log.debug(f'{self.name.upper()} SUCCEEDED!')
+                    # TODO: Add a success component for other processors (DeflectSuccess -> Disarm)
                     self.world.remove_component(ent, CurrentTarget)
 
 

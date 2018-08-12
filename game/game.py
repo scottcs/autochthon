@@ -6,7 +6,9 @@ import esper
 
 from game.component.action import Actor
 from game.component.ai import AISimpleMind
-from game.component.attack import AttackCostModifier, AttackHitModifier, AttackDodgeModifier
+from game.component.attack import (AttackCostModifier, AttackHitModifier, AttackDodgeModifier,
+                                   ImmuneToDodge, AttackBlockModifier, ImmuneToBlock,
+                                   AttackDeflectModifier, ImmuneToDeflect)
 from game.component.attribute import HP
 from game.component.damage import (ImmuneDamageBludgeoning, ModifierInflictDamageBludgeoning,
                                    ModifierTakeDamageBludgeoning)
@@ -18,7 +20,7 @@ from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
 from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
-                                   AttackMissProcessor, AttackDodgeProcessor)
+                                   AttackMissProcessor, AttackDefenseProcessor)
 from game.processor.attribute import HPProcessor
 from game.processor.damage import DamageBludgeoningMitigationProcessor, DamageBludgeoningProcessor
 from game.processor.movement import MovementProcessor
@@ -29,6 +31,7 @@ from game.processor.time import TimeProcessor
 from game.types import Entity, EventType, GameState, Priority, ProcessGroup, RenderLayer
 from game.world import World
 from gamedata.palette import Palette
+from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -48,6 +51,13 @@ class Game:
         PlayerActedEvent.handle(self._on_player_acted)
         RefreshMapEvent.handle(self._on_refresh_map)
 
+        dodge_processor = AttackDefenseProcessor(
+            'dodge', AttackDodgeModifier, ImmuneToDodge, DODGE_CHANCE)
+        block_processor = AttackDefenseProcessor(
+            'block', AttackBlockModifier, ImmuneToBlock, BLOCK_CHANCE)
+        deflect_processor = AttackDefenseProcessor(
+            'deflect', AttackDeflectModifier, ImmuneToDeflect, DEFLECT_CHANCE)
+
         self.world.add_processor(PlayerInputProcessor(),
                                  priority=Priority.player_input,
                                  group=ProcessGroup.player)
@@ -60,7 +70,9 @@ class Game:
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(AttackTargetingProcessor(), priority=Priority.targeting)
         self.world.add_processor(AttackMissProcessor(), priority=Priority.attack_miss)
-        self.world.add_processor(AttackDodgeProcessor(), priority=Priority.attack_dodge)
+        self.world.add_processor(dodge_processor, priority=Priority.attack_dodge)
+        self.world.add_processor(block_processor, priority=Priority.attack_block)
+        self.world.add_processor(deflect_processor, priority=Priority.attack_deflect)
         self.world.add_processor(AttackHitProcessor(), priority=Priority.attack_hit)
         self.world.add_processor(DamageBludgeoningMitigationProcessor(), priority=Priority.defense)
         self.world.add_processor(DamageBludgeoningProcessor(), priority=Priority.damage_resolution)
@@ -80,11 +92,16 @@ class Game:
         self.world.map = current_map
 
         self.make_player(current_map)
-        self.make_enemy(current_map, 39, Palette.red, True, speed_factor=2.0)
-        self.make_enemy(current_map, 39, Palette.purple, True, speed_factor=5.0)
+        red = self.make_enemy(current_map, 39, Palette.red, True, speed_factor=2.0)
+        purple = self.make_enemy(current_map, 39, Palette.purple, True, speed_factor=5.0)
         orange = self.make_enemy(current_map, 39, Palette.orange, True, speed_factor=1.1)
         cyan = self.make_enemy(current_map, 39, Palette.cyan, True, speed_factor=0.9)
         green = self.make_enemy(current_map, 39, Palette.green, False)
+        self.world.add_component(red, AttackDeflectModifier(factor=0.2))
+        self.world.add_component(red, AttackBlockModifier(factor=0.3))
+        self.world.add_component(red, AttackDodgeModifier(factor=0.25))
+        self.world.add_component(purple, AttackBlockModifier(factor=0.1))
+        self.world.add_component(purple, AttackDodgeModifier(factor=0.15))
         self.world.add_component(orange, AttackDodgeModifier(factor=0.4))
         self.world.add_component(cyan, ModifierTakeDamageBludgeoning(factor=-0.5))
         self.world.add_component(green, ImmuneDamageBludgeoning())
