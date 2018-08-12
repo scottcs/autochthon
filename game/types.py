@@ -51,7 +51,11 @@ class Priority(IntEnum):
     movement = auto()
     damage_resolution = auto()
     defense = auto()
-    attack = auto()
+    attack_hit = auto()
+    attack_deflect = auto()
+    attack_block = auto()
+    attack_dodge = auto()
+    attack_miss = auto()
     targeting = auto()
     ai = auto()
     time = auto()
@@ -85,3 +89,9 @@ class AttackType(Enum):
 
 
 Number = Union[int, float]
+
+
+class Modifier(NamedTuple):
+    """Modifier set."""
+    addend: Number = 0
+    factor: Number = 0

@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Optional, Union, Any
 
-MOMENTS_PER_TURN = 100
+from gamedata.base_engine_values import MOMENTS_PER_TURN
 
 
 class GameTime:

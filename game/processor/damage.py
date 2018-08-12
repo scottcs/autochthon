@@ -4,8 +4,8 @@ from typing import Any
 import esper
 
 from game.component.attribute import ChangeHP
-from game.component.base import apply_modifier
-from game.component.damage import (TakeDamageBludgeoning, ResistDamageBludgeoning,
+from game.component.base import accumulate_modifiers
+from game.component.damage import (TakeDamageBludgeoning, ModifierTakeDamageBludgeoning,
                                    ImmuneDamageBludgeoning)
 
 
@@ -17,10 +17,11 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
             if self.world.has_component(ent, ImmuneDamageBludgeoning):
                 self.world.remove_component(ent, TakeDamageBludgeoning)
             else:
-                amount = damage.amount
-                for resist in self.world.try_component(ent, ResistDamageBludgeoning):
-                    amount = apply_modifier(amount, resist)
-                damage.amount = amount
+                mods = []
+                for mod in self.world.try_component(ent, ModifierTakeDamageBludgeoning):
+                    mods.append(mod)
+                modifier = accumulate_modifiers(*mods)
+                damage.amount = (damage.amount + modifier.addend) * (1 + modifier.factor)
                 if damage.amount <= 0:
                     self.world.remove_component(ent, TakeDamageBludgeoning)
 

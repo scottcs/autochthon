@@ -4,10 +4,10 @@ from typing import Any
 import esper
 
 from game.component.action import Actor
-from game.component.base import apply_modifier
+from game.component.base import accumulate_modifiers
 from game.component.status import Dead
 from game.component.movement import Moving, Waiting, Position, MoveCostModifier, WaitCostModifier
-from game.utils.time import MOMENTS_PER_TURN
+from gamedata.base_engine_values import WAIT_COST, MOVE_COST
 from game.types import Entity
 
 
@@ -35,16 +35,18 @@ class MovementProcessor(esper.Processor):
 
     def get_wait_action_cost(self, ent: Entity) -> int:
         """Get wait action cost."""
-        cost = MOMENTS_PER_TURN
+        mods = []
         for mod in self.world.try_component(ent, WaitCostModifier):
-            cost = apply_modifier(cost, mod)
+            mods.append(mod)
         # TODO: Calculate any other waiting cost modifiers
-        return cost
+        modifier = accumulate_modifiers(*mods)
+        return (WAIT_COST + modifier.addend) * (1 + modifier.factor)
 
     def get_move_action_cost(self, ent: Entity) -> int:
         """Get move action cost."""
-        cost = MOMENTS_PER_TURN
+        mods = []
         for mod in self.world.try_component(ent, MoveCostModifier):
-            cost = apply_modifier(cost, mod)
+            mods.append(mod)
         # TODO: Calculate any other moving cost modifiers
-        return cost
+        modifier = accumulate_modifiers(*mods)
+        return (MOVE_COST + modifier.addend) * (1 + modifier.factor)

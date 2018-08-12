@@ -13,12 +13,12 @@ class TakeDamageBludgeoning(BaseDamageComponent):
     """Take Bludgeoning damage."""
 
 
-class ModifierDamageBludgeoning(BaseModifierComponent):
-    """Bludgeoning damage modifier."""
+class ModifierInflictDamageBludgeoning(BaseModifierComponent):
+    """Bludgeoning inflict damage modifier."""
 
 
-class ResistDamageBludgeoning(BaseModifierComponent):
-    """Bludgeoning damage resistance."""
+class ModifierTakeDamageBludgeoning(BaseModifierComponent):
+    """Bludgeoning damage vulnerability/resistance."""
 
 
 class ImmuneDamageBludgeoning:
@@ -29,12 +29,12 @@ class TakeDamagePiercing(BaseDamageComponent):
     """Take Piercing damage."""
 
 
-class ModifierDamagePiercing(BaseModifierComponent):
-    """Piercing damage modifier."""
+class ModifierInflictDamagePiercing(BaseModifierComponent):
+    """Piercing inflict damage modifier."""
 
 
-class ResistDamagePiercing(BaseModifierComponent):
-    """Piercing damage resistance."""
+class ModifierTakeDamagePiercing(BaseModifierComponent):
+    """Piercing damage vulnerability/resistance."""
 
 
 class ImmuneDamagePiercing:
@@ -45,12 +45,12 @@ class TakeDamageSlashing(BaseDamageComponent):
     """Take Slashing damage."""
 
 
-class ModifierDamageSlashing(BaseModifierComponent):
-    """Slashing damage modifier."""
+class ModifierInflictDamageSlashing(BaseModifierComponent):
+    """Slashing inflict damage modifier."""
 
 
-class ResistDamageSlashing(BaseModifierComponent):
-    """Slashing damage resistance."""
+class ModifierTakeDamageSlashing(BaseModifierComponent):
+    """Slashing damage vulnerability/resistance."""
 
 
 class ImmuneDamageSlashing:
@@ -61,12 +61,12 @@ class TakeDamageElectric(BaseDamageComponent):
     """Take Electric damage."""
 
 
-class ModifierDamageElectric(BaseModifierComponent):
-    """Electric damage modifier."""
+class ModifierInflictDamageElectric(BaseModifierComponent):
+    """Electric inflict damage modifier."""
 
 
-class ResistDamageElectric(BaseModifierComponent):
-    """Electric damage resistance."""
+class ModifierTakeDamageElectric(BaseModifierComponent):
+    """Electric damage vulnerability/resistance."""
 
 
 class ImmuneDamageElectric:

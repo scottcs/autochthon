@@ -2,14 +2,14 @@
 from math import floor
 from typing import Optional
 
-from game.types import Number
+from game.types import Number, Modifier
+from game.utils.random import ChanceList
 
 
 class BaseModifierComponent:
     """Base modifier component."""
-    def __init__(self, addend: Number=0, factor: Number=1) -> None:
-        self.addend: Number = addend
-        self.factor: Number = factor
+    def __init__(self, addend: Number=0, factor: Number=0) -> None:
+        self.modifier: Modifier = Modifier(addend, factor)
 
 
 class BaseIntMinMaxComponent:
@@ -35,8 +35,30 @@ class BaseIntMinMaxComponent:
         self._set_clamp(self.value * amount)
 
 
-def apply_modifier(value: Number, mod: BaseModifierComponent) -> Number:
-    """Apply a modifier component to a value."""
-    value += mod.addend
-    value *= mod.factor
-    return value
+class BaseBoolChanceComponent:
+    """Base boolean chance bag component."""
+    def __init__(self, chance: int, out_of: int) -> None:
+        self._chances = ChanceList([True, False], [chance, out_of])
+
+    def update(self, chance: int, out_of: int) -> None:
+        """Update the chances."""
+        self._chances.set([True, False], [chance, out_of])
+
+    def get(self) -> bool:
+        """Returns whether the next try is a success."""
+        try:
+            success = next(self._chances)
+        except StopIteration:
+            self._chances.reset()
+            success = next(self._chances)
+        return success
+
+
+def accumulate_modifiers(*modifiers: BaseModifierComponent) -> Modifier:
+    """Accumulate all modifiers and return the result."""
+    addend = 0
+    factor = 0
+    for mod in modifiers:
+        addend += mod.modifier.addend
+        factor += mod.modifier.factor
+    return Modifier(addend, factor)

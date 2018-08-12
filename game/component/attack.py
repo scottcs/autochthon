@@ -38,9 +38,9 @@ class ImmuneToBlock:
     """Attack cannot be blocked."""
 
 
-class AttackParryModifier(BaseModifierComponent):
-    """Attack modifier for parry chance."""
+class AttackDeflectModifier(BaseModifierComponent):
+    """Attack modifier for chance to deflect incoming attack."""
 
 
-class ImmuneToParry:
-    """Attack cannot be parried."""
+class ImmuneToDeflect:
+    """Attack cannot be deflected."""

@@ -1,14 +1,19 @@
 """Attack processors."""
+import logging
+import random
 from typing import Any
 
 import esper
 
 from game.component.action import Actor
-from game.component.attack import CurrentTarget, AttackCostModifier
-from game.component.base import apply_modifier
-from game.component.damage import TakeDamageBludgeoning, ModifierDamageBludgeoning
+from game.component.attack import CurrentTarget, AttackCostModifier, AttackHitModifier
+from game.component.base import accumulate_modifiers
+from game.component.damage import TakeDamageBludgeoning, ModifierInflictDamageBludgeoning
 from game.types import Entity, AttackType
-from game.utils.time import MOMENTS_PER_TURN
+from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class AttackTargetingProcessor(esper.Processor):
@@ -32,11 +37,33 @@ class AttackTargetingProcessor(esper.Processor):
 
     def get_action_cost(self, ent: Entity) -> int:
         """Get the action cost for attacking."""
-        cost = MOMENTS_PER_TURN
-        # TODO: any other modifiers
+        mods = []
         for mod in self.world.try_component(ent, AttackCostModifier):
-            cost = apply_modifier(cost, mod)
-        return cost
+            mods.append(mod)
+        # TODO: any other modifiers
+        modifier = accumulate_modifiers(*mods)
+        return (ATTACK_COST + modifier.addend) * (1 + modifier.factor)
+
+
+class AttackMissProcessor(esper.Processor):
+    """Process whether attack missed."""
+    def process(self, *args: Any, **kwargs: Any) -> None:
+        """Process whether attack missed."""
+        for ent, target in self.world.get_component(CurrentTarget):
+            if target.attack == AttackType.melee:
+                mods = []
+                for mod in self.world.try_component(ent, AttackHitModifier):
+                    mods.append(mod)
+                # TODO: Gather other modifiers
+                modifier = accumulate_modifiers(*mods)
+                hit_chance = HIT_CHANCE + modifier.factor
+                log.debug(f'You have a {hit_chance * 100}% chance to hit...')
+                if random.random() > hit_chance:
+                    # Miss
+                    log.debug('MISS!')
+                    self.world.remove_component(ent, CurrentTarget)
+                else:
+                    log.debug('HIT!')
 
 
 class AttackHitProcessor(esper.Processor):
@@ -51,12 +78,14 @@ class AttackHitProcessor(esper.Processor):
 
     def generate_melee_damage(self, ent: Entity, target: CurrentTarget) -> None:
         """Generate DoDamage components on attacker."""
+        mods = []
         # TODO: check equipment
         # TODO: check attributes
         # TODO: check race
         # TODO: etc
-        bludgeoning_damage = 0
-        for mod in self.world.try_component(ent, ModifierDamageBludgeoning):
-            bludgeoning_damage = apply_modifier(bludgeoning_damage, mod)
-        if bludgeoning_damage > 0:
-            self.world.add_component(target.entity, TakeDamageBludgeoning(bludgeoning_damage))
+        for mod in self.world.try_component(ent, ModifierInflictDamageBludgeoning):
+            mods.append(mod)
+        modifier = accumulate_modifiers(*mods)
+        damage = modifier.addend * (1 + modifier.factor)
+        if damage > 0:
+            self.world.add_component(target.entity, TakeDamageBludgeoning(damage))

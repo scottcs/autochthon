@@ -6,10 +6,10 @@ import esper
 
 from game.component.action import Actor
 from game.component.ai import AISimpleMind
-from game.component.attack import AttackCostModifier
+from game.component.attack import AttackCostModifier, AttackHitModifier
 from game.component.attribute import HP
-from game.component.damage import (ImmuneDamageBludgeoning, ModifierDamageBludgeoning,
-                                   ResistDamageBludgeoning)
+from game.component.damage import (ImmuneDamageBludgeoning, ModifierInflictDamageBludgeoning,
+                                   ModifierTakeDamageBludgeoning)
 from game.component.movement import Position, MoveCostModifier
 from game.component.player import PlayerControlled
 from game.component.render import Renderable
@@ -17,7 +17,7 @@ from game.component.status import Solid
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
-from game.processor.attack import AttackHitProcessor, AttackTargetingProcessor
+from game.processor.attack import AttackHitProcessor, AttackTargetingProcessor, AttackMissProcessor
 from game.processor.attribute import HPProcessor
 from game.processor.damage import DamageBludgeoningMitigationProcessor, DamageBludgeoningProcessor
 from game.processor.movement import MovementProcessor
@@ -58,7 +58,8 @@ class Game:
                                  group=ProcessGroup.time)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(AttackTargetingProcessor(), priority=Priority.targeting)
-        self.world.add_processor(AttackHitProcessor(), priority=Priority.attack)
+        self.world.add_processor(AttackMissProcessor(), priority=Priority.attack_miss)
+        self.world.add_processor(AttackHitProcessor(), priority=Priority.attack_hit)
         self.world.add_processor(DamageBludgeoningMitigationProcessor(), priority=Priority.defense)
         self.world.add_processor(DamageBludgeoningProcessor(), priority=Priority.damage_resolution)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
@@ -77,38 +78,42 @@ class Game:
         self.world.map = current_map
 
         self.make_player(current_map)
-        self.make_enemy(current_map, 39, Palette.red, 200)
-        self.make_enemy(current_map, 39, Palette.purple, 500)
-        self.make_enemy(current_map, 39, Palette.orange, 110)
-        cyan = self.make_enemy(current_map, 39, Palette.cyan, 90)
-        green = self.make_enemy(current_map, 39, Palette.green, 100)
-        self.world.add_component(cyan, ResistDamageBludgeoning(factor=0.5))
+        self.make_enemy(current_map, 39, Palette.red, True, speed_factor=2.0)
+        self.make_enemy(current_map, 39, Palette.purple, True, speed_factor=5.0)
+        self.make_enemy(current_map, 39, Palette.orange, True, speed_factor=1.1)
+        cyan = self.make_enemy(current_map, 39, Palette.cyan, True, speed_factor=0.9)
+        green = self.make_enemy(current_map, 39, Palette.green, False)
+        self.world.add_component(cyan, ModifierTakeDamageBludgeoning(factor=-0.5))
         self.world.add_component(green, ImmuneDamageBludgeoning())
 
     def make_player(self, game_map: Map) -> None:
         """Make a player entity."""
         self.world.create_entity(
             Actor(),
-            AttackCostModifier(factor=0.9),
+            AttackCostModifier(factor=-0.1),
+            AttackHitModifier(factor=0.2),
             Solid(),
             HP(10),
-            ModifierDamageBludgeoning(5),
+            ModifierInflictDamageBludgeoning(5),
             PlayerControlled(),
             Renderable(1, Palette.yellow, RenderLayer.PLAYER),
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )
 
-    def make_enemy(self, game_map: Map, tile: int, color: int, speed: int) -> Entity:
+    def make_enemy(self, game_map: Map, tile: int, color: int, ai: bool,
+                   speed_factor: float=1.0) -> Entity:
         """Make an enemy entity."""
-        return self.world.create_entity(
-            Actor(-100),
-            MoveCostModifier(speed),
+        enemy = self.world.create_entity(
+            AISimpleMind(),
+            MoveCostModifier(factor=speed_factor - 1.0),
             Solid(),
             HP(10),
-            AISimpleMind(),
             Renderable(tile, color, RenderLayer.ENEMY),
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )
+        if ai:
+            self.world.add_component(enemy, Actor(-100))
+        return enemy
 
     def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)
