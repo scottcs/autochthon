@@ -1,5 +1,4 @@
 """Attack processors."""
-import logging
 import random
 from typing import Any
 
@@ -9,11 +8,9 @@ from game.component.action import Actor
 from game.component.attack import CurrentTarget, AttackCostModifier, AttackHitModifier
 from game.component.base import accumulate_modifiers
 from game.component.damage import TakeDamageBludgeoning, ModifierInflictDamageBludgeoning
+from game.component.gamelog import CombatLog
 from game.types import Entity, AttackType, Number
 from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE
-
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
 
 
 class AttackTargetingProcessor(esper.Processor):
@@ -26,6 +23,8 @@ class AttackTargetingProcessor(esper.Processor):
                 self.world.remove_component(ent, CurrentTarget)
                 continue
             actor.time_units -= self.get_action_cost(ent)
+            combat_log = self.world.get_or_add_component(ent, CombatLog)
+            combat_log.lines.append(f'{ent} {target.attack} attacked {target.entity}.')
 
     def still_can_target(self, _ent: Entity, target: CurrentTarget) -> bool:
         """Determine if target is still valid."""
@@ -57,13 +56,13 @@ class AttackMissProcessor(esper.Processor):
                 # TODO: Gather other modifiers
                 modifier = accumulate_modifiers(*mods)
                 chance = HIT_CHANCE + modifier.factor
-                log.debug(f'You have a {chance * 100}% chance to hit...')
+                combat_log = self.world.get_or_add_component(ent, CombatLog)
+                combat_log.lines.append(f' {ent} had a {chance * 100}% chance to hit')
                 if random.random() > chance:
-                    # Miss
-                    log.debug('MISS!')
+                    combat_log.lines.append(', but missed.')
                     self.world.remove_component(ent, CurrentTarget)
                 else:
-                    log.debug('HIT!')
+                    combat_log.lines.append(', and HIT!')
 
 
 class AttackDefenseProcessor(esper.Processor):
@@ -85,7 +84,8 @@ class AttackDefenseProcessor(esper.Processor):
             if self.world.has_component(ent, self.immunity_component_class):
                 # This attack cannot be thwarted by this defense
                 self.world.remove_component(ent, self.immunity_component_class)
-                log.debug(f'{ent} Attack is immune to {self.name}')
+                combat_log = self.world.get_or_add_component(ent, CombatLog)
+                combat_log.lines.append(f' {ent}\'s attack is immune to {self.name}!')
                 continue
             if target.attack == AttackType.melee:
                 mods = []
@@ -94,13 +94,16 @@ class AttackDefenseProcessor(esper.Processor):
                 # TODO: Gather other modifiers
                 modifier = accumulate_modifiers(*mods)
                 chance = self.base_chance + modifier.factor
-                log.debug(f'{target.entity} has a {chance * 100}% chance to defend by {self.name}')
-                if random.random() > chance:
-                    log.debug(f'{self.name.upper()} FAILED!')
-                else:
-                    log.debug(f'{self.name.upper()} SUCCEEDED!')
-                    # TODO: Add a success component for other processors (DeflectSuccess -> Disarm)
-                    self.world.remove_component(ent, CurrentTarget)
+                if chance > 0:
+                    combat_log = self.world.get_or_add_component(ent, CombatLog)
+                    combat_log.lines.append(f' {target.entity} had a {chance * 100}% chance to '
+                                            f'{self.name}')
+                    if random.random() > chance:
+                        combat_log.lines.append(', but FAILED!')
+                    else:
+                        combat_log.lines.append(', and SUCCEEDED!')
+                        # TODO: Add success comp for other processors (DeflectSuccess -> Disarm)
+                        self.world.remove_component(ent, CurrentTarget)
 
 
 class AttackHitProcessor(esper.Processor):

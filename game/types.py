@@ -47,6 +47,7 @@ class Priority(IntEnum):
     """Processor priorities."""
     psychopomps = auto()
     render = auto()
+    gamelog = auto()
     attributes = auto()
     movement = auto()
     damage_resolution = auto()

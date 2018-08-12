@@ -23,6 +23,7 @@ from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
                                    AttackMissProcessor, AttackDefenseProcessor)
 from game.processor.attribute import HPProcessor
 from game.processor.damage import DamageBludgeoningMitigationProcessor, DamageBludgeoningProcessor
+from game.processor.gamelog import GameLogProcessor
 from game.processor.movement import MovementProcessor
 from game.processor.player_bump import PlayerBumpProcessor
 from game.processor.player_input import PlayerInputProcessor
@@ -78,6 +79,7 @@ class Game:
         self.world.add_processor(DamageBludgeoningProcessor(), priority=Priority.damage_resolution)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
         self.world.add_processor(HPProcessor(), priority=Priority.attributes)
+        self.world.add_processor(GameLogProcessor(), priority=Priority.gamelog)
         self.world.add_processor(render_processor,
                                  priority=Priority.render,
                                  group=ProcessGroup.render)

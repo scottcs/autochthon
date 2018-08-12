@@ -1,5 +1,4 @@
 """Damage processors."""
-import logging
 from typing import Any
 
 import esper
@@ -8,9 +7,7 @@ from game.component.attribute import ChangeHP
 from game.component.base import accumulate_modifiers
 from game.component.damage import (TakeDamageBludgeoning, ModifierTakeDamageBludgeoning,
                                    ImmuneDamageBludgeoning)
-
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+from game.component.gamelog import CombatLog
 
 
 class DamageBludgeoningMitigationProcessor(esper.Processor):
@@ -19,7 +16,8 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
         """Process TakeDamageBludgeoning components."""
         for ent, damage in self.world.get_component(TakeDamageBludgeoning):
             if self.world.has_component(ent, ImmuneDamageBludgeoning):
-                log.debug(f'{ent} is immune to Bludgeoning damage!')
+                combat_log = self.world.get_or_add_component(ent, CombatLog)
+                combat_log.lines.append(f' However, {ent} was immune to Bludgeoning damage!')
                 self.world.remove_component(ent, TakeDamageBludgeoning)
             else:
                 mods = []
@@ -27,7 +25,8 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
                     mods.append(mod)
                 modifier = accumulate_modifiers(*mods)
                 damage.amount = (damage.amount + modifier.addend) * (1 + modifier.factor)
-                log.debug(f'{ent} takes {damage.amount} Bludgeoning damage!')
+                combat_log = self.world.get_or_add_component(ent, CombatLog)
+                combat_log.lines.append(f' {ent} took {damage.amount} Bludgeoning damage!')
                 if damage.amount <= 0:
                     self.world.remove_component(ent, TakeDamageBludgeoning)
 
@@ -43,5 +42,3 @@ class DamageBludgeoningProcessor(esper.Processor):
             else:
                 self.world.add_component(ent, ChangeHP(-damage.amount))
             self.world.remove_component(ent, TakeDamageBludgeoning)
-
-
