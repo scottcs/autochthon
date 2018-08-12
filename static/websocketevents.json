@@ -1,0 +1,10 @@
+{
+  "ToServer": {
+    "RefreshGraphics": 0,
+    "GameInput": 1
+  },
+  "FromServer": {
+    "GameLog": 0,
+    "UpdateMap": 1
+  }
+}

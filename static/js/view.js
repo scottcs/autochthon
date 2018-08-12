@@ -15,7 +15,9 @@
         const tile_id_table = tileset_dir + 'tile_ids.json';
         const config_json = 'static/config.json';
         const keys_json = 'static/keys.json';
+        const socket_events_json = 'static/websocketevents.json';
         let keys_data;
+        let socket_events;
         let ws;
         let tile_info;
         let cells = {};
@@ -31,6 +33,7 @@
             .add([
                 config_json,
                 keys_json,
+                socket_events_json,
                 tileset_avatar,
                 tileset_avatar_equipment,
                 tileset_fx_blood,
@@ -55,6 +58,7 @@
             const config = resources[config_json].data;
             tile_info = resources[tile_id_table].data;
             keys_data = resources[keys_json].data;
+            socket_events = resources[socket_events_json].data;
 
             tile_width = config.tiles.width;
             tile_height = config.tiles.height;
@@ -190,18 +194,20 @@
                 } else {
                     code = keys_data.Keys[event.code] || 0;
                 }
-                let buffer = new ArrayBuffer(7);
+                let buffer = new ArrayBuffer(8);
                 const view = new DataView(buffer);
-                // byte 0: event type
-                // byte 1: modifier keys
-                // byte 2: key/button code
-                // byte 3-4: x coordinate
-                // byte 5-6: y coordinate
-                view.setUint8(0, keys_data.Events.KeyPress);
-                view.setUint8(1, modifiers);
-                view.setUint8(2, code);
-                view.setUint16(3, 0);
-                view.setUint16(5, 0);
+                // byte 0: socket event type
+                // byte 1: input event flags
+                // byte 2: modifier keys
+                // byte 3: key/button code
+                // byte 4-5: x coordinate
+                // byte 6-7: y coordinate
+                view.setUint8(0, socket_events.ToServer.GameInput);
+                view.setUint8(1, keys_data.Events.KeyPress);
+                view.setUint8(2, modifiers);
+                view.setUint8(3, code);
+                view.setUint16(4, 0);
+                view.setUint16(6, 0);
                 const data = new Uint8Array(buffer);
                 ws.send(data);
             });
@@ -218,7 +224,7 @@
         function requestRefresh() {
             if (ws.readyState === 1) {
                 let refresh = new Uint8Array(1);
-                refresh[0] = keys_data.Events.Refresh;
+                refresh[0] = socket_events.ToServer.RefreshGraphics;
                 ws.send(refresh);
             }
         }

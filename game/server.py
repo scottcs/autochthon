@@ -1,6 +1,7 @@
 """Autochthon server."""
 import json
 import logging
+from pathlib import Path
 from typing import Optional, Any, Union
 
 import tornado.ioloop
@@ -9,10 +10,10 @@ import tornado.websocket
 
 from game.events import InputEvent, WebsocketWriteAllEvent, RefreshMapEvent, GameLogEvent
 from game.game import Game
-from game.processor.player_input import KEYS_JSON
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
 
+WEBSOCKET_EVENTS_JSON = Path('static') / Path('websocketevents.json')
 DESIRED_FPS = 30
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -56,6 +57,8 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         config = kwargs.pop('config', None)
         super().__init__(*args, **kwargs)
+        with open(WEBSOCKET_EVENTS_JSON) as f:
+            self.socket_events = json.load(f)
         WebsocketWriteAllEvent.handle(self._on_websocket_write_all)
         GameLogEvent.handle(self._on_game_log)
         self.game_callback: GameCallback = GameCallback(config=config)
@@ -84,26 +87,26 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def on_message(self, message: Union[str, bytes]) -> None:
         """Called when a message is received over the connection."""
         if isinstance(message, bytes):
-            with open(KEYS_JSON) as f:
-                keys: dict = json.load(f)
             # ---- refresh event
-            if message[0] == keys['Events']['Refresh']:
+            if message[0] == self.socket_events['ToServer']['RefreshGraphics']:
                 RefreshMapEvent.fire()
-            else:
+            elif message[0] == self.socket_events['ToServer']['GameInput']:
                 # ---- input event
-                # byte 0: event type
-                # byte 1: modifiers
-                # byte 2: key/button code
-                # byte 3-4: x coordinate
-                # byte 5-6: y coordinate
+                # byte 1: input event flags
+                # byte 2: modifiers
+                # byte 3: key/button code
+                # byte 4-5: x coordinate
+                # byte 6-7: y coordinate
                 InputEvent.fire({
-                    'event': message[0],
-                    'modifiers': message[1],
-                    'code': message[2],
-                    'x_coord': int.from_bytes(message[3:5], byteorder='big'),
-                    'y_coord': int.from_bytes(message[5:7], byteorder='big'),
+                    'event': message[1],
+                    'modifiers': message[2],
+                    'code': message[3],
+                    'x_coord': int.from_bytes(message[4:6], byteorder='big'),
+                    'y_coord': int.from_bytes(message[6:8], byteorder='big'),
                     'state': self.game_callback.get_game_state(),
                 })
+            else:
+                log.error(f'Unprocessed message type: {message[0]}')
 
     def on_close(self) -> None:
         """Called when closing a connection."""
