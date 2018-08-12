@@ -44,6 +44,7 @@ class Event:
     __len__ = num_handlers
 
 
+GameLogEvent: Event = Event()
 GameOverEvent: Event = Event()
 InputEvent: Event = Event()
 RefreshMapEvent: Event = Event()

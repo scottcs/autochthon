@@ -47,6 +47,7 @@ class Priority(IntEnum):
     """Processor priorities."""
     psychopomps = auto()
     render = auto()
+    gamelog = auto()
     attributes = auto()
     movement = auto()
     damage_resolution = auto()
@@ -95,3 +96,9 @@ class Modifier(NamedTuple):
     """Modifier set."""
     addend: Number = 0
     factor: Number = 0
+
+
+class LogLine(NamedTuple):
+    """A Game log message with color."""
+    message: str = ''
+    color: int = 0xffffff

@@ -7,7 +7,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-from game.events import InputEvent, WebsocketWriteAllEvent, RefreshMapEvent
+from game.events import InputEvent, WebsocketWriteAllEvent, RefreshMapEvent, GameLogEvent
 from game.game import Game
 from game.processor.player_input import KEYS_JSON
 from game.processor.render import WebRenderProcessor
@@ -57,6 +57,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         config = kwargs.pop('config', None)
         super().__init__(*args, **kwargs)
         WebsocketWriteAllEvent.handle(self._on_websocket_write_all)
+        GameLogEvent.handle(self._on_game_log)
         self.game_callback: GameCallback = GameCallback(config=config)
         self.game_callback.start()
 
@@ -70,6 +71,10 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         message: Union[str, bytes] = event.pop('message', None)
         if message:
             self.write_all(message, binary=binary)
+
+    def _on_game_log(self, event: EventType) -> None:
+        # TODO: send message to server (with colors)
+        print(' '.join([line.message for line in event['lines']]))
 
     def write_all(self, *args: Any, **kwargs: Any) -> None:
         """Write to all connections."""

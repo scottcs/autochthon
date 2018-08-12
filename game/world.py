@@ -121,3 +121,12 @@ class World(esper.World):
           """
         if component_type in self._entities[entity]:
             yield self._entities[entity][component_type]
+
+    def get_or_add_component(self, entity: Entity, component_type: Any) -> Any:
+        """Get a component for the given entity if it exists, or else create a new one."""
+        try:
+            return self.component_for_entity(entity, component_type)
+        except KeyError:
+            comp = component_type()
+            self.add_component(entity, comp)
+            return comp
