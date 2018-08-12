@@ -4,12 +4,13 @@ from typing import Optional
 
 import esper
 
-from game.component.action import Actor, BaseActionCosts
+from game.component.action import Actor
 from game.component.ai import AISimpleMind
+from game.component.attack import AttackCostModifier
 from game.component.attribute import HP
 from game.component.damage import (ImmuneDamageBludgeoning, ModifierDamageBludgeoning,
                                    ResistDamageBludgeoning)
-from game.component.movement import Position
+from game.component.movement import Position, MoveCostModifier
 from game.component.player import PlayerControlled
 from game.component.render import Renderable
 from game.component.status import Solid
@@ -88,7 +89,7 @@ class Game:
         """Make a player entity."""
         self.world.create_entity(
             Actor(),
-            BaseActionCosts(moving=200),
+            AttackCostModifier(factor=0.9),
             Solid(),
             HP(10),
             ModifierDamageBludgeoning(5),
@@ -101,7 +102,7 @@ class Game:
         """Make an enemy entity."""
         return self.world.create_entity(
             Actor(-100),
-            BaseActionCosts(moving=speed),
+            MoveCostModifier(speed),
             Solid(),
             HP(10),
             AISimpleMind(),

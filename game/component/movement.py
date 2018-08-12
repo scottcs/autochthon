@@ -1,6 +1,8 @@
 """Movement components."""
 from typing import Any
 
+from game.component.base import BaseModifierComponent
+
 
 class Position:
     """Position component."""
@@ -24,5 +26,13 @@ class Moving:
         self.y: int = y
 
 
+class MoveCostModifier(BaseModifierComponent):
+    """Movement cost modifier."""
+
+
 class Waiting:
     """Waiting component."""
+
+
+class WaitCostModifier(BaseModifierComponent):
+    """Wait cost modifier."""
