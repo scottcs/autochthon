@@ -80,8 +80,6 @@
             app.view.style.width = '100vw';
             app.view.style.height = '100vh';
             viewport = app.stage.addChild(new PIXI.extras.Viewport());
-            viewport
-                .drag({clampWheel: true});
             document.body.appendChild(app.view);
             window.addEventListener('resize', resize);
 
