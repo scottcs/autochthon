@@ -122,13 +122,14 @@
             const parsed = JSON.parse(string);
             const logDiv = document.getElementById('gameLog');
             parsed.lines.forEach(function(line) {
-                // console.log(line[0]);
                 const newSpan = document.createElement('span');
                 color = '#' + line[1].toString(16).padStart(6, '0');
                 newSpan.setAttribute('style', 'color: ' + color + ';');
                 newSpan.textContent = line[0];
                 logDiv.appendChild(newSpan);
+                logDiv.innerHTML += ' ';
             });
+            logDiv.appendChild(document.createElement('br'));
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 

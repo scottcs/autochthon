@@ -58,7 +58,7 @@ class AttackMissProcessor(esper.Processor):
                 modifier = accumulate_modifiers(*mods)
                 chance = HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
-                combat_log.add(f'{ent} had a {chance * 100}% chance to hit')
+                combat_log.add(f'{ent} had a {chance * 100}% chance to hit', 0x0000ff)
                 if random.random() > chance:
                     combat_log.append_last(', but missed.')
                     self.world.remove_component(ent, CurrentTarget)

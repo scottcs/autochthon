@@ -25,6 +25,5 @@ div#gameLog {
 }
 
 div#gameLog > span {
-    display: block;
     font-family: monospace;
 }
