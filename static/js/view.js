@@ -124,6 +124,7 @@
             parsed.lines.forEach(function(line) {
                 const newSpan = document.createElement('span');
                 color = '#' + line[1].toString(16).padStart(6, '0');
+                newSpan.classList.add('logline');
                 newSpan.setAttribute('style', 'color: ' + color + ';');
                 newSpan.textContent = line[0];
                 logDiv.appendChild(newSpan);
@@ -217,39 +218,10 @@
                     pausingKeyPress = true;
                 }
 
-                let modifiers = 0;
-                if (event.shiftKey) {
-                    modifiers |= keys_data.Modifiers.Shift;
+                if (!keyHandled(event)) {
+                    sendInputToServer(event)
+
                 }
-                if (event.ctrlKey) {
-                    modifiers |= keys_data.Modifiers.Ctrl;
-                }
-                if (event.altKey) {
-                    modifiers |= keys_data.Modifiers.Alt;
-                }
-                const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
-                let code = 0;
-                if (key.length === 1) {
-                    code = key.charCodeAt(0);
-                } else {
-                    code = keys_data.Keys[event.code] || 0;
-                }
-                let buffer = new ArrayBuffer(8);
-                const view = new DataView(buffer);
-                // byte 0: socket event type
-                // byte 1: input event flags
-                // byte 2: modifier keys
-                // byte 3: key/button code
-                // byte 4-5: x coordinate
-                // byte 6-7: y coordinate
-                view.setUint8(0, socket_events.ToServer.GameInput);
-                view.setUint8(1, keys_data.Events.KeyPress);
-                view.setUint8(2, modifiers);
-                view.setUint8(3, code);
-                view.setUint16(4, 0);
-                view.setUint16(6, 0);
-                const data = new Uint8Array(buffer);
-                ws.send(data);
             });
 
             ws.onmessage = function (evt) {
@@ -259,6 +231,83 @@
             ws.onopen = function(evt) {
                 requestRefresh();
             };
+        }
+
+        function keyHandled(event) {
+            // Handle keypress locally first, possibly
+            if (event.ctrlKey && event.code === 'KeyP') {
+                toggleGameLogModal();
+                return true;
+            }
+
+            return false;
+        }
+
+        function sendInputToServer(event) {
+            let modifiers = 0;
+            if (event.shiftKey) {
+                modifiers |= keys_data.Modifiers.Shift;
+            }
+            if (event.ctrlKey) {
+                modifiers |= keys_data.Modifiers.Ctrl;
+            }
+            if (event.altKey) {
+                modifiers |= keys_data.Modifiers.Alt;
+            }
+            const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
+            let code = 0;
+            if (key.length === 1) {
+                code = key.charCodeAt(0);
+            } else {
+                code = keys_data.Keys[event.code] || 0;
+            }
+            let buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+            // byte 0: socket event type
+            // byte 1: input event flags
+            // byte 2: modifier keys
+            // byte 3: key/button code
+            // byte 4-5: x coordinate
+            // byte 6-7: y coordinate
+            view.setUint8(0, socket_events.ToServer.GameInput);
+            view.setUint8(1, keys_data.Events.KeyPress);
+            view.setUint8(2, modifiers);
+            view.setUint8(3, code);
+            view.setUint16(4, 0);
+            view.setUint16(6, 0);
+            const data = new Uint8Array(buffer);
+            ws.send(data);
+        }
+
+        function toggleGameLogModal() {
+            const modal = document.getElementById('gameLogModal');
+
+            // When the user clicks anywhere outside of the modal, close it
+            const closeModal = function() {
+                modal.style.display = "none";
+                window.removeEventListener('click', onModalClick)
+            };
+
+            const openModal = function() {
+                const modal_game_log = document.getElementById('gameLogModalContent');
+                const game_log = document.getElementById('gameLog');
+                modal.style.display = "block";
+                modal_game_log.innerHTML = game_log.innerHTML;
+                modal_game_log.scrollTop = modal_game_log.scrollHeight;
+                window.addEventListener('click', onModalClick);
+            };
+
+            const onModalClick = function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+
+            if (modal.style.display === "none") {
+                openModal();
+            } else {
+                closeModal();
+            }
         }
 
         function requestRefresh() {
