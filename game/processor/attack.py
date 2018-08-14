@@ -8,10 +8,12 @@ from game.component.action import Actor
 from game.component.attack import CurrentTarget, AttackCostModifier, AttackHitModifier
 from game.component.base import accumulate_modifiers
 from game.component.damage import TakeDamageBludgeoning, ModifierInflictDamageBludgeoning
+from game.component.descriptive import Name
 from game.component.gamelog import CombatLog
 from game.types import Entity, AttackType, Number
-from game.utils.language import Verb
+from game.utils.language import Verb, msg
 from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE
+from gamedata.messages.combat import MsgAttack, MsgMiss, MsgAttackImmune, MsgDefend
 
 
 class AttackTargetingProcessor(esper.Processor):
@@ -25,7 +27,11 @@ class AttackTargetingProcessor(esper.Processor):
                 continue
             actor.time_units -= self.get_action_cost(ent)
             combat_log = self.world.get_or_add_component(ent, CombatLog)
-            combat_log.add(f'{ent} {target.attack} attacks {target.entity}.')
+            aggressor_name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+            defender_name = self.world.get_or_add_component(target.entity, Name,
+                                                            f'Entity {target.entity}')
+            combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttack,
+                                aggressor_name, defender_name, target.attack))
             self.world.add_component(ent, combat_log)
 
     def still_can_target(self, _ent: Entity, target: CurrentTarget) -> bool:
@@ -60,7 +66,8 @@ class AttackMissProcessor(esper.Processor):
                 chance = HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
                 if random.random() > chance:
-                    combat_log.add(f'{ent} missed!', 0x3333ff)
+                    name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+                    combat_log.add(*msg(self.world.players, (ent, target.entity), MsgMiss, name))
                     self.world.remove_component(ent, CurrentTarget)
 
 
@@ -84,7 +91,9 @@ class AttackDefenseProcessor(esper.Processor):
                 # This attack cannot be thwarted by this defense
                 self.world.remove_component(ent, self.immunity_component_class)
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
-                combat_log.add(f'{ent}\'s attack cannot be {self.verb.past}!')
+                name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+                combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttackImmune,
+                                    name, self.verb.past))
                 continue
             if target.attack == AttackType.melee:
                 mods = []
@@ -96,7 +105,10 @@ class AttackDefenseProcessor(esper.Processor):
                 if chance > 0:
                     if random.random() < chance:
                         combat_log = self.world.get_or_add_component(ent, CombatLog)
-                        combat_log.add(f'{target.entity} {self.verb.present}!')
+                        name = self.world.get_or_add_component(
+                            target.entity, Name, f'Entity {target.entity}')
+                        combat_log.add(*msg(self.world.players, (target.entity, ent), MsgDefend,
+                                            name, self.verb.present))
                         # TODO: Add success comp for other processors (DeflectSuccess -> Disarm)
                         self.world.remove_component(ent, CurrentTarget)
 

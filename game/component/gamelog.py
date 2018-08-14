@@ -2,6 +2,7 @@
 from typing import Optional
 
 from game.types import LogLine
+from gamedata.palette import MessagePalette
 
 
 class BaseLog:
@@ -16,9 +17,8 @@ class BaseLog:
     def add(self, message: str, color: Optional[int]=None) -> None:
         """Add a new line to the log."""
         if color is None:
-            self.lines.append(LogLine(message))
-        else:
-            self.lines.append(LogLine(message, color))
+            color = MessagePalette.default
+        self.lines.append(LogLine(message, color))
 
     def append_last(self, message: str) -> None:
         """Append to the last log line."""
