@@ -25,7 +25,7 @@
         let tile_height;
         let world_width;
         let world_height;
-        let viewport;
+        let camera;
         let app;
 
         // noinspection JSUnresolvedFunction
@@ -67,20 +67,19 @@
             world_width = map_tile_width * tile_width;
             world_height = map_tile_height * tile_height;
 
+            const renderDiv = document.getElementById('render');
+
             // noinspection JSValidateTypes
             PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
             app = new PIXI.Application({
-                transparent: true,
-                width: window.innerWidth,
-                height: window.innerHeight,
-                resolution: window.devicePixelRatio
+                width: window.innerWidth * 0.7,
+                height: window.innerHeight * 0.8,
+                transparent: true
             });
-            app.view.style.position = 'fixed';
-            app.view.style.width = '100vw';
-            app.view.style.height = '100vh';
-            viewport = app.stage.addChild(new PIXI.extras.Viewport());
-            document.body.appendChild(app.view);
+            camera = new PIXI.Container();
+            app.stage.addChild(camera);
+            renderDiv.appendChild(app.view);
             window.addEventListener('resize', resize);
 
             setupWebsockets(config);
@@ -90,8 +89,8 @@
         }
 
         function resize() {
-            app.renderer.resize(window.innerWidth, window.innerHeight);
-            viewport.resize(window.innerWidth, window.innerHeight, world_width, world_height);
+            app.renderer.resize(window.innerWidth * 0.7, window.innerHeight * 0.8);
+            camera.position.set(app.screen.width / 2, app.screen.height / 2);
             requestRefresh();
         }
 
@@ -126,7 +125,8 @@
             const view = new DataView(data);
             const player_x = view.getUint16(0) * tile_width;
             const player_y = view.getUint16(2) * tile_height;
-            viewport.moveCenter(player_x, player_y);
+            camera.pivot.x = player_x;
+            camera.pivot.y = player_y;
             const num_cells = view.getUint16(4);
             const offset = 6;      // header size in bytes
             const cell_size = 12;  // cell size in bytes
@@ -152,12 +152,19 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
+
+            const cameraRect = new PIXI.Rectangle();
+            cameraRect.x = camera.pivot.x - app.screen.width / 2;
+            cameraRect.y = camera.pivot.y - app.screen.height / 2;
+            cameraRect.width = app.screen.width;
+            cameraRect.height = app.screen.height;
+
             sprite.visible = (
                 (cell.tile_id > 0) &&
-                (sprite.x > (viewport.left - 3*tile_width)) &&
-                (sprite.y > (viewport.top - 3*tile_height)) &&
-                (sprite.x < (viewport.right + 3*tile_width)) &&
-                (sprite.y < (viewport.bottom + 3*tile_height))
+                (sprite.x > (cameraRect.left - 3*tile_width)) &&
+                (sprite.y > (cameraRect.top - 3*tile_height)) &&
+                (sprite.x < (cameraRect.right + 3*tile_width)) &&
+                (sprite.y < (cameraRect.bottom + 3*tile_height))
             );
         }
 
@@ -168,7 +175,7 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
-            viewport.addChild(sprite);
+            camera.addChild(sprite);
             cells[cell.id] = sprite;
         }
 
