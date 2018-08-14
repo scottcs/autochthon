@@ -21,7 +21,7 @@ class DangerPalette:
     deadly = 0xff6699
     dangerous = 0xff6666
     threatening = 0xffff66
-    fair = 0xcccccc
+    fair = 0xaaaaaa
     weak = 0x66ffff
     helpless = 0x666666
 
@@ -31,7 +31,7 @@ class MessagePalette:
     danger = 0xff6666
     warning = 0xffff66
     side_note = 0x666666
-    default = 0xcccccc
+    default = 0xaaaaaa
     very_negative = 0xff6699
     negative = 0x654321
     positive = 0x669966
@@ -42,7 +42,7 @@ class MessagePalette:
 class ItemPalette:
     """Colors for item descriptions."""
     trash = 0x666666
-    common = 0xcccccc
+    common = 0xaaaaaa
     uncommon = 0x66ff66
     rare = 0x9999ff
     epic = 0xcc66ff

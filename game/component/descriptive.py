@@ -7,17 +7,21 @@ class Name:
     def __init__(self,
                  first: str,
                  last: Optional[str]=None,
-                 titles: Optional[List[str]]=None) -> None:
+                 titles: Optional[List[str]]=None,
+                 nickname: Optional[str]=None) -> None:
         self.first: str = first
+        self.nickname: Optional[str] = nickname
         self.last: Optional[str] = last
         self.titles: Optional[List[str]] = titles
 
     def __str__(self) -> str:
         name = f'{self.first}'
+        if self.nickname:
+            name = f'{name} "{self.nickname}"'
         if self.last:
             name = f'{name} {self.last}'
         if self.titles:
-            if not self.titles[0].startswith('the'):
-                name += ','
+            if not self.titles[0].startswith('the '):
+                name += ':'
             name = f'{name} {", ".join(self.titles)}'
         return name

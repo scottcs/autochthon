@@ -3,7 +3,7 @@ from typing import Any
 
 import esper
 
-from game.component.gamelog import CombatLog
+from game.component.gamelog import CombatLog, StatusLog
 from game.events import GameLogEvent
 
 
@@ -14,3 +14,6 @@ class GameLogProcessor(esper.Processor):
         for ent, log in self.world.get_component(CombatLog):
             GameLogEvent.fire({'lines': log.lines})
             self.world.remove_component(ent, CombatLog)
+        for ent, log in self.world.get_component(StatusLog):
+            GameLogEvent.fire({'lines': log.lines})
+            self.world.remove_component(ent, StatusLog)

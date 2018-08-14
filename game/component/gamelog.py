@@ -31,3 +31,7 @@ class BaseLog:
 
 class CombatLog(BaseLog):
     """Combat log."""
+
+
+class StatusLog(BaseLog):
+    """Log status effects."""
