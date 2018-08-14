@@ -7,3 +7,16 @@ body {
 
 div#render {
 }
+
+div#gameLog {
+    position: absolute;
+    bottom: 0;
+    background: #101010;
+    width: 70vw;
+    height: 20vh;
+    overflow-y: auto;
+}
+
+div#gameLog > span {
+    display: block;
+}
