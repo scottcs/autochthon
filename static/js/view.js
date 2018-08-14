@@ -16,6 +16,8 @@
         const config_json = 'static/config.json';
         const keys_json = 'static/keys.json';
         const socket_events_json = 'static/websocketevents.json';
+        const main_width_scale = 0.7;
+        const main_height_scale = 0.88;
         let keys_data;
         let socket_events;
         let ws;
@@ -73,8 +75,8 @@
             PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
             app = new PIXI.Application({
-                width: window.innerWidth * 0.7,
-                height: window.innerHeight * 0.8,
+                width: window.innerWidth * main_width_scale,
+                height: window.innerHeight * main_height_scale,
                 transparent: true
             });
             camera = new PIXI.Container();
@@ -89,7 +91,9 @@
         }
 
         function resize() {
-            app.renderer.resize(window.innerWidth * 0.7, window.innerHeight * 0.8);
+            app.renderer.resize(
+                window.innerWidth * main_width_scale,
+                window.innerHeight * main_height_scale);
             camera.position.set(app.screen.width / 2, app.screen.height / 2);
             requestRefresh();
         }

@@ -8,15 +8,23 @@ body {
 div#render {
 }
 
-div#gameLog {
+div#gameLogContainer {
+    background: #101010;
     position: absolute;
     bottom: 0;
-    background: #101010;
     width: 70vw;
-    height: 20vh;
-    overflow-y: auto;
+    height: 12vh;
+    overflow: hidden;
+}
+
+div#gameLog {
+    height: 100%;
+    overflow-y: scroll;
+    margin-right: -50px;
+    padding-right: 50px;
 }
 
 div#gameLog > span {
     display: block;
+    font-family: monospace;
 }
