@@ -1,5 +1,5 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
-from typing import Any, Optional
+from typing import Any, Optional, Set
 
 import esper
 
@@ -17,6 +17,7 @@ class World(esper.World):
         super().__init__(timed)
         self._processor_groups: dict = {}
         self.map: Optional[Map] = None
+        self.players: Set[Entity] = set()
 
     def add_processor(self,
                       processor_instance: esper.Processor,
@@ -122,11 +123,12 @@ class World(esper.World):
         if component_type in self._entities[entity]:
             yield self._entities[entity][component_type]
 
-    def get_or_add_component(self, entity: Entity, component_type: Any) -> Any:
+    def get_or_add_component(self, entity: Entity, component_type: Any,
+                             *args: Any, **kwargs: Any) -> Any:
         """Get a component for the given entity if it exists, or else create a new one."""
         try:
             return self.component_for_entity(entity, component_type)
         except KeyError:
-            comp = component_type()
+            comp = component_type(*args, **kwargs)
             self.add_component(entity, comp)
             return comp

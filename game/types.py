@@ -31,18 +31,6 @@ class RenderLayer(Enum):
     EFFECT = auto()
 
 
-class DirectionType(Enum):
-    """Cardinal direction type."""
-    n = 1
-    ne = 2
-    e = 3
-    se = 4
-    s = 5
-    sw = 6
-    w = 7
-    nw = 8
-
-
 class Priority(IntEnum):
     """Processor priorities."""
     psychopomps = auto()

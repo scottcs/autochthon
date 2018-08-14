@@ -8,9 +8,12 @@ from game.component.action import Actor
 from game.component.attack import CurrentTarget, AttackCostModifier, AttackHitModifier
 from game.component.base import accumulate_modifiers
 from game.component.damage import TakeDamageBludgeoning, ModifierInflictDamageBludgeoning
+from game.component.descriptive import Name
 from game.component.gamelog import CombatLog
 from game.types import Entity, AttackType, Number
+from game.utils.language import Verb, msg
 from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE
+from gamedata.messages.combat import MsgAttack, MsgMiss, MsgAttackImmune, MsgDefend
 
 
 class AttackTargetingProcessor(esper.Processor):
@@ -24,7 +27,11 @@ class AttackTargetingProcessor(esper.Processor):
                 continue
             actor.time_units -= self.get_action_cost(ent)
             combat_log = self.world.get_or_add_component(ent, CombatLog)
-            combat_log.add(f'{ent} {target.attack} attacked {target.entity}.')
+            aggressor_name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+            defender_name = self.world.get_or_add_component(target.entity, Name,
+                                                            f'Entity {target.entity}')
+            combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttack,
+                                aggressor_name, defender_name, target.attack))
             self.world.add_component(ent, combat_log)
 
     def still_can_target(self, _ent: Entity, target: CurrentTarget) -> bool:
@@ -58,23 +65,21 @@ class AttackMissProcessor(esper.Processor):
                 modifier = accumulate_modifiers(*mods)
                 chance = HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
-                combat_log.add(f'{ent} had a {chance * 100}% chance to hit')
                 if random.random() > chance:
-                    combat_log.append_last(', but missed.')
+                    name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+                    combat_log.add(*msg(self.world.players, (ent, target.entity), MsgMiss, name))
                     self.world.remove_component(ent, CurrentTarget)
-                else:
-                    combat_log.append_last(', and HIT!')
 
 
 class AttackDefenseProcessor(esper.Processor):
     """Process whether attack was defended."""
     def __init__(self,
-                 name: str,
+                 verb: Verb,
                  modifier_component_class: Any,
                  immunity_component_class: Any,
                  base_chance: Number) -> None:
         super().__init__()
-        self.name = name
+        self.verb: Verb = verb
         self.modifier_component_class: Any = modifier_component_class
         self.immunity_component_class: Any = immunity_component_class
         self.base_chance: Number = base_chance
@@ -86,7 +91,9 @@ class AttackDefenseProcessor(esper.Processor):
                 # This attack cannot be thwarted by this defense
                 self.world.remove_component(ent, self.immunity_component_class)
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
-                combat_log.add(f'{ent}\'s attack is immune to {self.name}!')
+                name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+                combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttackImmune,
+                                    name, self.verb.past))
                 continue
             if target.attack == AttackType.melee:
                 mods = []
@@ -96,12 +103,12 @@ class AttackDefenseProcessor(esper.Processor):
                 modifier = accumulate_modifiers(*mods)
                 chance = self.base_chance + modifier.factor
                 if chance > 0:
-                    combat_log = self.world.get_or_add_component(ent, CombatLog)
-                    combat_log.add(f'{target.entity} had a {chance * 100}% chance to {self.name}')
-                    if random.random() > chance:
-                        combat_log.append_last(', but FAILED!')
-                    else:
-                        combat_log.append_last(', and SUCCEEDED!')
+                    if random.random() < chance:
+                        combat_log = self.world.get_or_add_component(ent, CombatLog)
+                        name = self.world.get_or_add_component(
+                            target.entity, Name, f'Entity {target.entity}')
+                        combat_log.add(*msg(self.world.players, (target.entity, ent), MsgDefend,
+                                            name, self.verb.present))
                         # TODO: Add success comp for other processors (DeflectSuccess -> Disarm)
                         self.world.remove_component(ent, CurrentTarget)
 

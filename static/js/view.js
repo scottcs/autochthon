@@ -15,7 +15,11 @@
         const tile_id_table = tileset_dir + 'tile_ids.json';
         const config_json = 'static/config.json';
         const keys_json = 'static/keys.json';
+        const socket_events_json = 'static/websocketevents.json';
+        const main_width_scale = 0.7;
+        const main_height_scale = 0.88;
         let keys_data;
+        let socket_events;
         let ws;
         let tile_info;
         let cells = {};
@@ -23,7 +27,7 @@
         let tile_height;
         let world_width;
         let world_height;
-        let viewport;
+        let camera;
         let app;
 
         // noinspection JSUnresolvedFunction
@@ -31,6 +35,7 @@
             .add([
                 config_json,
                 keys_json,
+                socket_events_json,
                 tileset_avatar,
                 tileset_avatar_equipment,
                 tileset_fx_blood,
@@ -55,6 +60,7 @@
             const config = resources[config_json].data;
             tile_info = resources[tile_id_table].data;
             keys_data = resources[keys_json].data;
+            socket_events = resources[socket_events_json].data;
 
             tile_width = config.tiles.width;
             tile_height = config.tiles.height;
@@ -63,22 +69,19 @@
             world_width = map_tile_width * tile_width;
             world_height = map_tile_height * tile_height;
 
+            const renderDiv = document.getElementById('render');
+
             // noinspection JSValidateTypes
             PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
             app = new PIXI.Application({
-                transparent: true,
-                width: window.innerWidth,
-                height: window.innerHeight,
-                resolution: window.devicePixelRatio
+                width: window.innerWidth * main_width_scale,
+                height: window.innerHeight * main_height_scale,
+                transparent: true
             });
-            app.view.style.position = 'fixed';
-            app.view.style.width = '100vw';
-            app.view.style.height = '100vh';
-            viewport = app.stage.addChild(new PIXI.extras.Viewport());
-            viewport
-                .drag({clampWheel: true});
-            document.body.appendChild(app.view);
+            camera = new PIXI.Container();
+            app.stage.addChild(camera);
+            renderDiv.appendChild(app.view);
             window.addEventListener('resize', resize);
 
             setupWebsockets(config);
@@ -88,8 +91,10 @@
         }
 
         function resize() {
-            app.renderer.resize(window.innerWidth, window.innerHeight);
-            viewport.resize(window.innerWidth, window.innerHeight, world_width, world_height);
+            app.renderer.resize(
+                window.innerWidth * main_width_scale,
+                window.innerHeight * main_height_scale);
+            camera.position.set(app.screen.width / 2, app.screen.height / 2);
             requestRefresh();
         }
 
@@ -98,10 +103,43 @@
         }
 
         function handleBinaryData(data) {
+            const headerByte = new Uint8Array(data)[0];
+            const actualData = data.slice(1, data.length);
+            switch (headerByte) {
+                case socket_events.FromServer.GameLog:
+                    handleGameLog(actualData);
+                    break;
+                case socket_events.FromServer.UpdateMap:
+                    handleUpdateMap(actualData);
+                    break;
+                default:
+                    console.error('Got unknown event from server.', headerByte);
+            }
+        }
+
+        function handleGameLog(data) {
+            const string = new TextDecoder().decode(data);
+            const parsed = JSON.parse(string);
+            const logDiv = document.getElementById('gameLog');
+            parsed.lines.forEach(function(line) {
+                const newSpan = document.createElement('span');
+                color = '#' + line[1].toString(16).padStart(6, '0');
+                newSpan.classList.add('logline');
+                newSpan.setAttribute('style', 'color: ' + color + ';');
+                newSpan.textContent = line[0];
+                logDiv.appendChild(newSpan);
+                logDiv.innerHTML += ' ';
+            });
+            logDiv.appendChild(document.createElement('br'));
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function handleUpdateMap(data) {
             const view = new DataView(data);
             const player_x = view.getUint16(0) * tile_width;
             const player_y = view.getUint16(2) * tile_height;
-            viewport.moveCenter(player_x, player_y);
+            camera.pivot.x = player_x;
+            camera.pivot.y = player_y;
             const num_cells = view.getUint16(4);
             const offset = 6;      // header size in bytes
             const cell_size = 12;  // cell size in bytes
@@ -127,12 +165,19 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
+
+            const cameraRect = new PIXI.Rectangle();
+            cameraRect.x = camera.pivot.x - app.screen.width / 2;
+            cameraRect.y = camera.pivot.y - app.screen.height / 2;
+            cameraRect.width = app.screen.width;
+            cameraRect.height = app.screen.height;
+
             sprite.visible = (
                 (cell.tile_id > 0) &&
-                (sprite.x > (viewport.left - 3*tile_width)) &&
-                (sprite.y > (viewport.top - 3*tile_height)) &&
-                (sprite.x < (viewport.right + 3*tile_width)) &&
-                (sprite.y < (viewport.bottom + 3*tile_height))
+                (sprite.x > (cameraRect.left - 3*tile_width)) &&
+                (sprite.y > (cameraRect.top - 3*tile_height)) &&
+                (sprite.x < (cameraRect.right + 3*tile_width)) &&
+                (sprite.y < (cameraRect.bottom + 3*tile_height))
             );
         }
 
@@ -143,7 +188,7 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
-            viewport.addChild(sprite);
+            camera.addChild(sprite);
             cells[cell.id] = sprite;
         }
 
@@ -173,37 +218,10 @@
                     pausingKeyPress = true;
                 }
 
-                let modifiers = 0;
-                if (event.shiftKey) {
-                    modifiers |= keys_data.Modifiers.Shift;
+                if (!keyHandled(event)) {
+                    sendInputToServer(event)
+
                 }
-                if (event.ctrlKey) {
-                    modifiers |= keys_data.Modifiers.Ctrl;
-                }
-                if (event.altKey) {
-                    modifiers |= keys_data.Modifiers.Alt;
-                }
-                const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
-                let code = 0;
-                if (key.length === 1) {
-                    code = key.charCodeAt(0);
-                } else {
-                    code = keys_data.Keys[event.code] || 0;
-                }
-                let buffer = new ArrayBuffer(7);
-                const view = new DataView(buffer);
-                // byte 0: event type
-                // byte 1: modifier keys
-                // byte 2: key/button code
-                // byte 3-4: x coordinate
-                // byte 5-6: y coordinate
-                view.setUint8(0, keys_data.Events.KeyPress);
-                view.setUint8(1, modifiers);
-                view.setUint8(2, code);
-                view.setUint16(3, 0);
-                view.setUint16(5, 0);
-                const data = new Uint8Array(buffer);
-                ws.send(data);
             });
 
             ws.onmessage = function (evt) {
@@ -215,10 +233,87 @@
             };
         }
 
+        function keyHandled(event) {
+            // Handle keypress locally first, possibly
+            if (event.ctrlKey && event.code === 'KeyP') {
+                toggleGameLogModal();
+                return true;
+            }
+
+            return false;
+        }
+
+        function sendInputToServer(event) {
+            let modifiers = 0;
+            if (event.shiftKey) {
+                modifiers |= keys_data.Modifiers.Shift;
+            }
+            if (event.ctrlKey) {
+                modifiers |= keys_data.Modifiers.Ctrl;
+            }
+            if (event.altKey) {
+                modifiers |= keys_data.Modifiers.Alt;
+            }
+            const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
+            let code = 0;
+            if (key.length === 1) {
+                code = key.charCodeAt(0);
+            } else {
+                code = keys_data.Keys[event.code] || 0;
+            }
+            let buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+            // byte 0: socket event type
+            // byte 1: input event flags
+            // byte 2: modifier keys
+            // byte 3: key/button code
+            // byte 4-5: x coordinate
+            // byte 6-7: y coordinate
+            view.setUint8(0, socket_events.ToServer.GameInput);
+            view.setUint8(1, keys_data.Events.KeyPress);
+            view.setUint8(2, modifiers);
+            view.setUint8(3, code);
+            view.setUint16(4, 0);
+            view.setUint16(6, 0);
+            const data = new Uint8Array(buffer);
+            ws.send(data);
+        }
+
+        function toggleGameLogModal() {
+            const modal = document.getElementById('gameLogModal');
+
+            // When the user clicks anywhere outside of the modal, close it
+            const closeModal = function() {
+                modal.style.display = "none";
+                window.removeEventListener('click', onModalClick)
+            };
+
+            const openModal = function() {
+                const modal_game_log = document.getElementById('gameLogModalContent');
+                const game_log = document.getElementById('gameLog');
+                modal.style.display = "block";
+                modal_game_log.innerHTML = game_log.innerHTML;
+                modal_game_log.scrollTop = modal_game_log.scrollHeight;
+                window.addEventListener('click', onModalClick);
+            };
+
+            const onModalClick = function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+
+            if (modal.style.display === "none") {
+                openModal();
+            } else {
+                closeModal();
+            }
+        }
+
         function requestRefresh() {
             if (ws.readyState === 1) {
                 let refresh = new Uint8Array(1);
-                refresh[0] = keys_data.Events.Refresh;
+                refresh[0] = socket_events.ToServer.RefreshGraphics;
                 ws.send(refresh);
             }
         }

@@ -12,6 +12,7 @@ from game.component.attack import (AttackCostModifier, AttackHitModifier, Attack
 from game.component.attribute import HP
 from game.component.damage import (ImmuneDamageBludgeoning, ModifierInflictDamageBludgeoning,
                                    ModifierTakeDamageBludgeoning)
+from game.component.descriptive import Name
 from game.component.movement import Position, MoveCostModifier
 from game.component.player import PlayerControlled
 from game.component.render import Renderable
@@ -30,6 +31,7 @@ from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
 from game.processor.time import TimeProcessor
 from game.types import Entity, EventType, GameState, Priority, ProcessGroup, RenderLayer
+from game.utils.language import Verb
 from game.world import World
 from gamedata.palette import Palette
 from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
@@ -53,11 +55,11 @@ class Game:
         RefreshMapEvent.handle(self._on_refresh_map)
 
         dodge_processor = AttackDefenseProcessor(
-            'dodge', AttackDodgeModifier, ImmuneToDodge, DODGE_CHANCE)
+            Verb('dodges', 'dodged'), AttackDodgeModifier, ImmuneToDodge, DODGE_CHANCE)
         block_processor = AttackDefenseProcessor(
-            'block', AttackBlockModifier, ImmuneToBlock, BLOCK_CHANCE)
+            Verb('blocks', 'blocked'), AttackBlockModifier, ImmuneToBlock, BLOCK_CHANCE)
         deflect_processor = AttackDefenseProcessor(
-            'deflect', AttackDeflectModifier, ImmuneToDeflect, DEFLECT_CHANCE)
+            Verb('deflects', 'deflected'), AttackDeflectModifier, ImmuneToDeflect, DEFLECT_CHANCE)
 
         self.world.add_processor(PlayerInputProcessor(),
                                  priority=Priority.player_input,
@@ -94,44 +96,59 @@ class Game:
         self.world.map = current_map
 
         self.make_player(current_map)
-        red = self.make_enemy(current_map, 39, Palette.red, True, speed_factor=2.0)
-        purple = self.make_enemy(current_map, 39, Palette.purple, True, speed_factor=5.0)
-        orange = self.make_enemy(current_map, 39, Palette.orange, True, speed_factor=1.1)
-        cyan = self.make_enemy(current_map, 39, Palette.cyan, True, speed_factor=0.9)
-        green = self.make_enemy(current_map, 39, Palette.green, False)
+        red = self.make_enemy(current_map, 39, Palette.red, True,
+                              Name('Red', 'Crab', ['Dodgecrab', 'the Shield of Sea', 'Backhand']),
+                              speed_factor=2.0)
+        purple = self.make_enemy(current_map, 39, Palette.purple, True,
+                                 Name('Purple', 'Crab', ['Most Likely to Deflect', 'Pulp']),
+                                 speed_factor=5.0)
+        orange = self.make_enemy(current_map, 39, Palette.orange, True,
+                                 Name('Orange', 'Crab', ['the Nimble']),
+                                 speed_factor=1.1)
+        cyan = self.make_enemy(current_map, 39, Palette.cyan, True,
+                               Name('Cyan', 'Crab', ['the Robust']),
+                               speed_factor=0.9)
+        green = self.make_enemy(current_map, 39, Palette.green, False,
+                                Name('Green', 'Crab', ['Wall of Meat']))
         self.world.add_component(red, AttackDeflectModifier(factor=0.2))
         self.world.add_component(red, AttackBlockModifier(factor=0.3))
         self.world.add_component(red, AttackDodgeModifier(factor=0.25))
-        self.world.add_component(purple, AttackBlockModifier(factor=0.1))
-        self.world.add_component(purple, AttackDodgeModifier(factor=0.15))
+        self.world.add_component(purple, AttackDeflectModifier(factor=0.65))
+        self.world.add_component(purple, ModifierTakeDamageBludgeoning(factor=0.5))
         self.world.add_component(orange, AttackDodgeModifier(factor=0.4))
         self.world.add_component(cyan, ModifierTakeDamageBludgeoning(factor=-0.5))
         self.world.add_component(green, ImmuneDamageBludgeoning())
 
     def make_player(self, game_map: Map) -> None:
         """Make a player entity."""
-        self.world.create_entity(
+        player = self.world.create_entity(
             Actor(),
             AttackCostModifier(factor=-0.1),
             AttackHitModifier(factor=0.2),
-            Solid(),
             HP(10),
+            ImmuneToBlock(),
+            ImmuneToDeflect(),
+            ImmuneToDodge(),
             ModifierInflictDamageBludgeoning(5),
+            Name('Trogdor', titles=['the Burninator']),
             PlayerControlled(),
-            Renderable(1, Palette.yellow, RenderLayer.PLAYER),
             Position(game_map.start_pos.x, game_map.start_pos.y),
+            Renderable(1, Palette.yellow, RenderLayer.PLAYER),
+            Solid(),
         )
+        self.world.players.add(player)
 
-    def make_enemy(self, game_map: Map, tile: int, color: int, ai: bool,
+    def make_enemy(self, game_map: Map, tile: int, color: int, ai: bool, name: Name,
                    speed_factor: float=1.0) -> Entity:
         """Make an enemy entity."""
         enemy = self.world.create_entity(
             AISimpleMind(),
+            HP(20),
             MoveCostModifier(factor=speed_factor - 1.0),
-            Solid(),
-            HP(10),
-            Renderable(tile, color, RenderLayer.ENEMY),
+            name,
             Position(game_map.start_pos.x, game_map.start_pos.y),
+            Renderable(tile, color, RenderLayer.ENEMY),
+            Solid(),
         )
         if ai:
             self.world.add_component(enemy, Actor(-100))

@@ -8,7 +8,7 @@ from game.component.status import Dead
 from game.component.player import PlayerControlled
 from game.component.movement import Position
 from game.component.render import Renderable
-from game.events import WebsocketWriteAllEvent
+from game.events import UpdateMapRenderEvent
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -85,7 +85,7 @@ class WebRenderProcessor(esper.Processor):
         #        2 bytes: tile id
         #        3 bytes: tint
         ##########################################
-        WebsocketWriteAllEvent.fire({'message': bytes(b_cells), 'binary': True})
+        UpdateMapRenderEvent.fire({'bytearray': b_cells})
 
 
 class TCODRenderProcessor(esper.Processor):
