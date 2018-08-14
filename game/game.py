@@ -30,6 +30,7 @@ from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
 from game.processor.time import TimeProcessor
 from game.types import Entity, EventType, GameState, Priority, ProcessGroup, RenderLayer
+from game.utils.language import Verb
 from game.world import World
 from gamedata.palette import Palette
 from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
@@ -53,11 +54,11 @@ class Game:
         RefreshMapEvent.handle(self._on_refresh_map)
 
         dodge_processor = AttackDefenseProcessor(
-            'dodge', AttackDodgeModifier, ImmuneToDodge, DODGE_CHANCE)
+            Verb('dodges', 'dodged'), AttackDodgeModifier, ImmuneToDodge, DODGE_CHANCE)
         block_processor = AttackDefenseProcessor(
-            'block', AttackBlockModifier, ImmuneToBlock, BLOCK_CHANCE)
+            Verb('blocks', 'blocked'), AttackBlockModifier, ImmuneToBlock, BLOCK_CHANCE)
         deflect_processor = AttackDefenseProcessor(
-            'deflect', AttackDeflectModifier, ImmuneToDeflect, DEFLECT_CHANCE)
+            Verb('deflects', 'deflected'), AttackDeflectModifier, ImmuneToDeflect, DEFLECT_CHANCE)
 
         self.world.add_processor(PlayerInputProcessor(),
                                  priority=Priority.player_input,
@@ -102,8 +103,8 @@ class Game:
         self.world.add_component(red, AttackDeflectModifier(factor=0.2))
         self.world.add_component(red, AttackBlockModifier(factor=0.3))
         self.world.add_component(red, AttackDodgeModifier(factor=0.25))
-        self.world.add_component(purple, AttackBlockModifier(factor=0.1))
-        self.world.add_component(purple, AttackDodgeModifier(factor=0.15))
+        self.world.add_component(purple, AttackDeflectModifier(factor=0.65))
+        self.world.add_component(purple, ModifierTakeDamageBludgeoning(factor=0.5))
         self.world.add_component(orange, AttackDodgeModifier(factor=0.4))
         self.world.add_component(cyan, ModifierTakeDamageBludgeoning(factor=-0.5))
         self.world.add_component(green, ImmuneDamageBludgeoning())
@@ -114,6 +115,9 @@ class Game:
             Actor(),
             AttackCostModifier(factor=-0.1),
             AttackHitModifier(factor=0.2),
+            ImmuneToBlock(),
+            ImmuneToDeflect(),
+            ImmuneToDodge(),
             Solid(),
             HP(10),
             ModifierInflictDamageBludgeoning(5),
@@ -129,7 +133,7 @@ class Game:
             AISimpleMind(),
             MoveCostModifier(factor=speed_factor - 1.0),
             Solid(),
-            HP(10),
+            HP(20),
             Renderable(tile, color, RenderLayer.ENEMY),
             Position(game_map.start_pos.x, game_map.start_pos.y),
         )

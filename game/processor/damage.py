@@ -17,16 +17,24 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
         for ent, damage in self.world.get_component(TakeDamageBludgeoning):
             if self.world.has_component(ent, ImmuneDamageBludgeoning):
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
-                combat_log.add(f'{ent} was immune to Bludgeoning damage!')
+                combat_log.add(f'{ent} is immune to Bludgeoning damage!')
                 self.world.remove_component(ent, TakeDamageBludgeoning)
             else:
                 mods = []
                 for mod in self.world.try_component(ent, ModifierTakeDamageBludgeoning):
                     mods.append(mod)
                 modifier = accumulate_modifiers(*mods)
+                full_amount = damage.amount
                 damage.amount = (damage.amount + modifier.addend) * (1 + modifier.factor)
                 combat_log = self.world.get_or_add_component(ent, CombatLog)
-                combat_log.add(f'{ent} took {damage.amount} Bludgeoning damage!')
+                if damage.amount > full_amount:
+                    combat_log.add(
+                        f'{ent} is vulnerable and takes {damage.amount} Bludgeoning damage!')
+                elif damage.amount < full_amount:
+                    combat_log.add(
+                        f'{ent} resists and only takes {damage.amount} Bludgeoning damage!')
+                else:
+                    combat_log.add(f'{ent} takes {damage.amount} Bludgeoning damage!')
                 if damage.amount <= 0:
                     self.world.remove_component(ent, TakeDamageBludgeoning)
 
