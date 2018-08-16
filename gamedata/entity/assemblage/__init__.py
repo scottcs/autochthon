@@ -1,4 +1,3 @@
-"""Factory functions."""
 from typing import Any
 
 from game.types import ComponentSchema

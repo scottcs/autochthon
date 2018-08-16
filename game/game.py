@@ -17,7 +17,8 @@ from game.component.movement import Position, MoveCostModifier
 from game.component.render import Renderable
 from game.component.status import Solid
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
-from game.factory.player import Player, orc
+from gamedata.entity.assemblage.player import Player
+from gamedata.entity.variation.player import orc
 from game.map import ClassicMap, Map
 from game.processor.ai import AIProcessor
 from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
@@ -31,6 +32,7 @@ from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
 from game.processor.time import TimeProcessor
 from game.types import Entity, EventType, GameState, Priority, ProcessGroup, RenderLayer
+from game.utils.factory import make_player
 from game.utils.language import Verb
 from game.world import World
 from gamedata.palette import Palette
@@ -95,11 +97,7 @@ class Game:
         current_map.create()
         self.world.map = current_map
 
-        player = self.world.assemble_entity(Player, orc)
-        for pos in self.world.try_component(player, Position):
-            pos.x = current_map.start_pos.x
-            pos.y = current_map.start_pos.y
-        self.world.players.add(player)
+        make_player(self.world, current_map.start_pos.x, current_map.start_pos.y, orc)
 
         red = self.make_enemy(current_map, 39, Palette.red, True,
                               Name('Red', 'Crab', ['Dodgecrab', 'the Shield of Sea', 'Backhand']),
