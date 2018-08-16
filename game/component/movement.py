@@ -6,7 +6,7 @@ from game.component.base import BaseModifierComponent
 
 class Position:
     """Position component."""
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x: int=0, y: int=0) -> None:
         self.x: int = x
         self.y: int = y
 
