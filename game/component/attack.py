@@ -1,7 +1,7 @@
 """Attack components."""
 from typing import Optional
 
-from game.component.base import BaseModifierComponent
+from game.component.base import BaseModifierComponent, BaseTemporaryComponent
 from game.types import Entity, AttackType
 
 
@@ -26,7 +26,7 @@ class AttackDodgeModifier(BaseModifierComponent):
     """Attack modifier for dodge chance."""
 
 
-class ImmuneToDodge:
+class ImmuneToDodge(BaseTemporaryComponent):
     """Attack cannot be dodged."""
 
 
@@ -34,7 +34,7 @@ class AttackBlockModifier(BaseModifierComponent):
     """Attack modifier for block chance."""
 
 
-class ImmuneToBlock:
+class ImmuneToBlock(BaseTemporaryComponent):
     """Attack cannot be blocked."""
 
 
@@ -42,5 +42,5 @@ class AttackDeflectModifier(BaseModifierComponent):
     """Attack modifier for chance to deflect incoming attack."""
 
 
-class ImmuneToDeflect:
+class ImmuneToDeflect(BaseTemporaryComponent):
     """Attack cannot be deflected."""
