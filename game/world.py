@@ -1,5 +1,5 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
-from typing import Any, Optional, Set, Callable
+from typing import Any, Optional, Set, Callable, Tuple
 
 import esper
 
@@ -133,7 +133,7 @@ class World(esper.World):
             self.add_component(entity, comp)
             return comp
 
-    def assemble_entity(self, schema: ComponentSchema, *variations: Callable) -> Entity:
+    def assemble_entity(self, schema: Tuple[ComponentSchema], *variations: Callable) -> Entity:
         """Assemble an entity from a schema and a list of optional variation functions."""
         components = []
         for component_type, args, kwargs in schema:
