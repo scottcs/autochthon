@@ -4,22 +4,12 @@ from typing import Optional
 
 import esper
 
-from game.component.action import Actor
-from game.component.ai import AISimpleMind
-from game.component.attack import (AttackDodgeModifier,
-                                   ImmuneToDodge, AttackBlockModifier, ImmuneToBlock,
-                                   AttackDeflectModifier, ImmuneToDeflect)
-from game.component.attribute import HP
-from game.component.damage import (ImmuneDamageBludgeoning,
-                                   ModifierTakeDamageBludgeoning)
-from game.component.descriptive import Name
-from game.component.movement import Position, MoveCostModifier
-from game.component.render import Renderable
-from game.component.status import Solid
+from game.component.attack import (AttackDodgeModifier, ImmuneToDodge, AttackBlockModifier,
+                                   ImmuneToBlock, AttackDeflectModifier, ImmuneToDeflect)
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
-from gamedata.entity.assemblage.player import Player
+from gamedata.entity.variation.enemy import crab
 from gamedata.entity.variation.player import orc
-from game.map import ClassicMap, Map
+from game.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
                                    AttackMissProcessor, AttackDefenseProcessor)
@@ -31,11 +21,10 @@ from game.processor.player_bump import PlayerBumpProcessor
 from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
 from game.processor.time import TimeProcessor
-from game.types import Entity, EventType, GameState, Priority, ProcessGroup, RenderLayer
-from game.utils.factory import make_player
+from game.types import EventType, GameState, Priority, ProcessGroup
+from game.utils.factory import make_player, make_enemy
 from game.utils.language import Verb
 from game.world import World
-from gamedata.palette import Palette
 from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
 
 log = logging.getLogger(__name__)
@@ -98,45 +87,11 @@ class Game:
         self.world.map = current_map
 
         make_player(self.world, current_map.start_pos.x, current_map.start_pos.y, orc)
-
-        red = self.make_enemy(current_map, 39, Palette.red, True,
-                              Name('Red', 'Crab', ['Dodgecrab', 'the Shield of Sea', 'Backhand']),
-                              speed_factor=2.0)
-        purple = self.make_enemy(current_map, 39, Palette.purple, True,
-                                 Name('Purple', 'Crab', ['Most Likely to Deflect', 'Pulp']),
-                                 speed_factor=5.0)
-        orange = self.make_enemy(current_map, 39, Palette.orange, True,
-                                 Name('Orange', 'Crab', ['the Nimble']),
-                                 speed_factor=1.1)
-        cyan = self.make_enemy(current_map, 39, Palette.cyan, True,
-                               Name('Cyan', 'Crab', ['the Robust']),
-                               speed_factor=0.9)
-        green = self.make_enemy(current_map, 39, Palette.green, False,
-                                Name('Green', 'Crab', ['Wall of Meat']))
-        self.world.add_component(red, AttackDeflectModifier(factor=0.2))
-        self.world.add_component(red, AttackBlockModifier(factor=0.3))
-        self.world.add_component(red, AttackDodgeModifier(factor=0.25))
-        self.world.add_component(purple, AttackDeflectModifier(factor=0.65))
-        self.world.add_component(purple, ModifierTakeDamageBludgeoning(factor=0.5))
-        self.world.add_component(orange, AttackDodgeModifier(factor=0.4))
-        self.world.add_component(cyan, ModifierTakeDamageBludgeoning(factor=-0.5))
-        self.world.add_component(green, ImmuneDamageBludgeoning())
-
-    def make_enemy(self, game_map: Map, tile: int, color: int, ai: bool, name: Name,
-                   speed_factor: float=1.0) -> Entity:
-        """Make an enemy entity."""
-        enemy = self.world.create_entity(
-            AISimpleMind(),
-            HP(20),
-            MoveCostModifier(factor=speed_factor - 1.0),
-            name,
-            Position(game_map.start_pos.x, game_map.start_pos.y),
-            Renderable(tile, color, RenderLayer.ENEMY),
-            Solid(),
-        )
-        if ai:
-            self.world.add_component(enemy, Actor(-100))
-        return enemy
+        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
+        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
+        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
+        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
+        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
 
     def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)
