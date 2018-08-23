@@ -78,7 +78,6 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
             except TypeError as exc:
                 raise FactoryException(f'Error in {data_key}.{template}: {exc}')
     ent = world.create_entity(*components)
-    world.players.add(ent)
     pos = world.component_for_entity(ent, Position)
     pos.x = start.x
     pos.y = start.y
@@ -87,9 +86,15 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
 
 def make_player(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
     """Make a player and add it to the world."""
-    return make_entity(loader, world, 'entities.player', start, templates)
+    if 'BasicPlayer' not in templates:
+        templates.insert(0, 'BasicPlayer')
+    ent = make_entity(loader, world, 'entities.player', start, templates)
+    world.players.add(ent)
+    return ent
 
 
 def make_enemy(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
     """Make an enemy and add it to the world."""
+    if 'BasicEnemy' not in templates:
+        templates.insert(0, 'BasicEnemy')
     return make_entity(loader, world, 'entities.enemy', start, templates)

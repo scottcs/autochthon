@@ -26,6 +26,3 @@ class DataLoader:
                     self.data[key].update(json.load(f))
                 except json.decoder.JSONDecodeError as exc:
                     raise json.decoder.JSONDecodeError(f'{json_file}: {exc.msg}', exc.doc, exc.pos)
-        import pprint
-        pprint.pprint(self.data)
-
