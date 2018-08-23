@@ -1,0 +1,27 @@
+{
+  "Crab": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": 20
+      },
+      "movement.MoveCostModifier": {
+        "factor": 0.1
+      },
+      "attack.AttackDeflectModifier": {
+        "factor": 0.65
+      },
+      "attack.AttackDodgeModifier": {
+        "factor": 0.30
+      },
+      "descriptive.Name": {
+        "first": "Crab"
+      },
+      "render.Renderable": {
+        "tile_id": 39,
+        "tint": "Palette.orange",
+        "layer": "RenderLayer.ENEMY"
+      }
+    }
+  }
+}

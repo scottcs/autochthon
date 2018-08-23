@@ -1,0 +1,21 @@
+{
+  "BasicEnemy": {
+    "Components": {
+      "action.Actor": {},
+      "attribute.HP": {
+        "initial": 1
+      },
+      "descriptive.Name": {
+        "first": "Unknown",
+        "last": "Enemy"
+      },
+      "movement.Position": {},
+      "render.Renderable": {
+        "tile_id": 8,
+        "tint": "Palette.white",
+        "layer": "RenderLayer.ENEMY"
+      },
+      "status.Solid": {}
+    }
+  }
+}

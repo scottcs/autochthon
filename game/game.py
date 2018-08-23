@@ -8,7 +8,6 @@ from game.component.attack import (AttackDodgeModifier, ImmuneToDodge, AttackBlo
                                    ImmuneToBlock, AttackDeflectModifier, ImmuneToDeflect)
 from game.dataloader import DataLoader
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
-from gamedata.entity.variation.enemy import crab
 from game.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
@@ -90,11 +89,11 @@ class Game:
         self.world.map = current_map
 
         make_player(loader, self.world, current_map.start_pos, ['BasicPlayer', 'Orc'])
-        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
-        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
-        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
-        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
-        make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
+        make_enemy(loader, self.world, current_map.start_pos, ['BasicEnemy', 'Crab'])
+        make_enemy(loader, self.world, current_map.start_pos, ['BasicEnemy', 'Crab'])
+        make_enemy(loader, self.world, current_map.start_pos, ['BasicEnemy', 'Crab'])
+        make_enemy(loader, self.world, current_map.start_pos, ['BasicEnemy', 'Crab'])
+        make_enemy(loader, self.world, current_map.start_pos, ['BasicEnemy', 'Crab'])
 
     def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)

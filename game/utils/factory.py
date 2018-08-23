@@ -7,7 +7,6 @@ from game.dataloader import DataLoader
 from game.types import Entity
 from game.utils.geometry import Point
 from game.world import World
-from gamedata.entity.assemblage.enemy import Enemy
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -17,7 +16,7 @@ class FactoryException(Exception):
     """Factory exceptions."""
 
 
-def convert_data(data: dict) -> dict:
+def _convert_data(data: dict) -> dict:
     """Convert data to globals."""
     for key, value in data.items():
         try:
@@ -37,7 +36,7 @@ def convert_data(data: dict) -> dict:
     return data
 
 
-def get_component_class(class_substring: str) -> Any:
+def _get_component_class(class_substring: str) -> Any:
     """Get a component class from a substring like `attack.AttackCostModifier`."""
     component_group, component_class = class_substring.split('.')
     mod_name = f'game.component.{component_group}'
@@ -45,21 +44,11 @@ def get_component_class(class_substring: str) -> Any:
     return getattr(_tmp, component_class)
 
 
-def validate_kwargs(kwargs: dict) -> None:
+def _validate_kwargs(kwargs: dict) -> None:
     """Validate keyword arguments for components."""
     for key, value in kwargs.items():
         if value is None:
             raise TypeError(f'Value for "{key}" must be specified.')
-
-
-def make_player(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
-    """Make a player and add it to the world."""
-    return make_entity(loader, world, 'entities.player', start, templates)
-
-
-def new_make_enemy(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
-    """Make an enemy and add it to the world."""
-    return make_entity(loader, world, 'entities.enemy', start, templates)
 
 
 def make_entity(loader: DataLoader, world: World, data_key: str,
@@ -72,16 +61,16 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
         for component_type, component_data in data['Components'].items():
             # find the actual class
             try:
-                component_class = get_component_class(component_type)
+                component_class = _get_component_class(component_type)
             except (AttributeError, ModuleNotFoundError) as exc:
                 raise FactoryException(f'Error in {data_key}.{template}: {component_type}: {exc}')
             try:
-                kwargs = convert_data(component_data)
+                kwargs = _convert_data(component_data)
             except (AttributeError, KeyError) as exc:
                 raise FactoryException(
                     f'Error in {data_key}.{template}: {component_data}: {repr(exc)}')
             try:
-                validate_kwargs(kwargs)
+                _validate_kwargs(kwargs)
             except Exception as exc:
                 raise FactoryException(f'Error in {data_key}.{template}: {exc}')
             try:
@@ -96,10 +85,11 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
     return ent
 
 
-def make_enemy(world: World, x: int, y: int, *variations) -> Entity:
+def make_player(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
+    """Make a player and add it to the world."""
+    return make_entity(loader, world, 'entities.player', start, templates)
+
+
+def make_enemy(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
     """Make an enemy and add it to the world."""
-    enemy = world.assemble_entity(Enemy, *variations)
-    pos = world.component_for_entity(enemy, Position)
-    pos.x = x
-    pos.y = y
-    return enemy
+    return make_entity(loader, world, 'entities.enemy', start, templates)
