@@ -10,7 +10,7 @@ from game.events import InputEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
 
-KEYS_JSON = Path('static') / Path('keys.json')
+KEYS_JSON = Path('data') / Path('keys.json')
 
 
 class PlayerInputProcessor(esper.Processor):

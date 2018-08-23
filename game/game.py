@@ -1,13 +1,16 @@
 """Main game class."""
 import logging
+from pathlib import Path
 from typing import Optional
+import time
 
 import esper
 
+from game import VERSION
 from game.component.attack import (AttackDodgeModifier, ImmuneToDodge, AttackBlockModifier,
                                    ImmuneToBlock, AttackDeflectModifier, ImmuneToDeflect)
 from game.dataloader import DataLoader
-from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
+from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent, GameLogEvent
 from game.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
@@ -30,6 +33,23 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
+def setup_morgue(base_dir: str, player: str) -> logging.Logger:
+    """Set up the morgue log."""
+    morgue_dir = Path(base_dir) / Path(player)
+    morgue_dir.mkdir(parents=True, exist_ok=True)
+    log_file = morgue_dir / Path(f'{time.time()}.morgue')
+    handler = logging.FileHandler(log_file)
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(logging.Formatter('%(message)s'))
+    morgue_log = logging.getLogger('morgue')
+    morgue_log.setLevel(logging.INFO)
+    for old_handler in morgue_log.handlers[:]:
+        log.removeHandler(old_handler)
+    morgue_log.addHandler(handler)
+    morgue_log.propagate = False
+    return morgue_log
+
+
 class Game:
     """Main game object."""
 
@@ -39,7 +59,12 @@ class Game:
         self.player_acted: bool = False
         self.world: World = World()
         self.state: GameState = GameState.PLAYING
+        self.morgue = setup_morgue(config['morgue']['directory'], 'UNKNOWN')
+        version_string = f'* {config["title"]} version {VERSION}'
+        log.info(version_string)
+        self.morgue.info(version_string)
 
+        GameLogEvent.handle(self._on_game_log)
         GameOverEvent.handle(self._on_game_over)
         PlayerActedEvent.handle(self._on_player_acted)
         RefreshMapEvent.handle(self._on_refresh_map)
@@ -101,6 +126,10 @@ class Game:
     def _on_player_acted(self, _event: EventType) -> None:
         self.player_acted = True
 
+    def _on_game_log(self, event: EventType) -> None:
+        for line in event['lines']:
+            self.morgue.info(line.message)
+        
     def _on_game_over(self, event: EventType) -> None:
         if event.get('shutdown'):
             log.info('Shutting down.')

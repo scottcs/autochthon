@@ -10,7 +10,7 @@ pip install -r requirements.txt
 
 ## Running
 
-To run as a web server using the host and port defined in `static/config.json`:
+To run as a web server using the host and port defined in `data/config.json`:
 
 ```
 python start.py
@@ -22,6 +22,21 @@ To run in a local window:
 `python start.py --local`
 
 ## Development
+
+### Versioning and Release
+
+When creating a new branch, update to the next patch
+or minor or major version but without updating git tags:
+
+```
+bumpversion --no-tag patch
+```
+
+After merging your branch into master. Bump the version for release:
+
+```
+bumpversion release
+```
 
 ### Creating Tile Atlases
 
