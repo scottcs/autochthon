@@ -6,9 +6,9 @@ import esper
 
 from game.component.attack import (AttackDodgeModifier, ImmuneToDodge, AttackBlockModifier,
                                    ImmuneToBlock, AttackDeflectModifier, ImmuneToDeflect)
+from game.dataloader import DataLoader
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent
 from gamedata.entity.variation.enemy import crab
-from gamedata.entity.variation.player import orc
 from game.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
@@ -44,6 +44,9 @@ class Game:
         GameOverEvent.handle(self._on_game_over)
         PlayerActedEvent.handle(self._on_player_acted)
         RefreshMapEvent.handle(self._on_refresh_map)
+
+        loader = DataLoader()
+        loader.load_all_json()
 
         dodge_processor = AttackDefenseProcessor(
             Verb('dodges', 'dodged'), AttackDodgeModifier, ImmuneToDodge, DODGE_CHANCE)
@@ -86,7 +89,7 @@ class Game:
         current_map.create()
         self.world.map = current_map
 
-        make_player(self.world, current_map.start_pos.x, current_map.start_pos.y, orc)
+        make_player(loader, self.world, current_map.start_pos, ['BasicPlayer', 'Orc'])
         make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
         make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)
         make_enemy(self.world, current_map.start_pos.x, current_map.start_pos.y, crab)

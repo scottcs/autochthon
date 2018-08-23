@@ -1,4 +1,7 @@
 {
-  "ImmuneToDeflect": null,
-  "HPModifier": {"factor": 1.1}
+  "Orc": {
+    "Components": {
+      "attack.ImmuneToDeflect": {}
+    }
+  }
 }
