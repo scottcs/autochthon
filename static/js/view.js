@@ -13,9 +13,9 @@
         const tileset_terrain = tileset_dir + 'Terrain.json';
         const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
         const tile_id_table = tileset_dir + 'tile_ids.json';
-        const config_json = 'static/config.json';
-        const keys_json = 'static/keys.json';
-        const socket_events_json = 'static/websocketevents.json';
+        const config_json = 'data/config.json';
+        const keys_json = 'data/keys.json';
+        const socket_events_json = 'data/websocketevents.json';
         const main_width_scale = 0.7;
         const main_height_scale = 0.88;
         let keys_data;

@@ -13,7 +13,7 @@ from game.game import Game
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
 
-WEBSOCKET_EVENTS_JSON = Path('static') / Path('websocketevents.json')
+WEBSOCKET_EVENTS_JSON = Path('data') / Path('websocketevents.json')
 DESIRED_FPS = 30
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -138,6 +138,7 @@ def make_app(config: dict) -> tornado.web.Application:
     return tornado.web.Application([
         (r'/', MainHandler),
         (r'/websocket', GameWebSocket, {'config': config}),
+        (r'/data/(.*)', tornado.web.StaticFileHandler, {'path': 'data'}),
     ],
         static_path='static',
         template_path='templates',
