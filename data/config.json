@@ -17,5 +17,8 @@
   "map": {
     "max_tiles_w": 100,
     "max_tiles_h": 100
+  },
+  "morgue": {
+    "directory": "/opt/autochthon/morgue"
   }
 }

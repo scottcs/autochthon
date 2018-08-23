@@ -82,7 +82,6 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         self.write_all(ba)
 
     def _on_game_log(self, event: EventType) -> None:
-        # TODO: send message to server (with colors)
         log_string = json.dumps(event)
         ba = bytearray()
         ba.append(self.socket_events['FromServer']['GameLog'])
