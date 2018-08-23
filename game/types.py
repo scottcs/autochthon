@@ -90,3 +90,10 @@ class LogLine(NamedTuple):
     """A Game log message with color."""
     message: str = ''
     color: int = 0xffffff
+
+
+class ComponentSchema(NamedTuple):
+    """A schema for a component."""
+    type: Any
+    args: tuple
+    kwargs: dict

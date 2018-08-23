@@ -1,0 +1,39 @@
+{
+  "BasicPlayer": {
+    "Components": {
+      "action.Actor": {},
+      "attack.AttackCostModifier": {
+        "factor": -0.1
+      },
+      "attack.AttackHitModifier": {
+        "factor": 0.2
+      },
+      "attribute.HP": {
+        "initial": 10
+      },
+      "attack.ImmuneToBlock": {
+        "temporary": true
+      },
+      "attack.ImmuneToDeflect": {
+        "temporary": true
+      },
+      "attack.ImmuneToDodge": {
+        "temporary": true
+      },
+      "damage.ModifierInflictDamageBludgeoning": {
+        "addend": 5
+      },
+      "descriptive.Name": {
+        "first": "Player"
+      },
+      "player.PlayerControlled": {},
+      "movement.Position": {},
+      "render.Renderable": {
+        "tile_id": 1,
+        "tint": "Palette.yellow",
+        "layer": "RenderLayer.PLAYER"
+      },
+      "status.Solid": {}
+    }
+  }
+}

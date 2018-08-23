@@ -89,9 +89,11 @@ class AttackDefenseProcessor(esper.Processor):
         for ent, target in self.world.get_component(CurrentTarget):
             if self.world.has_component(ent, self.immunity_component_class):
                 # This attack cannot be thwarted by this defense
-                self.world.remove_component(ent, self.immunity_component_class)
-                combat_log = self.world.get_or_add_component(ent, CombatLog)
+                immune = self.world.component_for_entity(ent, self.immunity_component_class)
+                if immune.temporary:
+                    self.world.remove_component(ent, self.immunity_component_class)
                 name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+                combat_log = self.world.get_or_add_component(ent, CombatLog)
                 combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttackImmune,
                                     name, self.verb.past))
                 continue

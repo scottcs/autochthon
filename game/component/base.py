@@ -54,6 +54,12 @@ class BaseBoolChanceComponent:
         return success
 
 
+class BaseTemporaryComponent:
+    """Basic component that can optionally be temporary."""
+    def __init__(self, temporary: bool=False) -> None:
+        self.temporary = temporary
+
+
 def accumulate_modifiers(*modifiers: BaseModifierComponent) -> Modifier:
     """Accumulate all modifiers and return the result."""
     addend = 0

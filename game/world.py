@@ -1,5 +1,5 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
-from typing import Any, Optional, Set
+from typing import Any, Optional, Set, Callable, Tuple
 
 import esper
 
@@ -8,7 +8,7 @@ from game.component.status import Dead, Solid
 from game.component.player import PlayerControlled
 from game.component.movement import Position
 from game.map import Map
-from game.types import ProcessGroup, Entity
+from game.types import ProcessGroup, Entity, ComponentSchema
 
 
 class World(esper.World):
@@ -132,3 +132,13 @@ class World(esper.World):
             comp = component_type(*args, **kwargs)
             self.add_component(entity, comp)
             return comp
+
+    def assemble_entity(self, schema: Tuple[ComponentSchema], *variations: Callable) -> Entity:
+        """Assemble an entity from a schema and a list of optional variation functions."""
+        components = []
+        for component_type, args, kwargs in schema:
+            components.append(component_type(*args, **kwargs))
+        entity = self.create_entity(*components)
+        for variation in variations:
+            variation(self, entity)
+        return entity
