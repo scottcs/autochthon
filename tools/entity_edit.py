@@ -2,12 +2,14 @@
 import json
 from pathlib import Path
 import sys
-from typing import Optional
+from typing import Optional, Any
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
-                               QListWidget, QMessageBox, QPushButton, QScrollArea, QSpacerItem,
-                               QVBoxLayout, QWidget)
+                               QListWidget, QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
+                               QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+
+from game.utils.factory import get_component_class
 
 DATA_DIR = Path('data/entities')
 
@@ -79,6 +81,7 @@ class FileLoadSave(QWidget):
 
 class ComponentList(QWidget):
     """Component list widget."""
+    selection_changed = Signal(str)
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
@@ -104,6 +107,7 @@ class ComponentList(QWidget):
 
         self.add_button.clicked.connect(self._on_add)
         self.remove_button.clicked.connect(self._on_remove)
+        self.component_list.itemClicked.connect(self._on_selection)
 
     def _on_add(self) -> None:
         print('on add')
@@ -111,51 +115,42 @@ class ComponentList(QWidget):
     def _on_remove(self) -> None:
         print('on remove')
 
+    def _on_selection(self, item: QListWidgetItem) -> None:
+        self.selection_changed.emit(item.text())
+
     def update_items(self, items: list) -> None:
         """Update the items in the list."""
         self.component_list.clear()
         self.component_list.addItems(items)
 
 
-class ComponentDetailLine(QWidget):
-    """Component detail line widget."""
-    def __init__(self, label: str, parent: Optional[QWidget]=None) -> None:
-        super().__init__(parent)
-        layout = QHBoxLayout()
-        layout.setSpacing(0)
-        layout.setMargin(2)
+class ComponentDetailsTable(QTableWidget):
+    """Component details widget."""
 
-        self.label = QLabel(label)
-        self.edit = QLineEdit()
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.setColumnCount(1)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().hide()
 
-        layout.addWidget(self.label)
-        layout.addStretch()
-        layout.addWidget(self.edit)
-
-        self.setLayout(layout)
-
-
-class ComponentDetails(QWidget):
-    """Component Details widget."""
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
-        super().__init__(parent)
-        self.lines = []
-        self.layout = QVBoxLayout()
-        self.layout.setSpacing(0)
-        self.layout.setMargin(0)
-
-        for i in range(15):
-            self.lines.append(ComponentDetailLine(f'Item {i}', parent=self))
-
-        self.setLayout(self.layout)
-        self.refresh()
-
-    def refresh(self):
+    def update_data(self, component_name: str) -> None:
         """Refresh the list."""
-        for item in self.layout.children():
-            self.layout.removeItem(item)
-        for line in self.lines:
-            self.layout.addWidget(line)
+        self.clear()
+        self.setRowCount(100)
+        component_class = get_component_class(component_name)
+        try:
+            annotations = component_class.__init__.__annotations__
+        except AttributeError:
+            print(f'Could not find annotations for {component_name}')
+            annotations = {}
+        row = 0
+        for arg, arg_type in annotations.items():
+            if arg == 'return':
+                continue
+            self.setVerticalHeaderItem(row, QTableWidgetItem(arg))
+            self.setItem(row, 0, QTableWidgetItem('blah'))
+            row += 1
+        self.setRowCount(row)
 
 
 class ComponentPane(QWidget):
@@ -175,10 +170,8 @@ class ComponentPane(QWidget):
         details_label = QLabel('Component Details:')
         details_label.setMinimumHeight(32)
         details_layout.addWidget(details_label)
-        self.details_widget = ComponentDetails()
-        details_area = QScrollArea(self)
-        details_area.setWidget(self.details_widget)
-        details_layout.addWidget(details_area)
+        self.details_widget = ComponentDetailsTable()
+        details_layout.addWidget(self.details_widget)
 
         layout.addWidget(self.component_list)
         layout.addSpacerItem(QSpacerItem(4, 1))
@@ -186,10 +179,16 @@ class ComponentPane(QWidget):
 
         self.setLayout(layout)
 
+        self.component_list.selection_changed.connect(self._on_selection_changed)
+
+    def _on_selection_changed(self, selected: str) -> None:
+        self.details_widget.update_data(selected)
+
     def update_data(self, data: dict) -> None:
         """Update the data in this widget."""
         self.data = data['Components']
         self.component_list.update_items(sorted(self.data.keys()))
+        self.update()
 
 
 class EntityEditor(QWidget):
