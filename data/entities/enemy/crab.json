@@ -18,7 +18,7 @@
         "first": "Crab"
       },
       "render.Renderable": {
-        "tile_id": 39,
+        "tile_id": "crab",
         "tint": "Palette.orange",
         "layer": "RenderLayer.ENEMY"
       }

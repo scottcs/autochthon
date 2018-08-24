@@ -29,7 +29,7 @@
       "player.PlayerControlled": {},
       "movement.Position": {},
       "render.Renderable": {
-        "tile_id": 1,
+        "tile_id": "humanA1",
         "tint": "Palette.yellow",
         "layer": "RenderLayer.PLAYER"
       },
