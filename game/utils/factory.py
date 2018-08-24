@@ -6,6 +6,7 @@ from game.component.movement import Position
 from game.dataloader import DataLoader
 from game.types import Entity
 from game.utils.geometry import Point
+from game.utils.render import TileCache
 from game.world import World
 
 log = logging.getLogger(__name__)
@@ -49,6 +50,15 @@ def _validate_kwargs(kwargs: dict) -> None:
     for key, value in kwargs.items():
         if value is None:
             raise TypeError(f'Value for "{key}" must be specified.')
+        if key == 'tile_id':
+            try:
+                value = int(value)
+            except ValueError:
+                id_ = TileCache.id_from_name(value)
+                if id_ is None:
+                    raise ValueError(f'Cannot find tile id for {value}')
+                value = int(id_)
+            kwargs[key] = value
 
 
 def make_entity(loader: DataLoader, world: World, data_key: str,
