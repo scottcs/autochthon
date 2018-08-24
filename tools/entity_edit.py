@@ -1,5 +1,6 @@
 """Entity editor."""
 import json
+from inspect import signature
 from pathlib import Path
 import sys
 from typing import Optional, Any
@@ -133,22 +134,19 @@ class ComponentDetailsTable(QTableWidget):
         self.horizontalHeader().setStretchLastSection(True)
         self.horizontalHeader().hide()
 
-    def update_data(self, component_name: str) -> None:
+    def update_data(self, component_name: str, component_data: dict) -> None:
         """Refresh the list."""
         self.clear()
         self.setRowCount(100)
         component_class = get_component_class(component_name)
-        try:
-            annotations = component_class.__init__.__annotations__
-        except AttributeError:
-            print(f'Could not find annotations for {component_name}')
-            annotations = {}
+        sig = signature(component_class)
         row = 0
-        for arg, arg_type in annotations.items():
-            if arg == 'return':
-                continue
-            self.setVerticalHeaderItem(row, QTableWidgetItem(arg))
-            self.setItem(row, 0, QTableWidgetItem('blah'))
+        for param_name, param in sig.parameters.items():
+            self.setVerticalHeaderItem(row, QTableWidgetItem(param_name))
+            item = QTableWidgetItem(str(component_data.get(param_name, '')))
+            if param.default is not param.empty:
+                item.setBackgroundColor('#f8f8f0')
+            self.setItem(row, 0, item)
             row += 1
         self.setRowCount(row)
 
@@ -182,7 +180,7 @@ class ComponentPane(QWidget):
         self.component_list.selection_changed.connect(self._on_selection_changed)
 
     def _on_selection_changed(self, selected: str) -> None:
-        self.details_widget.update_data(selected)
+        self.details_widget.update_data(selected, self.data[selected])
 
     def update_data(self, data: dict) -> None:
         """Update the data in this widget."""
