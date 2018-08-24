@@ -1,28 +1,49 @@
 """Entity editor."""
+import json
+from pathlib import Path
 import sys
 from typing import Optional
 
-from PySide2.QtWidgets import (QApplication, QHBoxLayout, QLabel, QLineEdit, QListWidget,
-                               QPushButton, QScrollArea, QSpacerItem, QVBoxLayout, QWidget)
+from PySide2.QtCore import Qt, Signal
+from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
+                               QListWidget, QMessageBox, QPushButton, QScrollArea, QSpacerItem,
+                               QVBoxLayout, QWidget)
+
+DATA_DIR = Path('data/entities')
+
+
+def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
+    """Show an error message."""
+    QMessageBox().critical(parent, 'Error!', msg)
 
 
 class FileLoadSave(QWidget):
     """File load/save line."""
 
+    file_loaded = Signal(dict)
+
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
+        self.filename = None
+        self.data = None
         layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
         self.label = QLabel('File:')
         self.edit = QLineEdit()
+        self.edit.setDisabled(True)
         self.load_button = QPushButton('Load')
         self.save_as_button = QPushButton('Save As...')
         self.save_button = QPushButton('Save')
 
+        self.load_button.setFocusPolicy(Qt.NoFocus)
+        self.save_as_button.setFocusPolicy(Qt.NoFocus)
+        self.save_button.setFocusPolicy(Qt.NoFocus)
+
         layout.addWidget(self.label)
         layout.addWidget(self.edit)
+        layout.addSpacerItem(QSpacerItem(4, 0))
         layout.addWidget(self.load_button)
         layout.addWidget(self.save_as_button)
         layout.addWidget(self.save_button)
@@ -33,8 +54,13 @@ class FileLoadSave(QWidget):
         self.save_button.clicked.connect(self._on_save)
 
     def _on_load(self) -> None:
-        print('on load')
-        print(self.edit.text())
+        filename = QFileDialog().getOpenFileName(
+            self, 'Open Entity', str(DATA_DIR), 'Entity Files (*.json)')[0]
+        if filename:
+            self.filename = Path(filename)
+            text = filename.split(f'{DATA_DIR}/')[-1]
+            self.edit.setText(text)
+            self._load_file()
 
     def _on_save_as(self) -> None:
         print('on save as')
@@ -43,6 +69,12 @@ class FileLoadSave(QWidget):
     def _on_save(self) -> None:
         print('on save')
         print(self.edit.text())
+
+    def _load_file(self) -> None:
+        with self.filename.open() as f:
+            self.data = json.load(f)
+        if self.data:
+            self.file_loaded.emit(self.data)
 
 
 class ComponentList(QWidget):
@@ -66,7 +98,6 @@ class ComponentList(QWidget):
         header_layout.addWidget(self.add_button)
         header_layout.addWidget(self.remove_button)
 
-        self.component_list.addItems(['blah' for _ in range(40)])
         layout.addLayout(header_layout)
         layout.addWidget(self.component_list)
         self.setLayout(layout)
@@ -79,6 +110,11 @@ class ComponentList(QWidget):
 
     def _on_remove(self) -> None:
         print('on remove')
+
+    def update_items(self, items: list) -> None:
+        """Update the items in the list."""
+        self.component_list.clear()
+        self.component_list.addItems(items)
 
 
 class ComponentDetailLine(QWidget):
@@ -127,6 +163,7 @@ class ComponentPane(QWidget):
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
+        self.data = {}
         layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
@@ -149,6 +186,11 @@ class ComponentPane(QWidget):
 
         self.setLayout(layout)
 
+    def update_data(self, data: dict) -> None:
+        """Update the data in this widget."""
+        self.data = data['Components']
+        self.component_list.update_items(sorted(self.data.keys()))
+
 
 class EntityEditor(QWidget):
     """Entity editor parent widget."""
@@ -161,12 +203,26 @@ class EntityEditor(QWidget):
         layout.setSpacing(0)
         layout.setMargin(10)
         file_widget = FileLoadSave(self)
-        component_widget = ComponentPane(self)
+
+        name_layout = QHBoxLayout()
+        self.entity_name = QLineEdit()
+        name_layout.addWidget(QLabel('Entity name:'))
+        name_layout.addWidget(self.entity_name)
+        self.component_widget = ComponentPane(self)
 
         layout.addWidget(file_widget)
-        layout.addWidget(component_widget)
+        layout.addLayout(name_layout)
+        layout.addWidget(self.component_widget)
 
         self.setLayout(layout)
+
+        file_widget.file_loaded.connect(self._on_file_changed)
+
+    def _on_file_changed(self, data: dict) -> None:
+        for name, entity_data in data.items():
+            self.entity_name.setText(name)
+            self.component_widget.update_data(entity_data)
+            break  # only one entity per file
 
 
 def main() -> int:
