@@ -51,7 +51,7 @@ class BaseBoolChanceComponent:
         except StopIteration:
             self._chances.reset()
             success = next(self._chances)
-        return success
+        return bool(success)
 
 
 class BaseTemporaryComponent:
@@ -62,8 +62,8 @@ class BaseTemporaryComponent:
 
 def accumulate_modifiers(*modifiers: BaseModifierComponent) -> Modifier:
     """Accumulate all modifiers and return the result."""
-    addend = 0
-    factor = 0
+    addend: float = 0
+    factor: float = 0
     for mod in modifiers:
         addend += mod.modifier.addend
         factor += mod.modifier.factor

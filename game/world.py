@@ -138,7 +138,7 @@ class World(esper.World):
         components = []
         for component_type, args, kwargs in schema:
             components.append(component_type(*args, **kwargs))
-        entity = self.create_entity(*components)
+        entity: Entity = self.create_entity(*components)
         for variation in variations:
             variation(self, entity)
         return entity

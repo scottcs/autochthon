@@ -14,7 +14,7 @@ class DataLoader:
     """Loads data."""
     def __init__(self, data_path: Optional[Union[str, Path]]=None) -> None:
         self.base_path = Path(data_path or DEFAULT_PATH)
-        self.data = {}
+        self.data: dict = {}
 
     def load_all_json(self) -> None:
         """Load all JSON data files recursively into our data object."""

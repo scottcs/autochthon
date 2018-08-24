@@ -8,7 +8,7 @@ TILE_IDS = Path('static/img/oryx_ur/tile_ids.json')
 class _TileCache:
     """Tile Cache."""
     def __init__(self) -> None:
-        self._cache = {}
+        self._cache: dict = {}
         with TILE_IDS.open() as f:
             self._ids = json.load(f)
 
@@ -21,7 +21,7 @@ class _TileCache:
                     id_ = key
                     self._cache[name] = id_
                     break
-        return id_
+        return int(id_)
 
 
 TileCache = _TileCache()

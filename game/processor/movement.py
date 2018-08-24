@@ -40,7 +40,7 @@ class MovementProcessor(esper.Processor):
             mods.append(mod)
         # TODO: Calculate any other waiting cost modifiers
         modifier = accumulate_modifiers(*mods)
-        return (WAIT_COST + modifier.addend) * (1 + modifier.factor)
+        return int((WAIT_COST + modifier.addend) * (1 + modifier.factor))
 
     def get_move_action_cost(self, ent: Entity) -> int:
         """Get move action cost."""
@@ -49,4 +49,4 @@ class MovementProcessor(esper.Processor):
             mods.append(mod)
         # TODO: Calculate any other moving cost modifiers
         modifier = accumulate_modifiers(*mods)
-        return (MOVE_COST + modifier.addend) * (1 + modifier.factor)
+        return int((MOVE_COST + modifier.addend) * (1 + modifier.factor))

@@ -49,7 +49,7 @@ class AttackTargetingProcessor(esper.Processor):
             mods.append(mod)
         # TODO: any other modifiers
         modifier = accumulate_modifiers(*mods)
-        return (ATTACK_COST + modifier.addend) * (1 + modifier.factor)
+        return int((ATTACK_COST + modifier.addend) * (1 + modifier.factor))
 
 
 class AttackMissProcessor(esper.Processor):
