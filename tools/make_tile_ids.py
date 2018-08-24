@@ -47,7 +47,9 @@ def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
                     tiles_data[key].append(f'{line}_{i + 1}')
 
     for data in tiles_data.values():
+        name_guess = data[0].rsplit('_', 1)[0]
         atlas_data.append({
+            'name': name_guess,
             'tileset': tileset,
             'tiles': sorted(data),
         })
