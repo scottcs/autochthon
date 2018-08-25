@@ -70,14 +70,18 @@ class FileLoadSave(QWidget):
         print(self.edit.text())
 
     def _on_save(self) -> None:
-        print('on save')
-        print(self.edit.text())
+        with self.filename.open('w') as f:
+            json.dump(self.data, f, indent=2)
 
     def _load_file(self) -> None:
         with self.filename.open() as f:
-            self.data = json.load(f)
+            self.update_data(json.load(f))
         if self.data:
             self.file_loaded.emit(self.data)
+
+    def update_data(self, data: dict) -> None:
+        """Update the internal representation of the data."""
+        self.data = data
 
 
 class ComponentList(QWidget):
@@ -171,6 +175,11 @@ class ComponentDetailsTable(QTableWidget):
         self.signature = signature(component_class)
         self.refresh()
 
+    def clear(self) -> None:
+        """Clear the table."""
+        super().clear()
+        self.setRowCount(0)
+
     def refresh(self) -> None:
         """Refresh data."""
         self.clear()
@@ -190,6 +199,8 @@ class ComponentDetailsTable(QTableWidget):
 
 class ComponentPane(QWidget):
     """Component Pane widget."""
+
+    data_changed = Signal(dict)
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
@@ -226,6 +237,7 @@ class ComponentPane(QWidget):
         if self.selected:
             try:
                 self.data[self.selected] = data
+                self.data_changed.emit({'Components': self.data})
             except KeyError:
                 print(f'Cannot set selected data {self.selected}')
 
@@ -246,7 +258,7 @@ class EntityEditor(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(10)
-        file_widget = FileLoadSave(self)
+        self.file_widget = FileLoadSave(self)
 
         name_layout = QHBoxLayout()
         self.entity_name = QLineEdit()
@@ -254,19 +266,24 @@ class EntityEditor(QWidget):
         name_layout.addWidget(self.entity_name)
         self.component_widget = ComponentPane(self)
 
-        layout.addWidget(file_widget)
+        layout.addWidget(self.file_widget)
         layout.addLayout(name_layout)
         layout.addWidget(self.component_widget)
 
         self.setLayout(layout)
 
-        file_widget.file_loaded.connect(self._on_file_changed)
+        self.file_widget.file_loaded.connect(self._on_file_changed)
+        self.component_widget.data_changed.connect(self._on_data_changed)
 
     def _on_file_changed(self, data: dict) -> None:
         for name, entity_data in data.items():
             self.entity_name.setText(name)
             self.component_widget.update_data(entity_data)
             break  # only one entity per file
+        self.component_widget.details_widget.clear()
+
+    def _on_data_changed(self, data: dict) -> None:
+        self.file_widget.update_data({self.entity_name.text(): data})
 
 
 def main() -> int:
