@@ -11,15 +11,21 @@ from PySide2.QtGui import QImage, QPainter, QPalette, QColor
 from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialogButtonBox,
                                QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
                                QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
-                               QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+                               QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
+                               QWidget, QComboBox, QGridLayout, QSizePolicy)
 
+from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
+from gamedata.palette import Palette
 
 DATA_DIR = Path('data/entities')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
+
+with TILE_IDS_FILE.open() as tile_ids_file_handle:
+    TILE_IDS = json.load(tile_ids_file_handle)
 
 
 def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
@@ -29,8 +35,6 @@ def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
 
 class RenderWidget(QWidget):
     """Render widget."""
-
-    tile_ids = {}
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
@@ -42,9 +46,6 @@ class RenderWidget(QWidget):
         self.tile_id = None
         self.color = None
         self.sprite = None
-        if not self.tile_ids:
-            with TILE_IDS_FILE.open() as f:
-                self.tile_ids = json.load(f)
 
     def clear_sprite(self) -> None:
         """Clear the sprite."""
@@ -59,11 +60,11 @@ class RenderWidget(QWidget):
         try:
             tile_id = int(tile_id)
         except ValueError:
-            for id_, data in self.tile_ids.items():
+            for id_, data in TILE_IDS.items():
                 if data['name'] == tile_id:
                     tile_id = id_
                     break
-        if str(tile_id) not in self.tile_ids:
+        if str(tile_id) not in TILE_IDS:
             msg_error(f'Tile id not found: {tile_id}', self)
             return
         self.tile_id = str(tile_id)
@@ -82,7 +83,7 @@ class RenderWidget(QWidget):
 
     def set_sprite(self) -> None:
         """Draw the image."""
-        data = self.tile_ids[self.tile_id]
+        data = TILE_IDS[self.tile_id]
         tileset = Path(data['tileset'])
         tile = data['tiles'][0]
         with tileset.open() as f:
@@ -394,6 +395,8 @@ class ComponentDetailsTable(QTableWidget):
         """Clear the table."""
         super().clear()
         self.setRowCount(0)
+        self.update()
+        self.repaint()
 
     def refresh(self) -> None:
         """Refresh data."""
@@ -410,6 +413,58 @@ class ComponentDetailsTable(QTableWidget):
             self.setItem(row, 0, item)
             row += 1
         self.setRowCount(row)
+        self.update()
+        self.repaint()
+
+
+class RenderableComponentDetails(QWidget):
+    """Renderable component details widget."""
+    data_changed = Signal(dict)
+
+    def __init__(self, parent: Optional[QWidget]=None) -> None:
+        super().__init__(parent)
+        layout = QGridLayout()
+        layout.setSpacing(0)
+        layout.setMargin(0)
+
+        self.tile_id = QComboBox()
+        self.tile_id.addItems(sorted([t['name'] for t in TILE_IDS.values()]))
+        self.tint = QComboBox()
+        self.tint.addItems([a for a in vars(Palette).keys() if not a.startswith('_')])
+        self.layer = QComboBox()
+        self.layer.addItems(list(RenderLayer.__members__.keys()))
+
+        layout.addWidget(QLabel('Tile ID:'), 0, 0, Qt.AlignTop)
+        layout.addWidget(self.tile_id, 0, 1, Qt.AlignTop)
+        layout.addWidget(QLabel('Tint:'), 1, 0, Qt.AlignTop)
+        layout.addWidget(self.tint, 1, 1, Qt.AlignTop)
+        layout.addWidget(QLabel('RenderLayer:'), 2, 0, Qt.AlignTop)
+        layout.addWidget(self.layer, 2, 1, Qt.AlignTop)
+        layout.addItem(
+            QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding), 3, 0, Qt.AlignTop)
+
+        self.setLayout(layout)
+
+        self.tile_id.currentIndexChanged.connect(self._send_data)
+        self.tint.currentIndexChanged.connect(self._send_data)
+        self.layer.currentIndexChanged.connect(self._send_data)
+
+    def update_data(self, component_data: dict) -> None:
+        """Refresh the list."""
+        tile_id = self.tile_id.findText(component_data['tile_id'])
+        self.tile_id.setCurrentIndex(tile_id)
+        tint = self.tint.findText(component_data['tint'].split('.')[-1])
+        self.tint.setCurrentIndex(tint)
+        layer = self.layer.findText(component_data['layer'].split('.')[-1])
+        self.layer.setCurrentIndex(layer)
+
+    def _send_data(self, index: int) -> None:
+        data = {
+            'tile_id': self.tile_id.currentText(),
+            'tint': f'Palette.{self.tint.currentText()}',
+            'layer': f'RenderLayer.{self.layer.currentText()}',
+        }
+        self.data_changed.emit(data)
 
 
 class ComponentPane(QWidget):
@@ -428,13 +483,22 @@ class ComponentPane(QWidget):
         details_layout.setSpacing(0)
         details_layout.setMargin(0)
 
+        self.details_stacked_layout = QStackedLayout()
+        self.details_stacked_layout.setSpacing(0)
+        self.details_stacked_layout.setMargin(0)
+
         self.component_list = ComponentList(self)
         details_label = QLabel('Component Details:')
         details_label.setMinimumHeight(32)
         details_layout.addWidget(details_label)
         self.details_widget = ComponentDetailsTable()
-        details_layout.addWidget(self.details_widget)
+        self.renderable_widget = RenderableComponentDetails()
 
+        self.details_stacked_layout.addWidget(self.details_widget)
+        self.details_stacked_layout.addWidget(self.renderable_widget)
+        self.details_stacked_layout.setCurrentIndex(0)
+
+        details_layout.addLayout(self.details_stacked_layout)
         layout.addWidget(self.component_list)
         layout.addSpacerItem(QSpacerItem(4, 1))
         layout.addLayout(details_layout)
@@ -445,10 +509,16 @@ class ComponentPane(QWidget):
         self.component_list.component_removed.connect(self._on_component_removed)
         self.component_list.components_added.connect(self._on_components_added)
         self.details_widget.data_changed.connect(self._on_data_changed)
+        self.renderable_widget.data_changed.connect(self._on_data_changed)
 
     def _on_selection_changed(self, selected: str) -> None:
         self.selected = selected
-        self.details_widget.update_data(selected, self.data[selected])
+        if selected == 'render.Renderable':
+            self.renderable_widget.update_data(self.data[selected])
+            self.details_stacked_layout.setCurrentIndex(1)
+        else:
+            self.details_widget.update_data(selected, self.data[selected])
+            self.details_stacked_layout.setCurrentIndex(0)
 
     def _on_component_removed(self, component_name: str) -> None:
         try:
