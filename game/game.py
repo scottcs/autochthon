@@ -38,7 +38,7 @@ def setup_morgue(base_dir: str, player: str) -> logging.Logger:
     morgue_dir = Path(base_dir) / Path(player)
     morgue_dir.mkdir(parents=True, exist_ok=True)
     log_file = morgue_dir / Path(f'{time.time()}.morgue')
-    handler = logging.FileHandler(log_file)
+    handler = logging.FileHandler(str(log_file))
     handler.setLevel(logging.INFO)
     handler.setFormatter(logging.Formatter('%(message)s'))
     morgue_log = logging.getLogger('morgue')

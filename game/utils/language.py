@@ -1,5 +1,5 @@
 """Language related utilities."""
-from typing import Tuple, Any, Set, List, Iterable
+from typing import Tuple, Any, Set, Iterable
 
 from game.types import Entity
 
@@ -16,7 +16,7 @@ class Verb:
 
 def msg(players: Set[Entity],
         entities: Iterable[Entity],
-        messages: Tuple[tuple],
+        messages: tuple,
         *args: Any
         ) -> Tuple[str, int]:
     """Determine the message based on which entity, if any, is the player."""

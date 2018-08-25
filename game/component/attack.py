@@ -5,7 +5,7 @@ from game.component.base import BaseModifierComponent, BaseTemporaryComponent
 from game.types import Entity, AttackType
 
 
-class CurrentTarget:
+class GUTCurrentTarget:
     """Component for targeting an entity or location."""
     def __init__(self, x: int, y: int, attack: AttackType, entity: Optional[Entity]=None) -> None:
         self.x: int = x

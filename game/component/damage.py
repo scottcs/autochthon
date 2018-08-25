@@ -9,7 +9,7 @@ class BaseDamageComponent:
         self.amount: Number = amount
 
 
-class TakeDamageBludgeoning(BaseDamageComponent):
+class GUTTakeDamageBludgeoning(BaseDamageComponent):
     """Take Bludgeoning damage."""
 
 
@@ -25,7 +25,7 @@ class ImmuneDamageBludgeoning:
     """Entity is immune to Bludgeoning damage."""
 
 
-class TakeDamagePiercing(BaseDamageComponent):
+class GUTTakeDamagePiercing(BaseDamageComponent):
     """Take Piercing damage."""
 
 
@@ -41,7 +41,7 @@ class ImmuneDamagePiercing:
     """Entity is immune to Piercing damage."""
 
 
-class TakeDamageSlashing(BaseDamageComponent):
+class GUTTakeDamageSlashing(BaseDamageComponent):
     """Take Slashing damage."""
 
 
@@ -57,7 +57,7 @@ class ImmuneDamageSlashing:
     """Entity is immune to Slashing damage."""
 
 
-class TakeDamageElectric(BaseDamageComponent):
+class GUTTakeDamageElectric(BaseDamageComponent):
     """Take Electric damage."""
 
 

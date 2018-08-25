@@ -1,0 +1,7 @@
+alias ee='python -m tools.entity_edit'
+alias brelease='bumpversion release'
+alias bpatch='bumpversion --no-tag patch'
+alias atlas='python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/img/oryx_ur/$tile.txt static/img/oryx_ur/$tile.json'
+alias tile_ids='python -m tools.make_tile_ids static/img/oryx_ur'
+alias typeshed='cp -rf typeshed/* ~/.venv/autochthon/lib/mypy/typeshed/third_party/3'
+alias typing='mypy --strict -p game'

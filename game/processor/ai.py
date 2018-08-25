@@ -6,7 +6,7 @@ import esper
 
 from game.component.action import Actor
 from game.component.ai import AISimpleMind
-from game.component.movement import Moving, Position
+from game.component.movement import GUTMoving, Position
 from game.types import Entity
 
 
@@ -33,5 +33,5 @@ class AIProcessor(esper.Processor):
                 dest = Position(position.x + dx, position.y + dy)
                 other_entity = self.world.get_solid_entity_at_position(dest.x, dest.y)
                 if other_entity is None and self.world.map[dest.x, dest.y].walkable:
-                    self.world.add_component(ent, Moving(dest.x, dest.y))
+                    self.world.add_component(ent, GUTMoving(dest.x, dest.y))
                     break

@@ -37,7 +37,7 @@ def _convert_data(data: dict) -> dict:
     return data
 
 
-def _get_component_class(class_substring: str) -> Any:
+def get_component_class(class_substring: str) -> Any:
     """Get a component class from a substring like `attack.AttackCostModifier`."""
     component_group, component_class = class_substring.split('.')
     mod_name = f'game.component.{component_group}'
@@ -45,7 +45,7 @@ def _get_component_class(class_substring: str) -> Any:
     return getattr(_tmp, component_class)
 
 
-def _validate_kwargs(kwargs: dict) -> None:
+def validate_kwargs(kwargs: dict) -> None:
     """Validate keyword arguments for components."""
     for key, value in kwargs.items():
         if value is None:
@@ -71,7 +71,7 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
         for component_type, component_data in data['Components'].items():
             # find the actual class
             try:
-                component_class = _get_component_class(component_type)
+                component_class = get_component_class(component_type)
             except (AttributeError, ModuleNotFoundError) as exc:
                 raise FactoryException(f'Error in {data_key}.{template}: {component_type}: {exc}')
             try:
@@ -80,8 +80,8 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
                 raise FactoryException(
                     f'Error in {data_key}.{template}: {component_data}: {repr(exc)}')
             try:
-                _validate_kwargs(kwargs)
-            except Exception as exc:
+                validate_kwargs(kwargs)
+            except (TypeError, ValueError) as exc:
                 raise FactoryException(f'Error in {data_key}.{template}: {exc}')
             try:
                 components.append(component_class(**kwargs))
