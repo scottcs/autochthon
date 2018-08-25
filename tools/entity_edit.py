@@ -29,6 +29,7 @@ class FileLoadSave(QWidget):
         super().__init__(parent)
         self.filename = None
         self.data = None
+        self.original_json = None
         layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
@@ -39,6 +40,7 @@ class FileLoadSave(QWidget):
         self.load_button = QPushButton('Load')
         self.save_as_button = QPushButton('Save As...')
         self.save_button = QPushButton('Save')
+        self.save_button.setDisabled(True)
 
         self.load_button.setFocusPolicy(Qt.NoFocus)
         self.save_as_button.setFocusPolicy(Qt.NoFocus)
@@ -57,6 +59,7 @@ class FileLoadSave(QWidget):
         self.save_button.clicked.connect(self._on_save)
 
     def _on_load(self) -> None:
+        self.save_button.setDisabled(True)
         filename = QFileDialog().getOpenFileName(
             self, 'Open Entity', str(DATA_DIR), 'Entity Files (*.json)')[0]
         if filename:
@@ -66,22 +69,29 @@ class FileLoadSave(QWidget):
             self._load_file()
 
     def _on_save_as(self) -> None:
+        self.save_button.setDisabled(True)
         print('on save as')
         print(self.edit.text())
 
     def _on_save(self) -> None:
+        self.save_button.setDisabled(True)
         with self.filename.open('w') as f:
             json.dump(self.data, f, indent=2)
 
     def _load_file(self) -> None:
         with self.filename.open() as f:
-            self.update_data(json.load(f))
+            self.data = json.load(f)
+            self.original_json = json.dumps(self.data, sort_keys=True)
         if self.data:
             self.file_loaded.emit(self.data)
 
     def update_data(self, data: dict) -> None:
         """Update the internal representation of the data."""
-        self.data = data
+        self.save_button.setDisabled(True)
+        new_json = json.dumps(data, sort_keys=True)
+        if self.original_json != new_json:
+            self.save_button.setDisabled(False)
+            self.data = data
 
 
 class ComponentList(QWidget):
@@ -254,6 +264,7 @@ class EntityEditor(QWidget):
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         self.setWindowTitle('Entity Editor')
+        self.setMinimumSize(800, 600)
 
         layout = QVBoxLayout()
         layout.setSpacing(0)
