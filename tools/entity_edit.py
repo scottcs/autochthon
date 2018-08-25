@@ -59,7 +59,6 @@ class FileLoadSave(QWidget):
         self.save_button.clicked.connect(self._on_save)
 
     def _on_load(self) -> None:
-        self.save_button.setDisabled(True)
         filename = QFileDialog().getOpenFileName(
             self, 'Open Entity', str(DATA_DIR), 'Entity Files (*.json)')[0]
         if filename:
@@ -69,19 +68,34 @@ class FileLoadSave(QWidget):
             self._load_file()
 
     def _on_save_as(self) -> None:
-        self.save_button.setDisabled(True)
-        print('on save as')
-        print(self.edit.text())
+        for key in self.data.keys():
+            if key == self.original_name:
+                msg_error(f'You must change the entity name! ({self.original_name})', self)
+                return
+        filename = QFileDialog().getSaveFileName(
+            self, 'Save Entity As', str(DATA_DIR), 'Entity Files (*.json)')[0]
+        if filename:
+            self.filename = Path(filename)
+            text = filename.split(f'{DATA_DIR}/')[-1]
+            self.edit.setText(text)
+            self._save_file()
 
     def _on_save(self) -> None:
+        self._save_file()
+
+    def _save_file(self) -> None:
         self.save_button.setDisabled(True)
         with self.filename.open('w') as f:
             json.dump(self.data, f, indent=2)
 
     def _load_file(self) -> None:
+        self.save_button.setDisabled(True)
         with self.filename.open() as f:
             self.data = json.load(f)
             self.original_json = json.dumps(self.data, sort_keys=True)
+            for key in self.data.keys():
+                self.original_name = key
+                break  # only one object per file
         if self.data:
             self.file_loaded.emit(self.data)
 
@@ -137,6 +151,9 @@ class ComponentList(QWidget):
         """Update the items in the list."""
         self.component_list.clear()
         self.component_list.addItems(items)
+        self.sizeHint()
+        self.update()
+        self.repaint()
 
 
 class ComponentDetailsTable(QTableWidget):
@@ -255,7 +272,9 @@ class ComponentPane(QWidget):
         """Update the data in this widget."""
         self.data = data['Components']
         self.component_list.update_items(sorted(self.data.keys()))
+        self.sizeHint()
         self.update()
+        self.repaint()
 
 
 class EntityEditor(QWidget):
@@ -283,10 +302,10 @@ class EntityEditor(QWidget):
 
         self.setLayout(layout)
 
-        self.file_widget.file_loaded.connect(self._on_file_changed)
+        self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
-    def _on_file_changed(self, data: dict) -> None:
+    def _on_file_loaded(self, data: dict) -> None:
         for name, entity_data in data.items():
             self.entity_name.setText(name)
             self.component_widget.update_data(entity_data)
