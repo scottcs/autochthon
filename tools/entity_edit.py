@@ -85,11 +85,13 @@ class FileLoadSave(QWidget):
 
     def _save_file(self) -> None:
         self.save_button.setDisabled(True)
+        self.save_button.repaint()
         with self.filename.open('w') as f:
             json.dump(self.data, f, indent=2)
 
     def _load_file(self) -> None:
         self.save_button.setDisabled(True)
+        self.save_button.repaint()
         with self.filename.open() as f:
             self.data = json.load(f)
             self.original_json = json.dumps(self.data, sort_keys=True)
@@ -101,16 +103,19 @@ class FileLoadSave(QWidget):
 
     def update_data(self, data: dict) -> None:
         """Update the internal representation of the data."""
-        self.save_button.setDisabled(True)
         new_json = json.dumps(data, sort_keys=True)
         if self.original_json != new_json:
             self.save_button.setDisabled(False)
             self.data = data
+        else:
+            self.save_button.setDisabled(True)
+        self.save_button.repaint()
 
 
 class ComponentList(QWidget):
     """Component list widget."""
     selection_changed = Signal(str)
+    component_removed = Signal(str)
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
@@ -136,16 +141,25 @@ class ComponentList(QWidget):
 
         self.add_button.clicked.connect(self._on_add)
         self.remove_button.clicked.connect(self._on_remove)
-        self.component_list.itemClicked.connect(self._on_selection)
+        self.component_list.itemSelectionChanged.connect(self._on_selection)
 
     def _on_add(self) -> None:
         print('on add')
 
     def _on_remove(self) -> None:
-        print('on remove')
+        try:
+            selected: QListWidgetItem = self.component_list.selectedItems()[0]
+            self.component_list.takeItem(self.component_list.row(selected))
+            self.component_removed.emit(selected.text())
+        except IndexError:
+            pass
 
-    def _on_selection(self, item: QListWidgetItem) -> None:
-        self.selection_changed.emit(item.text())
+    def _on_selection(self) -> None:
+        try:
+            selected: QListWidgetItem = self.component_list.selectedItems()[0]
+            self.selection_changed.emit(selected.text())
+        except IndexError:
+            pass
 
     def update_items(self, items: list) -> None:
         """Update the items in the list."""
@@ -254,11 +268,21 @@ class ComponentPane(QWidget):
         self.setLayout(layout)
 
         self.component_list.selection_changed.connect(self._on_selection_changed)
+        self.component_list.component_removed.connect(self._on_component_removed)
         self.details_widget.data_changed.connect(self._on_data_changed)
 
     def _on_selection_changed(self, selected: str) -> None:
         self.selected = selected
         self.details_widget.update_data(selected, self.data[selected])
+
+    def _on_component_removed(self, component_name: str) -> None:
+        try:
+            del self.data[component_name]
+            self.data_changed.emit({'Components': self.data})
+        except KeyError:
+            msg_error(f'Attempt to delete a component that does not exist: {component_name}', self)
+        if self.component_list.component_list.count() == 0:
+            self.details_widget.clear()
 
     def _on_data_changed(self, data: dict) -> None:
         if self.selected:
@@ -266,7 +290,7 @@ class ComponentPane(QWidget):
                 self.data[self.selected] = data
                 self.data_changed.emit({'Components': self.data})
             except KeyError:
-                print(f'Cannot set selected data {self.selected}')
+                msg_error(f'Cannot set selected data {self.selected}', self)
 
     def update_data(self, data: dict) -> None:
         """Update the data in this widget."""
