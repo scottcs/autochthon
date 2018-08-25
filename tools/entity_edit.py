@@ -7,14 +7,16 @@ import sys
 from typing import Optional, Any, List
 
 from PySide2.QtCore import Qt, Signal
+from PySide2.QtGui import QImage, QPainter, QPalette, QColor
 from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialogButtonBox,
                                QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
                                QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
                                QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
-from game.utils.factory import get_component_class
+from game.utils.factory import get_component_class, convert_datum
 
 DATA_DIR = Path('data/entities')
+TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
@@ -23,6 +25,95 @@ IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
 def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
     """Show an error message."""
     QMessageBox().critical(parent, 'Error!', msg)
+
+
+class RenderWidget(QWidget):
+    """Render widget."""
+
+    tile_ids = {}
+
+    def __init__(self, parent: Optional[QWidget]=None) -> None:
+        super().__init__(parent)
+        self.setMinimumSize(32, 48)
+        pal = QPalette()
+        pal.setColor(QPalette.Background, Qt.black)
+        self.setAutoFillBackground(True)
+        self.setPalette(pal)
+        self.tile_id = None
+        self.color = None
+        self.sprite = None
+        if not self.tile_ids:
+            with TILE_IDS_FILE.open() as f:
+                self.tile_ids = json.load(f)
+
+    def clear_sprite(self) -> None:
+        """Clear the sprite."""
+        self.tile_id = None
+        self.color = None
+        self.sprite = None
+        self.update()
+        self.repaint()
+
+    def update_tile(self, tile_id: str, color: str) -> None:
+        """Update the rendered tile."""
+        try:
+            tile_id = int(tile_id)
+        except ValueError:
+            for id_, data in self.tile_ids.items():
+                if data['name'] == tile_id:
+                    tile_id = id_
+                    break
+        if str(tile_id) not in self.tile_ids:
+            msg_error(f'Tile id not found: {tile_id}', self)
+            return
+        self.tile_id = str(tile_id)
+        if color.startswith('Palette.'):
+            try:
+                self.color = convert_datum(color)
+            except AttributeError:
+                msg_error(f'Unknown color: {color}', self)
+                return
+        else:
+            msg_error(f'Unknown color: {color}', self)
+            return
+        self.set_sprite()
+        self.update()
+        self.repaint()
+
+    def set_sprite(self) -> None:
+        """Draw the image."""
+        data = self.tile_ids[self.tile_id]
+        tileset = Path(data['tileset'])
+        tile = data['tiles'][0]
+        with tileset.open() as f:
+            tileset_data = json.load(f)
+        frame = None
+        for frame_name, frame_data in tileset_data['frames'].items():
+            if frame_name == tile:
+                frame = frame_data['frame']
+                break
+        if not frame:
+            msg_error(f'Could not find frame for {tile}', self)
+            return
+        sheet = QImage(str(tileset.parent / tileset_data['meta']['image']))
+        self.sprite = sheet.copy(frame['x'], frame['y'], frame['w'], frame['h'])
+
+    def paintEvent(self, event):
+        """Called when this widget should be painted."""
+        if not self.sprite:
+            return
+
+        mask = QImage(self.sprite)
+        painter = QPainter()
+
+        painter.begin(mask)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.fillRect(mask.rect(), QColor(self.color))
+        painter.end()
+
+        painter.begin(self)
+        painter.drawImage(8, 12, mask)
+        painter.end()
 
 
 class FileLoadSave(QWidget):
@@ -399,6 +490,16 @@ class EntityEditor(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(10)
+
+        header_layout = QHBoxLayout()
+        header_layout.setSpacing(0)
+        header_layout.setMargin(0)
+
+        header_right_layout = QVBoxLayout()
+        header_right_layout.setSpacing(0)
+        header_right_layout.setMargin(0)
+
+        self.render_widget = RenderWidget(self)
         self.file_widget = FileLoadSave(self)
 
         name_layout = QHBoxLayout()
@@ -408,8 +509,12 @@ class EntityEditor(QWidget):
         name_layout.addWidget(self.entity_name)
         self.component_widget = ComponentPane(self)
 
-        layout.addWidget(self.file_widget)
-        layout.addLayout(name_layout)
+        header_right_layout.addWidget(self.file_widget)
+        header_right_layout.addLayout(name_layout)
+        header_layout.addWidget(self.render_widget)
+        header_layout.addSpacerItem(QSpacerItem(8, 0))
+        header_layout.addLayout(header_right_layout)
+        layout.addLayout(header_layout)
         layout.addWidget(self.component_widget)
 
         self.setLayout(layout)
@@ -419,20 +524,33 @@ class EntityEditor(QWidget):
         self.component_widget.data_changed.connect(self._on_data_changed)
 
     def _on_file_loaded(self, data: dict) -> None:
+        self.render_widget.clear_sprite()
         for name, entity_data in data.items():
             self.entity_name.setText(name)
             self.component_widget.update_data(entity_data)
+            self._update_render_widget(entity_data)
             break  # only one entity per file
         self.component_widget.details_widget.clear()
 
     def _on_data_changed(self, data: dict) -> None:
         self.file_widget.update_data({self.entity_name.text(): data})
+        self._update_render_widget(data)
 
     def _new_entity_name(self) -> None:
         self.file_widget.update_entity_name(self.entity_name.text())
         self.entity_name.clearFocus()
         self.update()
         self.repaint()
+
+    def _update_render_widget(self, data: dict) -> None:
+        components = data.get('Components', {})
+        renderable = components.get('render.Renderable', None)
+        if renderable:
+            try:
+                self.render_widget.update_tile(renderable['tile_id'], renderable['tint'])
+            except KeyError:
+                # Probably haven't finished editing
+                pass
 
 
 def main() -> int:
