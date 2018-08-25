@@ -6,7 +6,7 @@ import esper
 from game.component.action import Actor
 from game.component.base import accumulate_modifiers
 from game.component.status import Dead
-from game.component.movement import Moving, Waiting, Position, MoveCostModifier, WaitCostModifier
+from game.component.movement import GUTMoving, GUTWaiting, Position, MoveCostModifier, WaitCostModifier
 from gamedata.base_engine_values import WAIT_COST, MOVE_COST
 from game.types import Entity
 
@@ -15,14 +15,14 @@ class MovementProcessor(esper.Processor):
     """Movement processor."""
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process movement components."""
-        for ent, components in self.world.get_components(Actor, Waiting):
+        for ent, components in self.world.get_components(Actor, GUTWaiting):
             if self.world.has_component(ent, Dead):
                 continue
             actor = components[0]
-            self.world.remove_component(ent, Waiting)
+            self.world.remove_component(ent, GUTWaiting)
             actor.time_units -= self.get_wait_action_cost(ent)
 
-        for ent, components in self.world.get_components(Position, Actor, Moving):
+        for ent, components in self.world.get_components(Position, Actor, GUTMoving):
             if self.world.has_component(ent, Dead):
                 continue
             position, actor, moving = components
@@ -31,7 +31,7 @@ class MovementProcessor(esper.Processor):
                 position.x = moving.x
                 position.y = moving.y
                 actor.time_units -= self.get_move_action_cost(ent)
-            self.world.remove_component(ent, Moving)
+            self.world.remove_component(ent, GUTMoving)
 
     def get_wait_action_cost(self, ent: Entity) -> int:
         """Get wait action cost."""

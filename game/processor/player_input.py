@@ -5,7 +5,7 @@ from typing import Any
 
 import esper
 
-from game.component.player import PlayerBump, PlayerControlled
+from game.component.player import GUTPlayerBump, PlayerControlled
 from game.events import InputEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
@@ -82,4 +82,4 @@ class PlayerInputProcessor(esper.Processor):
             return
 
         for ent, _ in self.world.get_component(PlayerControlled):
-            self.world.add_component(ent, PlayerBump(dx, dy))
+            self.world.add_component(ent, GUTPlayerBump(dx, dy))

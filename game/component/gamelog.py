@@ -29,9 +29,9 @@ class BaseLog:
             self.add(message)
 
 
-class CombatLog(BaseLog):
+class GUTCombatLog(BaseLog):
     """Combat log."""
 
 
-class StatusLog(BaseLog):
+class GUTStatusLog(BaseLog):
     """Log status effects."""

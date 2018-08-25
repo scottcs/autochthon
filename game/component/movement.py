@@ -19,7 +19,7 @@ class Position:
         return False
 
 
-class Moving:
+class GUTMoving:
     """Entity wants to move to destination position."""
     def __init__(self, x: int, y: int) -> None:
         self.x: int = x
@@ -30,7 +30,7 @@ class MoveCostModifier(BaseModifierComponent):
     """Movement cost modifier."""
 
 
-class Waiting:
+class GUTWaiting:
     """Waiting component."""
 
 
