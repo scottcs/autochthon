@@ -12,7 +12,7 @@ from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialog
                                QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
                                QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
                                QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
-                               QWidget, QComboBox, QGridLayout)
+                               QWidget, QComboBox, QGridLayout, QSizePolicy)
 
 from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
@@ -432,14 +432,25 @@ class RenderableComponentDetails(QWidget):
         self.layer = QComboBox()
         self.layer.addItems(list(RenderLayer.__members__.keys()))
 
-        layout.addWidget(QLabel('Tile ID:'), 0, 0)
-        layout.addWidget(self.tile_id, 0, 1)
-        layout.addWidget(QLabel('Tint:'), 1, 0)
-        layout.addWidget(self.tint, 1, 1)
-        layout.addWidget(QLabel('RenderLayer:'), 2, 0)
-        layout.addWidget(self.layer, 2, 1)
+        layout.addWidget(QLabel('Tile ID:'), 0, 0, Qt.AlignTop)
+        layout.addWidget(self.tile_id, 0, 1, Qt.AlignTop)
+        layout.addWidget(QLabel('Tint:'), 1, 0, Qt.AlignTop)
+        layout.addWidget(self.tint, 1, 1, Qt.AlignTop)
+        layout.addWidget(QLabel('RenderLayer:'), 2, 0, Qt.AlignTop)
+        layout.addWidget(self.layer, 2, 1, Qt.AlignTop)
+        layout.addItem(
+            QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding), 3, 0, Qt.AlignTop)
 
         self.setLayout(layout)
+
+    def update_data(self, component_data: dict) -> None:
+        """Refresh the list."""
+        tile_id = self.tile_id.findText(component_data['tile_id'])
+        self.tile_id.setCurrentIndex(tile_id)
+        tint = self.tint.findText(component_data['tint'].split('.')[-1])
+        self.tint.setCurrentIndex(tint)
+        layer = self.layer.findText(component_data['layer'].split('.')[-1])
+        self.layer.setCurrentIndex(layer)
 
 
 class ComponentPane(QWidget):
@@ -490,6 +501,7 @@ class ComponentPane(QWidget):
         self.selected = selected
         if selected == 'render.Renderable':
             self.details_stacked_layout.setCurrentIndex(1)
+            self.renderable_widget.update_data(self.data[selected])
         else:
             self.details_stacked_layout.setCurrentIndex(0)
             self.details_widget.update_data(selected, self.data[selected])
