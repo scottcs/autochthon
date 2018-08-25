@@ -395,6 +395,8 @@ class ComponentDetailsTable(QTableWidget):
         """Clear the table."""
         super().clear()
         self.setRowCount(0)
+        self.update()
+        self.repaint()
 
     def refresh(self) -> None:
         """Refresh data."""
@@ -443,6 +445,10 @@ class RenderableComponentDetails(QWidget):
 
         self.setLayout(layout)
 
+        self.tile_id.currentIndexChanged.connect(self._send_data)
+        self.tint.currentIndexChanged.connect(self._send_data)
+        self.layer.currentIndexChanged.connect(self._send_data)
+
     def update_data(self, component_data: dict) -> None:
         """Refresh the list."""
         tile_id = self.tile_id.findText(component_data['tile_id'])
@@ -451,6 +457,14 @@ class RenderableComponentDetails(QWidget):
         self.tint.setCurrentIndex(tint)
         layer = self.layer.findText(component_data['layer'].split('.')[-1])
         self.layer.setCurrentIndex(layer)
+
+    def _send_data(self, index: int) -> None:
+        data = {
+            'tile_id': self.tile_id.currentText(),
+            'tint': f'Palette.{self.tint.currentText()}',
+            'layer': f'RenderLayer.{self.layer.currentText()}',
+        }
+        self.data_changed.emit(data)
 
 
 class ComponentPane(QWidget):
@@ -500,11 +514,11 @@ class ComponentPane(QWidget):
     def _on_selection_changed(self, selected: str) -> None:
         self.selected = selected
         if selected == 'render.Renderable':
-            self.details_stacked_layout.setCurrentIndex(1)
             self.renderable_widget.update_data(self.data[selected])
+            self.details_stacked_layout.setCurrentIndex(1)
         else:
-            self.details_stacked_layout.setCurrentIndex(0)
             self.details_widget.update_data(selected, self.data[selected])
+            self.details_stacked_layout.setCurrentIndex(0)
 
     def _on_component_removed(self, component_name: str) -> None:
         try:
