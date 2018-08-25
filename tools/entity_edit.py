@@ -127,23 +127,60 @@ class ComponentList(QWidget):
 
 class ComponentDetailsTable(QTableWidget):
     """Component details widget."""
+    data_changed = Signal(dict)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+        self.data = {}
+        self.signature = None
         self.setColumnCount(1)
         self.horizontalHeader().setStretchLastSection(True)
         self.horizontalHeader().hide()
+        self.itemChanged.connect(self._on_item_changed)
+
+    def _on_item_changed(self, item: QTableWidgetItem) -> None:
+        param_name = self.verticalHeaderItem(item.row()).text()
+        old_data = str(self.data.get(param_name, ''))
+        new_data = item.text()
+        if old_data != new_data:
+            param = self.signature.parameters[param_name]
+            if param_name in self.data and new_data in ('', 'None'):
+                if param.default is param.empty:
+                    msg_error(f'Parameter "{param_name}" is required!', self)
+                    self.refresh()
+                del self.data[param_name]
+            else:
+                if new_data.lower() == 'true':
+                    self.data[param_name] = True
+                elif new_data.lower() == 'false':
+                    self.data[param_name] = False
+                else:
+                    try:
+                        self.data[param_name] = int(new_data)
+                    except ValueError:
+                        try:
+                            self.data[param_name] = float(new_data)
+                        except ValueError:
+                            self.data[param_name] = new_data
+            self.data_changed.emit(self.data)
 
     def update_data(self, component_name: str, component_data: dict) -> None:
         """Refresh the list."""
+        self.data = component_data
+        component_class = get_component_class(component_name)
+        self.signature = signature(component_class)
+        self.refresh()
+
+    def refresh(self) -> None:
+        """Refresh data."""
         self.clear()
         self.setRowCount(100)
-        component_class = get_component_class(component_name)
-        sig = signature(component_class)
         row = 0
-        for param_name, param in sig.parameters.items():
-            self.setVerticalHeaderItem(row, QTableWidgetItem(param_name))
-            item = QTableWidgetItem(str(component_data.get(param_name, '')))
+        for param_name, param in self.signature.parameters.items():
+            header_item = QTableWidgetItem(param_name)
+            header_item.setToolTip(str(param.annotation))
+            self.setVerticalHeaderItem(row, header_item)
+            item = QTableWidgetItem(str(self.data.get(param_name, '')))
             if param.default is not param.empty:
                 item.setBackgroundColor('#f8f8f0')
             self.setItem(row, 0, item)
@@ -157,6 +194,7 @@ class ComponentPane(QWidget):
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         self.data = {}
+        self.selected = None
         layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
@@ -178,9 +216,18 @@ class ComponentPane(QWidget):
         self.setLayout(layout)
 
         self.component_list.selection_changed.connect(self._on_selection_changed)
+        self.details_widget.data_changed.connect(self._on_data_changed)
 
     def _on_selection_changed(self, selected: str) -> None:
+        self.selected = selected
         self.details_widget.update_data(selected, self.data[selected])
+
+    def _on_data_changed(self, data: dict) -> None:
+        if self.selected:
+            try:
+                self.data[self.selected] = data
+            except KeyError:
+                print(f'Cannot set selected data {self.selected}')
 
     def update_data(self, data: dict) -> None:
         """Update the data in this widget."""
