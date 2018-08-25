@@ -20,21 +20,30 @@ class FactoryException(Exception):
 def _convert_data(data: dict) -> dict:
     """Convert data to globals."""
     for key, value in data.items():
-        try:
-            class_type, attr = value.split('.')
-        except (ValueError, AttributeError):
-            # the value does not have two parts separated by '.', or is not a string
-            continue
-
-        if class_type == 'Palette':
-            from gamedata.palette import Palette
-            data[key] = getattr(Palette, attr)
-        elif class_type == 'RenderLayer':
-            from game.types import RenderLayer
-            data[key] = getattr(RenderLayer, attr)
-        else:
-            data[key] = getattr(globals()[class_type], attr)
+        converted = convert_datum(value)
+        if converted is not None:
+            data[key] = converted
     return data
+
+
+def convert_datum(value: Any) -> Any:
+    """Convert a data value to a global class.attribute value, if possible."""
+    try:
+        class_type, attr = value.split('.')
+    except (ValueError, AttributeError):
+        # the value does not have two parts separated by '.', or is not a string
+        return None
+
+    if class_type == 'Palette':
+        from gamedata.palette import Palette
+        result = getattr(Palette, attr)
+    elif class_type == 'RenderLayer':
+        from game.types import RenderLayer
+        result = getattr(RenderLayer, attr)
+    else:
+        # allow exception to be raised here if it doesn't exist
+        result = getattr(globals()[class_type], attr)
+    return result
 
 
 def get_component_class(class_substring: str) -> Any:
