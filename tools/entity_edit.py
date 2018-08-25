@@ -2,17 +2,22 @@
 import json
 from inspect import signature
 from pathlib import Path
+import re
 import sys
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
-                               QListWidget, QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
+from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialogButtonBox,
+                               QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
+                               QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
                                QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 from game.utils.factory import get_component_class
 
 DATA_DIR = Path('data/entities')
+COMPONENT_DIR = Path('game/component')
+COMPONENT_RE = re.compile(r'(?<=^class )\w+')
+IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
 
 
 def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
@@ -28,8 +33,10 @@ class FileLoadSave(QWidget):
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         self.filename = None
-        self.data = None
+        self.data = {}
         self.original_json = None
+        self.original_name = None
+
         layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
@@ -68,9 +75,18 @@ class FileLoadSave(QWidget):
             self._load_file()
 
     def _on_save_as(self) -> None:
+        if not self.data:
+            msg_error('No data to save!', self)
+            return
         for key in self.data.keys():
+            if key == '':
+                msg_error('You must give the entity a name!', self)
+                return
             if key == self.original_name:
                 msg_error(f'You must change the entity name! ({self.original_name})', self)
+                return
+            if not self.data[key]:
+                msg_error('There is no component data to save!', self)
                 return
         filename = QFileDialog().getSaveFileName(
             self, 'Save Entity As', str(DATA_DIR), 'Entity Files (*.json)')[0]
@@ -101,21 +117,86 @@ class FileLoadSave(QWidget):
         if self.data:
             self.file_loaded.emit(self.data)
 
+    def _enable_save_button(self) -> None:
+        if self.edit.text():
+            self.save_button.setDisabled(False)
+            self.save_button.repaint()
+
     def update_data(self, data: dict) -> None:
         """Update the internal representation of the data."""
         new_json = json.dumps(data, sort_keys=True)
         if self.original_json != new_json:
-            self.save_button.setDisabled(False)
+            self._enable_save_button()
             self.data = data
         else:
             self.save_button.setDisabled(True)
         self.save_button.repaint()
+
+    def update_entity_name(self, name: str) -> None:
+        """Update the entity name in our data."""
+        if name:
+            new_data = {}
+            for value in self.data.values():
+                new_data[name] = value
+                break  # should only be one value
+            self.update_data(new_data)
+
+
+class GetComponentDialog(QDialog):
+    """Choose a component."""
+    components = []
+
+    def __init__(self, parent: Optional[QWidget]=None) -> None:
+        super().__init__(parent)
+        self.setMinimumSize(400, 600)
+        self._cache_component_list()
+
+        layout = QVBoxLayout()
+
+        self.components_list = QListWidget()
+        self.components_list.addItems(self.components)
+        self.components_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
+                                   Qt.Horizontal, self)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+        layout.addWidget(QLabel('Add Components:'))
+        layout.addWidget(self.components_list)
+        layout.addWidget(buttons)
+        self.setLayout(layout)
+
+    @classmethod
+    def _cache_component_list(cls) -> None:
+        if not cls.components:
+            components = []
+            for filename in COMPONENT_DIR.glob('*.py'):
+                component_family = filename.stem
+                with filename.open() as f:
+                    for line in f.readlines():
+                        found = COMPONENT_RE.search(line)
+                        if found:
+                            name = found.group(0)
+                            if not any([name.startswith(p) for p in IGNORE_COMPONENT_PREFIXES]):
+                                components.append(f'{component_family}.{name}')
+            cls.components = sorted(components)
+
+    def get(self) -> List[str]:
+        """Show the dialog and get the component name."""
+        result = self.exec_()
+        components = []
+        if result == QDialog.Accepted:
+            for selected in self.components_list.selectedItems():
+                components.append(selected.text())
+        return components
 
 
 class ComponentList(QWidget):
     """Component list widget."""
     selection_changed = Signal(str)
     component_removed = Signal(str)
+    components_added = Signal(list)
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
@@ -144,7 +225,9 @@ class ComponentList(QWidget):
         self.component_list.itemSelectionChanged.connect(self._on_selection)
 
     def _on_add(self) -> None:
-        print('on add')
+        component_names = GetComponentDialog().get()
+        if component_names:
+            self.components_added.emit(component_names)
 
     def _on_remove(self) -> None:
         try:
@@ -269,6 +352,7 @@ class ComponentPane(QWidget):
 
         self.component_list.selection_changed.connect(self._on_selection_changed)
         self.component_list.component_removed.connect(self._on_component_removed)
+        self.component_list.components_added.connect(self._on_components_added)
         self.details_widget.data_changed.connect(self._on_data_changed)
 
     def _on_selection_changed(self, selected: str) -> None:
@@ -284,13 +368,16 @@ class ComponentPane(QWidget):
         if self.component_list.component_list.count() == 0:
             self.details_widget.clear()
 
+    def _on_components_added(self, component_names: List[str]) -> None:
+        for component_name in component_names:
+            self.data.setdefault(component_name, {})
+        self.data_changed.emit({'Components': self.data})
+        self.component_list.update_items(sorted(self.data.keys()))
+
     def _on_data_changed(self, data: dict) -> None:
         if self.selected:
-            try:
-                self.data[self.selected] = data
-                self.data_changed.emit({'Components': self.data})
-            except KeyError:
-                msg_error(f'Cannot set selected data {self.selected}', self)
+            self.data[self.selected] = data
+            self.data_changed.emit({'Components': self.data})
 
     def update_data(self, data: dict) -> None:
         """Update the data in this widget."""
@@ -316,6 +403,7 @@ class EntityEditor(QWidget):
 
         name_layout = QHBoxLayout()
         self.entity_name = QLineEdit()
+        self.entity_name.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
         name_layout.addWidget(QLabel('Entity name:'))
         name_layout.addWidget(self.entity_name)
         self.component_widget = ComponentPane(self)
@@ -326,6 +414,7 @@ class EntityEditor(QWidget):
 
         self.setLayout(layout)
 
+        self.entity_name.editingFinished.connect(self._new_entity_name)
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
@@ -338,6 +427,12 @@ class EntityEditor(QWidget):
 
     def _on_data_changed(self, data: dict) -> None:
         self.file_widget.update_data({self.entity_name.text(): data})
+
+    def _new_entity_name(self) -> None:
+        self.file_widget.update_entity_name(self.entity_name.text())
+        self.entity_name.clearFocus()
+        self.update()
+        self.repaint()
 
 
 def main() -> int:
