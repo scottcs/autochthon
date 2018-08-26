@@ -15,7 +15,7 @@
         "factor": 0.3
       },
       "descriptive.Name": {
-        "first": "Crab"
+        "first": "crab"
       },
       "render.Renderable": {
         "tile_id": "crab",

@@ -1,0 +1,36 @@
+{
+  "Firefly": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": "==1d6+1"
+      },
+      "movement.MoveCostModifier": {
+        "factor": "==step(-0.1, 0.1, 0.1)"
+      },
+      "descriptive.Name": {
+        "first": "firefly"
+      },
+      "render.Renderable": {
+        "tile_id": "firefly",
+        "tint": "Palette.cyan",
+        "layer": "RenderLayer.ENEMY"
+      },
+      "attack.AttackDodgeModifier": {
+        "factor": 0.3
+      },
+      "damage.ModifierTakeDamageElectric": {
+        "factor": 0.5
+      },
+      "attack.AttackHitModifier": {
+        "factor": 0.2
+      },
+      "damage.ModifierInflictDamageElectric": {
+        "addend": "3d3"
+      },
+      "damage.ModifierInflictDamagePiercing": {
+        "addend": "2d3"
+      }
+    }
+  }
+}

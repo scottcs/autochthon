@@ -1,0 +1,19 @@
+{
+  "OrcBrute": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": "==5d3+30"
+      },
+      "descriptive.Name": {
+        "first": "orc",
+        "last": "brute"
+      },
+      "render.Renderable": {
+        "tile_id": "orc4",
+        "tint": "Palette.red",
+        "layer": "RenderLayer.ENEMY"
+      }
+    }
+  }
+}

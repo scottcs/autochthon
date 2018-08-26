@@ -1,0 +1,21 @@
+{
+  "Ghoul": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": "==1d6+1"
+      },
+      "descriptive.Name": {
+        "first": "ghoul"
+      },
+      "render.Renderable": {
+        "tile_id": "ghoul1",
+        "tint": "Palette.purple",
+        "layer": "RenderLayer.ENEMY"
+      },
+      "movement.MoveCostModifier": {
+        "factor": -0.3
+      }
+    }
+  }
+}
