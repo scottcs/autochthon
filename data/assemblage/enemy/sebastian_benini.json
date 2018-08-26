@@ -12,7 +12,7 @@
         "last": "Benini"
       },
       "render.Renderable": {
-        "tile_id": "humanC1",
+        "tile_id": "monster_humanC1",
         "tint": "Palette.orange",
         "layer": "RenderLayer.ENEMY"
       },

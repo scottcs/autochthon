@@ -10,7 +10,7 @@
         "last": "archer"
       },
       "render.Renderable": {
-        "tile_id": "naga2",
+        "tile_id": "monster_naga2",
         "tint": "Palette.green",
         "layer": "RenderLayer.ENEMY"
       },

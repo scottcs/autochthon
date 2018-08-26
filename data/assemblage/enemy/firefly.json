@@ -12,7 +12,7 @@
         "first": "firefly"
       },
       "render.Renderable": {
-        "tile_id": "firefly",
+        "tile_id": "monster_firefly",
         "tint": "Palette.cyan",
         "layer": "RenderLayer.ENEMY"
       },

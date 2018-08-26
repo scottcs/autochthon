@@ -10,7 +10,7 @@
         "last": "brute"
       },
       "render.Renderable": {
-        "tile_id": "orc4",
+        "tile_id": "monster_orc4",
         "tint": "Palette.red",
         "layer": "RenderLayer.ENEMY"
       }

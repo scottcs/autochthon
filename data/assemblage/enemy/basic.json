@@ -11,7 +11,7 @@
       },
       "movement.Position": {},
       "render.Renderable": {
-        "tile_id": "orc2",
+        "tile_id": "monster_angel1",
         "tint": "Palette.white",
         "layer": "RenderLayer.ENEMY"
       },

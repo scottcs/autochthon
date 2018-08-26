@@ -13,6 +13,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def get_key(string: str) -> str:
+    """Get a key name from a line."""
+    try:
+        key, num = string.rsplit('_', 1)
+        int(num)
+    except ValueError:
+        key = string
+    return key
+
+
 def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
     """Parse a tile atlas."""
     tileset: str = atlas_file.with_suffix('.json').as_posix()
@@ -37,7 +47,7 @@ def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
                 # skip to next row
                 continue
 
-            key = line.split('_')[0]
+            key = get_key(line)
             tiles_data.setdefault(key, [])
 
             if num_anim_frames == 1:
@@ -47,7 +57,7 @@ def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
                     tiles_data[key].append(f'{line}_{i + 1}')
 
     for data in tiles_data.values():
-        name_guess = data[0].rsplit('_', 1)[0]
+        name_guess = get_key(data[0])
         atlas_data.append({
             'name': name_guess,
             'tileset': tileset,

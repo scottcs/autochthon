@@ -9,7 +9,7 @@
         "first": "boar"
       },
       "render.Renderable": {
-        "tile_id": "boar",
+        "tile_id": "monster_boar",
         "tint": "Palette.blue",
         "layer": "RenderLayer.ENEMY"
       }

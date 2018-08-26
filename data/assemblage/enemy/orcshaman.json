@@ -10,7 +10,7 @@
         "last": "shaman"
       },
       "render.Renderable": {
-        "tile_id": "orc3",
+        "tile_id": "monster_orc3",
         "tint": "Palette.red",
         "layer": "RenderLayer.ENEMY"
       }

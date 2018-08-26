@@ -10,7 +10,7 @@
         "last": "clubber"
       },
       "render.Renderable": {
-        "tile_id": "orc1",
+        "tile_id": "monster_orc1",
         "tint": "Palette.red",
         "layer": "RenderLayer.ENEMY"
       }

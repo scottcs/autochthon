@@ -10,7 +10,7 @@
         "last": "pikeman"
       },
       "render.Renderable": {
-        "tile_id": "orc2",
+        "tile_id": "monster_orc2",
         "tint": "Palette.red",
         "layer": "RenderLayer.ENEMY"
       }
