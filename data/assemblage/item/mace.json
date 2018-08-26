@@ -1,0 +1,23 @@
+{
+  "Mace": {
+    "Components": {
+      "descriptive.Name": {
+        "first": "mace"
+      },
+      "render.Renderable": {
+        "tile_id": "item_mace",
+        "tint": "Palette.cyan",
+        "layer": "RenderLayer.ITEM"
+      },
+      "damage.ModifierInflictDamageBludgeoning": {
+        "addend": "2d8"
+      },
+      "attack.AttackHitModifier": {
+        "factor": 0.05
+      },
+      "attack.AttackCostModifier": {
+        "factor": -0.05
+      }
+    }
+  }
+}

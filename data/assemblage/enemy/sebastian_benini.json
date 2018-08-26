@@ -1,0 +1,27 @@
+{
+  "SebastianBenini": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": 150
+      },
+      "descriptive.Name": {
+        "first": "Sebastian",
+        "proper": true,
+        "nickname": "The Inquisitor",
+        "last": "Benini"
+      },
+      "render.Renderable": {
+        "tile_id": "monster_humanC1",
+        "tint": "Palette.orange",
+        "layer": "RenderLayer.ENEMY"
+      },
+      "damage.ModifierInflictDamagePiercing": {
+        "addend": "2d5+10"
+      },
+      "damage.ModifierTakeDamageBludgeoning": {
+        "factor": 5.0
+      }
+    }
+  }
+}

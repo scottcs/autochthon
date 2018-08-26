@@ -1,0 +1,22 @@
+{
+  "NagaArcher": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": "==3d6+10"
+      },
+      "descriptive.Name": {
+        "first": "naga",
+        "last": "archer"
+      },
+      "render.Renderable": {
+        "tile_id": "monster_naga2",
+        "tint": "Palette.green",
+        "layer": "RenderLayer.ENEMY"
+      },
+      "movement.MoveCostModifier": {
+        "factor": -0.3
+      }
+    }
+  }
+}

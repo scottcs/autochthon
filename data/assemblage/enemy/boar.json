@@ -1,0 +1,18 @@
+{
+  "Boar": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": 10
+      },
+      "descriptive.Name": {
+        "first": "boar"
+      },
+      "render.Renderable": {
+        "tile_id": "monster_boar",
+        "tint": "Palette.blue",
+        "layer": "RenderLayer.ENEMY"
+      }
+    }
+  }
+}

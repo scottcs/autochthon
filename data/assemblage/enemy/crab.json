@@ -3,22 +3,22 @@
     "Components": {
       "ai.AISimpleMind": {},
       "attribute.HP": {
-        "initial": 20
+        "initial": "==1d10+15"
       },
       "movement.MoveCostModifier": {
-        "factor": 0.1
+        "factor": "==step(-0.1, 0.1, 0.1)"
       },
       "attack.AttackDeflectModifier": {
         "factor": 0.65
       },
       "attack.AttackDodgeModifier": {
-        "factor": 0.30
+        "factor": 0.3
       },
       "descriptive.Name": {
-        "first": "Crab"
+        "first": "crab"
       },
       "render.Renderable": {
-        "tile_id": "crab",
+        "tile_id": "monster_crab",
         "tint": "Palette.orange",
         "layer": "RenderLayer.ENEMY"
       }

@@ -31,7 +31,7 @@ class AttackTargetingProcessor(esper.Processor):
             defender_name = self.world.get_or_add_component(target.entity, Name,
                                                             f'Entity {target.entity}')
             combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttack,
-                                aggressor_name, defender_name, target.attack))
+                                aggressor_name.specific, defender_name.specific, target.attack))
             self.world.add_component(ent, combat_log)
 
     def still_can_target(self, _ent: Entity, target: GUTCurrentTarget) -> bool:
@@ -67,7 +67,8 @@ class AttackMissProcessor(esper.Processor):
                 combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
                 if random.random() > chance:
                     name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
-                    combat_log.add(*msg(self.world.players, (ent, target.entity), MsgMiss, name))
+                    combat_log.add(
+                        *msg(self.world.players, (ent, target.entity), MsgMiss, name.specific))
                     self.world.remove_component(ent, GUTCurrentTarget)
 
 
@@ -95,7 +96,7 @@ class AttackDefenseProcessor(esper.Processor):
                 name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
                 combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
                 combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttackImmune,
-                                    name, self.verb.past))
+                                    name.specific, self.verb.past))
                 continue
             if target.attack == AttackType.melee:
                 mods = []
@@ -110,7 +111,7 @@ class AttackDefenseProcessor(esper.Processor):
                         name = self.world.get_or_add_component(
                             target.entity, Name, f'Entity {target.entity}')
                         combat_log.add(*msg(self.world.players, (target.entity, ent), MsgDefend,
-                                            name, self.verb.present))
+                                            name.specific, self.verb.present))
                         # TODO: Add success comp for other processors (DeflectSuccess -> Disarm)
                         self.world.remove_component(ent, GUTCurrentTarget)
 

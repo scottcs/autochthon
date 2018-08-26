@@ -6,8 +6,11 @@ from game.component.movement import Position
 from game.dataloader import DataLoader
 from game.types import Entity
 from game.utils.geometry import Point
+from game.utils.random import parse
 from game.utils.render import TileCache
 from game.world import World
+
+ON_CREATE = '=='
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -19,11 +22,21 @@ class FactoryException(Exception):
 
 def _convert_data(data: dict) -> dict:
     """Convert data to globals."""
+    new_data = {}
     for key, value in data.items():
+        new_data[key] = value
         converted = convert_datum(value)
         if converted is not None:
-            data[key] = converted
-    return data
+            new_data[key] = converted
+        else:
+            try:
+                if value.startswith(ON_CREATE):
+                    converted_func = parse(value[len(ON_CREATE):])
+                    if converted_func is not None:
+                        new_data[key] = converted_func()
+            except AttributeError:
+                pass
+    return new_data
 
 
 def convert_datum(value: Any) -> Any:
@@ -107,7 +120,7 @@ def make_player(loader: DataLoader, world: World, start: Point, templates: List[
     """Make a player and add it to the world."""
     if 'BasicPlayer' not in templates:
         templates.insert(0, 'BasicPlayer')
-    ent = make_entity(loader, world, 'entities.player', start, templates)
+    ent = make_entity(loader, world, 'assemblage.player', start, templates)
     world.players.add(ent)
     return ent
 
@@ -116,4 +129,4 @@ def make_enemy(loader: DataLoader, world: World, start: Point, templates: List[s
     """Make an enemy and add it to the world."""
     if 'BasicEnemy' not in templates:
         templates.insert(0, 'BasicEnemy')
-    return make_entity(loader, world, 'entities.enemy', start, templates)
+    return make_entity(loader, world, 'assemblage.enemy', start, templates)

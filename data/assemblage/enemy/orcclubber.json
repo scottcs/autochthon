@@ -1,0 +1,19 @@
+{
+  "OrcClubber": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": "==5d3+30"
+      },
+      "descriptive.Name": {
+        "first": "orc",
+        "last": "clubber"
+      },
+      "render.Renderable": {
+        "tile_id": "monster_orc1",
+        "tint": "Palette.red",
+        "layer": "RenderLayer.ENEMY"
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "OrcPikeman": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": "==5d3+30"
+      },
+      "descriptive.Name": {
+        "first": "orc",
+        "last": "pikeman"
+      },
+      "render.Renderable": {
+        "tile_id": "monster_orc2",
+        "tint": "Palette.red",
+        "layer": "RenderLayer.ENEMY"
+      }
+    }
+  }
+}

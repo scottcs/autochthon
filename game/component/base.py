@@ -1,6 +1,6 @@
 """Base helper components to be subclassed."""
 from math import floor
-from typing import Optional
+from typing import Optional, Union
 
 from game.types import Number, Modifier
 from game.utils.random import ChanceList
@@ -8,7 +8,7 @@ from game.utils.random import ChanceList
 
 class BaseModifierComponent:
     """Base modifier component."""
-    def __init__(self, addend: Number=0, factor: Number=0) -> None:
+    def __init__(self, addend: Union[Number, str]=0, factor: Union[Number, str]=0) -> None:
         self.modifier: Modifier = Modifier(addend, factor)
 
 

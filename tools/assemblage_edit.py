@@ -1,4 +1,4 @@
-"""Entity editor."""
+"""Assemblage editor."""
 import json
 from inspect import signature
 from pathlib import Path
@@ -18,7 +18,7 @@ from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
 
-DATA_DIR = Path('data/entities')
+DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
@@ -137,59 +137,69 @@ class FileLoadSave(QWidget):
         self.edit = QLineEdit()
         self.edit.setDisabled(True)
         self.load_button = QPushButton('Load')
-        self.save_as_button = QPushButton('Save As...')
         self.save_button = QPushButton('Save')
         self.save_button.setDisabled(True)
 
         self.load_button.setFocusPolicy(Qt.NoFocus)
-        self.save_as_button.setFocusPolicy(Qt.NoFocus)
         self.save_button.setFocusPolicy(Qt.NoFocus)
 
         layout.addWidget(self.label)
         layout.addWidget(self.edit)
         layout.addSpacerItem(QSpacerItem(4, 0))
         layout.addWidget(self.load_button)
-        layout.addWidget(self.save_as_button)
         layout.addWidget(self.save_button)
         self.setLayout(layout)
 
         self.load_button.clicked.connect(self._on_load)
-        self.save_as_button.clicked.connect(self._on_save_as)
         self.save_button.clicked.connect(self._on_save)
 
     def _on_load(self) -> None:
+        if self.save_button.isEnabled():
+            message_box = QMessageBox()
+            message_box.setText("The document has been modified.")
+            message_box.setInformativeText("Do you want to save your changes?")
+            message_box.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            message_box.setDefaultButton(QMessageBox.Save)
+            ret = message_box.exec_()
+            if ret == QMessageBox.Save:
+                if not self._on_save():
+                    return
+            elif ret == QMessageBox.Cancel:
+                return
+            elif ret == QMessageBox.Discard:
+                pass
+            else:
+                # should never be reached
+                return
+
         filename = QFileDialog().getOpenFileName(
-            self, 'Open Entity', str(DATA_DIR), 'Entity Files (*.json)')[0]
+            self, 'Open Assemblage', str(DATA_DIR), 'Assemblage Files (*.json)')[0]
         if filename:
             self.filename = Path(filename)
             text = filename.split(f'{DATA_DIR}/')[-1]
             self.edit.setText(text)
             self._load_file()
 
-    def _on_save_as(self) -> None:
+    def _on_save(self) -> bool:
         if not self.data:
             msg_error('No data to save!', self)
-            return
+            return False
         for key in self.data.keys():
             if key == '':
-                msg_error('You must give the entity a name!', self)
-                return
-            if key == self.original_name:
-                msg_error(f'You must change the entity name! ({self.original_name})', self)
-                return
+                msg_error('You must give the assemblage a name!', self)
+                return False
             if not self.data[key]:
                 msg_error('There is no component data to save!', self)
-                return
+                return False
         filename = QFileDialog().getSaveFileName(
-            self, 'Save Entity As', str(DATA_DIR), 'Entity Files (*.json)')[0]
+            self, 'Save Assemblage As', str(DATA_DIR), 'Assemblage Files (*.json)')[0]
         if filename:
             self.filename = Path(filename)
             text = filename.split(f'{DATA_DIR}/')[-1]
             self.edit.setText(text)
             self._save_file()
-
-    def _on_save(self) -> None:
-        self._save_file()
+            return True
+        return False
 
     def _save_file(self) -> None:
         self.save_button.setDisabled(True)
@@ -210,9 +220,8 @@ class FileLoadSave(QWidget):
             self.file_loaded.emit(self.data)
 
     def _enable_save_button(self) -> None:
-        if self.edit.text():
-            self.save_button.setDisabled(False)
-            self.save_button.repaint()
+        self.save_button.setDisabled(False)
+        self.save_button.repaint()
 
     def update_data(self, data: dict) -> None:
         """Update the internal representation of the data."""
@@ -224,8 +233,8 @@ class FileLoadSave(QWidget):
             self.save_button.setDisabled(True)
         self.save_button.repaint()
 
-    def update_entity_name(self, name: str) -> None:
-        """Update the entity name in our data."""
+    def update_assemblage_name(self, name: str) -> None:
+        """Update the assemblage name in our data."""
         if name:
             new_data = {}
             for value in self.data.values():
@@ -527,13 +536,14 @@ class ComponentPane(QWidget):
         except KeyError:
             msg_error(f'Attempt to delete a component that does not exist: {component_name}', self)
         if self.component_list.component_list.count() == 0:
-            self.details_widget.clear()
+            self.hide_data()
 
     def _on_components_added(self, component_names: List[str]) -> None:
         for component_name in component_names:
             self.data.setdefault(component_name, {})
         self.data_changed.emit({'Components': self.data})
         self.component_list.update_items(sorted(self.data.keys()))
+        self.update()
 
     def _on_data_changed(self, data: dict) -> None:
         if self.selected:
@@ -548,13 +558,18 @@ class ComponentPane(QWidget):
         self.update()
         self.repaint()
 
+    def hide_data(self) -> None:
+        """Hide the data pane."""
+        self.details_widget.clear()
+        self.details_stacked_layout.setCurrentIndex(0)
 
-class EntityEditor(QWidget):
-    """Entity editor parent widget."""
+
+class AssemblageEditor(QWidget):
+    """Assemblage editor parent widget."""
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle('Entity Editor')
+        self.setWindowTitle('Assemblage Editor')
         self.setMinimumSize(800, 600)
 
         layout = QVBoxLayout()
@@ -573,10 +588,10 @@ class EntityEditor(QWidget):
         self.file_widget = FileLoadSave(self)
 
         name_layout = QHBoxLayout()
-        self.entity_name = QLineEdit()
-        self.entity_name.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        name_layout.addWidget(QLabel('Entity name:'))
-        name_layout.addWidget(self.entity_name)
+        self.assemblage_name = QLineEdit()
+        self.assemblage_name.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
+        name_layout.addWidget(QLabel('Assemblage name:'))
+        name_layout.addWidget(self.assemblage_name)
         self.component_widget = ComponentPane(self)
 
         header_right_layout.addWidget(self.file_widget)
@@ -589,26 +604,27 @@ class EntityEditor(QWidget):
 
         self.setLayout(layout)
 
-        self.entity_name.editingFinished.connect(self._new_entity_name)
+        self.assemblage_name.editingFinished.connect(self._new_assemblage_name)
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
     def _on_file_loaded(self, data: dict) -> None:
         self.render_widget.clear_sprite()
-        for name, entity_data in data.items():
-            self.entity_name.setText(name)
-            self.component_widget.update_data(entity_data)
-            self._update_render_widget(entity_data)
-            break  # only one entity per file
-        self.component_widget.details_widget.clear()
+        for name, assemblage_data in data.items():
+            self.assemblage_name.setText(name)
+            self.component_widget.update_data(assemblage_data)
+            self._update_render_widget(assemblage_data)
+            # TODO: allow more than one assemblage per file
+            break  # only one assemblage per file
+        self.component_widget.hide_data()
 
     def _on_data_changed(self, data: dict) -> None:
-        self.file_widget.update_data({self.entity_name.text(): data})
+        self.file_widget.update_data({self.assemblage_name.text(): data})
         self._update_render_widget(data)
 
-    def _new_entity_name(self) -> None:
-        self.file_widget.update_entity_name(self.entity_name.text())
-        self.entity_name.clearFocus()
+    def _new_assemblage_name(self) -> None:
+        self.file_widget.update_assemblage_name(self.assemblage_name.text())
+        self.assemblage_name.clearFocus()
         self.update()
         self.repaint()
 
@@ -626,8 +642,8 @@ class EntityEditor(QWidget):
 def main() -> int:
     """ Main function """
     app = QApplication(sys.argv)
-    entity_edit = EntityEditor()
-    entity_edit.show()
+    assemblage_edit = AssemblageEditor()
+    assemblage_edit.show()
     return app.exec_()
 
 
