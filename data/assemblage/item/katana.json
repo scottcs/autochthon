@@ -1,0 +1,23 @@
+{
+  "Katana": {
+    "Components": {
+      "descriptive.Name": {
+        "first": "katana"
+      },
+      "render.Renderable": {
+        "tile_id": "item_katana",
+        "tint": "Palette.purple",
+        "layer": "RenderLayer.ITEM"
+      },
+      "attack.AttackHitModifier": {
+        "factor": 0.1
+      },
+      "attack.AttackDeflectModifier": {
+        "factor": 0.2
+      },
+      "damage.ModifierInflictDamageSlashing": {
+        "addend": "3d6"
+      }
+    }
+  }
+}

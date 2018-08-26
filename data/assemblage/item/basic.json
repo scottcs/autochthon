@@ -1,0 +1,14 @@
+{
+  "BasicItem": {
+    "Components": {
+      "descriptive.Name": {
+        "first": "item"
+      },
+      "render.Renderable": {
+        "tile_id": "item_feather",
+        "tint": "Palette.white",
+        "layer": "RenderLayer.ITEM"
+      }
+    }
+  }
+}

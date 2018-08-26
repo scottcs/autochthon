@@ -7,7 +7,7 @@
         const tileset_fx_blood = tileset_dir + 'FX_Blood.json';
         const tileset_fx_general = tileset_dir + 'FX_General.json';
         const tileset_fx_projectiles = tileset_dir + 'FX_Projectiles.json';
-        const tileset_items = tileset_dir + 'Items.png';
+        const tileset_items = tileset_dir + 'Items.json';
         const tileset_monsters = tileset_dir + 'Monsters.json';
         const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.png';
         const tileset_terrain = tileset_dir + 'Terrain.json';

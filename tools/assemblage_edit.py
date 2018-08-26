@@ -543,6 +543,7 @@ class ComponentPane(QWidget):
             self.data.setdefault(component_name, {})
         self.data_changed.emit({'Components': self.data})
         self.component_list.update_items(sorted(self.data.keys()))
+        self.update()
 
     def _on_data_changed(self, data: dict) -> None:
         if self.selected:
