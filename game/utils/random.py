@@ -84,7 +84,6 @@ def parse(text: str) -> Optional[Callable]:
 
 
 def _parse_weighted(items_str: str, weights_str: str) -> Callable:
-    print(items_str, weights_str)
     items = [i.strip(' \'"') for i in items_str.split(',')]
     weights = [int(w.strip()) for w in weights_str.split(',')]
     choices = []
@@ -98,7 +97,6 @@ def _parse_weighted(items_str: str, weights_str: str) -> Callable:
 
 
 def _parse_step(expr: str) -> Callable:
-    print(expr)
     try:
         s_min, s_max, s_step = [int(e.strip()) for e in expr.split(',')]
     except ValueError:
