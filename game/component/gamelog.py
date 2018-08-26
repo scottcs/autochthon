@@ -18,7 +18,8 @@ class BaseLog:
         """Add a new line to the log."""
         if color is None:
             color = MessagePalette.default
-        self.lines.append(LogLine(message, color))
+        capitalized = f'{message[0].upper()}{message[1:]}'
+        self.lines.append(LogLine(capitalized, color))
 
     def append_last(self, message: str) -> None:
         """Append to the last log line."""

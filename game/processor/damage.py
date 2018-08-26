@@ -23,7 +23,7 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
                 combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
                 name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
                 combat_log.add(*msg(self.world.players, (ent,), MsgDamageImmune,
-                                    name, 'Bludgeoning'))
+                                    name.specific, 'Bludgeoning'))
                 self.world.remove_component(ent, GUTTakeDamageBludgeoning)
             else:
                 mods = []
@@ -36,13 +36,13 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
                 name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
                 if damage.amount > full_amount:
                     combat_log.add(*msg(self.world.players, (ent,), MsgDamageVulnerable,
-                                        name, 'Bludgeoning', damage.amount))
+                                        name.specific, 'Bludgeoning', damage.amount))
                 elif damage.amount < full_amount:
                     combat_log.add(*msg(self.world.players, (ent,), MsgDamageResist,
-                                        name, 'Bludgeoning', damage.amount))
+                                        name.specific, 'Bludgeoning', damage.amount))
                 else:
                     combat_log.add(*msg(self.world.players, (ent,), MsgDamageNormal,
-                                        name, 'Bludgeoning', damage.amount))
+                                        name.specific, 'Bludgeoning', damage.amount))
                 if damage.amount <= 0:
                     self.world.remove_component(ent, GUTTakeDamageBludgeoning)
 

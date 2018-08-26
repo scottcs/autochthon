@@ -9,8 +9,7 @@
         "first": "Sebastian",
         "proper": true,
         "nickname": "The Inquisitor",
-        "last": "Benini",
-        "titles": "[High Chancellor]"
+        "last": "Benini"
       },
       "render.Renderable": {
         "tile_id": "humanC1",
