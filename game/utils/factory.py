@@ -107,7 +107,7 @@ def make_player(loader: DataLoader, world: World, start: Point, templates: List[
     """Make a player and add it to the world."""
     if 'BasicPlayer' not in templates:
         templates.insert(0, 'BasicPlayer')
-    ent = make_entity(loader, world, 'entities.player', start, templates)
+    ent = make_entity(loader, world, 'assemblage.player', start, templates)
     world.players.add(ent)
     return ent
 
@@ -116,4 +116,4 @@ def make_enemy(loader: DataLoader, world: World, start: Point, templates: List[s
     """Make an enemy and add it to the world."""
     if 'BasicEnemy' not in templates:
         templates.insert(0, 'BasicEnemy')
-    return make_entity(loader, world, 'entities.enemy', start, templates)
+    return make_entity(loader, world, 'assemblage.enemy', start, templates)

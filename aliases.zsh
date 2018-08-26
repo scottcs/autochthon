@@ -1,4 +1,4 @@
-alias ee='python -m tools.entity_edit'
+alias ae='python -m tools.assemblage_edit'
 alias brelease='bumpversion release'
 alias bpatch='bumpversion --no-tag patch'
 alias atlas='python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/img/oryx_ur/$tile.txt static/img/oryx_ur/$tile.json'

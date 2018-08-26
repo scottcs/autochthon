@@ -1,4 +1,4 @@
-"""Entity editor."""
+"""Assemblage editor."""
 import json
 from inspect import signature
 from pathlib import Path
@@ -18,7 +18,7 @@ from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
 
-DATA_DIR = Path('data/entities')
+DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
@@ -159,7 +159,7 @@ class FileLoadSave(QWidget):
 
     def _on_load(self) -> None:
         filename = QFileDialog().getOpenFileName(
-            self, 'Open Entity', str(DATA_DIR), 'Entity Files (*.json)')[0]
+            self, 'Open Assemblage', str(DATA_DIR), 'Assemblage Files (*.json)')[0]
         if filename:
             self.filename = Path(filename)
             text = filename.split(f'{DATA_DIR}/')[-1]
@@ -172,16 +172,16 @@ class FileLoadSave(QWidget):
             return
         for key in self.data.keys():
             if key == '':
-                msg_error('You must give the entity a name!', self)
+                msg_error('You must give the assemblage a name!', self)
                 return
             if key == self.original_name:
-                msg_error(f'You must change the entity name! ({self.original_name})', self)
+                msg_error(f'You must change the assemblage name! ({self.original_name})', self)
                 return
             if not self.data[key]:
                 msg_error('There is no component data to save!', self)
                 return
         filename = QFileDialog().getSaveFileName(
-            self, 'Save Entity As', str(DATA_DIR), 'Entity Files (*.json)')[0]
+            self, 'Save Assemblage As', str(DATA_DIR), 'Assemblage Files (*.json)')[0]
         if filename:
             self.filename = Path(filename)
             text = filename.split(f'{DATA_DIR}/')[-1]
@@ -224,8 +224,8 @@ class FileLoadSave(QWidget):
             self.save_button.setDisabled(True)
         self.save_button.repaint()
 
-    def update_entity_name(self, name: str) -> None:
-        """Update the entity name in our data."""
+    def update_assemblage_name(self, name: str) -> None:
+        """Update the assemblage name in our data."""
         if name:
             new_data = {}
             for value in self.data.values():
@@ -549,12 +549,12 @@ class ComponentPane(QWidget):
         self.repaint()
 
 
-class EntityEditor(QWidget):
-    """Entity editor parent widget."""
+class AssemblageEditor(QWidget):
+    """Assemblage editor parent widget."""
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle('Entity Editor')
+        self.setWindowTitle('Assemblage Editor')
         self.setMinimumSize(800, 600)
 
         layout = QVBoxLayout()
@@ -573,10 +573,10 @@ class EntityEditor(QWidget):
         self.file_widget = FileLoadSave(self)
 
         name_layout = QHBoxLayout()
-        self.entity_name = QLineEdit()
-        self.entity_name.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        name_layout.addWidget(QLabel('Entity name:'))
-        name_layout.addWidget(self.entity_name)
+        self.assemblage_name = QLineEdit()
+        self.assemblage_name.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
+        name_layout.addWidget(QLabel('Assemblage name:'))
+        name_layout.addWidget(self.assemblage_name)
         self.component_widget = ComponentPane(self)
 
         header_right_layout.addWidget(self.file_widget)
@@ -589,26 +589,27 @@ class EntityEditor(QWidget):
 
         self.setLayout(layout)
 
-        self.entity_name.editingFinished.connect(self._new_entity_name)
+        self.assemblage_name.editingFinished.connect(self._new_assemblage_name)
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
     def _on_file_loaded(self, data: dict) -> None:
         self.render_widget.clear_sprite()
-        for name, entity_data in data.items():
-            self.entity_name.setText(name)
-            self.component_widget.update_data(entity_data)
-            self._update_render_widget(entity_data)
-            break  # only one entity per file
+        for name, assemblage_data in data.items():
+            self.assemblage_name.setText(name)
+            self.component_widget.update_data(assemblage_data)
+            self._update_render_widget(assemblage_data)
+            # TODO: allow more than one assemblage per file
+            break  # only one assemblage per file
         self.component_widget.details_widget.clear()
 
     def _on_data_changed(self, data: dict) -> None:
-        self.file_widget.update_data({self.entity_name.text(): data})
+        self.file_widget.update_data({self.assemblage_name.text(): data})
         self._update_render_widget(data)
 
-    def _new_entity_name(self) -> None:
-        self.file_widget.update_entity_name(self.entity_name.text())
-        self.entity_name.clearFocus()
+    def _new_assemblage_name(self) -> None:
+        self.file_widget.update_assemblage_name(self.assemblage_name.text())
+        self.assemblage_name.clearFocus()
         self.update()
         self.repaint()
 
@@ -626,8 +627,8 @@ class EntityEditor(QWidget):
 def main() -> int:
     """ Main function """
     app = QApplication(sys.argv)
-    entity_edit = EntityEditor()
-    entity_edit.show()
+    assemblage_edit = AssemblageEditor()
+    assemblage_edit.show()
     return app.exec_()
 
 
