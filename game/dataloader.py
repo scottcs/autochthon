@@ -23,6 +23,11 @@ class DataLoader:
             self.data.setdefault(key, {})
             with json_file.open() as f:
                 try:
-                    self.data[key].update(json.load(f))
+                    new_data = json.load(f)
                 except json.decoder.JSONDecodeError as exc:
                     raise json.decoder.JSONDecodeError(f'{json_file}: {exc.msg}', exc.doc, exc.pos)
+            for new_key, new_value in new_data.items():
+                if new_key in self.data[key]:
+                    log.error(f'Template already defined for {new_key} (again in: {json_file})')
+                else:
+                    self.data[key][new_key] = new_value

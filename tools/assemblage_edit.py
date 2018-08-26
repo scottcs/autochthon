@@ -137,27 +137,41 @@ class FileLoadSave(QWidget):
         self.edit = QLineEdit()
         self.edit.setDisabled(True)
         self.load_button = QPushButton('Load')
-        self.save_as_button = QPushButton('Save As...')
         self.save_button = QPushButton('Save')
         self.save_button.setDisabled(True)
 
         self.load_button.setFocusPolicy(Qt.NoFocus)
-        self.save_as_button.setFocusPolicy(Qt.NoFocus)
         self.save_button.setFocusPolicy(Qt.NoFocus)
 
         layout.addWidget(self.label)
         layout.addWidget(self.edit)
         layout.addSpacerItem(QSpacerItem(4, 0))
         layout.addWidget(self.load_button)
-        layout.addWidget(self.save_as_button)
         layout.addWidget(self.save_button)
         self.setLayout(layout)
 
         self.load_button.clicked.connect(self._on_load)
-        self.save_as_button.clicked.connect(self._on_save_as)
         self.save_button.clicked.connect(self._on_save)
 
     def _on_load(self) -> None:
+        if self.save_button.isEnabled():
+            message_box = QMessageBox()
+            message_box.setText("The document has been modified.")
+            message_box.setInformativeText("Do you want to save your changes?")
+            message_box.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            message_box.setDefaultButton(QMessageBox.Save)
+            ret = message_box.exec_()
+            if ret == QMessageBox.Save:
+                if not self._on_save():
+                    return
+            elif ret == QMessageBox.Cancel:
+                return
+            elif ret == QMessageBox.Discard:
+                pass
+            else:
+                # should never be reached
+                return
+
         filename = QFileDialog().getOpenFileName(
             self, 'Open Assemblage', str(DATA_DIR), 'Assemblage Files (*.json)')[0]
         if filename:
@@ -166,20 +180,17 @@ class FileLoadSave(QWidget):
             self.edit.setText(text)
             self._load_file()
 
-    def _on_save_as(self) -> None:
+    def _on_save(self) -> bool:
         if not self.data:
             msg_error('No data to save!', self)
-            return
+            return False
         for key in self.data.keys():
             if key == '':
                 msg_error('You must give the assemblage a name!', self)
-                return
-            if key == self.original_name:
-                msg_error(f'You must change the assemblage name! ({self.original_name})', self)
-                return
+                return False
             if not self.data[key]:
                 msg_error('There is no component data to save!', self)
-                return
+                return False
         filename = QFileDialog().getSaveFileName(
             self, 'Save Assemblage As', str(DATA_DIR), 'Assemblage Files (*.json)')[0]
         if filename:
@@ -187,9 +198,8 @@ class FileLoadSave(QWidget):
             text = filename.split(f'{DATA_DIR}/')[-1]
             self.edit.setText(text)
             self._save_file()
-
-    def _on_save(self) -> None:
-        self._save_file()
+            return True
+        return False
 
     def _save_file(self) -> None:
         self.save_button.setDisabled(True)
@@ -210,9 +220,8 @@ class FileLoadSave(QWidget):
             self.file_loaded.emit(self.data)
 
     def _enable_save_button(self) -> None:
-        if self.edit.text():
-            self.save_button.setDisabled(False)
-            self.save_button.repaint()
+        self.save_button.setDisabled(False)
+        self.save_button.repaint()
 
     def update_data(self, data: dict) -> None:
         """Update the internal representation of the data."""
