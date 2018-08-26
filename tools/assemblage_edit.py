@@ -536,7 +536,7 @@ class ComponentPane(QWidget):
         except KeyError:
             msg_error(f'Attempt to delete a component that does not exist: {component_name}', self)
         if self.component_list.component_list.count() == 0:
-            self.details_widget.clear()
+            self.hide_data()
 
     def _on_components_added(self, component_names: List[str]) -> None:
         for component_name in component_names:
@@ -556,6 +556,11 @@ class ComponentPane(QWidget):
         self.sizeHint()
         self.update()
         self.repaint()
+
+    def hide_data(self) -> None:
+        """Hide the data pane."""
+        self.details_widget.clear()
+        self.details_stacked_layout.setCurrentIndex(0)
 
 
 class AssemblageEditor(QWidget):
@@ -610,7 +615,7 @@ class AssemblageEditor(QWidget):
             self._update_render_widget(assemblage_data)
             # TODO: allow more than one assemblage per file
             break  # only one assemblage per file
-        self.component_widget.details_widget.clear()
+        self.component_widget.hide_data()
 
     def _on_data_changed(self, data: dict) -> None:
         self.file_widget.update_data({self.assemblage_name.text(): data})
