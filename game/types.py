@@ -1,6 +1,8 @@
 """Typing for the game module."""
 from enum import Enum, auto, IntEnum
-from typing import Dict, Callable, Any, NamedTuple, Union
+from typing import Dict, Callable, Any, NamedTuple, Union, Optional
+
+from game.utils.random import parse
 
 
 class MapCell(NamedTuple):
@@ -80,10 +82,36 @@ class AttackType(Enum):
 Number = Union[int, float]
 
 
-class Modifier(NamedTuple):
+class Modifier:
     """Modifier set."""
-    addend: Number = 0
-    factor: Number = 0
+
+    def __init__(self, addend: Union[Number, str]=0, factor: Union[Number, str]=0):
+        self._addend: Number = 0
+        self._factor: Number = 0
+        self._addend_func: Optional[Callable] = None
+        self._factor_func: Optional[Callable] = None
+        if isinstance(addend, str):
+            self._addend_func = parse(addend)
+        else:
+            self._addend = addend
+        if isinstance(factor, str):
+            self._factor_func = parse(factor)
+        else:
+            self._factor = factor
+
+    @property
+    def addend(self):
+        """Get addend, calling its func if it exists."""
+        if self._addend_func is not None:
+            return self._addend_func()
+        return self._addend
+
+    @property
+    def factor(self):
+        """Get factor, calling its func if it exists."""
+        if self._factor_func is not None:
+            return self._factor_func()
+        return self._factor
 
 
 class LogLine(NamedTuple):

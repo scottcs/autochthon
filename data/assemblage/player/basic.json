@@ -21,7 +21,7 @@
         "temporary": true
       },
       "damage.ModifierInflictDamageBludgeoning": {
-        "addend": 5
+        "addend": "1d6+1"
       },
       "descriptive.Name": {
         "first": "Player"
