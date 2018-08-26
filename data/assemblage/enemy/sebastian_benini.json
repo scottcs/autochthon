@@ -18,6 +18,9 @@
       },
       "damage.ModifierInflictDamagePiercing": {
         "addend": "2d5+10"
+      },
+      "damage.ModifierTakeDamageBludgeoning": {
+        "factor": 5.0
       }
     }
   }
