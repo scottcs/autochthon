@@ -9,7 +9,7 @@ import tornado.web
 import tornado.websocket
 
 from game.events import InputEvent, UpdateMapRenderEvent, RefreshMapEvent, GameLogEvent
-from game.game import Game
+from game.core.main import Game
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
 

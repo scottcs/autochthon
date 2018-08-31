@@ -9,9 +9,9 @@ import esper
 from game import VERSION
 from game.component.attack import (AttackDodgeModifier, ImmuneToDodge, AttackBlockModifier,
                                    ImmuneToBlock, AttackDeflectModifier, ImmuneToDeflect)
-from game.dataloader import DataLoader
+from game.utils.dataloader import DataLoader
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent, GameLogEvent
-from game.map import ClassicMap
+from game.core.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
                                    AttackMissProcessor, AttackDefenseProcessor)
@@ -26,7 +26,7 @@ from game.processor.time import TimeProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
 from game.utils.factory import make_player, make_enemy
 from game.utils.language import Verb
-from game.world import World
+from game.core.world import World
 from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
 
 log = logging.getLogger(__name__)

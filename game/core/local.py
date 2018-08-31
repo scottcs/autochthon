@@ -1,7 +1,7 @@
 """Local (non-server) game."""
 
 from game.events import GameOverEvent
-from game.game import Game
+from game.core.main import Game
 from game.processor.render import TCODRenderProcessor
 
 

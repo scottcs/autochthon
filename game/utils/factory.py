@@ -3,12 +3,12 @@ import logging
 from typing import Any, List
 
 from game.component.movement import Position
-from game.dataloader import DataLoader
+from game.utils.dataloader import DataLoader
 from game.types import Entity
 from game.utils.geometry import Point
 from game.utils.random import parse
 from game.utils.render import TileCache
-from game.world import World
+from game.core.world import World
 
 ON_CREATE = '=='
 

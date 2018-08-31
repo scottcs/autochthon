@@ -7,7 +7,7 @@ from game.component.action import Actor
 from game.component.status import Dead, Solid
 from game.component.player import PlayerControlled
 from game.component.movement import Position
-from game.map import Map
+from game.core.map import Map
 from game.types import ProcessGroup, Entity, ComponentSchema
 
 
