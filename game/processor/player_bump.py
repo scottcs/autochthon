@@ -27,7 +27,7 @@ class PlayerBumpProcessor(esper.Processor):
         if not self._check_waiting(ent, bump):
             position = self.world.component_for_entity(ent, Position)
             destination = Position(position.x + bump.dx, position.y + bump.dy)
-            existing = self.world.get_solid_entity_at_position(destination.x, destination.y)
+            existing = self.world.get_entity_at_position(destination.x, destination.y)
             if existing:
                 self._try_attacking(ent, existing)
             elif self.world.map[destination.x, destination.y].walkable:

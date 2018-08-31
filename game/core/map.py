@@ -11,7 +11,8 @@ from game.utils.geometry import Rect, Point
 from game.utils.random import coin_flip
 from gamedata.palette import Palette
 
-MAP_BITS = ('explored', 'player_spawn', 'enemy_spawn', 'item_spawn')
+MAP_BITS = ('explored', 'spawnable_player', 'spawnable_enemy', 'spawnable_item')
+# TODO: item layer? interaction layer? enemy layer? etc?
 
 
 class MapCell(NamedTuple):
@@ -22,9 +23,9 @@ class MapCell(NamedTuple):
     walkable: bool = False
     fov: bool = False
     explored: bool = False
-    player_spawn: bool = False
-    enemy_spawn: bool = False
-    item_spawn: bool = False
+    spawnable_player: bool = False
+    spawnable_enemy: bool = False
+    spawnable_item: bool = False
 
 
 class Map(tcod.map.Map):
@@ -34,7 +35,6 @@ class Map(tcod.map.Map):
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
         self.world: esper.World = world
-        self.start_pos = Point(0, 0)
         self._iter_x: int = 0
         self._iter_y: int = 0
         self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
@@ -52,21 +52,21 @@ class Map(tcod.map.Map):
         return buffer
 
     @property
-    def player_spawn(self) -> np.array:
-        """Array of cells that have been explored."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('player_spawn')]
+    def spawnable_player(self) -> np.array:
+        """Array of cells that can spawn a player."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_player')]
         return buffer
 
     @property
-    def enemy_spawn(self) -> np.array:
-        """Array of cells that have been explored."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('enemy_spawn')]
+    def spawnable_enemy(self) -> np.array:
+        """Array of cells that can spawn enemies."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_enemy')]
         return buffer
 
     @property
-    def item_spawn(self) -> np.array:
-        """Array of cells that have been explored."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('item_spawn')]
+    def spawnable_item(self) -> np.array:
+        """Array of cells that can spawn items."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_item')]
         return buffer
 
     def create(self) -> None:
@@ -87,9 +87,9 @@ class Map(tcod.map.Map):
                 self.walkable[self._iter_y, self._iter_x],
                 self.fov[self._iter_y, self._iter_x],
                 self.explored[self._iter_y, self._iter_x],
-                self.player_spawn[self._iter_y, self._iter_x],
-                self.enemy_spawn[self._iter_y, self._iter_x],
-                self.item_spawn[self._iter_y, self._iter_x],
+                self.spawnable_player[self._iter_y, self._iter_x],
+                self.spawnable_enemy[self._iter_y, self._iter_x],
+                self.spawnable_item[self._iter_y, self._iter_x],
             )
         except IndexError:
             raise StopIteration
@@ -134,8 +134,8 @@ class ClassicMap(Map):
             for y in range(room.p1.y + 1, room.p2.y):
                 self.walkable[y, x] = True
                 self.transparent[y, x] = True
-                self.enemy_spawn[y, x] = True
-                self.item_spawn[y, x] = True
+                self.spawnable_enemy[y, x] = True
+                self.spawnable_item[y, x] = True
 
     def create_h_tunnel(self, x1: int, x2: int, y: int) -> None:
         """Create a single-width horizontal tunnel from x1 to x2 along y."""
@@ -169,7 +169,7 @@ class ClassicMap(Map):
                 self.create_room(new_room)
 
                 if len(rooms) == 0:  # first room
-                    self.start_pos = new_room.center
+                    self.spawnable_player[new_room.center.y, new_room.center.x] = True
                 else:
                     prev_center: Point = rooms[-1].center
                     if coin_flip():

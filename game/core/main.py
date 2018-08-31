@@ -24,7 +24,7 @@ from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
 from game.processor.time import TimeProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
-from game.utils.factory import make_player, make_enemy
+from game.utils.factory import make_player, make_enemy, make_item
 from game.utils.language import Verb
 from game.core.world import World
 from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
@@ -120,6 +120,9 @@ class Game:
         make_enemy(loader, self.world, current_map, ['OrcBrute'])
         make_enemy(loader, self.world, current_map, ['Firefly'])
         make_enemy(loader, self.world, current_map, ['SebastianBenini'])
+        make_item(loader, self.world, current_map, ['Katana'])
+        make_item(loader, self.world, current_map, ['Mace'])
+        make_item(loader, self.world, current_map, ['PlateArmor'])
 
     def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)

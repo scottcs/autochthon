@@ -4,7 +4,7 @@ from typing import Any, Optional, Set, Callable, Tuple
 import esper
 
 from game.component.action import Actor
-from game.component.status import Dead, Solid
+from game.component.status import Dead
 from game.component.player import PlayerControlled
 from game.component.movement import Position
 from game.core.map import Map
@@ -57,9 +57,9 @@ class World(esper.World):
                     return True
         return False
 
-    def get_solid_entity_at_position(self, x: int, y: int) -> Optional[Entity]:
-        """Return any solid entity at the given position."""
-        for ent, components in self.get_components(Position, Solid):
+    def get_entity_at_position(self, x: int, y: int, *required_components) -> Optional[Entity]:
+        """Return any solid entity at the given position, with the optional required components."""
+        for ent, components in self.get_components(Position, *required_components):
             other_pos = components[0]
             if other_pos.x == x and other_pos.y == y:
                 return ent

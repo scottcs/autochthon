@@ -10,6 +10,7 @@ from game.component.base import accumulate_modifiers
 from game.component.damage import GUTTakeDamageBludgeoning, ModifierInflictDamageBludgeoning
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCombatLog
+from game.component.status import Solid
 from game.types import Entity, AttackType, Number
 from game.utils.language import Verb, msg
 from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE
@@ -37,7 +38,7 @@ class AttackTargetingProcessor(esper.Processor):
     def still_can_target(self, _ent: Entity, target: GUTCurrentTarget) -> bool:
         """Determine if target is still valid."""
         if target.attack == AttackType.melee:
-            existing: Entity = self.world.get_solid_entity_at_position(target.x, target.y)
+            existing: Entity = self.world.get_entity_at_position(target.x, target.y, Solid)
             if existing != target.entity:
                 return False
         return True

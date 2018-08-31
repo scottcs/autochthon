@@ -26,7 +26,7 @@ class MovementProcessor(esper.Processor):
             if self.world.has_component(ent, Dead):
                 continue
             position, actor, moving = components
-            other_solid = self.world.get_solid_entity_at_position(moving.x, moving.y)
+            other_solid = self.world.get_entity_at_position(moving.x, moving.y)
             if other_solid is None and self.world.map[moving.x, moving.y].walkable:
                 position.x = moving.x
                 position.y = moving.y
