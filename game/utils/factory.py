@@ -143,7 +143,7 @@ def find_enemy_spawn(world: World, game_map: Map) -> Point:
         tries -= 1
         mx = randrange(game_map.width)
         my = randrange(game_map.height)
-        if game_map.non_player_spawn[my, mx]:
+        if game_map.enemy_spawn[my, mx]:
             if world.get_solid_entity_at_position(mx, my) is None:
                 x = mx
                 y = my

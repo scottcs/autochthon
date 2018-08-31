@@ -1,18 +1,30 @@
 """Game map."""
 from __future__ import annotations
 from random import randint
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, NamedTuple
 
 import esper
 import numpy as np
 import tcod.map
 
-from game.types import MapCell
 from game.utils.geometry import Rect, Point
 from game.utils.random import coin_flip
 from gamedata.palette import Palette
 
-MAP_BITS = ('explored', 'player_spawn', 'non_player_spawn')
+MAP_BITS = ('explored', 'player_spawn', 'enemy_spawn', 'item_spawn')
+
+
+class MapCell(NamedTuple):
+    """Map cell."""
+    x: int = 0
+    y: int = 0
+    transparent: bool = False
+    walkable: bool = False
+    fov: bool = False
+    explored: bool = False
+    player_spawn: bool = False
+    enemy_spawn: bool = False
+    item_spawn: bool = False
 
 
 class Map(tcod.map.Map):
@@ -46,9 +58,15 @@ class Map(tcod.map.Map):
         return buffer
 
     @property
-    def non_player_spawn(self) -> np.array:
+    def enemy_spawn(self) -> np.array:
         """Array of cells that have been explored."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('non_player_spawn')]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('enemy_spawn')]
+        return buffer
+
+    @property
+    def item_spawn(self) -> np.array:
+        """Array of cells that have been explored."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('item_spawn')]
         return buffer
 
     def create(self) -> None:
@@ -70,7 +88,8 @@ class Map(tcod.map.Map):
                 self.fov[self._iter_y, self._iter_x],
                 self.explored[self._iter_y, self._iter_x],
                 self.player_spawn[self._iter_y, self._iter_x],
-                self.non_player_spawn[self._iter_y, self._iter_x],
+                self.enemy_spawn[self._iter_y, self._iter_x],
+                self.item_spawn[self._iter_y, self._iter_x],
             )
         except IndexError:
             raise StopIteration
@@ -115,7 +134,8 @@ class ClassicMap(Map):
             for y in range(room.p1.y + 1, room.p2.y):
                 self.walkable[y, x] = True
                 self.transparent[y, x] = True
-                self.non_player_spawn[y, x] = True
+                self.enemy_spawn[y, x] = True
+                self.item_spawn[y, x] = True
 
     def create_h_tunnel(self, x1: int, x2: int, y: int) -> None:
         """Create a single-width horizontal tunnel from x1 to x2 along y."""
