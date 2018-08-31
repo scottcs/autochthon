@@ -1,5 +1,6 @@
 """Factory utilities."""
 import logging
+from random import randrange
 from typing import Any, List
 
 from game.component.movement import Position
@@ -8,6 +9,7 @@ from game.types import Entity
 from game.utils.geometry import Point
 from game.utils.random import parse
 from game.utils.render import TileCache
+from game.core.map import Map
 from game.core.world import World
 
 ON_CREATE = '=='
@@ -116,17 +118,35 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
     return ent
 
 
-def make_player(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
+def make_player(loader: DataLoader, world: World, game_map: Map, templates: List[str]) -> Entity:
     """Make a player and add it to the world."""
     if 'BasicPlayer' not in templates:
         templates.insert(0, 'BasicPlayer')
-    ent = make_entity(loader, world, 'assemblage.player', start, templates)
+    ent = make_entity(loader, world, 'assemblage.player', game_map.start_pos, templates)
     world.players.add(ent)
     return ent
 
 
-def make_enemy(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
+def make_enemy(loader: DataLoader, world: World, game_map: Map, templates: List[str]) -> Entity:
     """Make an enemy and add it to the world."""
     if 'BasicEnemy' not in templates:
         templates.insert(0, 'BasicEnemy')
-    return make_entity(loader, world, 'assemblage.enemy', start, templates)
+    pos = find_enemy_spawn(world, game_map)
+    return make_entity(loader, world, 'assemblage.enemy', pos, templates)
+
+
+def find_enemy_spawn(world: World, game_map: Map) -> Point:
+    """Find an empty space to spawn an enemy."""
+    x = y = None
+    tries = 10000
+    while tries > 0 and (x is None or y is None):
+        tries -= 1
+        mx = randrange(game_map.width)
+        my = randrange(game_map.height)
+        if game_map.non_player_spawn[my, mx]:
+            if world.get_solid_entity_at_position(mx, my) is None:
+                x = mx
+                y = my
+    if x is None or y is None:
+        raise FactoryException('Could not find a non-player spawn location!')
+    return Point(x, y)

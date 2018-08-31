@@ -113,13 +113,13 @@ class Game:
         current_map.create()
         self.world.map = current_map
 
-        make_player(loader, self.world, current_map.start_pos, ['Orc'])
-        make_enemy(loader, self.world, current_map.start_pos, ['Crab'])
-        make_enemy(loader, self.world, current_map.start_pos, ['Boar'])
-        make_enemy(loader, self.world, current_map.start_pos, ['OrcShaman'])
-        make_enemy(loader, self.world, current_map.start_pos, ['OrcBrute'])
-        make_enemy(loader, self.world, current_map.start_pos, ['Firefly'])
-        make_enemy(loader, self.world, current_map.start_pos, ['SebastianBenini'])
+        make_player(loader, self.world, current_map, ['Orc'])
+        make_enemy(loader, self.world, current_map, ['Crab'])
+        make_enemy(loader, self.world, current_map, ['Boar'])
+        make_enemy(loader, self.world, current_map, ['OrcShaman'])
+        make_enemy(loader, self.world, current_map, ['OrcBrute'])
+        make_enemy(loader, self.world, current_map, ['Firefly'])
+        make_enemy(loader, self.world, current_map, ['SebastianBenini'])
 
     def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)

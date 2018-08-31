@@ -12,6 +12,8 @@ from game.utils.geometry import Rect, Point
 from game.utils.random import coin_flip
 from gamedata.palette import Palette
 
+MAP_BITS = ('explored', 'player_spawn', 'non_player_spawn')
+
 
 class Map(tcod.map.Map):
     """Game map."""
@@ -23,7 +25,7 @@ class Map(tcod.map.Map):
         self.start_pos = Point(0, 0)
         self._iter_x: int = 0
         self._iter_y: int = 0
-        self._buffer2: np.array = np.zeros((height, width, 1), dtype=np.bool_)
+        self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
 
         # TODO: make these more dynamic
         self.floor_tile_id = 220
@@ -34,7 +36,19 @@ class Map(tcod.map.Map):
     @property
     def explored(self) -> np.array:
         """Array of cells that have been explored."""
-        buffer: np.array = self._buffer2[:, :, 0]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('explored')]
+        return buffer
+
+    @property
+    def player_spawn(self) -> np.array:
+        """Array of cells that have been explored."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('player_spawn')]
+        return buffer
+
+    @property
+    def non_player_spawn(self) -> np.array:
+        """Array of cells that have been explored."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('non_player_spawn')]
         return buffer
 
     def create(self) -> None:
@@ -55,6 +69,8 @@ class Map(tcod.map.Map):
                 self.walkable[self._iter_y, self._iter_x],
                 self.fov[self._iter_y, self._iter_x],
                 self.explored[self._iter_y, self._iter_x],
+                self.player_spawn[self._iter_y, self._iter_x],
+                self.non_player_spawn[self._iter_y, self._iter_x],
             )
         except IndexError:
             raise StopIteration
@@ -99,6 +115,7 @@ class ClassicMap(Map):
             for y in range(room.p1.y + 1, room.p2.y):
                 self.walkable[y, x] = True
                 self.transparent[y, x] = True
+                self.non_player_spawn[y, x] = True
 
     def create_h_tunnel(self, x1: int, x2: int, y: int) -> None:
         """Create a single-width horizontal tunnel from x1 to x2 along y."""

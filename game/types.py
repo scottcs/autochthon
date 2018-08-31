@@ -13,6 +13,8 @@ class MapCell(NamedTuple):
     walkable: bool = False
     fov: bool = False
     explored: bool = False
+    player_spawn: bool = False
+    non_player_spawn: bool = False
 
 
 EventType = Dict
