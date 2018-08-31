@@ -10,7 +10,6 @@ from game.types import Entity
 from game.utils.geometry import Point
 from game.utils.random import parse
 from game.utils.render import TileCache
-from game.core.map import Map
 from game.core.world import World
 
 ON_CREATE = '=='
@@ -119,42 +118,42 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
     return ent
 
 
-def make_player(loader: DataLoader, world: World, game_map: Map, templates: List[str]) -> Entity:
+def make_player(loader: DataLoader, world: World, templates: List[str]) -> Entity:
     """Make a player and add it to the world."""
     if 'BasicPlayer' not in templates:
         templates.insert(0, 'BasicPlayer')
-    pos = find_player_spawn_position(world, game_map)
+    pos = find_player_spawn_position(world)
     ent = make_entity(loader, world, 'assemblage.player', pos, templates)
     world.players.add(ent)
     return ent
 
 
-def make_enemy(loader: DataLoader, world: World, game_map: Map, templates: List[str]) -> Entity:
+def make_enemy(loader: DataLoader, world: World, templates: List[str]) -> Entity:
     """Make an enemy and add it to the world."""
     if 'BasicEnemy' not in templates:
         templates.insert(0, 'BasicEnemy')
-    pos = find_enemy_spawn_position(world, game_map)
+    pos = find_enemy_spawn_position(world)
     return make_entity(loader, world, 'assemblage.enemy', pos, templates)
 
 
-def make_item(loader: DataLoader, world: World, game_map: Map, templates: List[str]) -> Entity:
+def make_item(loader: DataLoader, world: World, templates: List[str]) -> Entity:
     """Make an item and add it to the world."""
     if 'BasicItem' not in templates:
         templates.insert(0, 'BasicItem')
-    pos = find_item_spawn_position(world, game_map)
+    pos = find_item_spawn_position(world)
     return make_entity(loader, world, 'assemblage.item', pos, templates)
 
 
-def find_player_spawn_position(world: World, game_map: Map) -> Point:
+def find_player_spawn_position(world: World) -> Point:
     """Find an empty space to spawn a player."""
     x = y = None
     tries = 10000
     # TODO: would be better to only search indices that are True
     while tries > 0 and (x is None or y is None):
         tries -= 1
-        mx = randrange(game_map.width)
-        my = randrange(game_map.height)
-        if game_map.spawnable_player[my, mx]:
+        mx = randrange(world.map.width)
+        my = randrange(world.map.height)
+        if world.map.spawnable_player[my, mx]:
             if world.get_entity_at_position(mx, my, Solid) is None:
                 x = mx
                 y = my
@@ -163,15 +162,15 @@ def find_player_spawn_position(world: World, game_map: Map) -> Point:
     return Point(x, y)
 
 
-def find_enemy_spawn_position(world: World, game_map: Map) -> Point:
+def find_enemy_spawn_position(world: World) -> Point:
     """Find an empty space to spawn an enemy."""
     x = y = None
     tries = 10000
     while tries > 0 and (x is None or y is None):
         tries -= 1
-        mx = randrange(game_map.width)
-        my = randrange(game_map.height)
-        if game_map.spawnable_enemy[my, mx]:
+        mx = randrange(world.map.width)
+        my = randrange(world.map.height)
+        if world.map.spawnable_enemy[my, mx]:
             if world.get_entity_at_position(mx, my, Solid) is None:
                 x = mx
                 y = my
@@ -180,15 +179,15 @@ def find_enemy_spawn_position(world: World, game_map: Map) -> Point:
     return Point(x, y)
 
 
-def find_item_spawn_position(world: World, game_map: Map) -> Point:
+def find_item_spawn_position(world: World) -> Point:
     """Find an empty space to spawn an item."""
     x = y = None
     tries = 10000
     while tries > 0 and (x is None or y is None):
         tries -= 1
-        mx = randrange(game_map.width)
-        my = randrange(game_map.height)
-        if game_map.spawnable_item[my, mx]:
+        mx = randrange(world.map.width)
+        my = randrange(world.map.height)
+        if world.map.spawnable_item[my, mx]:
             if world.get_entity_at_position(mx, my) is None:
                 x = mx
                 y = my
