@@ -57,17 +57,29 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_player')]
         return buffer
 
+    def spawns_player(self) -> List[Point]:
+        """Return a list of only spawnable player coordinates."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_player.nonzero())]
+
     @property
     def spawnable_enemy(self) -> np.array:
         """Array of cells that can spawn enemies."""
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_enemy')]
         return buffer
 
+    def spawns_enemy(self) -> List[Point]:
+        """Return a list of only spawnable enemy coordinates."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_enemy.nonzero())]
+
     @property
     def spawnable_item(self) -> np.array:
         """Array of cells that can spawn items."""
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_item')]
         return buffer
+
+    def spawns_item(self) -> List[Point]:
+        """Return a list of only spawnable item coordinates."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_item.nonzero())]
 
     def create(self) -> None:
         """Create the map using the map's algorithm."""
@@ -80,17 +92,7 @@ class Map(tcod.map.Map):
 
     def __next__(self) -> MapCell:
         try:
-            cell: MapCell = MapCell(
-                self._iter_x,
-                self._iter_y,
-                self.transparent[self._iter_y, self._iter_x],
-                self.walkable[self._iter_y, self._iter_x],
-                self.fov[self._iter_y, self._iter_x],
-                self.explored[self._iter_y, self._iter_x],
-                self.spawnable_player[self._iter_y, self._iter_x],
-                self.spawnable_enemy[self._iter_y, self._iter_x],
-                self.spawnable_item[self._iter_y, self._iter_x],
-            )
+            cell: MapCell = self[self._iter_x, self._iter_y]
         except IndexError:
             raise StopIteration
         self._iter_y += 1
@@ -109,6 +111,9 @@ class Map(tcod.map.Map):
                 self.walkable[y, x],
                 self.fov[y, x],
                 self.explored[y, x],
+                self.spawnable_player[y, x],
+                self.spawnable_enemy[y, x],
+                self.spawnable_item[y, x],
             )
         except IndexError:
             raise IndexError(f'Location ({x}, {y}) in map not found.')

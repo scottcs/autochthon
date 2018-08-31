@@ -58,7 +58,7 @@ class World(esper.World):
         return False
 
     def get_entity_at_position(self, x: int, y: int, *required_components) -> Optional[Entity]:
-        """Return any solid entity at the given position, with the optional required components."""
+        """Return any entity at the given position, with the optional required components."""
         for ent, components in self.get_components(Position, *required_components):
             other_pos = components[0]
             if other_pos.x == x and other_pos.y == y:
@@ -122,6 +122,23 @@ class World(esper.World):
           """
         if component_type in self._entities[entity]:
             yield self._entities[entity][component_type]
+
+    def optional_component_for_entity(self, entity, component_type) -> Optional[Any]:
+        """Retrieve a Component instance for a specific Entity.
+
+        Retrieve a Component instance for a specific Entity. In some cases,
+        it may be necessary to access a specific Component instance.
+        For example: directly modifying a Component to handle user input.
+
+        Returns None if the given Entity and Component do not exist.
+        :param entity: The Entity ID to retrieve the Component for.
+        :param component_type: The Component instance you wish to retrieve.
+        :return: The Component instance requested for the given Entity ID.
+        """
+        try:
+            return self.component_for_entity(entity, component_type)
+        except KeyError:
+            return None
 
     def get_or_add_component(self, entity: Entity, component_type: Any,
                              *args: Any, **kwargs: Any) -> Any:

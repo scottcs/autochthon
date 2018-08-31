@@ -1,6 +1,6 @@
 """Factory utilities."""
 import logging
-from random import randrange
+import random
 from typing import Any, List
 
 from game.component.movement import Position
@@ -122,7 +122,7 @@ def make_player(loader: DataLoader, world: World, templates: List[str]) -> Entit
     """Make a player and add it to the world."""
     if 'BasicPlayer' not in templates:
         templates.insert(0, 'BasicPlayer')
-    pos = find_player_spawn_position(world)
+    pos = random.choice(world.map.spawns_player())
     ent = make_entity(loader, world, 'assemblage.player', pos, templates)
     world.players.add(ent)
     return ent
@@ -132,7 +132,7 @@ def make_enemy(loader: DataLoader, world: World, templates: List[str]) -> Entity
     """Make an enemy and add it to the world."""
     if 'BasicEnemy' not in templates:
         templates.insert(0, 'BasicEnemy')
-    pos = find_enemy_spawn_position(world)
+    pos = random.choice(world.map.spawns_enemy())
     return make_entity(loader, world, 'assemblage.enemy', pos, templates)
 
 
@@ -140,57 +140,6 @@ def make_item(loader: DataLoader, world: World, templates: List[str]) -> Entity:
     """Make an item and add it to the world."""
     if 'BasicItem' not in templates:
         templates.insert(0, 'BasicItem')
-    pos = find_item_spawn_position(world)
+    pos = random.choice(world.map.spawns_item())
     return make_entity(loader, world, 'assemblage.item', pos, templates)
 
-
-def find_player_spawn_position(world: World) -> Point:
-    """Find an empty space to spawn a player."""
-    x = y = None
-    tries = 10000
-    # TODO: would be better to only search indices that are True
-    while tries > 0 and (x is None or y is None):
-        tries -= 1
-        mx = randrange(world.map.width)
-        my = randrange(world.map.height)
-        if world.map.spawnable_player[my, mx]:
-            if world.get_entity_at_position(mx, my, Solid) is None:
-                x = mx
-                y = my
-    if x is None or y is None:
-        raise FactoryException('Could not find a player spawn location!')
-    return Point(x, y)
-
-
-def find_enemy_spawn_position(world: World) -> Point:
-    """Find an empty space to spawn an enemy."""
-    x = y = None
-    tries = 10000
-    while tries > 0 and (x is None or y is None):
-        tries -= 1
-        mx = randrange(world.map.width)
-        my = randrange(world.map.height)
-        if world.map.spawnable_enemy[my, mx]:
-            if world.get_entity_at_position(mx, my, Solid) is None:
-                x = mx
-                y = my
-    if x is None or y is None:
-        raise FactoryException('Could not find an enemy spawn location!')
-    return Point(x, y)
-
-
-def find_item_spawn_position(world: World) -> Point:
-    """Find an empty space to spawn an item."""
-    x = y = None
-    tries = 10000
-    while tries > 0 and (x is None or y is None):
-        tries -= 1
-        mx = randrange(world.map.width)
-        my = randrange(world.map.height)
-        if world.map.spawnable_item[my, mx]:
-            if world.get_entity_at_position(mx, my) is None:
-                x = mx
-                y = my
-    if x is None or y is None:
-        raise FactoryException('Could not find an item spawn location!')
-    return Point(x, y)

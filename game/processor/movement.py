@@ -6,7 +6,9 @@ import esper
 from game.component.action import Actor
 from game.component.base import accumulate_modifiers
 from game.component.status import Dead
-from game.component.movement import GUTMoving, GUTWaiting, Position, MoveCostModifier, WaitCostModifier
+from game.component.movement import (GUTMoving, GUTWaiting, Position, MoveCostModifier,
+                                     WaitCostModifier)
+from game.component.status import Solid
 from gamedata.base_engine_values import WAIT_COST, MOVE_COST
 from game.types import Entity
 
@@ -26,7 +28,7 @@ class MovementProcessor(esper.Processor):
             if self.world.has_component(ent, Dead):
                 continue
             position, actor, moving = components
-            other_solid = self.world.get_entity_at_position(moving.x, moving.y)
+            other_solid = self.world.get_entity_at_position(moving.x, moving.y, Solid)
             if other_solid is None and self.world.map[moving.x, moving.y].walkable:
                 position.x = moving.x
                 position.y = moving.y
