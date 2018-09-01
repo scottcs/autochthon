@@ -20,6 +20,7 @@ from gamedata.palette import Palette
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
+STYLESHEET = Path('static/css/qt_theme.qss')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
@@ -39,6 +40,7 @@ class RenderWidget(QWidget):
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         self.setMinimumSize(32, 48)
+        self.setMaximumSize(32, 48)
         pal = QPalette()
         pal.setColor(QPalette.Background, Qt.black)
         self.setAutoFillBackground(True)
@@ -133,7 +135,7 @@ class FileLoadSave(QWidget):
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.label = QLabel('File:')
+        self.label = QLabel('File: ')
         self.edit = QLineEdit()
         self.edit.setDisabled(True)
         self.load_button = QPushButton('Load')
@@ -158,7 +160,8 @@ class FileLoadSave(QWidget):
             message_box = QMessageBox()
             message_box.setText("The document has been modified.")
             message_box.setInformativeText("Do you want to save your changes?")
-            message_box.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            message_box.setStandardButtons(
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
             message_box.setDefaultButton(QMessageBox.Save)
             ret = message_box.exec_()
             if ret == QMessageBox.Save:
@@ -263,7 +266,7 @@ class GetComponentDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
-        layout.addWidget(QLabel('Add Components:'))
+        layout.addWidget(QLabel('Add Components: '))
         layout.addWidget(self.components_list)
         layout.addWidget(buttons)
         self.setLayout(layout)
@@ -309,7 +312,9 @@ class ComponentList(QWidget):
         header_layout.setMargin(0)
 
         self.add_button = QPushButton('+')
+        self.add_button.setObjectName('smallButton')
         self.remove_button = QPushButton('-')
+        self.remove_button.setObjectName('smallButton')
         self.component_list = QListWidget(self)
 
         header_layout.addWidget(QLabel('Components'))
@@ -417,8 +422,8 @@ class ComponentDetailsTable(QTableWidget):
             header_item.setToolTip(str(param.annotation))
             self.setVerticalHeaderItem(row, header_item)
             item = QTableWidgetItem(str(self.data.get(param_name, '')))
-            if param.default is not param.empty:
-                item.setBackgroundColor('#f8f8f0')
+            if param.default is param.empty:
+                item.setBackgroundColor('#dfe5eb')
             self.setItem(row, 0, item)
             row += 1
         self.setRowCount(row)
@@ -443,11 +448,11 @@ class RenderableComponentDetails(QWidget):
         self.layer = QComboBox()
         self.layer.addItems(list(RenderLayer.__members__.keys()))
 
-        layout.addWidget(QLabel('Tile ID:'), 0, 0, Qt.AlignTop)
+        layout.addWidget(QLabel('Tile ID: '), 0, 0, Qt.AlignTop)
         layout.addWidget(self.tile_id, 0, 1, Qt.AlignTop)
-        layout.addWidget(QLabel('Tint:'), 1, 0, Qt.AlignTop)
+        layout.addWidget(QLabel('Tint: '), 1, 0, Qt.AlignTop)
         layout.addWidget(self.tint, 1, 1, Qt.AlignTop)
-        layout.addWidget(QLabel('RenderLayer:'), 2, 0, Qt.AlignTop)
+        layout.addWidget(QLabel('RenderLayer: '), 2, 0, Qt.AlignTop)
         layout.addWidget(self.layer, 2, 1, Qt.AlignTop)
         layout.addItem(
             QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding), 3, 0, Qt.AlignTop)
@@ -467,7 +472,7 @@ class RenderableComponentDetails(QWidget):
         layer = self.layer.findText(component_data['layer'].split('.')[-1])
         self.layer.setCurrentIndex(layer)
 
-    def _send_data(self, index: int) -> None:
+    def _send_data(self) -> None:
         data = {
             'tile_id': self.tile_id.currentText(),
             'tint': f'Palette.{self.tint.currentText()}',
@@ -497,7 +502,7 @@ class ComponentPane(QWidget):
         self.details_stacked_layout.setMargin(0)
 
         self.component_list = ComponentList(self)
-        details_label = QLabel('Component Details:')
+        details_label = QLabel('Component Details')
         details_label.setMinimumHeight(32)
         details_layout.addWidget(details_label)
         self.details_widget = ComponentDetailsTable()
@@ -571,6 +576,7 @@ class AssemblageEditor(QWidget):
         super().__init__(parent)
         self.setWindowTitle('Assemblage Editor')
         self.setMinimumSize(800, 600)
+        self.setObjectName('MainApp')
 
         layout = QVBoxLayout()
         layout.setSpacing(0)
@@ -590,7 +596,7 @@ class AssemblageEditor(QWidget):
         name_layout = QHBoxLayout()
         self.assemblage_name = QLineEdit()
         self.assemblage_name.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        name_layout.addWidget(QLabel('Assemblage name:'))
+        name_layout.addWidget(QLabel('Assemblage name: '))
         name_layout.addWidget(self.assemblage_name)
         self.component_widget = ComponentPane(self)
 
@@ -642,6 +648,8 @@ class AssemblageEditor(QWidget):
 def main() -> int:
     """ Main function """
     app = QApplication(sys.argv)
+    with STYLESHEET.open() as f:
+        app.setStyleSheet(f.read())
     assemblage_edit = AssemblageEditor()
     assemblage_edit.show()
     return app.exec_()
