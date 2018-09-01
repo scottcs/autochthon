@@ -20,7 +20,7 @@ from gamedata.palette import Palette
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
-STYLESHEET = Path('static/css/qt_theme.qss')
+STYLESHEET = Path('static/css/qt_theme.css')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')

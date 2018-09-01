@@ -9,6 +9,7 @@ TODO: specify layers drawn
 TODO: render path analysis and loops analysis
 
 """
+from pathlib import Path
 import sys
 from typing import Optional
 
@@ -20,6 +21,7 @@ from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialog
                                QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
                                QWidget, QComboBox, QGridLayout, QSizePolicy)
 
+STYLESHEET = Path('static/css/qt_theme.css')
 MIN_WIDTH, MIN_HEIGHT = 1200, 800
 
 
@@ -119,7 +121,7 @@ class ButtonsWidget(QWidget):
         layout.setAlignment(Qt.AlignRight)
 
         self.generate_button = QPushButton('Generate')
-        self.generate_button.setMinimumSize(200, 50)
+        self.generate_button.setObjectName('largeButton')
         self.generate_button.setAutoDefault(True)
         self.generate_button.setDefault(True)
         self.save_image_button = QPushButton('Save Image')
@@ -193,8 +195,7 @@ class CentralWidget(QWidget):
 
         self.layers = LayersWidget()
         self.canvas = QLabel()
-        self.canvas.setMinimumHeight(MIN_HEIGHT - 100)
-        # self.canvas.setMinimumSize(MIN_WIDTH - 10 - self.layers.width(), MIN_HEIGHT - 100)
+        self.canvas.setMinimumSize(MIN_WIDTH - 10 - self.layers.width(), MIN_HEIGHT - 100)
 
         layout.addWidget(self.layers)
         layout.addWidget(self.canvas)
@@ -209,6 +210,7 @@ class MapVisualizer(QWidget):
         super().__init__(parent)
         self.setWindowTitle('Map Visualizer')
         self.setMinimumSize(MIN_WIDTH, MIN_HEIGHT)
+        self.setObjectName('MainApp')
 
         layout = QVBoxLayout()
         layout.setSpacing(0)
@@ -237,8 +239,10 @@ class MapVisualizer(QWidget):
 def main() -> int:
     """ Main function """
     app = QApplication(sys.argv)
-    assemblage_edit = MapVisualizer()
-    assemblage_edit.show()
+    with STYLESHEET.open() as f:
+        app.setStyleSheet(f.read())
+    map_visualizer = MapVisualizer()
+    map_visualizer.show()
     return app.exec_()
 
 
