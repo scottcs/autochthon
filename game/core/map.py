@@ -183,6 +183,4 @@ class ClassicMap(Map):
                     else:
                         self.create_v_tunnel(prev_center.y, new_center.y, prev_center.x)
                         self.create_h_tunnel(prev_center.x, new_center.x, new_center.y)
-
-                # TODO: place entities
                 rooms.append(new_room)
