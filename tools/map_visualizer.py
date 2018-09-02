@@ -11,15 +11,17 @@ TODO: render path analysis and loops analysis
 """
 from pathlib import Path
 import sys
-from typing import Optional
+from typing import Optional, Any
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QImage, QPainter, QPalette, QColor, QPixmap
+from PySide2.QtGui import QImage, QPainter, QPalette, QColor, QPixmap, qRgb
 from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialogButtonBox,
                                QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
                                QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
                                QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
-                               QWidget, QComboBox, QGridLayout, QSizePolicy)
+                               QWidget, QComboBox, QGridLayout, QSizePolicy, QScrollArea)
+
+from game.core.map import ClassicMap, Map
 
 STYLESHEET = Path('static/css/qt_theme.css')
 MIN_WIDTH, MIN_HEIGHT = 1200, 800
@@ -184,6 +186,51 @@ class LayersWidget(QWidget):
         self.setLayout(layout)
 
 
+class ImageWidget(QWidget):
+    """Widget to display the map image."""
+    def __init__(self, parent: Optional[QWidget]=None) -> None:
+        super().__init__(parent)
+        self.img = None
+        self.pixmap = QPixmap(2000, 2000)
+        self.setMinimumSize(self.pixmap.width(), self.pixmap.height())
+        self.setMaximumSize(self.pixmap.width(), self.pixmap.height())
+        self.pixmap.fill(Qt.darkGray)
+        self.show()
+
+    def draw_map(self, game_map: Map) -> None:
+        """Draw the map to an image."""
+        # TODO: Use QImage.Format_ARGB32_Premultiplied?
+        self.img = QImage(game_map.width, game_map.height, QImage.Format_RGB32)
+
+        for cell in game_map:
+            if cell.walkable:
+                color = qRgb(255, 255, 255)
+            else:
+                color = qRgb(65, 43, 21)
+            self.img.setPixel(cell.x, cell.y, color)
+        self.pixmap = QPixmap.fromImage(self.img)
+        self.setMinimumSize(self.pixmap.width(), self.pixmap.height())
+        self.setMaximumSize(self.pixmap.width(), self.pixmap.height())
+
+    def save(self, filename: Path) -> None:
+        """Save the image as a file.
+
+        Args:
+            filename: Path to the output file.
+
+        """
+        if self.img:
+            self.img.save(str(filename))
+
+    def paintEvent(self, *args: Any, **kwargs: Any) -> None:
+        """Override paint method; draw this widget."""
+        painter = QPainter(self)
+        painter.setViewport(0, 0, self.width(), self.height())
+        painter.setWindow(0, 0, self.width(), self.height())
+        painter.drawPixmap(0, 0, self.pixmap)
+        painter.end()
+
+
 class CentralWidget(QWidget):
     """Map Visualizer central widget."""
 
@@ -194,11 +241,13 @@ class CentralWidget(QWidget):
         layout.setMargin(0)
 
         self.layers = LayersWidget()
-        self.canvas = QLabel()
-        self.canvas.setMinimumSize(MIN_WIDTH - 10 - self.layers.width(), MIN_HEIGHT - 100)
+        self.scroll_area = QScrollArea()
+        self.image_widget = ImageWidget()
+        self.scroll_area.setWidget(self.image_widget)
+        self.scroll_area.setMinimumSize(MIN_WIDTH - 50 - self.layers.width(), MIN_HEIGHT - 150)
 
         layout.addWidget(self.layers)
-        layout.addWidget(self.canvas)
+        layout.addWidget(self.scroll_area)
 
         self.setLayout(layout)
 
@@ -213,7 +262,7 @@ class MapVisualizer(QWidget):
         self.setObjectName('MainApp')
 
         layout = QVBoxLayout()
-        layout.setSpacing(0)
+        layout.setSpacing(10)
         layout.setMargin(10)
 
         self.options = OptionsWidget()
