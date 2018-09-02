@@ -26,7 +26,20 @@ from game.core.map import ClassicMap, Map
 
 CONFIG_FILE = Path('data') / Path('config.json')
 STYLESHEET = Path('static/css/qt_theme.css')
-MIN_WIDTH, MIN_HEIGHT = 1240, 800
+MIN_WIDTH, MIN_HEIGHT = 830, 750
+
+# Rather than using `globals()`, add map algorithms to a table
+# TODO: Maybe we can define this in the map module and use it there too?
+ALGORITHMS = {
+    'ClassicMap': {
+        'class': ClassicMap,
+        'opts': {
+            'max_rooms': int,
+            'room_min_size': int,
+            'room_max_size': int,
+        },
+    },
+}
 
 
 def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
@@ -60,7 +73,7 @@ class MapSizeWidget(QWidget):
         self.map_scale = QLineEdit()
         self.map_scale.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
         self.map_scale.setFixedWidth(30)
-        self.map_scale.setText('10')
+        self.map_scale.setText('6')
         self.map_scale.setValidator(v_scale)
 
         layout.addWidget(QLabel('Map Size: '))
@@ -100,7 +113,7 @@ class AlgorithmWidget(QWidget):
         layout.setMargin(0)
 
         self.choice = QComboBox()
-        self.choice.addItems(['ClassicMap', 'CellularAutomaton'])
+        self.choice.addItems(list(ALGORITHMS.keys()))
 
         layout.addWidget(QLabel('Algorithm:'))
         layout.addWidget(self.choice)
@@ -379,12 +392,11 @@ class MapVisualizer(QWidget):
         self._on_options_changed(self.options.get_options())
 
     def _on_generate_map(self) -> None:
-        # TODO: create based on map type
         # TODO: use seed
         try:
-            map_class = globals()[self.map_config['algorithm']]
+            map_class = ALGORITHMS[self.map_config['algorithm']]['class']
         except KeyError:
-            msg_error(f'Cannot find map class: {self.map_config.get("algorithm", "???")}', self)
+            msg_error(f'No such map class: "{self.map_config.get("algorithm", "")}"', self)
             return
         game_map = map_class(self.map_config['max_tiles_w'], self.map_config['max_tiles_h'])
         game_map.create()
