@@ -2,7 +2,7 @@
 
 This tool is used to quickly visualize map generation algorithms.
 
-TODO: Gui tool, show layers, save image with visible layers, layer colors, button to regen
+TODO: show layers, save image with visible layers, layer colors
 TODO: generate multiple runs
 TODO: generate from specific seed
 TODO: specify layers drawn
@@ -29,6 +29,11 @@ STYLESHEET = Path('static/css/qt_theme.css')
 MIN_WIDTH, MIN_HEIGHT = 1240, 800
 
 
+def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
+    """Show an error message."""
+    QMessageBox().critical(parent, 'Error!', msg)
+
+
 class MapSizeWidget(QWidget):
     """Map size."""
 
@@ -44,17 +49,17 @@ class MapSizeWidget(QWidget):
         v_scale = QIntValidator(1, 20, self)
         self.map_width = QLineEdit()
         self.map_width.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_width.setFixedWidth(50)
+        self.map_width.setFixedWidth(30)
         self.map_width.setText('100')
         self.map_width.setValidator(v_size)
         self.map_height = QLineEdit()
         self.map_height.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_height.setFixedWidth(50)
+        self.map_height.setFixedWidth(30)
         self.map_height.setText('100')
         self.map_height.setValidator(v_size)
         self.map_scale = QLineEdit()
         self.map_scale.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_scale.setFixedWidth(50)
+        self.map_scale.setFixedWidth(30)
         self.map_scale.setText('10')
         self.map_scale.setValidator(v_scale)
 
@@ -272,7 +277,7 @@ class ImageWidget(QWidget):
     def draw_map(self, game_map: Map, scale_factor: int) -> None:
         """Draw the map to an image."""
         # TODO: Use QImage.Format_ARGB32_Premultiplied?
-        self.img = QImage(game_map.width, game_map.height, QImage.Format_RGB32)
+        img = QImage(game_map.width, game_map.height, QImage.Format_RGB32)
 
         for cell in game_map:
             if cell.spawnable_player:
@@ -283,14 +288,15 @@ class ImageWidget(QWidget):
                 color = qRgb(100, 100, 100)
             else:
                 color = qRgb(65, 43, 21)
-            self.img.setPixel(cell.x, cell.y, color)
-        self.pixmap = QPixmap.fromImage(self.img).scaled(game_map.width * scale_factor,
-                                                         game_map.height * scale_factor,
-                                                         Qt.KeepAspectRatio)
+            img.setPixel(cell.x, cell.y, color)
+        self.img = img.scaled(game_map.width * scale_factor,
+                              game_map.height * scale_factor,
+                              Qt.KeepAspectRatio)
+        self.pixmap = QPixmap.fromImage(self.img)
         self.setMinimumSize(self.pixmap.width(), self.pixmap.height())
         self.setMaximumSize(self.pixmap.width(), self.pixmap.height())
 
-    def save(self, filename: Path) -> None:
+    def save(self, filename: str) -> None:
         """Save the image as a file.
 
         Args:
@@ -298,7 +304,9 @@ class ImageWidget(QWidget):
 
         """
         if self.img:
-            self.img.save(str(filename))
+            self.img.save(filename)
+        else:
+            msg_error('No image to save!', self)
 
     def paintEvent(self, *args: Any, **kwargs: Any) -> None:
         """Override paint method; draw this widget."""
@@ -335,6 +343,10 @@ class CentralWidget(QWidget):
         self.image_widget.draw_map(game_map, scale_factor)
         self.image_widget.repaint()
 
+    def save_image(self, filename: str) -> None:
+        """Save the current map to a file."""
+        self.image_widget.save(filename)
+
 
 class MapVisualizer(QWidget):
     """Map Visualizer parent widget."""
@@ -369,14 +381,19 @@ class MapVisualizer(QWidget):
     def _on_generate_map(self) -> None:
         # TODO: create based on map type
         # TODO: use seed
-        game_map = ClassicMap(self.map_config['max_tiles_w'],
-                              self.map_config['max_tiles_h'])
+        try:
+            map_class = globals()[self.map_config['algorithm']]
+        except KeyError:
+            msg_error(f'Cannot find map class: {self.map_config.get("algorithm", "???")}', self)
+            return
+        game_map = map_class(self.map_config['max_tiles_w'], self.map_config['max_tiles_h'])
         game_map.create()
         self.central.set_map(game_map, self.map_config.get('gui_scale', 1))
 
     def _on_save_image(self) -> None:
-        # TODO: File save dialog
-        print('save image')
+        filename = QFileDialog().getSaveFileName(
+            self, 'Save Map As', str(Path('~/Downloads').expanduser()), 'Image Files (*.png)')[0]
+        self.central.save_image(filename)
 
     def _on_options_changed(self, opts: dict) -> None:
         self.map_config['max_tiles_w'] = opts['width']
