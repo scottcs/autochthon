@@ -108,8 +108,7 @@ class Game:
                                  group=ProcessGroup.render)
 
         current_map = ClassicMap(self.config['map']['max_tiles_w'],
-                                 self.config['map']['max_tiles_h'],
-                                 self.world)
+                                 self.config['map']['max_tiles_h'])
         current_map.create()
         self.world.map = current_map
 

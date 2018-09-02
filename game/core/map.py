@@ -3,7 +3,6 @@ from __future__ import annotations
 from random import randint
 from typing import List, Optional, Tuple, NamedTuple
 
-import esper
 import numpy as np
 import tcod.map
 
@@ -31,10 +30,9 @@ class MapCell(NamedTuple):
 class Map(tcod.map.Map):
     """Game map."""
 
-    def __init__(self, width: int, height: int, world: esper.World) -> None:
+    def __init__(self, width: int, height: int) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
-        self.world: esper.World = world
         self._iter_x: int = 0
         self._iter_y: int = 0
         self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
@@ -125,9 +123,8 @@ class Map(tcod.map.Map):
 class ClassicMap(Map):
     """Classic rogue-style map."""
 
-    def __init__(self, width: int, height: int, world: esper.World,
-                 config: Optional[dict]=None) -> None:
-        super().__init__(width, height, world)
+    def __init__(self, width: int, height: int, config: Optional[dict]=None) -> None:
+        super().__init__(width, height)
         config = config or {}
         self.max_rooms: int = config.get('max_rooms', 50)
         self.room_min_size: int = config.get('room_min_size', 5)
