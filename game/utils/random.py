@@ -1,12 +1,56 @@
 """Functions for randomness."""
 from __future__ import annotations
+import hashlib
 from random import randrange, shuffle, choice, randint
 import re
-from typing import Any, List, Callable, Optional
+from typing import Any, List, Callable, Optional, Sequence
 
+from game.utils.pcg32 import PCG32Generator
+
+MAX_UINT64 = 9223372036854775807
+MAX_UINT32 = 4294967295
 WEIGHTED_DEF = re.compile(r'(?<=^weighted\(\()([^)]+)\), \(([^)]+)\)\)')
 STEP_DEF = re.compile(r'(?<=^step\()([^)]+)\)')
 DIE_DEF = re.compile(r'(\d+d\d+)([+-]\d+)?')
+
+_rng_cache = {}
+
+
+def get_rng(seed: str, stream: int) -> PCG32Generator:
+    """Get a new PCG32Generator based on the seed and stream."""
+    if (seed, stream) not in _rng_cache:
+        seed_hash = int(hashlib.sha1(seed.encode('utf-8')).hexdigest(), 16)
+        _rng_cache[(seed, stream)] = PCG32Generator(seed_hash, stream)
+    return _rng_cache[(seed, stream)]
+
+
+class RNG:
+    """Random number generator."""
+
+    def __init__(self, seed: str, stream: int) -> None:
+        self._rng = get_rng(seed, stream)
+
+    def rand_f(self) -> float:
+        """Return a random float between 0 and 1."""
+        return self._rng.get_next_uint32() / MAX_UINT32
+
+    def rand(self, lower: int, upper: int=0) -> int:
+        """Return a random integer in range [lower, upper], including both endpoints."""
+        if upper > 0:
+            start = lower
+            bound = upper - lower
+        else:
+            start = 0
+            bound = lower
+        return start + self._rng.get_next_uint(bound + 1)
+
+    def choice(self, options: Sequence[Any]) -> int:
+        """Return a random choice amongst the options."""
+        return options[self.rand(len(options) - 1)]
+
+    def coin(self) -> bool:
+        """Return the result of a coin flip."""
+        return bool(self.rand(1))
 
 
 class ChanceList:
