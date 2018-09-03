@@ -6,3 +6,4 @@ alias atlas='python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/im
 alias tile_ids='python -m tools.make_tile_ids static/img/oryx_ur'
 alias typeshed='cp -rf typeshed/* ~/.venv/autochthon/lib/mypy/typeshed/third_party/3'
 alias typing='mypy --strict -p game'
+alias rg="rg --iglob '!static/js/pixi*' --iglob '!typeshed'"

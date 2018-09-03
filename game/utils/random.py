@@ -1,47 +1,74 @@
 """Functions for randomness."""
 from __future__ import annotations
 import hashlib
-from random import randrange, shuffle, choice, randint
+import logging
+from pathlib import Path
+import random
+from random import shuffle, randrange, randint, choice  # TODO: remove these
 import re
 from typing import Any, List, Callable, Optional, Sequence
 
 from game.utils.pcg32 import PCG32Generator
 
-MAX_UINT64 = 9223372036854775807
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+
 MAX_UINT32 = 4294967295
 WEIGHTED_DEF = re.compile(r'(?<=^weighted\(\()([^)]+)\), \(([^)]+)\)\)')
 STEP_DEF = re.compile(r'(?<=^step\()([^)]+)\)')
 DIE_DEF = re.compile(r'(\d+d\d+)([+-]\d+)?')
+WORDS_FILE = Path('/usr/share/dict/words')  # TODO: replace with one in this repo with game terms?
 
-_rng_cache = {}
-
-
-def get_rng(seed: str, stream: int) -> PCG32Generator:
-    """Get a new PCG32Generator based on the seed and stream."""
-    if (seed, stream) not in _rng_cache:
-        seed_hash = int(hashlib.sha1(seed.encode('utf-8')).hexdigest(), 16)
-        _rng_cache[(seed, stream)] = PCG32Generator(seed_hash, stream)
-    return _rng_cache[(seed, stream)]
+_collision_check = {}
 
 
-class RNG:
-    """Random number generator."""
+def get_random_words(rng: Any=None, count: int=3) -> str:
+    """Get a string of `count` random words, CamelCased, using the given rng or Python's."""
+    result = ''
+    if rng is None:
+        rng = random
+    with WORDS_FILE.open() as f:
+        lines = f.readlines()
+    for x in range(count):
+        try:
+            word = lines[rng.rand(len(lines))].strip()
+        except AttributeError:
+            word = lines[rng.randrange(0, len(lines))].strip()
+        result += word.capitalize()
+    return result
 
-    def __init__(self, seed: str, stream: int) -> None:
-        self._rng = get_rng(seed, stream)
 
-    def rand_f(self) -> float:
+def string_hash(s: str) -> int:
+    """Convert a string into a deterministic hash integer."""
+    h = int(hashlib.sha1(s.encode('utf-8')).hexdigest(), 16)
+    while h in _collision_check and _collision_check[h] != s:
+        log.warning(f'Collision between {s} and {_collision_check[h]}')
+        h += 1
+    _collision_check.setdefault(h, s)
+    return h
+
+
+class _GameRNG:
+    """RNG with game related function."""
+
+    def __init__(self, name: str, rng: Any) -> None:
+        self.name = name
+        self._rng = rng
+
+    def fraction(self) -> float:
         """Return a random float between 0 and 1."""
         return self._rng.get_next_uint32() / MAX_UINT32
 
-    def rand(self, lower: int, upper: int=0) -> int:
+    def rand(self, lower: int=0, upper: int=0) -> int:
         """Return a random integer in range [lower, upper], including both endpoints."""
         if upper > 0:
             start = lower
             bound = upper - lower
-        else:
+        elif lower > 0:
             start = 0
             bound = lower
+        else:
+            return self._rng.get_next_uint32()
         return start + self._rng.get_next_uint(bound + 1)
 
     def choice(self, options: Sequence[Any]) -> int:
@@ -51,6 +78,28 @@ class RNG:
     def coin(self) -> bool:
         """Return the result of a coin flip."""
         return bool(self.rand(1))
+
+
+class RNG:
+    """Base random number generator."""
+
+    def __init__(self, seed: Optional[str]=None) -> None:
+        if not seed:
+            seed = get_random_words()
+        self.seed = seed
+        self.seed_hash = string_hash(self.seed)
+        self._rng = PCG32Generator(self.seed_hash, 0)
+        self._cache = {}
+
+    def get(self, stream: Optional[str]=None) -> _GameRNG:
+        """Get a sub-rng."""
+        if not stream:
+            stream = get_random_words(rng=self._rng)
+        if stream not in self._cache:
+            stream_hash = string_hash(stream)
+            rng = _GameRNG(stream, PCG32Generator(self.seed_hash, stream_hash))
+            self._cache[stream] = rng
+        return self._cache[stream]
 
 
 class ChanceList:
