@@ -19,36 +19,8 @@ STEP_DEF = re.compile(r'(?<=^step\()([^)]+)\)')
 DIE_DEF = re.compile(r'(\d+d\d+)([+-]\d+)?')
 WORDS_FILE = Path('/usr/share/dict/words')  # TODO: replace with one in this repo with game terms?
 
-_collision_check = {}
 
-
-def get_random_words(rng: Any=None, count: int=3) -> str:
-    """Get a string of `count` random words, CamelCased, using the given rng or Python's."""
-    result = ''
-    if rng is None:
-        rng = random
-    with WORDS_FILE.open() as f:
-        lines = f.readlines()
-    for x in range(count):
-        try:
-            word = lines[rng.rand(len(lines))].strip()
-        except AttributeError:
-            word = lines[rng.randrange(0, len(lines))].strip()
-        result += word.capitalize()
-    return result
-
-
-def string_hash(s: str) -> int:
-    """Convert a string into a deterministic hash integer."""
-    h = int(hashlib.sha1(s.encode('utf-8')).hexdigest(), 16)
-    while h in _collision_check and _collision_check[h] != s:
-        log.warning(f'Collision between {s} and {_collision_check[h]}')
-        h += 1
-    _collision_check.setdefault(h, s)
-    return h
-
-
-class _GameRNG:
+class GameRNG:
     """RNG with game related function."""
 
     def __init__(self, name: str, rng: Any) -> None:
@@ -80,26 +52,60 @@ class _GameRNG:
         return bool(self.rand(1))
 
 
-class RNG:
-    """Base random number generator."""
+class RNGCache:
+    """Random number generator cache."""
 
-    def __init__(self, seed: Optional[str]=None) -> None:
+    seed = None
+    _rng = None
+    _cache = {}
+    _collision_check = {}
+
+    @classmethod
+    def init(cls, seed: Optional[str]=None) -> None:
+        """Initialize the cache."""
+        cls._cache = {}
         if not seed:
-            seed = get_random_words()
-        self.seed = seed
-        self.seed_hash = string_hash(self.seed)
-        self._rng = PCG32Generator(self.seed_hash, 0)
-        self._cache = {}
+            seed = cls.get_random_words()
+        cls.seed = seed
+        cls._collision_check[0] = '_ZERO_'
+        cls._rng = PCG32Generator(cls.string_hash(cls.seed), 0)
 
-    def get(self, stream: Optional[str]=None) -> _GameRNG:
+    @classmethod
+    def get(cls, stream: Optional[str]=None) -> GameRNG:
         """Get a sub-rng."""
+        if cls._rng is None:
+            raise RuntimeError('Attempt to get RNG from uninitialized cache')
         if not stream:
-            stream = get_random_words(rng=self._rng)
-        if stream not in self._cache:
-            stream_hash = string_hash(stream)
-            rng = _GameRNG(stream, PCG32Generator(self.seed_hash, stream_hash))
-            self._cache[stream] = rng
-        return self._cache[stream]
+            stream = cls.get_random_words()
+        if stream not in cls._cache:
+            rng = GameRNG(stream, PCG32Generator(cls.string_hash(cls.seed),
+                                                 cls.string_hash(stream)))
+            cls._cache[stream] = rng
+        return cls._cache[stream]
+
+    @classmethod
+    def string_hash(cls, s: str) -> int:
+        """Convert a string into a deterministic hash integer."""
+        h = int(hashlib.sha1(s.encode('utf-8')).hexdigest(), 16)
+        while h in cls._collision_check and cls._collision_check[h] != s:
+            log.warning(f'Collision between {s} and {cls._collision_check[h]}')
+            h += 1
+        cls._collision_check.setdefault(h, s)
+        return h
+
+    @classmethod
+    def get_random_words(cls, count: int=3) -> str:
+        """Get a string of `count` random words, CamelCased."""
+        result = ''
+        with WORDS_FILE.open() as f:
+            lines = f.readlines()
+        for x in range(count):
+            if cls._rng is None:
+                word = lines[random.randrange(0, len(lines))].strip()
+            else:
+                word = lines[cls._rng.rand(len(lines))].strip()
+            result += word.capitalize()
+        return result
 
 
 class ChanceList:

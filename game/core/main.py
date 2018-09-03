@@ -26,6 +26,7 @@ from game.processor.time import TimeProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
 from game.utils.factory import make_player, make_enemy, make_item
 from game.utils.language import Verb
+from game.utils.random import RNGCache
 from game.core.world import World
 from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
 
@@ -60,6 +61,7 @@ class Game:
         self.world: World = World()
         self.state: GameState = GameState.PLAYING
         self.morgue = setup_morgue(config['morgue']['directory'], 'UNKNOWN')
+        RNGCache.init(config.get('seed', None))
         version_string = f'* {config["title"]} version {VERSION}'
         log.info(version_string)
         self.morgue.info(version_string)
