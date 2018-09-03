@@ -9,9 +9,9 @@ import esper
 from game import VERSION
 from game.component.attack import (AttackDodgeModifier, ImmuneToDodge, AttackBlockModifier,
                                    ImmuneToBlock, AttackDeflectModifier, ImmuneToDeflect)
-from game.dataloader import DataLoader
+from game.utils.dataloader import DataLoader
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent, GameLogEvent
-from game.map import ClassicMap
+from game.core.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
                                    AttackMissProcessor, AttackDefenseProcessor)
@@ -24,9 +24,9 @@ from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
 from game.processor.time import TimeProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
-from game.utils.factory import make_player, make_enemy
+from game.utils.factory import make_player, make_enemy, make_item
 from game.utils.language import Verb
-from game.world import World
+from game.core.world import World
 from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
 
 log = logging.getLogger(__name__)
@@ -108,18 +108,20 @@ class Game:
                                  group=ProcessGroup.render)
 
         current_map = ClassicMap(self.config['map']['max_tiles_w'],
-                                 self.config['map']['max_tiles_h'],
-                                 self.world)
+                                 self.config['map']['max_tiles_h'])
         current_map.create()
         self.world.map = current_map
 
-        make_player(loader, self.world, current_map.start_pos, ['Orc'])
-        make_enemy(loader, self.world, current_map.start_pos, ['Crab'])
-        make_enemy(loader, self.world, current_map.start_pos, ['Boar'])
-        make_enemy(loader, self.world, current_map.start_pos, ['OrcShaman'])
-        make_enemy(loader, self.world, current_map.start_pos, ['OrcBrute'])
-        make_enemy(loader, self.world, current_map.start_pos, ['Firefly'])
-        make_enemy(loader, self.world, current_map.start_pos, ['SebastianBenini'])
+        make_player(loader, self.world, ['Orc'])
+        make_enemy(loader, self.world, ['Crab'])
+        make_enemy(loader, self.world, ['Boar'])
+        make_enemy(loader, self.world, ['OrcShaman'])
+        make_enemy(loader, self.world, ['OrcBrute'])
+        make_enemy(loader, self.world, ['Firefly'])
+        make_enemy(loader, self.world, ['SebastianBenini'])
+        make_item(loader, self.world, ['Katana'])
+        make_item(loader, self.world, ['Mace'])
+        make_item(loader, self.world, ['PlateArmor'])
 
     def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)

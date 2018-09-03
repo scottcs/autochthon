@@ -9,6 +9,7 @@ from game.component.player import PlayerControlled
 from game.component.movement import Position
 from game.component.render import Renderable
 from game.events import UpdateMapRenderEvent
+from gamedata.palette import Palette
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -49,7 +50,11 @@ class WebRenderProcessor(esper.Processor):
             b_cells.extend(cell_id.to_bytes(2, 'big'))
             b_cells.extend(cell.x.to_bytes(2, 'big'))
             b_cells.extend(cell.y.to_bytes(2, 'big'))
-            if cell.walkable:
+            if cell.spawnable_player:
+                tile_id = 229
+                b_cells.extend(tile_id.to_bytes(2, 'big'))
+                b_cells.extend(Palette.cyan.to_bytes(4, 'big'))
+            elif cell.walkable:
                 b_cells.extend(self.world.map.floor_tile_id.to_bytes(2, 'big'))
                 b_cells.extend(self.world.map.floor_color.to_bytes(4, 'big'))
             else:

@@ -4,8 +4,8 @@ import json
 import logging
 from pathlib import Path
 
-from game.local import run_local
-from game.server import run_server
+from game.core.local import run_local
+from game.core.server import run_server
 
 CONFIG_FILE = Path('data') / Path('config.json')
 

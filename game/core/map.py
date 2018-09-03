@@ -1,29 +1,41 @@
 """Game map."""
 from __future__ import annotations
 from random import randint
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, NamedTuple
 
-import esper
 import numpy as np
 import tcod.map
 
-from game.types import MapCell
 from game.utils.geometry import Rect, Point
 from game.utils.random import coin_flip
 from gamedata.palette import Palette
+
+MAP_BITS = ('explored', 'spawnable_player', 'spawnable_enemy', 'spawnable_item')
+# TODO: item layer? interaction layer? enemy layer? etc?
+
+
+class MapCell(NamedTuple):
+    """Map cell."""
+    x: int = 0
+    y: int = 0
+    transparent: bool = False
+    walkable: bool = False
+    fov: bool = False
+    explored: bool = False
+    spawnable_player: bool = False
+    spawnable_enemy: bool = False
+    spawnable_item: bool = False
 
 
 class Map(tcod.map.Map):
     """Game map."""
 
-    def __init__(self, width: int, height: int, world: esper.World) -> None:
+    def __init__(self, width: int, height: int) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
-        self.world: esper.World = world
-        self.start_pos = Point(0, 0)
         self._iter_x: int = 0
         self._iter_y: int = 0
-        self._buffer2: np.array = np.zeros((height, width, 1), dtype=np.bool_)
+        self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
 
         # TODO: make these more dynamic
         self.floor_tile_id = 220
@@ -34,8 +46,38 @@ class Map(tcod.map.Map):
     @property
     def explored(self) -> np.array:
         """Array of cells that have been explored."""
-        buffer: np.array = self._buffer2[:, :, 0]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('explored')]
         return buffer
+
+    @property
+    def spawnable_player(self) -> np.array:
+        """Array of cells that can spawn a player."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_player')]
+        return buffer
+
+    def spawns_player(self) -> List[Point]:
+        """Return a list of only spawnable player coordinates."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_player.nonzero())]
+
+    @property
+    def spawnable_enemy(self) -> np.array:
+        """Array of cells that can spawn enemies."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_enemy')]
+        return buffer
+
+    def spawns_enemy(self) -> List[Point]:
+        """Return a list of only spawnable enemy coordinates."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_enemy.nonzero())]
+
+    @property
+    def spawnable_item(self) -> np.array:
+        """Array of cells that can spawn items."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_item')]
+        return buffer
+
+    def spawns_item(self) -> List[Point]:
+        """Return a list of only spawnable item coordinates."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_item.nonzero())]
 
     def create(self) -> None:
         """Create the map using the map's algorithm."""
@@ -48,14 +90,7 @@ class Map(tcod.map.Map):
 
     def __next__(self) -> MapCell:
         try:
-            cell: MapCell = MapCell(
-                self._iter_x,
-                self._iter_y,
-                self.transparent[self._iter_y, self._iter_x],
-                self.walkable[self._iter_y, self._iter_x],
-                self.fov[self._iter_y, self._iter_x],
-                self.explored[self._iter_y, self._iter_x],
-            )
+            cell: MapCell = self[self._iter_x, self._iter_y]
         except IndexError:
             raise StopIteration
         self._iter_y += 1
@@ -74,6 +109,9 @@ class Map(tcod.map.Map):
                 self.walkable[y, x],
                 self.fov[y, x],
                 self.explored[y, x],
+                self.spawnable_player[y, x],
+                self.spawnable_enemy[y, x],
+                self.spawnable_item[y, x],
             )
         except IndexError:
             raise IndexError(f'Location ({x}, {y}) in map not found.')
@@ -85,9 +123,8 @@ class Map(tcod.map.Map):
 class ClassicMap(Map):
     """Classic rogue-style map."""
 
-    def __init__(self, width: int, height: int, world: esper.World,
-                 config: Optional[dict]=None) -> None:
-        super().__init__(width, height, world)
+    def __init__(self, width: int, height: int, config: Optional[dict]=None) -> None:
+        super().__init__(width, height)
         config = config or {}
         self.max_rooms: int = config.get('max_rooms', 50)
         self.room_min_size: int = config.get('room_min_size', 5)
@@ -99,6 +136,8 @@ class ClassicMap(Map):
             for y in range(room.p1.y + 1, room.p2.y):
                 self.walkable[y, x] = True
                 self.transparent[y, x] = True
+                self.spawnable_enemy[y, x] = True
+                self.spawnable_item[y, x] = True
 
     def create_h_tunnel(self, x1: int, x2: int, y: int) -> None:
         """Create a single-width horizontal tunnel from x1 to x2 along y."""
@@ -132,7 +171,7 @@ class ClassicMap(Map):
                 self.create_room(new_room)
 
                 if len(rooms) == 0:  # first room
-                    self.start_pos = new_room.center
+                    self.spawnable_player[new_room.center.y, new_room.center.x] = True
                 else:
                     prev_center: Point = rooms[-1].center
                     if coin_flip():
@@ -141,6 +180,4 @@ class ClassicMap(Map):
                     else:
                         self.create_v_tunnel(prev_center.y, new_center.y, prev_center.x)
                         self.create_h_tunnel(prev_center.x, new_center.x, new_center.y)
-
-                # TODO: place entities
                 rooms.append(new_room)

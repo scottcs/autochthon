@@ -1,14 +1,16 @@
 """Factory utilities."""
 import logging
+import random
 from typing import Any, List
 
 from game.component.movement import Position
-from game.dataloader import DataLoader
+from game.component.status import Solid
+from game.utils.dataloader import DataLoader
 from game.types import Entity
 from game.utils.geometry import Point
 from game.utils.random import parse
 from game.utils.render import TileCache
-from game.world import World
+from game.core.world import World
 
 ON_CREATE = '=='
 
@@ -116,17 +118,28 @@ def make_entity(loader: DataLoader, world: World, data_key: str,
     return ent
 
 
-def make_player(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
+def make_player(loader: DataLoader, world: World, templates: List[str]) -> Entity:
     """Make a player and add it to the world."""
     if 'BasicPlayer' not in templates:
         templates.insert(0, 'BasicPlayer')
-    ent = make_entity(loader, world, 'assemblage.player', start, templates)
+    pos = random.choice(world.map.spawns_player())
+    ent = make_entity(loader, world, 'assemblage.player', pos, templates)
     world.players.add(ent)
     return ent
 
 
-def make_enemy(loader: DataLoader, world: World, start: Point, templates: List[str]) -> Entity:
+def make_enemy(loader: DataLoader, world: World, templates: List[str]) -> Entity:
     """Make an enemy and add it to the world."""
     if 'BasicEnemy' not in templates:
         templates.insert(0, 'BasicEnemy')
-    return make_entity(loader, world, 'assemblage.enemy', start, templates)
+    pos = random.choice(world.map.spawns_enemy())
+    return make_entity(loader, world, 'assemblage.enemy', pos, templates)
+
+
+def make_item(loader: DataLoader, world: World, templates: List[str]) -> Entity:
+    """Make an item and add it to the world."""
+    if 'BasicItem' not in templates:
+        templates.insert(0, 'BasicItem')
+    pos = random.choice(world.map.spawns_item())
+    return make_entity(loader, world, 'assemblage.item', pos, templates)
+

@@ -4,17 +4,6 @@ from typing import Dict, Callable, Any, NamedTuple, Union, Optional
 
 from game.utils.random import parse
 
-
-class MapCell(NamedTuple):
-    """Map cell."""
-    x: int = 0
-    y: int = 0
-    transparent: bool = False
-    walkable: bool = False
-    fov: bool = False
-    explored: bool = False
-
-
 EventType = Dict
 EventHandler = Callable[[EventType], Any]
 
