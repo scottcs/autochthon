@@ -27,10 +27,6 @@ class GameRNG:
         self.name = name
         self._rng = rng
 
-    def fraction(self) -> float:
-        """Return a random float between 0 and 1."""
-        return self._rng.get_next_uint32() / MAX_UINT32
-
     def rand(self, lower: int=0, upper: int=0) -> int:
         """Return a random integer in range [lower, upper], including both endpoints."""
         if upper > 0:
@@ -42,6 +38,10 @@ class GameRNG:
         else:
             return self._rng.get_next_uint32()
         return start + self._rng.get_next_uint(bound + 1)
+
+    def percent(self, percent: float, precision: Optional[int]=1000) -> bool:
+        """Return whether not a percentage roll succeeds."""
+        return self._rng.get_next_uint(precision) > (percent * precision)
 
     def choice(self, options: Sequence[Any]) -> int:
         """Return a random choice amongst the options."""

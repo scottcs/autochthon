@@ -1,13 +1,12 @@
 """Game map."""
 from __future__ import annotations
-from random import randint
 from typing import List, Optional, Tuple, NamedTuple
 
 import numpy as np
 import tcod.map
 
 from game.utils.geometry import Rect, Point
-from game.utils.random import coin_flip
+from game.utils.random import RNGCache
 from gamedata.palette import Palette
 
 MAP_BITS = ('explored', 'spawnable_player', 'spawnable_enemy', 'spawnable_item')
@@ -30,11 +29,12 @@ class MapCell(NamedTuple):
 class Map(tcod.map.Map):
     """Game map."""
 
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, seed: Optional[str]=None) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
         self._iter_x: int = 0
         self._iter_y: int = 0
+        self._rng = RNGCache.get(seed)
         self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
 
         # TODO: make these more dynamic
@@ -156,10 +156,10 @@ class ClassicMap(Map):
         rooms: List[Rect] = []
 
         for r in range(self.max_rooms):
-            w: int = randint(self.room_min_size, self.room_max_size)
-            h: int = randint(self.room_min_size, self.room_max_size)
-            x: int = randint(0, self.width - w - 1)
-            y: int = randint(0, self.height - h - 1)
+            w: int = self._rng.rand(self.room_min_size, self.room_max_size)
+            h: int = self._rng.rand(self.room_min_size, self.room_max_size)
+            x: int = self._rng.rand(self.width - w - 1)
+            y: int = self._rng.rand(self.height - h - 1)
 
             new_room: Rect = Rect(x, y, w, h)
             new_center: Point = new_room.center
@@ -174,7 +174,7 @@ class ClassicMap(Map):
                     self.spawnable_player[new_room.center.y, new_room.center.x] = True
                 else:
                     prev_center: Point = rooms[-1].center
-                    if coin_flip():
+                    if self._rng.coin():
                         self.create_h_tunnel(prev_center.x, new_center.x, prev_center.y)
                         self.create_v_tunnel(prev_center.y, new_center.y, new_center.x)
                     else:

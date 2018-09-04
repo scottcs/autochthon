@@ -3,7 +3,6 @@ from math import floor
 from typing import Optional, Union
 
 from game.types import Number, Modifier
-from game.utils.random import ChanceList
 
 
 class BaseModifierComponent:
@@ -33,25 +32,6 @@ class BaseIntMinMaxComponent:
     def multiply_clamp(self, amount: Number) -> None:
         """Multiply the attribute by this amount, without going out of bounds."""
         self._set_clamp(self.value * amount)
-
-
-class BaseBoolChanceComponent:
-    """Base boolean chance bag component."""
-    def __init__(self, chance: int, out_of: int) -> None:
-        self._chances = ChanceList([True, False], [chance, out_of])
-
-    def update(self, chance: int, out_of: int) -> None:
-        """Update the chances."""
-        self._chances.set([True, False], [chance, out_of])
-
-    def get(self) -> bool:
-        """Returns whether the next try is a success."""
-        try:
-            success = next(self._chances)
-        except StopIteration:
-            self._chances.reset()
-            success = next(self._chances)
-        return bool(success)
 
 
 class BaseTemporaryComponent:

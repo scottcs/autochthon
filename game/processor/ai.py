@@ -1,5 +1,4 @@
 """AI Processor."""
-import random
 from typing import Any
 
 import esper
@@ -9,12 +8,14 @@ from game.component.ai import AISimpleMind
 from game.component.movement import GUTMoving, Position
 from game.component.status import Solid
 from game.types import Entity
+from game.utils.random import RNGCache
 
 
 class AIProcessor(esper.Processor):
     """Artificial Intelligence processor."""
     def __init__(self) -> None:
         super().__init__()
+        self._rng = RNGCache.get('AIProcessor')
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process AI Components."""
@@ -26,11 +27,11 @@ class AIProcessor(esper.Processor):
 
     def _try_moving(self, ent: Entity, position: Position) -> None:
             for _ in range(100):  # try up to 100 times
-                dx = random.randint(-1, 1)
-                dy = random.randint(-1, 1)
+                dx = self._rng.rand(-1, 1)
+                dy = self._rng.rand(-1, 1)
                 while dx == 0 and dy == 0:
-                    dx = random.randint(-1, 1)
-                    dy = random.randint(-1, 1)
+                    dx = self._rng.rand(-1, 1)
+                    dy = self._rng.rand(-1, 1)
                 dest = Position(position.x + dx, position.y + dy)
                 other_entity = self.world.get_entity_at_position(dest.x, dest.y, Solid)
                 if other_entity is None and self.world.map[dest.x, dest.y].walkable:
