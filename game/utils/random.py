@@ -4,9 +4,8 @@ import hashlib
 import logging
 from pathlib import Path
 import random
-from random import shuffle, randrange, randint, choice  # TODO: remove these
 import re
-from typing import Any, List, Callable, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
 from game.utils.pcg32 import PCG32Generator
 
@@ -26,14 +25,17 @@ class GameRNG:
         self.name = name
         self._rng = rng
 
-    def rand(self, lower: int=0, upper: int=0) -> int:
+    def rand(self, lower: Optional[int]=None, upper: Optional[int]=None) -> int:
         """Return a random integer in range [lower, upper], including both endpoints."""
-        if upper > lower:
-            return lower + self._rng.get_next_uint((upper - lower) + 1)
-        elif lower != 0:
-            return self._rng.get_next_uint(lower + 1)
+        if upper is None or upper == lower:
+            if lower is None:
+                return self._rng.get_next_uint32()
+            else:
+                return self._rng.get_next_uint(lower + 1)
         else:
-            return self._rng.get_next_uint32()
+            if lower > upper:
+                raise RuntimeError('lower must be <= upper')
+            return lower + self._rng.get_next_uint((upper - lower) + 1)
 
     def percent(self, percent: float, precision: Optional[int]=1000) -> bool:
         """Return whether not a percentage roll succeeds."""
@@ -104,48 +106,7 @@ class RNGCache:
         return result
 
 
-class ChanceList:
-    """A list of items, weighted by chance.
-
-    Iteration removes items from the list.
-
-    """
-    def __init__(self, items: List[Any], weights: List[int]) -> None:
-        super().__init__()
-        self._original_items: List[Any] = []
-        self._items: List[Any] = []
-        self.set(items, weights)
-
-    def set(self, items: List[Any], weights: List[int]) -> None:
-        """Set the chance list according to the given weights."""
-        self._original_items = []
-        for i, item in enumerate(items):
-            self._original_items.extend([item for _ in range(weights[i])])
-        self.reset()
-
-    def reset(self) -> None:
-        """Reset the list to its original values."""
-        self._items = self._original_items.copy()
-        shuffle(self._items)
-
-    def __iter__(self) -> ChanceList:
-        return self
-
-    def __next__(self) -> Any:
-        if len(self._items) == 0:
-            raise StopIteration
-        return self._items.pop()
-
-    def __repr__(self) -> str:
-        return repr(self._items)
-
-
-def coin_flip() -> bool:
-    """Choose a random bool."""
-    return randrange(2) == 0
-
-
-def parse(text: str) -> Optional[Callable]:
+def parse(text: str, rng: GameRNG) -> Optional[Callable]:
     """Parse a string and return a function to provide the requested randomness.
 
     Looks for:
@@ -166,19 +127,19 @@ def parse(text: str) -> Optional[Callable]:
     found = WEIGHTED_DEF.search(text)
     func = None
     if found:
-        func = _parse_weighted(*found.groups())
+        func = _parse_weighted(rng, *found.groups())
     else:
         found = STEP_DEF.search(text)
         if found:
-            func = _parse_step(*found.groups())
+            func = _parse_step(rng, *found.groups())
         else:
             found = DIE_DEF.search(text)
             if found:
-                func = _parse_die(*found.groups())
+                func = _parse_die(rng, *found.groups())
     return func
 
 
-def _parse_weighted(items_str: str, weights_str: str) -> Callable:
+def _parse_weighted(rng: GameRNG, items_str: str, weights_str: str) -> Callable:
     items = [i.strip(' \'"') for i in items_str.split(',')]
     weights = [int(w.strip()) for w in weights_str.split(',')]
     choices = []
@@ -186,12 +147,12 @@ def _parse_weighted(items_str: str, weights_str: str) -> Callable:
         choices.extend([item for _ in range(weights[i])])
 
     def _closure():
-        return choice(choices)
+        return rng.choice(choices)
 
     return _closure
 
 
-def _parse_step(expr: str) -> Callable:
+def _parse_step(rng: GameRNG, expr: str) -> Callable:
     try:
         s_min, s_max, s_step = [int(e.strip()) for e in expr.split(',')]
     except ValueError:
@@ -204,12 +165,12 @@ def _parse_step(expr: str) -> Callable:
     choices.append(s_max)
 
     def _closure():
-        return choice(choices)
+        return rng.choice(choices)
 
     return _closure
 
 
-def _parse_die(expr: str, addend: Optional[str]=None) -> Callable:
+def _parse_die(rng: GameRNG, expr: str, addend: Optional[str]=None) -> Callable:
     amt, sides = [int(x.strip()) for x in expr.split('d')]
     if addend is not None:
         addend = int(addend.strip())
@@ -217,7 +178,7 @@ def _parse_die(expr: str, addend: Optional[str]=None) -> Callable:
     def _closure():
         total = addend or 0
         for _ in range(amt):
-            total += randint(1, sides)
+            total += rng.rand(1, sides)
         return total
 
     return _closure

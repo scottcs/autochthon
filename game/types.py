@@ -2,7 +2,7 @@
 from enum import Enum, auto, IntEnum
 from typing import Dict, Callable, Any, NamedTuple, Union, Optional
 
-from game.utils.random import parse
+from game.utils.random import parse, RNGCache
 
 EventType = Dict
 EventHandler = Callable[[EventType], Any]
@@ -79,12 +79,14 @@ class Modifier:
         self._factor: Number = 0
         self._addend_func: Optional[Callable] = None
         self._factor_func: Optional[Callable] = None
+        # TODO: I'm not convinced this is the best way to do this. RNG per entity instead? How?
+        rng = RNGCache.get('ModifierClass')
         if isinstance(addend, str):
-            self._addend_func = parse(addend)
+            self._addend_func = parse(addend, rng)
         else:
             self._addend = addend
         if isinstance(factor, str):
-            self._factor_func = parse(factor)
+            self._factor_func = parse(factor, rng)
         else:
             self._factor = factor
 
