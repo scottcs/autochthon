@@ -31,7 +31,7 @@
       "render.Renderable": {
         "tile_id": "avatar_A",
         "tint": "Palette.yellow",
-        "layer": "RenderLayer.PLAYER"
+        "layer": "RenderLayer.player"
       },
       "status.Solid": {}
     }

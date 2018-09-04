@@ -32,7 +32,7 @@ class PlayerInputProcessor(esper.Processor):
         coords: Point = Point(event['x_coord'], event['y_coord'])
         self.input_queue.append({
             'event': event['event'],
-            'state': event.get('state', GameState.UNKNOWN),
+            'state': event.get('state', GameState.unknown),
             'modifiers': modifiers,
             'key': key,
             'coords': coords,
@@ -43,7 +43,7 @@ class PlayerInputProcessor(esper.Processor):
         while self.input_queue:
             event = self.input_queue.pop()
             if event['event'] == self.events['KeyPress']:
-                if event['state'] == GameState.PLAYING:
+                if event['state'] == GameState.playing:
                     self.handle_keypress_playing(event['modifiers'], event['key'], event['coords'])
 
     def _unpack_modifiers(self, modifiers: int) -> dict:

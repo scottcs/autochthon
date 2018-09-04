@@ -41,7 +41,7 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
         """state property"""
         if GameCallback.game is not None:
             return GameCallback.game.state
-        return GameState.UNKNOWN
+        return GameState.unknown
 
     @staticmethod
     def process_events() -> None:

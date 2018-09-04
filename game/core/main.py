@@ -24,8 +24,9 @@ from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
 from game.processor.time import TimeProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
-from game.utils.factory import make_player, make_enemy, make_item
+from game.utils.factory import PlayerFactory, EnemyFactory, ItemFactory
 from game.utils.language import Verb
+from game.utils.random import RNGCache
 from game.core.world import World
 from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
 
@@ -58,11 +59,21 @@ class Game:
         self.game_over: bool = False
         self.player_acted: bool = False
         self.world: World = World()
-        self.state: GameState = GameState.PLAYING
+        self.state: GameState = GameState.unknown
         self.morgue = setup_morgue(config['morgue']['directory'], 'UNKNOWN')
         version_string = f'* {config["title"]} version {VERSION}'
         log.info(version_string)
         self.morgue.info(version_string)
+
+        # TODO: menu state first
+        # TODO: allow player to set seed and pass it here
+        self.set_state_playing(render_processor)
+
+    def set_state_playing(self, render_processor: esper.Processor,
+                          seed: Optional[str]=None) -> None:
+        """Set the game state to playing."""
+        RNGCache.init(seed)
+        self.state = GameState.playing
 
         GameLogEvent.handle(self._on_game_log)
         GameOverEvent.handle(self._on_game_over)
@@ -112,16 +123,19 @@ class Game:
         current_map.create()
         self.world.map = current_map
 
-        make_player(loader, self.world, ['Orc'])
-        make_enemy(loader, self.world, ['Crab'])
-        make_enemy(loader, self.world, ['Boar'])
-        make_enemy(loader, self.world, ['OrcShaman'])
-        make_enemy(loader, self.world, ['OrcBrute'])
-        make_enemy(loader, self.world, ['Firefly'])
-        make_enemy(loader, self.world, ['SebastianBenini'])
-        make_item(loader, self.world, ['Katana'])
-        make_item(loader, self.world, ['Mace'])
-        make_item(loader, self.world, ['PlateArmor'])
+        player_factory = PlayerFactory(loader, self.world)
+        enemy_factory = EnemyFactory(loader, self.world)
+        item_factory = ItemFactory(loader, self.world)
+        player_factory.make(['Orc'])
+        enemy_factory.make(['Crab'])
+        enemy_factory.make(['Boar'])
+        enemy_factory.make(['OrcShaman'])
+        enemy_factory.make(['OrcBrute'])
+        enemy_factory.make(['Firefly'])
+        enemy_factory.make(['SebastianBenini'])
+        item_factory.make(['Katana'])
+        item_factory.make(['Mace'])
+        item_factory.make(['PlateArmor'])
 
     def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)

@@ -25,7 +25,7 @@ from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialog
 from game.core.map import ClassicMap, Map
 
 CONFIG_FILE = Path('data') / Path('config.json')
-STYLESHEET = Path('static/css/qt_theme.css')
+STYLESHEET = Path('static/css/theme.qss')
 MIN_WIDTH, MIN_HEIGHT = 830, 750
 
 # Rather than using `globals()`, add map algorithms to a table

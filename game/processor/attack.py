@@ -1,5 +1,4 @@
 """Attack processors."""
-import random
 from typing import Any
 
 import esper
@@ -13,6 +12,7 @@ from game.component.gamelog import GUTCombatLog
 from game.component.status import Solid
 from game.types import Entity, AttackType, Number
 from game.utils.language import Verb, msg
+from game.utils.random import RNGCache
 from gamedata.base_engine_values import ATTACK_COST, HIT_CHANCE
 from gamedata.messages.combat import MsgAttack, MsgMiss, MsgAttackImmune, MsgDefend
 
@@ -57,6 +57,7 @@ class AttackMissProcessor(esper.Processor):
     """Process whether attack missed."""
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process whether attack missed."""
+        rng = RNGCache.get('AttackProcessor')
         for ent, target in self.world.get_component(GUTCurrentTarget):
             if target.attack == AttackType.melee:
                 mods = []
@@ -66,7 +67,7 @@ class AttackMissProcessor(esper.Processor):
                 modifier = accumulate_modifiers(*mods)
                 chance = HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
-                if random.random() > chance:
+                if rng.percent(chance):
                     name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
                     combat_log.add(
                         *msg(self.world.players, (ent, target.entity), MsgMiss, name.specific))
@@ -88,6 +89,7 @@ class AttackDefenseProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process whether an attack was defended."""
+        rng = RNGCache.get('AttackProcessor')
         for ent, target in self.world.get_component(GUTCurrentTarget):
             if self.world.has_component(ent, self.immunity_component_class):
                 # This attack cannot be thwarted by this defense
@@ -107,7 +109,7 @@ class AttackDefenseProcessor(esper.Processor):
                 modifier = accumulate_modifiers(*mods)
                 chance = self.base_chance + modifier.factor
                 if chance > 0:
-                    if random.random() < chance:
+                    if rng.percent(chance):
                         combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
                         name = self.world.get_or_add_component(
                             target.entity, Name, f'Entity {target.entity}')

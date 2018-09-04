@@ -13,7 +13,7 @@
       "render.Renderable": {
         "tile_id": "monster_angel1",
         "tint": "Palette.white",
-        "layer": "RenderLayer.ENEMY"
+        "layer": "RenderLayer.enemy"
       },
       "status.Solid": {}
     }

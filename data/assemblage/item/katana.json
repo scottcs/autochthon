@@ -7,7 +7,7 @@
       "render.Renderable": {
         "tile_id": "item_katana",
         "tint": "Palette.purple",
-        "layer": "RenderLayer.ITEM"
+        "layer": "RenderLayer.item"
       },
       "attack.AttackHitModifier": {
         "factor": 0.1

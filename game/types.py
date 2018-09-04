@@ -2,7 +2,7 @@
 from enum import Enum, auto, IntEnum
 from typing import Dict, Callable, Any, NamedTuple, Union, Optional
 
-from game.utils.random import parse
+from game.utils.random import parse, RNGCache
 
 EventType = Dict
 EventHandler = Callable[[EventType], Any]
@@ -12,14 +12,14 @@ Entity = int
 
 class RenderLayer(Enum):
     """Render layers, from bottom to top."""
-    BACKGROUND = auto()
-    FLOOR = auto()
-    ITEM = auto()
-    WALL = auto()
-    ICON = auto()
-    ENEMY = auto()
-    PLAYER = auto()
-    EFFECT = auto()
+    background = auto()
+    floor = auto()
+    item = auto()
+    wall = auto()
+    icon = auto()
+    enemy = auto()
+    player = auto()
+    effect = auto()
 
 
 class Priority(IntEnum):
@@ -53,13 +53,13 @@ class ProcessGroup(Enum):
 
 class GameState(Enum):
     """Game states."""
-    UNKNOWN = auto()
-    LOADING = auto()
-    MAIN_MENU = auto()
-    CREATING = auto()
-    PLAYING = auto()
-    IN_GAME_MENU = auto()
-    SHUTDOWN = auto()
+    unknown = auto()
+    loading = auto()
+    main_menu = auto()
+    creating = auto()
+    playing = auto()
+    in_game_menu = auto()
+    shutdown = auto()
 
 
 class AttackType(Enum):
@@ -79,12 +79,14 @@ class Modifier:
         self._factor: Number = 0
         self._addend_func: Optional[Callable] = None
         self._factor_func: Optional[Callable] = None
+        # TODO: I'm not convinced this is the best way to do this. RNG per entity instead? How?
+        rng = RNGCache.get('ModifierClass')
         if isinstance(addend, str):
-            self._addend_func = parse(addend)
+            self._addend_func = parse(addend, rng)
         else:
             self._addend = addend
         if isinstance(factor, str):
-            self._factor_func = parse(factor)
+            self._factor_func = parse(factor, rng)
         else:
             self._factor = factor
 

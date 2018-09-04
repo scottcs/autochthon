@@ -1,14 +1,12 @@
 """Factory utilities."""
 import logging
-import random
-from typing import Any, List
+from typing import Any, List, Optional
 
 from game.component.movement import Position
-from game.component.status import Solid
 from game.utils.dataloader import DataLoader
 from game.types import Entity
 from game.utils.geometry import Point
-from game.utils.random import parse
+from game.utils.random import parse, RNGCache, GameRNG
 from game.utils.render import TileCache
 from game.core.world import World
 
@@ -20,25 +18,6 @@ log.setLevel(logging.DEBUG)
 
 class FactoryException(Exception):
     """Factory exceptions."""
-
-
-def _convert_data(data: dict) -> dict:
-    """Convert data to globals."""
-    new_data = {}
-    for key, value in data.items():
-        new_data[key] = value
-        converted = convert_datum(value)
-        if converted is not None:
-            new_data[key] = converted
-        else:
-            try:
-                if value.startswith(ON_CREATE):
-                    converted_func = parse(value[len(ON_CREATE):])
-                    if converted_func is not None:
-                        new_data[key] = converted_func()
-            except AttributeError:
-                pass
-    return new_data
 
 
 def convert_datum(value: Any) -> Any:
@@ -85,61 +64,122 @@ def validate_kwargs(kwargs: dict) -> None:
             kwargs[key] = value
 
 
-def make_entity(loader: DataLoader, world: World, data_key: str,
-                start: Point, templates: List[str]) -> Entity:
-    """Make a player and add it to the world."""
-    components = []
-    for template in templates:
-        # Don't catch KeyError here... let it fail
-        data = loader.data[data_key][template]
-        for component_type, component_data in data['Components'].items():
-            # find the actual class
-            try:
-                component_class = get_component_class(component_type)
-            except (AttributeError, ModuleNotFoundError) as exc:
-                raise FactoryException(f'Error in {data_key}.{template}: {component_type}: {exc}')
-            try:
-                kwargs = _convert_data(component_data)
-            except (AttributeError, KeyError) as exc:
-                raise FactoryException(
-                    f'Error in {data_key}.{template}: {component_data}: {repr(exc)}')
-            try:
-                validate_kwargs(kwargs)
-            except (TypeError, ValueError) as exc:
-                raise FactoryException(f'Error in {data_key}.{template}: {exc}')
-            try:
-                components.append(component_class(**kwargs))
-            except TypeError as exc:
-                raise FactoryException(f'Error in {data_key}.{template}: {exc}')
-    ent = world.create_entity(*components)
-    pos = world.component_for_entity(ent, Position)
-    pos.x = start.x
-    pos.y = start.y
-    return ent
+class BaseEntityFactory:
+    """Entity Factory."""
+
+    def __init__(self, loader: DataLoader, world: World) -> None:
+        self._loader: DataLoader = loader
+        self._world: World = world
+        self._rng: Optional[GameRNG] = None
+        self._data_key: Optional[str] = None
+
+    def make(self, templates: List[str]) -> Entity:
+        """Make an entity."""
+        raise NotImplementedError('Must implement in child class.')
+
+    def place_entity(self, ent: Entity, at: Point) -> None:
+        """Place an entity at the given position in the world."""
+        pos = self._world.component_for_entity(ent, Position)
+        pos.x = at.x
+        pos.y = at.y
+
+    def _make_entity(self, templates: List[str]) -> Entity:
+        """Make a new entity."""
+        components = []
+        for template in templates:
+            # Don't catch KeyError here... let it fail
+            data = self._loader.data[self._data_key][template]
+            for component_type, component_data in data['Components'].items():
+                # find the actual class
+                try:
+                    component_class = get_component_class(component_type)
+                except (AttributeError, ModuleNotFoundError) as exc:
+                    raise FactoryException(
+                        f'Error in {self._data_key}.{template}: {component_type}: {exc}')
+                try:
+                    kwargs = self._convert_data(component_data)
+                except (AttributeError, KeyError) as exc:
+                    raise FactoryException(
+                        f'Error in {self._data_key}.{template}: {component_data}: {repr(exc)}')
+                try:
+                    validate_kwargs(kwargs)
+                except (TypeError, ValueError) as exc:
+                    raise FactoryException(f'Error in {self._data_key}.{template}: {exc}')
+                try:
+                    components.append(component_class(**kwargs))
+                except TypeError as exc:
+                    raise FactoryException(f'Error in {self._data_key}.{template}: {exc}')
+        return self._world.create_entity(*components)
+
+    def _convert_data(self, data: dict) -> dict:
+        """Convert data to globals."""
+        new_data = {}
+        for key, value in data.items():
+            new_data[key] = value
+            converted = convert_datum(value)
+            if converted is not None:
+                new_data[key] = converted
+            else:
+                try:
+                    if value.startswith(ON_CREATE):
+                        converted_func = parse(value[len(ON_CREATE):], self._rng)
+                        if converted_func is not None:
+                            new_data[key] = converted_func()
+                except AttributeError:
+                    pass
+        return new_data
 
 
-def make_player(loader: DataLoader, world: World, templates: List[str]) -> Entity:
-    """Make a player and add it to the world."""
-    if 'BasicPlayer' not in templates:
-        templates.insert(0, 'BasicPlayer')
-    pos = random.choice(world.map.spawns_player())
-    ent = make_entity(loader, world, 'assemblage.player', pos, templates)
-    world.players.add(ent)
-    return ent
+class PlayerFactory(BaseEntityFactory):
+    """Factory for creating Player entities."""
+
+    def __init__(self, loader: DataLoader, world: World) -> None:
+        super().__init__(loader, world)
+        self._rng = RNGCache.get('PlayerFactory')
+        self._data_key = 'assemblage.player'
+
+    def make(self, templates: List[str]) -> Entity:
+        """Make a player entity."""
+        if 'BasicPlayer' not in templates:
+            templates.insert(0, 'BasicPlayer')
+        ent = self._make_entity(templates)
+        self._world.players.add(ent)
+        # TODO: should placement be elsewhere?
+        self.place_entity(ent, self._rng.choice(self._world.map.spawns_player()))
+        return ent
 
 
-def make_enemy(loader: DataLoader, world: World, templates: List[str]) -> Entity:
-    """Make an enemy and add it to the world."""
-    if 'BasicEnemy' not in templates:
-        templates.insert(0, 'BasicEnemy')
-    pos = random.choice(world.map.spawns_enemy())
-    return make_entity(loader, world, 'assemblage.enemy', pos, templates)
+class EnemyFactory(BaseEntityFactory):
+    """Factory for creating Enemy entities."""
+
+    def __init__(self, loader: DataLoader, world: World) -> None:
+        super().__init__(loader, world)
+        self._rng = RNGCache.get('EnemyFactory')
+        self._data_key = 'assemblage.enemy'
+
+    def make(self, templates: List[str]) -> Entity:
+        """Make a player entity."""
+        if 'BasicEnemy' not in templates:
+            templates.insert(0, 'BasicEnemy')
+        ent = self._make_entity(templates)
+        # TODO: should placement be elsewhere?
+        self.place_entity(ent, self._rng.choice(self._world.map.spawns_enemy()))
+        return ent
 
 
-def make_item(loader: DataLoader, world: World, templates: List[str]) -> Entity:
-    """Make an item and add it to the world."""
-    if 'BasicItem' not in templates:
-        templates.insert(0, 'BasicItem')
-    pos = random.choice(world.map.spawns_item())
-    return make_entity(loader, world, 'assemblage.item', pos, templates)
+class ItemFactory(BaseEntityFactory):
+    """Factory for creating Item entities."""
 
+    def __init__(self, loader: DataLoader, world: World) -> None:
+        super().__init__(loader, world)
+        self._rng = RNGCache.get('ItemFactory')
+        self._data_key = 'assemblage.item'
+
+    def make(self, templates: List[str]) -> Entity:
+        """Make a player entity."""
+        if 'BasicItem' not in templates:
+            templates.insert(0, 'BasicItem')
+        ent = self._make_entity(templates)
+        # TODO: should placement be elsewhere?
+        self.place_entity(ent, self._rng.choice(self._world.map.spawns_item()))
+        return ent
