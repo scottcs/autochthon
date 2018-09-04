@@ -23,6 +23,7 @@ from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialog
                                QWidget, QComboBox, QGridLayout, QSizePolicy, QScrollArea)
 
 from game.core.map import ClassicMap, Map
+from game.utils.random import RNGCache
 
 CONFIG_FILE = Path('data') / Path('config.json')
 STYLESHEET = Path('static/css/theme.qss')
@@ -418,6 +419,11 @@ class MapVisualizer(QWidget):
 
 def main() -> int:
     """ Main function """
+    try:
+        parent_seed = sys.argv[1]
+    except IndexError:
+        parent_seed = 'MapVisualizer'
+    RNGCache.init(parent_seed)
     app = QApplication(sys.argv)
     with STYLESHEET.open() as f:
         app.setStyleSheet(f.read())
