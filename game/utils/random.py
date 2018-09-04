@@ -39,7 +39,7 @@ class GameRNG:
         """Return whether not a percentage roll succeeds."""
         return self._rng.get_next_uint(precision) > (percent * precision)
 
-    def choice(self, options: Sequence[Any]) -> int:
+    def choice(self, options: Sequence[Any]) -> Any:
         """Return a random choice amongst the options."""
         return options[self.rand(len(options) - 1)]
 
