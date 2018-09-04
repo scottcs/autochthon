@@ -59,12 +59,21 @@ class Game:
         self.game_over: bool = False
         self.player_acted: bool = False
         self.world: World = World()
-        self.state: GameState = GameState.PLAYING
+        self.state: GameState = GameState.unknown
         self.morgue = setup_morgue(config['morgue']['directory'], 'UNKNOWN')
-        RNGCache.init(config.get('seed', None))
         version_string = f'* {config["title"]} version {VERSION}'
         log.info(version_string)
         self.morgue.info(version_string)
+
+        # TODO: menu state first
+        # TODO: allow player to set seed and pass it here
+        self.set_state_playing(render_processor)
+
+    def set_state_playing(self, render_processor: esper.Processor,
+                          seed: Optional[str]=None) -> None:
+        """Set the game state to playing."""
+        RNGCache.init(seed)
+        self.state: GameState = GameState.playing
 
         GameLogEvent.handle(self._on_game_log)
         GameOverEvent.handle(self._on_game_over)

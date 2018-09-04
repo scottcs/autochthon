@@ -12,14 +12,14 @@ Entity = int
 
 class RenderLayer(Enum):
     """Render layers, from bottom to top."""
-    BACKGROUND = auto()
-    FLOOR = auto()
-    ITEM = auto()
-    WALL = auto()
-    ICON = auto()
-    ENEMY = auto()
-    PLAYER = auto()
-    EFFECT = auto()
+    background = auto()
+    floor = auto()
+    item = auto()
+    wall = auto()
+    icon = auto()
+    enemy = auto()
+    player = auto()
+    effect = auto()
 
 
 class Priority(IntEnum):
@@ -53,13 +53,13 @@ class ProcessGroup(Enum):
 
 class GameState(Enum):
     """Game states."""
-    UNKNOWN = auto()
-    LOADING = auto()
-    MAIN_MENU = auto()
-    CREATING = auto()
-    PLAYING = auto()
-    IN_GAME_MENU = auto()
-    SHUTDOWN = auto()
+    unknown = auto()
+    loading = auto()
+    main_menu = auto()
+    creating = auto()
+    playing = auto()
+    in_game_menu = auto()
+    shutdown = auto()
 
 
 class AttackType(Enum):
