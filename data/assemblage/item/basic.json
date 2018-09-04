@@ -7,7 +7,7 @@
       "render.Renderable": {
         "tile_id": "item_feather",
         "tint": "Palette.white",
-        "layer": "RenderLayer.ITEM"
+        "layer": "RenderLayer.item"
       },
       "movement.Position": {}
     }

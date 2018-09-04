@@ -14,7 +14,7 @@
       "render.Renderable": {
         "tile_id": "monster_firefly",
         "tint": "Palette.cyan",
-        "layer": "RenderLayer.ENEMY"
+        "layer": "RenderLayer.enemy"
       },
       "attack.AttackDodgeModifier": {
         "factor": 0.3

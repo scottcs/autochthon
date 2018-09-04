@@ -7,7 +7,7 @@
       "render.Renderable": {
         "tile_id": "item_mace",
         "tint": "Palette.cyan",
-        "layer": "RenderLayer.ITEM"
+        "layer": "RenderLayer.item"
       },
       "damage.ModifierInflictDamageBludgeoning": {
         "addend": "2d8"

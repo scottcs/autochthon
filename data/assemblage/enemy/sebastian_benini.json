@@ -14,7 +14,7 @@
       "render.Renderable": {
         "tile_id": "monster_humanC1",
         "tint": "Palette.orange",
-        "layer": "RenderLayer.ENEMY"
+        "layer": "RenderLayer.enemy"
       },
       "damage.ModifierInflictDamagePiercing": {
         "addend": "2d5+10"

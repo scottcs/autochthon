@@ -12,7 +12,7 @@
       "render.Renderable": {
         "tile_id": "monster_orc4",
         "tint": "Palette.red",
-        "layer": "RenderLayer.ENEMY"
+        "layer": "RenderLayer.enemy"
       }
     }
   }

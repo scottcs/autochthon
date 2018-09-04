@@ -20,7 +20,7 @@
       "render.Renderable": {
         "tile_id": "monster_crab",
         "tint": "Palette.orange",
-        "layer": "RenderLayer.ENEMY"
+        "layer": "RenderLayer.enemy"
       }
     }
   }

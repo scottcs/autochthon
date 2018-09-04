@@ -11,7 +11,7 @@
       "render.Renderable": {
         "tile_id": "monster_boar",
         "tint": "Palette.blue",
-        "layer": "RenderLayer.ENEMY"
+        "layer": "RenderLayer.enemy"
       }
     }
   }

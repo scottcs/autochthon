@@ -8,7 +8,7 @@
       "render.Renderable": {
         "tile_id": "item_armorH",
         "tint": "Palette.green",
-        "layer": "RenderLayer.ITEM"
+        "layer": "RenderLayer.item"
       },
       "attack.AttackHitModifier": {
         "factor": 0.05
