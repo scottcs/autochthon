@@ -13,7 +13,6 @@ from game.utils.pcg32 import PCG32Generator
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
-MAX_UINT32 = 4294967295
 WEIGHTED_DEF = re.compile(r'(?<=^weighted\(\()([^)]+)\), \(([^)]+)\)\)')
 STEP_DEF = re.compile(r'(?<=^step\()([^)]+)\)')
 DIE_DEF = re.compile(r'(\d+d\d+)([+-]\d+)?')
@@ -29,15 +28,14 @@ class GameRNG:
 
     def rand(self, lower: int=0, upper: int=0) -> int:
         """Return a random integer in range [lower, upper], including both endpoints."""
-        if upper > 0:
-            start = lower
-            bound = upper - lower
-        elif lower > 0:
-            start = 0
-            bound = lower
+        lower = max(lower, 0)
+        upper = max(upper, 0)
+        if upper:
+            return lower + self._rng.get_next_uint((upper - lower) + 1)
+        elif lower:
+            return self._rng.get_next_uint(lower + 1)
         else:
             return self._rng.get_next_uint32()
-        return start + self._rng.get_next_uint(bound + 1)
 
     def percent(self, percent: float, precision: Optional[int]=1000) -> bool:
         """Return whether not a percentage roll succeeds."""
@@ -55,10 +53,10 @@ class GameRNG:
 class RNGCache:
     """Random number generator cache."""
 
-    seed = None
-    _rng = None
-    _cache = {}
-    _collision_check = {}
+    seed: str = None
+    _rng: PCG32Generator = None
+    _cache: dict = {}
+    _collision_check: dict = {}
 
     @classmethod
     def init(cls, seed: Optional[str]=None) -> None:
@@ -103,7 +101,7 @@ class RNGCache:
             if cls._rng is None:
                 word = lines[random.randrange(0, len(lines))].strip()
             else:
-                word = lines[cls._rng.rand(len(lines))].strip()
+                word = lines[cls._rng.get_next_uint(len(lines))].strip()
             result += word.capitalize()
         return result
 
