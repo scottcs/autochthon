@@ -28,11 +28,9 @@ class GameRNG:
 
     def rand(self, lower: int=0, upper: int=0) -> int:
         """Return a random integer in range [lower, upper], including both endpoints."""
-        lower = max(lower, 0)
-        upper = max(upper, 0)
-        if upper:
+        if upper > lower:
             return lower + self._rng.get_next_uint((upper - lower) + 1)
-        elif lower:
+        elif lower != 0:
             return self._rng.get_next_uint(lower + 1)
         else:
             return self._rng.get_next_uint32()

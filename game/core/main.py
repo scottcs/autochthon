@@ -73,7 +73,7 @@ class Game:
                           seed: Optional[str]=None) -> None:
         """Set the game state to playing."""
         RNGCache.init(seed)
-        self.state: GameState = GameState.playing
+        self.state = GameState.playing
 
         GameLogEvent.handle(self._on_game_log)
         GameOverEvent.handle(self._on_game_over)
