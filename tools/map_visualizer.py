@@ -3,24 +3,21 @@
 This tool is used to quickly visualize map generation algorithms.
 
 TODO: show layers, save image with visible layers, layer colors
-TODO: generate multiple runs
-TODO: generate from specific seed
 TODO: specify layers drawn
 TODO: render path analysis and loops analysis
 
 """
 import json
 from pathlib import Path
+import pydoc
 import sys
 from typing import Optional, Any, Tuple
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QImage, QPainter, QPalette, QColor, QPixmap, qRgb, QIntValidator
-from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialogButtonBox,
-                               QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
-                               QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
-                               QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
-                               QWidget, QComboBox, QGridLayout, QSizePolicy, QScrollArea)
+from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb, QIntValidator
+from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
+                               QMessageBox, QPushButton, QSpacerItem, QVBoxLayout,
+                               QWidget, QComboBox, QGridLayout, QScrollArea)
 
 from game.core.map import ClassicMap, Map
 from game.utils.random import RNGCache
@@ -35,9 +32,9 @@ ALGORITHMS = {
     'ClassicMap': {
         'class': ClassicMap,
         'opts': {
-            'max_rooms': {'type': int, 'min': 0, 'max': 1000, 'default': 50},
-            'room_min_size': {'type': int, 'min': 0, 'max': 1000, 'default': 5},
-            'room_max_size': {'type': int, 'min': 0, 'max': 1000, 'default': 20},
+            'max_rooms': {'type': 'int', 'min': 0, 'max': 1000, 'default': 50},
+            'room_min_size': {'type': 'int', 'min': 0, 'max': 1000, 'default': 5},
+            'room_max_size': {'type': 'int', 'min': 0, 'max': 1000, 'default': 20},
         },
     },
 }
@@ -112,6 +109,8 @@ class MapSizeWidget(QWidget):
 class AlgorithmParametersWidget(QWidget):
     """Map algorithm parameters."""
 
+    params_changed = Signal()
+
     def __init__(self, algorithm: str, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         self.algorithm = algorithm
@@ -124,19 +123,31 @@ class AlgorithmParametersWidget(QWidget):
         row = 0
         for opt, data in ALGORITHMS[algorithm]['opts'].items():
             layout.addWidget(QLabel(f'{opt.capitalize()}: '), row, 0, Qt.AlignVCenter)
-            if data['type'] == int:
+            if data['type'] == 'int':
                 self.line_edits[opt] = QLineEdit()
                 self.line_edits[opt].setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
                 self.line_edits[opt].setFixedWidth(50)
                 self.line_edits[opt].setText(str(data['default']))
                 self.line_edits[opt].setValidator(QIntValidator(data['min'], data['max'], self))
                 layout.addWidget(self.line_edits[opt], row, 1, Qt.AlignTop)
+                self.line_edits[opt].editingFinished.connect(self._on_params_changed)
             else:
                 msg_error(f'Option type {data["type"]} is not implemented!', self)
                 break
             row += 1
         layout.setColumnStretch(2, 1)
         self.setLayout(layout)
+
+    def get_params(self) -> dict:
+        """Get the params as a dict."""
+        params = {}
+        for opt, line in self.line_edits.items():
+            data = ALGORITHMS[self.algorithm]['opts'][opt]
+            params[opt] = pydoc.locate(data['type'])(line.text())
+        return params
+
+    def _on_params_changed(self) -> None:
+        self.params_changed.emit()
 
 
 class AlgorithmWidget(QWidget):
@@ -169,15 +180,23 @@ class AlgorithmWidget(QWidget):
         self.setLayout(self.layout)
 
         self.choice.currentIndexChanged.connect(self._on_algorithm_changed)
+        self.params.params_changed.connect(self._on_params_changed)
 
     def get_algorithm(self) -> str:
         """Get the chosen algorithm."""
         return self.choice.currentText()
 
+    def get_params(self) -> dict:
+        """Get the algorithm parameters."""
+        return self.params.get_params()
+
     def _on_algorithm_changed(self) -> None:
         self.layout.removeWidget(self.params)
         self.params = AlgorithmParametersWidget(self.get_algorithm())
         self.layout.addWidget(self.params)
+        self.algorithm_changed.emit()
+
+    def _on_params_changed(self) -> None:
         self.algorithm_changed.emit()
 
 
@@ -271,6 +290,7 @@ class OptionsWidget(QWidget):
             'scale': self.map_size.get_scale(),
             'algorithm': self.algorithm.get_algorithm(),
             'seed': self.seed.get_seed(),
+            'params': self.algorithm.get_params(),
         }
 
 
@@ -498,7 +518,8 @@ class MapVisualizer(QWidget):
             return
         self.game_map = map_class(self.map_config['max_tiles_w'],
                                   self.map_config['max_tiles_h'],
-                                  seed=self.map_config['seed'])
+                                  seed=self.map_config['seed'],
+                                  config=self.map_config.get('params'))
         self.game_map.create()
         self.central.set_map(self.game_map, self.map_config.get('gui_scale', 1))
 
@@ -513,6 +534,7 @@ class MapVisualizer(QWidget):
         self.map_config['gui_scale'] = opts['scale']
         self.map_config['algorithm'] = opts['algorithm']
         self.map_config['seed'] = opts['seed']
+        self.map_config['params'] = opts['params']
         self._on_seed_reset()
 
     def _on_scale_changed(self, scale: int):
@@ -544,4 +566,3 @@ def main() -> int:
 
 if __name__ == '__main__':
     sys.exit(main())
-
