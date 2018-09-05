@@ -27,7 +27,7 @@ from game.utils.random import RNGCache
 
 CONFIG_FILE = Path('data') / Path('config.json')
 STYLESHEET = Path('static/css/theme.qss')
-MIN_WIDTH, MIN_HEIGHT = 850, 825
+MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 # Rather than using `globals()`, add map algorithms to a table
 # TODO: Maybe we can define this in the map module and use it there too? Or in data files?
@@ -189,7 +189,7 @@ class SeedWidget(QWidget):
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
-        layout = QHBoxLayout()
+        layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
@@ -204,7 +204,6 @@ class SeedWidget(QWidget):
         layout.addWidget(QLabel('Seed:'))
         layout.addWidget(self.value)
         layout.addWidget(self.reset_button)
-        layout.addStretch()
 
         self.setLayout(layout)
 
@@ -231,17 +230,19 @@ class OptionsWidget(QWidget):
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         layout.setSpacing(0)
-        layout.setMargin(0)
+        layout.setMargin(4)
+        self.setMaximumWidth(250)
 
         self.map_size = MapSizeWidget()
-        self.algorithm = AlgorithmWidget()
         self.seed = SeedWidget()
+        self.algorithm = AlgorithmWidget()
 
-        layout.addWidget(self.map_size, 0, 0, Qt.AlignTop)
-        layout.addWidget(self.algorithm, 0, 1, 10, 1, Qt.AlignTop)
-        layout.addWidget(self.seed, 1, 0, Qt.AlignTop)
+        layout.addWidget(self.map_size)
+        layout.addWidget(self.seed)
+        layout.addWidget(self.algorithm)
+        layout.addStretch()
 
         self.setLayout(layout)
 
@@ -296,8 +297,9 @@ class ButtonsWidget(QWidget):
         self.save_image_button.setDefault(False)
 
         layout.addStretch()
-        layout.addWidget(self.generate_button)
         layout.addSpacerItem(QSpacerItem(80, 1))
+        layout.addWidget(self.generate_button)
+        layout.addStretch()
         layout.addWidget(self.save_image_button)
         self.setLayout(layout)
 
@@ -405,6 +407,10 @@ class ImageWidget(QWidget):
 class CentralWidget(QWidget):
     """Map Visualizer central widget."""
 
+    options_changed = Signal(dict)
+    scale_changed = Signal(int)
+    seed_reset = Signal()
+
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         layout = QHBoxLayout()
@@ -416,11 +422,17 @@ class CentralWidget(QWidget):
         self.scroll_area.setObjectName('image')
         self.image_widget = ImageWidget()
         self.scroll_area.setWidget(self.image_widget)
+        self.options = OptionsWidget()
 
         layout.addWidget(self.layers)
         layout.addWidget(self.scroll_area)
+        layout.addWidget(self.options)
 
         self.setLayout(layout)
+
+        self.options.options_changed.connect(self._on_options_changed)
+        self.options.scale_changed.connect(self._on_scale_changed)
+        self.options.seed_reset.connect(self._on_seed_reset)
 
     def set_map(self, game_map: Map, scale_factor: int) -> None:
         """Set our map."""
@@ -430,6 +442,19 @@ class CentralWidget(QWidget):
     def save_image(self, filename: str) -> None:
         """Save the current map to a file."""
         self.image_widget.save(filename)
+
+    def get_options(self) -> dict:
+        """Get options."""
+        return self.options.get_options()
+
+    def _on_options_changed(self, options: dict) -> None:
+        self.options_changed.emit(options)
+
+    def _on_scale_changed(self, scale: int) -> None:
+        self.scale_changed.emit(scale)
+
+    def _on_seed_reset(self) -> None:
+        self.seed_reset.emit()
 
 
 class MapVisualizer(QWidget):
@@ -449,23 +474,21 @@ class MapVisualizer(QWidget):
         layout.setSpacing(10)
         layout.setMargin(10)
 
-        self.options = OptionsWidget()
         self.central = CentralWidget()
         self.buttons = ButtonsWidget()
 
-        layout.addWidget(self.options)
         layout.addWidget(self.central)
         layout.addWidget(self.buttons)
         self.setLayout(layout)
 
         self.buttons.generate_map.connect(self._on_generate_map)
         self.buttons.save_image.connect(self._on_save_image)
-        self.options.options_changed.connect(self._on_options_changed)
-        self.options.scale_changed.connect(self._on_scale_changed)
-        self.options.seed_reset.connect(self._on_seed_reset)
+        self.central.options_changed.connect(self._on_options_changed)
+        self.central.scale_changed.connect(self._on_scale_changed)
+        self.central.seed_reset.connect(self._on_seed_reset)
 
         self.buttons.generate_button.setFocus()
-        self._on_options_changed(self.options.get_options())
+        self._on_options_changed(self.central.get_options())
 
     def _on_generate_map(self) -> None:
         try:
