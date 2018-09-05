@@ -27,17 +27,17 @@ from game.utils.random import RNGCache
 
 CONFIG_FILE = Path('data') / Path('config.json')
 STYLESHEET = Path('static/css/theme.qss')
-MIN_WIDTH, MIN_HEIGHT = 850, 775
+MIN_WIDTH, MIN_HEIGHT = 850, 825
 
 # Rather than using `globals()`, add map algorithms to a table
-# TODO: Maybe we can define this in the map module and use it there too?
+# TODO: Maybe we can define this in the map module and use it there too? Or in data files?
 ALGORITHMS = {
     'ClassicMap': {
         'class': ClassicMap,
         'opts': {
-            'max_rooms': int,
-            'room_min_size': int,
-            'room_max_size': int,
+            'max_rooms': {'type': int, 'min': 0, 'max': 1000, 'default': 50},
+            'room_min_size': {'type': int, 'min': 0, 'max': 1000, 'default': 5},
+            'room_max_size': {'type': int, 'min': 0, 'max': 1000, 'default': 20},
         },
     },
 }
@@ -109,6 +109,36 @@ class MapSizeWidget(QWidget):
         self.scale_changed.emit()
 
 
+class AlgorithmParametersWidget(QWidget):
+    """Map algorithm parameters."""
+
+    def __init__(self, algorithm: str, parent: Optional[QWidget]=None) -> None:
+        super().__init__(parent)
+        self.algorithm = algorithm
+        self.line_edits = {}
+
+        layout = QGridLayout()
+        layout.setSpacing(4)
+        layout.setMargin(0)
+
+        row = 0
+        for opt, data in ALGORITHMS[algorithm]['opts'].items():
+            layout.addWidget(QLabel(f'{opt.capitalize()}: '), row, 0, Qt.AlignVCenter)
+            if data['type'] == int:
+                self.line_edits[opt] = QLineEdit()
+                self.line_edits[opt].setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
+                self.line_edits[opt].setFixedWidth(50)
+                self.line_edits[opt].setText(str(data['default']))
+                self.line_edits[opt].setValidator(QIntValidator(data['min'], data['max'], self))
+                layout.addWidget(self.line_edits[opt], row, 1, Qt.AlignTop)
+            else:
+                msg_error(f'Option type {data["type"]} is not implemented!', self)
+                break
+            row += 1
+        layout.setColumnStretch(2, 1)
+        self.setLayout(layout)
+
+
 class AlgorithmWidget(QWidget):
     """Map algorithm."""
 
@@ -116,18 +146,27 @@ class AlgorithmWidget(QWidget):
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
-        layout = QHBoxLayout()
-        layout.setSpacing(0)
-        layout.setMargin(0)
+        self.layout = QVBoxLayout()
+        self.layout.setSpacing(0)
+        self.layout.setMargin(0)
+
+        choice_layout = QHBoxLayout()
+        choice_layout.setSpacing(0)
+        choice_layout.setMargin(0)
 
         self.choice = QComboBox()
         self.choice.addItems(list(ALGORITHMS.keys()))
 
-        layout.addWidget(QLabel('Algorithm:'))
-        layout.addWidget(self.choice)
-        layout.addStretch()
+        choice_layout.addWidget(QLabel('Algorithm:'))
+        choice_layout.addWidget(self.choice)
+        choice_layout.addStretch()
+        self.layout.addLayout(choice_layout)
 
-        self.setLayout(layout)
+        self.params = AlgorithmParametersWidget(self.get_algorithm())
+        self.layout.addSpacerItem(QSpacerItem(1, 10))
+        self.layout.addWidget(self.params)
+
+        self.setLayout(self.layout)
 
         self.choice.currentIndexChanged.connect(self._on_algorithm_changed)
 
@@ -136,6 +175,9 @@ class AlgorithmWidget(QWidget):
         return self.choice.currentText()
 
     def _on_algorithm_changed(self) -> None:
+        self.layout.removeWidget(self.params)
+        self.params = AlgorithmParametersWidget(self.get_algorithm())
+        self.layout.addWidget(self.params)
         self.algorithm_changed.emit()
 
 
@@ -198,7 +240,7 @@ class OptionsWidget(QWidget):
         self.seed = SeedWidget()
 
         layout.addWidget(self.map_size, 0, 0, Qt.AlignTop)
-        layout.addWidget(self.algorithm, 0, 1, Qt.AlignTop)
+        layout.addWidget(self.algorithm, 0, 1, 10, 1, Qt.AlignTop)
         layout.addWidget(self.seed, 1, 0, Qt.AlignTop)
 
         self.setLayout(layout)
