@@ -64,17 +64,17 @@ class MapSizeWidget(QWidget):
         v_scale = QIntValidator(1, 20, self)
         self.map_width = QLineEdit()
         self.map_width.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_width.setFixedWidth(30)
+        self.map_width.setFixedWidth(32)
         self.map_width.setText('100')
         self.map_width.setValidator(v_size)
         self.map_height = QLineEdit()
         self.map_height.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_height.setFixedWidth(30)
+        self.map_height.setFixedWidth(32)
         self.map_height.setText('100')
         self.map_height.setValidator(v_size)
         self.map_scale = QLineEdit()
         self.map_scale.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_scale.setFixedWidth(30)
+        self.map_scale.setFixedWidth(24)
         self.map_scale.setText('6')
         self.map_scale.setValidator(v_scale)
 
@@ -448,10 +448,11 @@ class MapVisualizer(QWidget):
         self.map_config['gui_scale'] = opts['scale']
         self.map_config['algorithm'] = opts['algorithm']
         self.map_config['seed'] = opts['seed']
-        self._on_generate_map()
+        self._on_seed_reset()
 
     def _on_scale_changed(self, scale: int):
         if self.game_map:
+            self.map_config['gui_scale'] = scale
             self.central.set_map(self.game_map, scale)
 
     def _on_seed_reset(self) -> None:
