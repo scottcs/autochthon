@@ -2,8 +2,6 @@
 
 This tool is used to quickly visualize map generation algorithms.
 
-TODO: show layers, save image with visible layers, layer colors
-TODO: specify layers drawn
 TODO: render path analysis and loops analysis
 
 """
@@ -19,14 +17,21 @@ from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, Q
                                QMessageBox, QPushButton, QSpacerItem, QVBoxLayout, QCheckBox,
                                QWidget, QComboBox, QGridLayout, QScrollArea)
 
-from game.core.map import ClassicMap, Map
+from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
 
 CONFIG_FILE = Path('data') / Path('config.json')
 STYLESHEET = Path('static/css/theme.qss')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
-MAP_LAYERS = ['base', 'walkable', 'transparent', 'spawnable_player',
-              'spawnable_enemy', 'spawnable_item']
+
+MAP_LAYERS = {
+    'base': qRgb(65, 43, 21),
+    'transparent': qRgb(165, 100, 165),
+    'walkable': qRgb(100, 100, 100),
+    'spawnable_enemy': qRgb(165, 165, 165),
+    'spawnable_item': qRgb(100, 165, 100),
+    'spawnable_player': qRgb(165, 255, 255),
+}
 
 # Rather than using `globals()`, add map algorithms to a table
 # TODO: Maybe we can define this in the map module and use it there too? Or in data files?
@@ -365,6 +370,8 @@ class LayersItem(QWidget):
 class LayersWidget(QWidget):
     """Map Visualizer layers widget."""
 
+    layer_state_changed = Signal(str, bool)
+
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout()
@@ -373,8 +380,11 @@ class LayersWidget(QWidget):
         self.setFixedWidth(200)
 
         layout.addWidget(QLabel('Layers:'))
+        layout.addSpacerItem(QSpacerItem(1, 10))
         self.layers = []
-        for layer in MAP_LAYERS:
+        for layer in reversed(list(MAP_LAYERS.keys())):
+            if layer == 'base':
+                continue
             item = LayersItem(layer)
             self.layers.append(item)
             layout.addWidget(item)
@@ -384,7 +394,7 @@ class LayersWidget(QWidget):
         self.setLayout(layout)
 
     def _on_layer_state_changed(self, name: str, checked: bool) -> None:
-        print(name, checked)
+        self.layer_state_changed.emit(name, checked)
 
 
 class ImageWidget(QWidget):
@@ -393,22 +403,15 @@ class ImageWidget(QWidget):
         super().__init__(parent)
         self.img = None
         self.pixmap = None
+        self.layers = {n: True for n in MAP_LAYERS.keys()}
         self.show()
 
     def draw_map(self, game_map: Map, scale_factor: int) -> None:
         """Draw the map to an image."""
-        # TODO: Use QImage.Format_ARGB32_Premultiplied?
         img = QImage(game_map.width, game_map.height, QImage.Format_RGB32)
 
         for cell in game_map:
-            if cell.spawnable_player:
-                color = qRgb(100, 100, 165)
-            elif cell.spawnable_enemy:
-                color = qRgb(165, 165, 165)
-            elif cell.walkable:
-                color = qRgb(100, 100, 100)
-            else:
-                color = qRgb(65, 43, 21)
+            color = self._get_cell_color(cell)
             img.setPixel(cell.x, cell.y, color)
         self.img = img.scaled(game_map.width * scale_factor,
                               game_map.height * scale_factor,
@@ -438,6 +441,19 @@ class ImageWidget(QWidget):
             painter.drawPixmap(0, 0, self.pixmap)
             painter.end()
 
+    def set_layer(self, name: str, enabled: bool) -> None:
+        """Set a particular layer to enabled or disabled."""
+        self.layers[name] = enabled
+
+    def _get_cell_color(self, cell: MapCell) -> qRgb:
+        color = MAP_LAYERS['base']
+        # color gets replaced by each layer in order until the highest wins
+        for layer_name, layer_color in MAP_LAYERS.items():
+            if self.layers[layer_name]:
+                if hasattr(cell, layer_name) and getattr(cell, layer_name):
+                    color = layer_color
+        return color
+
 
 class CentralWidget(QWidget):
     """Map Visualizer central widget."""
@@ -448,6 +464,8 @@ class CentralWidget(QWidget):
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
+        self.game_map = None
+        self.scale_factor = 1
         layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
@@ -465,13 +483,16 @@ class CentralWidget(QWidget):
 
         self.setLayout(layout)
 
+        self.layers.layer_state_changed.connect(self._on_layer_state_changed)
         self.options.options_changed.connect(self._on_options_changed)
         self.options.scale_changed.connect(self._on_scale_changed)
         self.options.seed_reset.connect(self._on_seed_reset)
 
     def set_map(self, game_map: Map, scale_factor: int) -> None:
         """Set our map."""
-        self.image_widget.draw_map(game_map, scale_factor)
+        self.game_map = game_map
+        self.scale_factor = scale_factor
+        self.image_widget.draw_map(self.game_map, self.scale_factor)
         self.image_widget.repaint()
 
     def save_image(self, filename: str) -> None:
@@ -481,6 +502,11 @@ class CentralWidget(QWidget):
     def get_options(self) -> dict:
         """Get options."""
         return self.options.get_options()
+
+    def _on_layer_state_changed(self, name: str, enabled: bool) -> None:
+        self.image_widget.set_layer(name, enabled)
+        self.image_widget.draw_map(self.game_map, self.scale_factor)
+        self.image_widget.repaint()
 
     def _on_options_changed(self, options: dict) -> None:
         self.options_changed.emit(options)
