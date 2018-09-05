@@ -129,7 +129,7 @@ class AlgorithmWidget(QWidget):
 
         self.setLayout(layout)
 
-        self.choice.currentTextChanged.connect(self._on_algorithm_changed)
+        self.choice.currentIndexChanged.connect(self._on_algorithm_changed)
 
     def get_algorithm(self) -> str:
         """Get the chosen algorithm."""
