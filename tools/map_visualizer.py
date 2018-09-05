@@ -16,7 +16,7 @@ from typing import Optional, Any, Tuple
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb, QIntValidator
 from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
-                               QMessageBox, QPushButton, QSpacerItem, QVBoxLayout,
+                               QMessageBox, QPushButton, QSpacerItem, QVBoxLayout, QCheckBox,
                                QWidget, QComboBox, QGridLayout, QScrollArea)
 
 from game.core.map import ClassicMap, Map
@@ -25,6 +25,8 @@ from game.utils.random import RNGCache
 CONFIG_FILE = Path('data') / Path('config.json')
 STYLESHEET = Path('static/css/theme.qss')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
+MAP_LAYERS = ['base', 'walkable', 'transparent', 'spawnable_player',
+              'spawnable_enemy', 'spawnable_item']
 
 # Rather than using `globals()`, add map algorithms to a table
 # TODO: Maybe we can define this in the map module and use it there too? Or in data files?
@@ -336,17 +338,28 @@ class ButtonsWidget(QWidget):
 class LayersItem(QWidget):
     """Map Visualizer Layer item widget."""
 
+    state_changed = Signal(str, bool)
+
     def __init__(self, name: str, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
-        layout = QVBoxLayout()
-        layout.setSpacing(0)
+        layout = QHBoxLayout()
+        layout.setSpacing(8)
         layout.setMargin(0)
 
+        self.check = QCheckBox()
+        self.check.setChecked(True)
         self.name = QLabel(name)
 
+        layout.addWidget(self.check)
         layout.addWidget(self.name)
+        layout.addStretch()
 
         self.setLayout(layout)
+
+        self.check.stateChanged.connect(self._on_state_changed)
+
+    def _on_state_changed(self, state: int) -> None:
+        self.state_changed.emit(self.name.text(), bool(state))
 
 
 class LayersWidget(QWidget):
@@ -360,16 +373,18 @@ class LayersWidget(QWidget):
         self.setFixedWidth(200)
 
         layout.addWidget(QLabel('Layers:'))
-        layers = ['base', 'walkable', 'transparent', 'spawnable_player',
-                  'spawnable_enemy', 'spawnable_item']
         self.layers = []
-        for layer in layers:
+        for layer in MAP_LAYERS:
             item = LayersItem(layer)
             self.layers.append(item)
             layout.addWidget(item)
+            item.state_changed.connect(self._on_layer_state_changed)
         layout.addStretch()
 
         self.setLayout(layout)
+
+    def _on_layer_state_changed(self, name: str, checked: bool) -> None:
+        print(name, checked)
 
 
 class ImageWidget(QWidget):
