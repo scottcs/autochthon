@@ -1,6 +1,6 @@
 """Game map."""
 from __future__ import annotations
-from typing import List, Optional, Tuple, NamedTuple
+from typing import List, Optional, Tuple, NamedTuple, Mapping
 
 import numpy as np
 import tcod.map
@@ -29,11 +29,13 @@ class MapCell(NamedTuple):
 class Map(tcod.map.Map):
     """Game map."""
 
-    def __init__(self, width: int, height: int, seed: Optional[str]=None) -> None:
+    def __init__(self, width: int, height: int, seed: Optional[str]=None,
+                 config: Optional[Mapping]=None) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
         self._iter_x: int = 0
         self._iter_y: int = 0
+        self.config = config or {}
         self._rng = RNGCache.get(seed)
         self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
 
@@ -123,12 +125,11 @@ class Map(tcod.map.Map):
 class ClassicMap(Map):
     """Classic rogue-style map."""
 
-    def __init__(self, width: int, height: int, config: Optional[dict]=None) -> None:
-        super().__init__(width, height)
-        config = config or {}
-        self.max_rooms: int = config.get('max_rooms', 50)
-        self.room_min_size: int = config.get('room_min_size', 5)
-        self.room_max_size: int = config.get('room_max_size', 20)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.max_rooms: int = self.config.get('max_rooms', 50)
+        self.room_min_size: int = self.config.get('room_min_size', 5)
+        self.room_max_size: int = self.config.get('room_max_size', 20)
 
     def create_room(self, room: Rect) -> None:
         """Create a new room in the map at the given coordinates."""

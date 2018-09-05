@@ -27,7 +27,7 @@ from game.utils.random import RNGCache
 
 CONFIG_FILE = Path('data') / Path('config.json')
 STYLESHEET = Path('static/css/theme.qss')
-MIN_WIDTH, MIN_HEIGHT = 830, 750
+MIN_WIDTH, MIN_HEIGHT = 850, 775
 
 # Rather than using `globals()`, add map algorithms to a table
 # TODO: Maybe we can define this in the map module and use it there too?
@@ -52,6 +52,7 @@ class MapSizeWidget(QWidget):
     """Map size."""
 
     size_changed = Signal()
+    scale_changed = Signal()
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
@@ -89,17 +90,23 @@ class MapSizeWidget(QWidget):
 
         self.map_width.editingFinished.connect(self._on_size_changed)
         self.map_height.editingFinished.connect(self._on_size_changed)
-        self.map_scale.editingFinished.connect(self._on_size_changed)
+        self.map_scale.editingFinished.connect(self._on_scale_changed)
 
-    def get_size(self) -> Tuple[int, int, int]:
-        """Get the requested size and scale of the map."""
+    def get_size(self) -> Tuple[int, int]:
+        """Get the requested size of the map."""
         w = max(1, int(self.map_width.text()))
         h = max(1, int(self.map_height.text()))
-        s = max(1, int(self.map_scale.text()))
-        return w, h, s
+        return w, h
+
+    def get_scale(self) -> int:
+        """Get the requested scale of the map."""
+        return max(1, int(self.map_scale.text()))
 
     def _on_size_changed(self) -> None:
         self.size_changed.emit()
+
+    def _on_scale_changed(self) -> None:
+        self.scale_changed.emit()
 
 
 class AlgorithmWidget(QWidget):
@@ -136,6 +143,7 @@ class SeedWidget(QWidget):
     """Map seed."""
 
     seed_changed = Signal()
+    seed_reset = Signal()
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
@@ -146,14 +154,20 @@ class SeedWidget(QWidget):
         self.value = QLineEdit()
         self.value.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
         self.value.setText('1')
+        self.reset_button = QPushButton('Reset')
+        self.reset_button.setFocusPolicy(Qt.NoFocus)
+        self.reset_button.setAutoDefault(False)
+        self.reset_button.setDefault(False)
 
         layout.addWidget(QLabel('Seed:'))
         layout.addWidget(self.value)
+        layout.addWidget(self.reset_button)
         layout.addStretch()
 
         self.setLayout(layout)
 
         self.value.editingFinished.connect(self._on_seed_changed)
+        self.reset_button.clicked.connect(self._on_seed_reset)
 
     def get_seed(self) -> str:
         """Get the seed."""
@@ -162,11 +176,16 @@ class SeedWidget(QWidget):
     def _on_seed_changed(self) -> None:
         self.seed_changed.emit()
 
+    def _on_seed_reset(self) -> None:
+        self.seed_reset.emit()
+
 
 class OptionsWidget(QWidget):
     """Map Visualizer options."""
 
     options_changed = Signal(dict)
+    scale_changed = Signal(int)
+    seed_reset = Signal()
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
@@ -185,19 +204,28 @@ class OptionsWidget(QWidget):
         self.setLayout(layout)
 
         self.map_size.size_changed.connect(self._on_options_changed)
+        self.map_size.scale_changed.connect(self._on_scale_changed)
         self.algorithm.algorithm_changed.connect(self._on_options_changed)
         self.seed.seed_changed.connect(self._on_options_changed)
+        self.seed.seed_reset.connect(self._on_seed_reset)
 
     def _on_options_changed(self) -> None:
         self.options_changed.emit(self.get_options())
 
+    def _on_scale_changed(self) -> None:
+        scale = self.map_size.get_scale()
+        self.scale_changed.emit(scale)
+
+    def _on_seed_reset(self) -> None:
+        self.seed_reset.emit()
+
     def get_options(self) -> dict:
         """Get all options."""
-        width, height, scale = self.map_size.get_size()
+        width, height = self.map_size.get_size()
         return {
             'width': width,
             'height': height,
-            'scale': scale,
+            'scale': self.map_size.get_scale(),
             'algorithm': self.algorithm.get_algorithm(),
             'seed': self.seed.get_seed(),
         }
@@ -227,7 +255,7 @@ class ButtonsWidget(QWidget):
 
         layout.addStretch()
         layout.addWidget(self.generate_button)
-        layout.addStretch()
+        layout.addSpacerItem(QSpacerItem(80, 1))
         layout.addWidget(self.save_image_button)
         self.setLayout(layout)
 
@@ -371,6 +399,9 @@ class MapVisualizer(QWidget):
         self.setWindowTitle('Map Visualizer')
         self.setMinimumSize(MIN_WIDTH, MIN_HEIGHT)
         self.setObjectName('MainApp')
+        self.game_map = None
+
+        RNGCache.init(self.map_config['parent_seed'])
 
         layout = QVBoxLayout()
         layout.setSpacing(10)
@@ -388,20 +419,23 @@ class MapVisualizer(QWidget):
         self.buttons.generate_map.connect(self._on_generate_map)
         self.buttons.save_image.connect(self._on_save_image)
         self.options.options_changed.connect(self._on_options_changed)
+        self.options.scale_changed.connect(self._on_scale_changed)
+        self.options.seed_reset.connect(self._on_seed_reset)
 
         self.buttons.generate_button.setFocus()
         self._on_options_changed(self.options.get_options())
 
     def _on_generate_map(self) -> None:
-        # TODO: use seed
         try:
             map_class = ALGORITHMS[self.map_config['algorithm']]['class']
         except KeyError:
             msg_error(f'No such map class: "{self.map_config.get("algorithm", "")}"', self)
             return
-        game_map = map_class(self.map_config['max_tiles_w'], self.map_config['max_tiles_h'])
-        game_map.create()
-        self.central.set_map(game_map, self.map_config.get('gui_scale', 1))
+        self.game_map = map_class(self.map_config['max_tiles_w'],
+                                  self.map_config['max_tiles_h'],
+                                  seed=self.map_config['seed'])
+        self.game_map.create()
+        self.central.set_map(self.game_map, self.map_config.get('gui_scale', 1))
 
     def _on_save_image(self) -> None:
         filename = QFileDialog().getSaveFileName(
@@ -416,6 +450,14 @@ class MapVisualizer(QWidget):
         self.map_config['seed'] = opts['seed']
         self._on_generate_map()
 
+    def _on_scale_changed(self, scale: int):
+        if self.game_map:
+            self.central.set_map(self.game_map, scale)
+
+    def _on_seed_reset(self) -> None:
+        RNGCache.init(self.map_config['parent_seed'])
+        self._on_generate_map()
+
 
 def main() -> int:
     """ Main function """
@@ -423,12 +465,12 @@ def main() -> int:
         parent_seed = sys.argv[1]
     except IndexError:
         parent_seed = 'MapVisualizer'
-    RNGCache.init(parent_seed)
     app = QApplication(sys.argv)
     with STYLESHEET.open() as f:
         app.setStyleSheet(f.read())
     with CONFIG_FILE.open() as f:
         map_config = json.load(f)['map']
+    map_config['parent_seed'] = parent_seed
     map_visualizer = MapVisualizer(map_config)
     map_visualizer.show()
     return app.exec_()
