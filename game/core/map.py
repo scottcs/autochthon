@@ -133,8 +133,8 @@ class ClassicMap(Map):
 
     def create_room(self, room: Rect) -> None:
         """Create a new room in the map at the given coordinates."""
-        for x in range(room.p1.x + 1, room.p2.x):
-            for y in range(room.p1.y + 1, room.p2.y):
+        for x in range(room.p1.x, room.p2.x):
+            for y in range(room.p1.y, room.p2.y):
                 self.walkable[y, x] = True
                 self.transparent[y, x] = True
                 self.spawnable_enemy[y, x] = True

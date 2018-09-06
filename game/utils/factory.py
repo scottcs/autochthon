@@ -1,6 +1,6 @@
 """Factory utilities."""
 import logging
-from typing import Any, List, Optional
+from typing import Any, Optional, MutableSequence, Mapping, MutableMapping
 
 from game.component.movement import Position
 from game.utils.dataloader import DataLoader
@@ -48,7 +48,7 @@ def get_component_class(class_substring: str) -> Any:
     return getattr(_tmp, component_class)
 
 
-def validate_kwargs(kwargs: dict) -> None:
+def validate_kwargs(kwargs: MutableMapping) -> None:
     """Validate keyword arguments for components."""
     for key, value in kwargs.items():
         if value is None:
@@ -73,7 +73,7 @@ class BaseEntityFactory:
         self._rng: Optional[GameRNG] = None
         self._data_key: Optional[str] = None
 
-    def make(self, templates: List[str]) -> Entity:
+    def make(self, templates: MutableSequence[str]) -> Entity:
         """Make an entity."""
         raise NotImplementedError('Must implement in child class.')
 
@@ -83,7 +83,7 @@ class BaseEntityFactory:
         pos.x = at.x
         pos.y = at.y
 
-    def _make_entity(self, templates: List[str]) -> Entity:
+    def _make_entity(self, templates: MutableSequence[str]) -> Entity:
         """Make a new entity."""
         components = []
         for template in templates:
@@ -111,7 +111,7 @@ class BaseEntityFactory:
                     raise FactoryException(f'Error in {self._data_key}.{template}: {exc}')
         return self._world.create_entity(*components)
 
-    def _convert_data(self, data: dict) -> dict:
+    def _convert_data(self, data: Mapping) -> dict:
         """Convert data to globals."""
         new_data = {}
         for key, value in data.items():
@@ -138,7 +138,7 @@ class PlayerFactory(BaseEntityFactory):
         self._rng = RNGCache.get('PlayerFactory')
         self._data_key = 'assemblage.player'
 
-    def make(self, templates: List[str]) -> Entity:
+    def make(self, templates: MutableSequence[str]) -> Entity:
         """Make a player entity."""
         if 'BasicPlayer' not in templates:
             templates.insert(0, 'BasicPlayer')
@@ -157,7 +157,7 @@ class EnemyFactory(BaseEntityFactory):
         self._rng = RNGCache.get('EnemyFactory')
         self._data_key = 'assemblage.enemy'
 
-    def make(self, templates: List[str]) -> Entity:
+    def make(self, templates: MutableSequence[str]) -> Entity:
         """Make a player entity."""
         if 'BasicEnemy' not in templates:
             templates.insert(0, 'BasicEnemy')
@@ -175,7 +175,7 @@ class ItemFactory(BaseEntityFactory):
         self._rng = RNGCache.get('ItemFactory')
         self._data_key = 'assemblage.item'
 
-    def make(self, templates: List[str]) -> Entity:
+    def make(self, templates: MutableSequence[str]) -> Entity:
         """Make a player entity."""
         if 'BasicItem' not in templates:
             templates.insert(0, 'BasicItem')

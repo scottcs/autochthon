@@ -1,7 +1,7 @@
 """User input processing."""
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import esper
 
@@ -59,7 +59,7 @@ class PlayerInputProcessor(esper.Processor):
         except KeyError:
             return chr(code).lower()
 
-    def handle_keypress_playing(self, _modifiers: dict, key: str, _coords: Point) -> None:
+    def handle_keypress_playing(self, _modifiers: Mapping, key: str, _coords: Point) -> None:
         """Handle input event in the PLAYING state."""
         bump_up = key in 'kyu'
         bump_down = key in 'jbn'
