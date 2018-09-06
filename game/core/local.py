@@ -1,11 +1,12 @@
 """Local (non-server) game."""
+from typing import Mapping
 
 from game.events import GameOverEvent
 from game.core.main import Game
 from game.processor.render import TCODRenderProcessor
 
 
-def run_local(config: dict) -> None:
+def run_local(config: Mapping) -> None:
     """Run the game locally."""
     game = Game(TCODRenderProcessor(config['title'],
                                     width=config['local']['width'],

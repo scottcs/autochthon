@@ -2,7 +2,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, Mapping
 
 import tornado.ioloop
 import tornado.web
@@ -132,7 +132,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         return None
 
 
-def make_app(config: dict) -> tornado.web.Application:
+def make_app(config: Mapping) -> tornado.web.Application:
     """Make a new tornado app."""
     return tornado.web.Application([
         (r'/', MainHandler),
@@ -144,7 +144,7 @@ def make_app(config: dict) -> tornado.web.Application:
         compress_response=False)
 
 
-def run_server(config: dict) -> None:
+def run_server(config: Mapping) -> None:
     """Run the game as a websockets server."""
     port: int = config['server']['port']
     host: str = config['server']['host']

@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import pydoc
 import sys
-from typing import Optional, Any, Tuple
+from typing import Optional, Any, Tuple, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb, QIntValidator
@@ -508,7 +508,7 @@ class CentralWidget(QWidget):
         self.image_widget.draw_map(self.game_map, self.scale_factor)
         self.image_widget.repaint()
 
-    def _on_options_changed(self, options: dict) -> None:
+    def _on_options_changed(self, options: Mapping) -> None:
         self.options_changed.emit(options)
 
     def _on_scale_changed(self, scale: int) -> None:
@@ -521,9 +521,9 @@ class CentralWidget(QWidget):
 class MapVisualizer(QWidget):
     """Map Visualizer parent widget."""
 
-    def __init__(self, map_config: dict, parent: Optional[QWidget]=None) -> None:
+    def __init__(self, map_config: Mapping, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
-        self.map_config = map_config
+        self.map_config: MutableMapping = map_config
         self.setWindowTitle('Map Visualizer')
         self.setMinimumSize(MIN_WIDTH, MIN_HEIGHT)
         self.setObjectName('MainApp')
@@ -569,7 +569,7 @@ class MapVisualizer(QWidget):
             self, 'Save Map As', str(Path('~/Downloads').expanduser()), 'Image Files (*.png)')[0]
         self.central.save_image(filename)
 
-    def _on_options_changed(self, opts: dict) -> None:
+    def _on_options_changed(self, opts: Mapping) -> None:
         self.map_config['max_tiles_w'] = opts['width']
         self.map_config['max_tiles_h'] = opts['height']
         self.map_config['gui_scale'] = opts['scale']

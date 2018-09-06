@@ -4,7 +4,7 @@ from inspect import signature
 from pathlib import Path
 import re
 import sys
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Sequence, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QPalette, QColor
@@ -226,7 +226,7 @@ class FileLoadSave(QWidget):
         self.save_button.setDisabled(False)
         self.save_button.repaint()
 
-    def update_data(self, data: dict) -> None:
+    def update_data(self, data: MutableMapping) -> None:
         """Update the internal representation of the data."""
         new_json = json.dumps(data, sort_keys=True)
         if self.original_json != new_json:
@@ -350,7 +350,7 @@ class ComponentList(QWidget):
         except IndexError:
             pass
 
-    def update_items(self, items: list) -> None:
+    def update_items(self, items: Sequence) -> None:
         """Update the items in the list."""
         self.component_list.clear()
         self.component_list.addItems(items)
@@ -398,7 +398,7 @@ class ComponentDetailsTable(QTableWidget):
                             self.data[param_name] = new_data
             self.data_changed.emit(self.data)
 
-    def update_data(self, component_name: str, component_data: dict) -> None:
+    def update_data(self, component_name: str, component_data: MutableMapping) -> None:
         """Refresh the list."""
         self.data = component_data
         component_class = get_component_class(component_name)
@@ -463,7 +463,7 @@ class RenderableComponentDetails(QWidget):
         self.tint.currentIndexChanged.connect(self._send_data)
         self.layer.currentIndexChanged.connect(self._send_data)
 
-    def update_data(self, component_data: dict) -> None:
+    def update_data(self, component_data: Mapping) -> None:
         """Refresh the list."""
         tile_id = self.tile_id.findText(component_data['tile_id'])
         self.tile_id.setCurrentIndex(tile_id)
@@ -543,19 +543,19 @@ class ComponentPane(QWidget):
         if self.component_list.component_list.count() == 0:
             self.hide_data()
 
-    def _on_components_added(self, component_names: List[str]) -> None:
+    def _on_components_added(self, component_names: Sequence[str]) -> None:
         for component_name in component_names:
             self.data.setdefault(component_name, {})
         self.data_changed.emit({'Components': self.data})
         self.component_list.update_items(sorted(self.data.keys()))
         self.update()
 
-    def _on_data_changed(self, data: dict) -> None:
+    def _on_data_changed(self, data: MutableMapping) -> None:
         if self.selected:
             self.data[self.selected] = data
             self.data_changed.emit({'Components': self.data})
 
-    def update_data(self, data: dict) -> None:
+    def update_data(self, data: Mapping) -> None:
         """Update the data in this widget."""
         self.data = data['Components']
         self.component_list.update_items(sorted(self.data.keys()))
@@ -614,7 +614,7 @@ class AssemblageEditor(QWidget):
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
-    def _on_file_loaded(self, data: dict) -> None:
+    def _on_file_loaded(self, data: Mapping) -> None:
         self.render_widget.clear_sprite()
         for name, assemblage_data in data.items():
             self.assemblage_name.setText(name)
@@ -624,7 +624,7 @@ class AssemblageEditor(QWidget):
             break  # only one assemblage per file
         self.component_widget.hide_data()
 
-    def _on_data_changed(self, data: dict) -> None:
+    def _on_data_changed(self, data: Mapping) -> None:
         self.file_widget.update_data({self.assemblage_name.text(): data})
         self._update_render_widget(data)
 
@@ -634,7 +634,7 @@ class AssemblageEditor(QWidget):
         self.update()
         self.repaint()
 
-    def _update_render_widget(self, data: dict) -> None:
+    def _update_render_widget(self, data: Mapping) -> None:
         components = data.get('Components', {})
         renderable = components.get('render.Renderable', None)
         if renderable:
