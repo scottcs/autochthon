@@ -576,7 +576,6 @@ class MapVisualizer(QWidget):
         self.map_config['algorithm'] = opts['algorithm']
         self.map_config['seed'] = opts['seed']
         self.map_config['params'] = opts['params']
-        self._on_seed_reset()
 
     def _on_scale_changed(self, scale: int):
         if self.game_map:
