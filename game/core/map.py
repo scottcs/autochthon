@@ -6,6 +6,7 @@ import numpy as np
 import tcod.map
 
 from game.utils.geometry import Rect, Point
+from game.utils.render import TileCache
 from game.utils.random import RNGCache
 from gamedata.palette import Palette
 
@@ -24,6 +25,8 @@ class MapCell(NamedTuple):
     spawnable_player: bool = False
     spawnable_enemy: bool = False
     spawnable_item: bool = False
+    tile_id: int = 0
+    tile_color: int = Palette.black
 
 
 class Map(tcod.map.Map):
@@ -103,6 +106,7 @@ class Map(tcod.map.Map):
 
     def __getitem__(self, item: Tuple[int, int]) -> MapCell:
         x, y = item
+        tile_id = TileCache.id_from_name()
         try:
             return MapCell(
                 x,
