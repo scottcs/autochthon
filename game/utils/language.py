@@ -1,5 +1,5 @@
 """Language related utilities."""
-from typing import Tuple, Any, Set, Iterable
+from typing import Tuple, Any, AbstractSet, Iterable
 
 from game.types import Entity
 
@@ -14,7 +14,7 @@ class Verb:
         self.past: str = past
 
 
-def msg(players: Set[Entity],
+def msg(players: AbstractSet[Entity],
         entities: Iterable[Entity],
         messages: tuple,
         *args: Any
