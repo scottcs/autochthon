@@ -12,14 +12,14 @@ import sys
 from typing import Optional, Any, Tuple, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb, QIntValidator
-from PySide2.QtWidgets import (QFileDialog, QHBoxLayout, QLabel, QLineEdit,
+from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb
+from PySide2.QtWidgets import (QFileDialog, QHBoxLayout, QLabel,
                                QPushButton, QSpacerItem, QVBoxLayout, QCheckBox,
-                               QWidget, QGridLayout, QScrollArea)
+                               QWidget, QScrollArea)
 
 from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
-from tools.widgets import msg_error, ToolApp, ToolComboBox
+from tools.widgets import msg_error, ToolApp, ToolComboBox, ToolLineEdit
 
 CONFIG_FILE = Path('data') / Path('config.json')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
@@ -47,7 +47,6 @@ ALGORITHMS = {
             'room_max_size': {'type': 'int', 'min': 0, 'max': 1000, 'default': 20},
         },
     },
-    'BadAlgorithm': {},
 }
 
 
@@ -63,37 +62,23 @@ class MapSizeWidget(QWidget):
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        v_size = QIntValidator(10, 234, self)
-        v_scale = QIntValidator(1, 20, self)
-        self.map_width = QLineEdit()
-        self.map_width.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_width.setFixedWidth(32)
-        self.map_width.setText('100')
-        self.map_width.setValidator(v_size)
-        self.map_height = QLineEdit()
-        self.map_height.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_height.setFixedWidth(32)
-        self.map_height.setText('100')
-        self.map_height.setValidator(v_size)
-        self.map_scale = QLineEdit()
-        self.map_scale.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_scale.setFixedWidth(24)
-        self.map_scale.setText('6')
-        self.map_scale.setValidator(v_scale)
+        self.map_width = ToolLineEdit('Map Size:', default_text='100', edit_width=32)
+        self.map_width.set_int_validator(10, 234)
+        self.map_height = ToolLineEdit('x', default_text='100', edit_width=32)
+        self.map_height.set_int_validator(10, 234)
+        self.map_scale = ToolLineEdit('Scale:', default_text='6', edit_width=24)
+        self.map_scale.set_int_validator(1, 20)
 
-        layout.addWidget(QLabel('Map Size: '))
         layout.addWidget(self.map_width)
-        layout.addWidget(QLabel('x'))
         layout.addWidget(self.map_height)
-        layout.addWidget(QLabel('   Scale: '))
         layout.addWidget(self.map_scale)
         layout.addStretch()
 
         self.setLayout(layout)
 
-        self.map_width.editingFinished.connect(self._on_size_changed)
-        self.map_height.editingFinished.connect(self._on_size_changed)
-        self.map_scale.editingFinished.connect(self._on_scale_changed)
+        self.map_width.editing_finished.connect(self._on_size_changed)
+        self.map_height.editing_finished.connect(self._on_size_changed)
+        self.map_scale.editing_finished.connect(self._on_scale_changed)
 
     def get_size(self) -> Tuple[int, int]:
         """Get the requested size of the map."""
@@ -122,26 +107,24 @@ class AlgorithmParametersWidget(QWidget):
         self.algorithm = algorithm
         self.line_edits = {}
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         layout.setSpacing(4)
         layout.setMargin(0)
 
         row = 0
         for opt, data in ALGORITHMS[algorithm]['opts'].items():
-            layout.addWidget(QLabel(f'{opt.capitalize()}: '), row, 0, Qt.AlignVCenter)
             if data['type'] == 'int':
-                self.line_edits[opt] = QLineEdit()
-                self.line_edits[opt].setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-                self.line_edits[opt].setFixedWidth(50)
-                self.line_edits[opt].setText(str(data['default']))
-                self.line_edits[opt].setValidator(QIntValidator(data['min'], data['max'], self))
-                layout.addWidget(self.line_edits[opt], row, 1, Qt.AlignTop)
-                self.line_edits[opt].editingFinished.connect(self._on_params_changed)
+                self.line_edits[opt] = ToolLineEdit(opt.capitalize() + ':',
+                                                    default_text=str(data['default']),
+                                                    edit_width=50)
+                self.line_edits[opt].set_int_validator(data['min'], data['max'])
+                self.line_edits[opt].editing_finished.connect(self._on_params_changed)
+                layout.addWidget(self.line_edits[opt])
             else:
                 msg_error(f'Option type {data["type"]} is not implemented!', self)
                 break
             row += 1
-        layout.setColumnStretch(2, 1)
+        layout.addStretch()
         self.setLayout(layout)
 
     def get_params(self) -> dict:
@@ -211,21 +194,18 @@ class SeedWidget(QWidget):
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.value = QLineEdit()
-        self.value.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.value.setText('1')
+        self.value = ToolLineEdit('Seed:', default_text='1')
         self.reset_button = QPushButton('Reset')
         self.reset_button.setFocusPolicy(Qt.NoFocus)
         self.reset_button.setAutoDefault(False)
         self.reset_button.setDefault(False)
 
-        layout.addWidget(QLabel('Seed:'))
         layout.addWidget(self.value)
         layout.addWidget(self.reset_button)
 
         self.setLayout(layout)
 
-        self.value.editingFinished.connect(self._on_seed_changed)
+        self.value.editing_finished.connect(self._on_seed_changed)
         self.reset_button.clicked.connect(self._on_seed_reset)
 
     def get_seed(self) -> str:

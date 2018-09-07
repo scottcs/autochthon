@@ -9,7 +9,7 @@ from typing import Optional, Any, List, Sequence, Mapping, MutableMapping
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QColor
 from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
-                               QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
+                               QFileDialog, QHBoxLayout, QLabel, QListWidget,
                                QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
                                QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
                                QWidget)
@@ -17,7 +17,7 @@ from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
 from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
-from tools.widgets import msg_error, ToolApp, ToolComboBox
+from tools.widgets import msg_error, ToolApp, ToolComboBox, ToolLineEdit
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
@@ -127,17 +127,16 @@ class FileLoadSave(QWidget):
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.label = QLabel('File: ')
-        self.edit = QLineEdit()
-        self.edit.setDisabled(True)
+        self.edit = ToolLineEdit('File:')
+        self.edit.disable()
+
         self.load_button = QPushButton('Load')
+        self.load_button.setFocusPolicy(Qt.NoFocus)
+
         self.save_button = QPushButton('Save')
         self.save_button.setDisabled(True)
-
-        self.load_button.setFocusPolicy(Qt.NoFocus)
         self.save_button.setFocusPolicy(Qt.NoFocus)
 
-        layout.addWidget(self.label)
         layout.addWidget(self.edit)
         layout.addSpacerItem(QSpacerItem(4, 0))
         layout.addWidget(self.load_button)
@@ -150,8 +149,8 @@ class FileLoadSave(QWidget):
     def _on_load(self) -> None:
         if self.save_button.isEnabled():
             message_box = QMessageBox()
-            message_box.setText("The document has been modified.")
-            message_box.setInformativeText("Do you want to save your changes?")
+            message_box.setText('The document has been modified.')
+            message_box.setInformativeText('Do you want to save your changes?')
             message_box.setStandardButtons(
                 QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
             message_box.setDefaultButton(QMessageBox.Save)
@@ -172,7 +171,7 @@ class FileLoadSave(QWidget):
         if filename:
             self.filename = Path(filename)
             text = filename.split(f'{DATA_DIR}/')[-1]
-            self.edit.setText(text)
+            self.edit.set_text(text)
             self._load_file()
 
     def _on_save(self) -> bool:
@@ -191,7 +190,7 @@ class FileLoadSave(QWidget):
         if filename:
             self.filename = Path(filename)
             text = filename.split(f'{DATA_DIR}/')[-1]
-            self.edit.setText(text)
+            self.edit.set_text(text)
             self._save_file()
             return True
         return False
@@ -577,15 +576,11 @@ class AssemblageEditor(QWidget):
         self.render_widget = RenderWidget(self)
         self.file_widget = FileLoadSave(self)
 
-        name_layout = QHBoxLayout()
-        self.assemblage_name = QLineEdit()
-        self.assemblage_name.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        name_layout.addWidget(QLabel('Assemblage name: '))
-        name_layout.addWidget(self.assemblage_name)
+        self.assemblage_name = ToolLineEdit('Assemblage name:')
         self.component_widget = ComponentPane(self)
 
         header_right_layout.addWidget(self.file_widget)
-        header_right_layout.addLayout(name_layout)
+        header_right_layout.addWidget(self.assemblage_name)
         header_layout.addWidget(self.render_widget)
         header_layout.addSpacerItem(QSpacerItem(8, 0))
         header_layout.addLayout(header_right_layout)
@@ -594,14 +589,14 @@ class AssemblageEditor(QWidget):
 
         self.setLayout(layout)
 
-        self.assemblage_name.editingFinished.connect(self._new_assemblage_name)
+        self.assemblage_name.editing_finished.connect(self._new_assemblage_name)
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
     def _on_file_loaded(self, data: Mapping) -> None:
         self.render_widget.clear_sprite()
         for name, assemblage_data in data.items():
-            self.assemblage_name.setText(name)
+            self.assemblage_name.set_text(name)
             self.component_widget.update_data(assemblage_data)
             self._update_render_widget(assemblage_data)
             # TODO: allow more than one assemblage per file
@@ -614,7 +609,7 @@ class AssemblageEditor(QWidget):
 
     def _new_assemblage_name(self) -> None:
         self.file_widget.update_assemblage_name(self.assemblage_name.text())
-        self.assemblage_name.clearFocus()
+        self.assemblage_name.clear_focus()
         self.update()
         self.repaint()
 
