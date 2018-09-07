@@ -19,6 +19,7 @@ from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, Q
 
 from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
+from tools.widgets import msg_error
 
 CONFIG_FILE = Path('data') / Path('config.json')
 STYLESHEET = Path('static/css/darkorange.qss')
@@ -48,11 +49,6 @@ ALGORITHMS = {
         },
     },
 }
-
-
-def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
-    """Show an error message."""
-    QMessageBox().critical(parent, 'Error!', msg)
 
 
 class MapSizeWidget(QWidget):

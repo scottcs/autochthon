@@ -7,7 +7,7 @@ import sys
 from typing import Optional, Any, List, Sequence, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QImage, QPainter, QPalette, QColor
+from PySide2.QtGui import QImage, QPainter, QColor
 from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialogButtonBox,
                                QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
                                QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
@@ -17,6 +17,7 @@ from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialog
 from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
+from tools.widgets import msg_error
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
@@ -27,11 +28,6 @@ IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
 
 with TILE_IDS_FILE.open() as tile_ids_file_handle:
     TILE_IDS = json.load(tile_ids_file_handle)
-
-
-def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
-    """Show an error message."""
-    QMessageBox().critical(parent, 'Error!', msg)
 
 
 class RenderWidget(QWidget):
