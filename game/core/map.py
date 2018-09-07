@@ -1,11 +1,13 @@
 """Game map."""
 from __future__ import annotations
+from enum import Enum, auto
 from typing import List, Optional, Tuple, NamedTuple, Mapping
 
 import numpy as np
 import tcod.map
 
 from game.utils.geometry import Rect, Point
+from game.utils.render import TileCache
 from game.utils.random import RNGCache
 from gamedata.palette import Palette
 
@@ -24,6 +26,21 @@ class MapCell(NamedTuple):
     spawnable_player: bool = False
     spawnable_enemy: bool = False
     spawnable_item: bool = False
+    tile_id: int = 0
+    tile_color: int = Palette.black
+
+
+class TileType(Enum):
+    """Tile types."""
+    floor = auto()
+    wall_v = auto()
+    wall_h = auto()
+
+
+class Tile(NamedTuple):
+    """Tile id and color."""
+    id: int = 0
+    color: int = Palette.black
 
 
 class Map(tcod.map.Map):
@@ -38,12 +55,6 @@ class Map(tcod.map.Map):
         self.config = config or {}
         self._rng = RNGCache.get(seed)
         self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
-
-        # TODO: make these more dynamic
-        self.floor_tile_id = 220
-        self.floor_color: int = Palette.dark_grey
-        self.wall_tile_id = 234
-        self.wall_color: int = Palette.brown
 
     @property
     def explored(self) -> np.array:
@@ -85,6 +96,28 @@ class Map(tcod.map.Map):
         """Create the map using the map's algorithm."""
         raise NotImplementedError('This class must be subclassed.')
 
+    def _calculate_tile_type(self, x: int, y: int) -> TileType:
+        if self.walkable[y, x]:
+            return TileType.floor
+        try:
+            if self.walkable[y+1, x]:
+                return TileType.wall_h
+        except IndexError:
+            pass
+        return TileType.wall_v
+
+    def _get_tile(self, x: int, y: int) -> Tile:
+        # TODO: move these definitions to a data file/change based on map "theme"
+        tile_type = self._calculate_tile_type(x, y)
+        if tile_type == TileType.wall_v:
+            return Tile(TileCache.id_from_name('terrain_wallAVerticalA'), Palette.brown)
+        elif tile_type == TileType.wall_h:
+            return Tile(TileCache.id_from_name('terrain_wallAHorizontalA'), Palette.brown)
+        elif tile_type == TileType.floor:
+            return Tile(TileCache.id_from_name('terrain_floorGravelSmall'), Palette.dark_grey)
+        else:
+            raise RuntimeError(f'Unknown tile type: {tile_type}')
+
     def __iter__(self) -> Map:
         self._iter_x: int = 0
         self._iter_y: int = 0
@@ -103,6 +136,7 @@ class Map(tcod.map.Map):
 
     def __getitem__(self, item: Tuple[int, int]) -> MapCell:
         x, y = item
+        tile = self._get_tile(x, y)
         try:
             return MapCell(
                 x,
@@ -114,6 +148,8 @@ class Map(tcod.map.Map):
                 self.spawnable_player[y, x],
                 self.spawnable_enemy[y, x],
                 self.spawnable_item[y, x],
+                tile.id,
+                tile.color,
             )
         except IndexError:
             raise IndexError(f'Location ({x}, {y}) in map not found.')
