@@ -645,7 +645,6 @@ class AssemblageEditor(QWidget):
 def main() -> int:
     """ Main function """
     app = QApplication(sys.argv)
-    # app.setStyle('Fusion')
     with STYLESHEET.open() as f:
         app.setStyleSheet(f.read())
     assemblage_edit = AssemblageEditor()

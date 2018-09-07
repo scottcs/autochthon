@@ -21,7 +21,7 @@ from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
 
 CONFIG_FILE = Path('data') / Path('config.json')
-STYLESHEET = Path('static/css/theme.qss')
+STYLESHEET = Path('static/css/darkorange.qss')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 MAP_LAYERS = {
