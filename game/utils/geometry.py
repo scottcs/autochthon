@@ -15,7 +15,7 @@ class Rect:
 
     def __init__(self, x: int, y: int, w: int, h: int) -> None:
         self.p1: Point = Point(x, y)
-        self.p2: Point = Point(x + w, y + h)
+        self.p2: Point = Point(x + (w - 1), y + (h - 1))
 
     def __repr__(self) -> str:
         return f'Rect<{self.p1}, {self.p2}>'
