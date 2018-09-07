@@ -31,6 +31,9 @@ MAP_LAYERS = {
     'spawnable_enemy': qRgb(165, 165, 165),
     'spawnable_item': qRgb(100, 165, 100),
     'spawnable_player': qRgb(165, 255, 255),
+    'alt_tile_1': qRgb(165, 100, 100),
+    'alt_tile_2': qRgb(195, 100, 100),
+    'alt_tile_3': qRgb(225, 100, 100),
 }
 
 # Rather than using `globals()`, add map algorithms to a table

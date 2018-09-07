@@ -11,7 +11,8 @@ from game.utils.render import TileCache
 from game.utils.random import RNGCache
 from gamedata.palette import Palette
 
-MAP_BITS = ('explored', 'spawnable_player', 'spawnable_enemy', 'spawnable_item')
+MAP_BITS = ('explored', 'spawnable_player', 'spawnable_enemy', 'spawnable_item',
+            'alt_tile_1', 'alt_tile_2', 'alt_tile_3')
 # TODO: item layer? interaction layer? enemy layer? etc?
 
 
@@ -26,6 +27,9 @@ class MapCell(NamedTuple):
     spawnable_player: bool = False
     spawnable_enemy: bool = False
     spawnable_item: bool = False
+    alt_tile_1: bool = False
+    alt_tile_2: bool = False
+    alt_tile_3: bool = False
     tile_id: int = 0
     tile_color: int = Palette.black
 
@@ -35,12 +39,6 @@ class TileType(Enum):
     floor = auto()
     wall_v = auto()
     wall_h = auto()
-
-
-class Tile(NamedTuple):
-    """Tile id and color."""
-    id: int = 0
-    color: int = Palette.black
 
 
 class Map(tcod.map.Map):
@@ -92,6 +90,24 @@ class Map(tcod.map.Map):
         """Return a list of only spawnable item coordinates."""
         return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_item.nonzero())]
 
+    @property
+    def alt_tile_1(self) -> np.array:
+        """Array of cells that the alt tile 1 bit set."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('alt_tile_1')]
+        return buffer
+
+    @property
+    def alt_tile_2(self) -> np.array:
+        """Array of cells that the alt tile 2 bit set."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('alt_tile_2')]
+        return buffer
+
+    @property
+    def alt_tile_3(self) -> np.array:
+        """Array of cells that the alt tile 3 bit set."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('alt_tile_3')]
+        return buffer
+
     def create(self) -> None:
         """Create the map using the map's algorithm."""
         raise NotImplementedError('This class must be subclassed.')
@@ -106,15 +122,34 @@ class Map(tcod.map.Map):
             pass
         return TileType.wall_v
 
-    def _get_tile(self, x: int, y: int) -> Tile:
+    def _tile_id_from_type(self, tile_type: TileType, x: int, y: int) -> int:
         # TODO: move these definitions to a data file/change based on map "theme"
-        tile_type = self._calculate_tile_type(x, y)
+        suffixes = 'ABCD'
+        idx = 0
+        if self.alt_tile_3[y, x]:
+            idx += 1
+        if self.alt_tile_2[y, x]:
+            idx += 1
+        if self.alt_tile_1[y, x]:
+            idx += 1
         if tile_type == TileType.wall_v:
-            return Tile(TileCache.id_from_name('terrain_wallAVerticalA'), Palette.brown)
+            return TileCache.id_from_name('terrain_wallAVertical' + suffixes[idx])
         elif tile_type == TileType.wall_h:
-            return Tile(TileCache.id_from_name('terrain_wallAHorizontalA'), Palette.brown)
+            return TileCache.id_from_name('terrain_wallAHorizontal' + suffixes[idx])
         elif tile_type == TileType.floor:
-            return Tile(TileCache.id_from_name('terrain_floorGravelSmall'), Palette.dark_grey)
+            return TileCache.id_from_name('terrain_floorOverlay' + suffixes[idx])
+        else:
+            raise RuntimeError(f'Unknown tile type: {tile_type}')
+
+    @staticmethod
+    def _tile_color_from_type(tile_type: TileType) -> int:
+        # TODO: move these definitions to a data file/change based on map "theme"
+        if tile_type == TileType.wall_v:
+            return Palette.brown
+        elif tile_type == TileType.wall_h:
+            return Palette.brown
+        elif tile_type == TileType.floor:
+            return Palette.dark_grey
         else:
             raise RuntimeError(f'Unknown tile type: {tile_type}')
 
@@ -136,7 +171,7 @@ class Map(tcod.map.Map):
 
     def __getitem__(self, item: Tuple[int, int]) -> MapCell:
         x, y = item
-        tile = self._get_tile(x, y)
+        tile_type = self._calculate_tile_type(x, y)
         try:
             return MapCell(
                 x,
@@ -148,8 +183,11 @@ class Map(tcod.map.Map):
                 self.spawnable_player[y, x],
                 self.spawnable_enemy[y, x],
                 self.spawnable_item[y, x],
-                tile.id,
-                tile.color,
+                self.alt_tile_1[y, x],
+                self.alt_tile_2[y, x],
+                self.alt_tile_3[y, x],
+                self._tile_id_from_type(tile_type, x, y),
+                self._tile_color_from_type(tile_type),
             )
         except IndexError:
             raise IndexError(f'Location ({x}, {y}) in map not found.')
@@ -168,25 +206,56 @@ class ClassicMap(Map):
         self.room_max_size: int = self.config.get('room_max_size', 20)
 
     def create_room(self, room: Rect) -> None:
-        """Create a new room in the map at the given coordinates."""
-        for x in range(room.p1.x, room.p2.x):
-            for y in range(room.p1.y, room.p2.y):
-                self.walkable[y, x] = True
-                self.transparent[y, x] = True
-                self.spawnable_enemy[y, x] = True
-                self.spawnable_item[y, x] = True
+        """Create a new room in the map at the given coordinates.
+
+        NOTE: a `room` includes wall tiles!
+
+        """
+        for x in range(room.p1.x, room.p2.x + 1):
+            for y in range(room.p1.y, room.p2.y + 1):
+                if room.p1.x < x < room.p2.x and room.p1.y < y < room.p2.y:
+                    self.walkable[y, x] = True
+                    self.transparent[y, x] = True
+                    self.spawnable_enemy[y, x] = True
+                    self.spawnable_item[y, x] = True
+                if self._rng.percent(0.01):
+                    self.alt_tile_1[y, x] = True
+                if self._rng.percent(0.01):
+                    self.alt_tile_2[y, x] = True
+                if self._rng.percent(0.01):
+                    self.alt_tile_3[y, x] = True
 
     def create_h_tunnel(self, x1: int, x2: int, y: int) -> None:
         """Create a single-width horizontal tunnel from x1 to x2 along y."""
         for x in range(min(x1, x2), max(x1, x2) + 1):
             self.walkable[y, x] = True
             self.transparent[y, x] = True
+            for yy in range(y-1, y+2):
+                try:
+                    if self._rng.percent(0.01):
+                        self.alt_tile_1[yy, x] = True
+                    if self._rng.percent(0.02):
+                        self.alt_tile_2[yy, x] = True
+                    if self._rng.percent(0.03):
+                        self.alt_tile_3[yy, x] = True
+                except IndexError:
+                    pass
 
     def create_v_tunnel(self, y1: int, y2: int, x: int) -> None:
         """Create a single-width vertical tunnel from y1 to y2 along x."""
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.walkable[y, x] = True
             self.transparent[y, x] = True
+            for xx in range(x-1, x+2):
+                try:
+                    if self._rng.percent(0.01):
+                        self.alt_tile_1[y, xx] = True
+                    if self._rng.percent(0.02):
+                        self.alt_tile_2[y, xx] = True
+                    if self._rng.percent(0.03):
+                        self.alt_tile_3[y, xx] = True
+                except IndexError:
+                    pass
 
     def create(self) -> None:
         """Create the map."""
