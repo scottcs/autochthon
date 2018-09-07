@@ -27,14 +27,18 @@ class GameRNG:
 
     def rand(self, lower: Optional[int]=None, upper: Optional[int]=None) -> int:
         """Return a random integer in range [lower, upper], including both endpoints."""
-        if upper is None or upper == lower:
+        if upper is None:
             if lower is None:
                 return self._rng.get_next_uint32()
             else:
                 return self._rng.get_next_uint(lower + 1)
         else:
+            if lower is None:
+                raise RuntimeError('cannot have upper without lower')
             if lower > upper:
                 raise RuntimeError('lower must be <= upper')
+            if lower == upper:
+                return lower
             return lower + self._rng.get_next_uint((upper - lower) + 1)
 
     def percent(self, percent: float, precision: Optional[int]=1000) -> bool:
