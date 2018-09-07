@@ -566,7 +566,6 @@ class AssemblageEditor(QWidget):
         super().__init__(parent)
         self.setWindowTitle('Assemblage Editor')
         self.setMinimumSize(800, 600)
-        self.setObjectName('MainApp')
 
         layout = QVBoxLayout()
         layout.setSpacing(0)

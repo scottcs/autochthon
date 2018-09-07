@@ -471,7 +471,6 @@ class CentralWidget(QWidget):
 
         self.layers = LayersWidget()
         self.scroll_area = QScrollArea()
-        self.scroll_area.setObjectName('image')
         self.image_widget = ImageWidget()
         self.scroll_area.setWidget(self.image_widget)
         self.options = OptionsWidget()
@@ -525,7 +524,6 @@ class MapVisualizer(QWidget):
         self.map_config: MutableMapping = map_config
         self.setWindowTitle('Map Visualizer')
         self.setMinimumSize(MIN_WIDTH, MIN_HEIGHT)
-        self.setObjectName('MainApp')
         self.game_map = None
 
         RNGCache.init(self.map_config['parent_seed'])
