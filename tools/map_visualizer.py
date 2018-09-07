@@ -15,11 +15,11 @@ from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb, QIntValidator
 from PySide2.QtWidgets import (QFileDialog, QHBoxLayout, QLabel, QLineEdit,
                                QPushButton, QSpacerItem, QVBoxLayout, QCheckBox,
-                               QWidget, QComboBox, QGridLayout, QScrollArea)
+                               QWidget, QGridLayout, QScrollArea)
 
 from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
-from tools.widgets import msg_error, ToolApp
+from tools.widgets import msg_error, ToolApp, ToolComboBox
 
 CONFIG_FILE = Path('data') / Path('config.json')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
@@ -47,6 +47,7 @@ ALGORITHMS = {
             'room_max_size': {'type': 'int', 'min': 0, 'max': 1000, 'default': 20},
         },
     },
+    'BadAlgorithm': {},
 }
 
 
@@ -166,18 +167,10 @@ class AlgorithmWidget(QWidget):
         self.layout.setSpacing(0)
         self.layout.setMargin(0)
 
-        choice_layout = QHBoxLayout()
-        choice_layout.setSpacing(0)
-        choice_layout.setMargin(0)
+        self.choice = ToolComboBox('Algorithm:')
+        self.choice.add_items(list(ALGORITHMS.keys()))
 
-        self.choice = QComboBox()
-        self.choice.addItems(list(ALGORITHMS.keys()))
-        self.choice.setMinimumWidth(178)
-
-        choice_layout.addWidget(QLabel('Algorithm:'))
-        choice_layout.addWidget(self.choice)
-        choice_layout.addStretch()
-        self.layout.addLayout(choice_layout)
+        self.layout.addWidget(self.choice)
 
         self.params = AlgorithmParametersWidget(self.get_algorithm())
         self.layout.addSpacerItem(QSpacerItem(1, 10))
@@ -185,12 +178,12 @@ class AlgorithmWidget(QWidget):
 
         self.setLayout(self.layout)
 
-        self.choice.currentIndexChanged.connect(self._on_algorithm_changed)
+        self.choice.selection_changed.connect(self._on_algorithm_changed)
         self.params.params_changed.connect(self._on_params_changed)
 
     def get_algorithm(self) -> str:
         """Get the chosen algorithm."""
-        return self.choice.currentText()
+        return self.choice.text()
 
     def get_params(self) -> dict:
         """Get the algorithm parameters."""
