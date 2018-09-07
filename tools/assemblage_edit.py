@@ -8,7 +8,7 @@ from typing import Optional, Any, List, Sequence, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QColor
-from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialogButtonBox,
+from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
                                QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
                                QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
                                QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
@@ -17,11 +17,10 @@ from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialog
 from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
-from tools.widgets import msg_error
+from tools.widgets import msg_error, ToolApp
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
-STYLESHEET = Path('static/css/darkorange.qss')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
@@ -638,9 +637,7 @@ class AssemblageEditor(QWidget):
 
 def main() -> int:
     """ Main function """
-    app = QApplication(sys.argv)
-    with STYLESHEET.open() as f:
-        app.setStyleSheet(f.read())
+    app = ToolApp(sys.argv)
     assemblage_edit = AssemblageEditor()
     assemblage_edit.show()
     return app.exec_()

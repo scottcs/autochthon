@@ -13,16 +13,15 @@ from typing import Optional, Any, Tuple, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb, QIntValidator
-from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
-                               QMessageBox, QPushButton, QSpacerItem, QVBoxLayout, QCheckBox,
+from PySide2.QtWidgets import (QFileDialog, QHBoxLayout, QLabel, QLineEdit,
+                               QPushButton, QSpacerItem, QVBoxLayout, QCheckBox,
                                QWidget, QComboBox, QGridLayout, QScrollArea)
 
 from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
-from tools.widgets import msg_error
+from tools.widgets import msg_error, ToolApp
 
 CONFIG_FILE = Path('data') / Path('config.json')
-STYLESHEET = Path('static/css/darkorange.qss')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 MAP_LAYERS = {
@@ -593,9 +592,7 @@ def main() -> int:
         parent_seed = sys.argv[1]
     except IndexError:
         parent_seed = 'MapVisualizer'
-    app = QApplication(sys.argv)
-    with STYLESHEET.open() as f:
-        app.setStyleSheet(f.read())
+    app = ToolApp(sys.argv)
     with CONFIG_FILE.open() as f:
         map_config = json.load(f)['map']
     map_config['parent_seed'] = parent_seed
