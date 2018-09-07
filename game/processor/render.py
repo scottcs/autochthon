@@ -51,15 +51,12 @@ class WebRenderProcessor(esper.Processor):
             b_cells.extend(cell.x.to_bytes(2, 'big'))
             b_cells.extend(cell.y.to_bytes(2, 'big'))
             if cell.spawnable_player:
-                tile_id = 229
+                tile_id = 229  # TODO: move this to map
                 b_cells.extend(tile_id.to_bytes(2, 'big'))
                 b_cells.extend(Palette.cyan.to_bytes(4, 'big'))
-            elif cell.walkable:
-                b_cells.extend(self.world.map.floor_tile_id.to_bytes(2, 'big'))
-                b_cells.extend(self.world.map.floor_color.to_bytes(4, 'big'))
             else:
-                b_cells.extend(self.world.map.wall_tile_id.to_bytes(2, 'big'))
-                b_cells.extend(self.world.map.wall_color.to_bytes(4, 'big'))
+                b_cells.extend(cell.tile_id.to_bytes(2, 'big'))
+                b_cells.extend(cell.tile_color.to_bytes(4, 'big'))
 
         # RENDERABLE ENTITIES
         for ent, components in sorted(self.world.get_components(Position, Renderable),
