@@ -309,9 +309,7 @@ class ComponentList(QWidget):
         header_layout.setMargin(0)
 
         self.add_button = QPushButton('+')
-        self.add_button.setObjectName('smallButton')
         self.remove_button = QPushButton('-')
-        self.remove_button.setObjectName('smallButton')
         self.component_list = QListWidget(self)
 
         header_layout.addWidget(QLabel('Components'))
@@ -420,7 +418,7 @@ class ComponentDetailsTable(QTableWidget):
             self.setVerticalHeaderItem(row, header_item)
             item = QTableWidgetItem(str(self.data.get(param_name, '')))
             if param.default is param.empty:
-                item.setBackgroundColor('#dfe5eb')
+                item.setBackgroundColor('#5C554E')
             self.setItem(row, 0, item)
             row += 1
         self.setRowCount(row)
@@ -500,7 +498,7 @@ class ComponentPane(QWidget):
 
         self.component_list = ComponentList(self)
         details_label = QLabel('Component Details')
-        details_label.setMinimumHeight(32)
+        details_label.setMinimumHeight(23)
         details_layout.addWidget(details_label)
         self.details_widget = ComponentDetailsTable()
         self.renderable_widget = RenderableComponentDetails()

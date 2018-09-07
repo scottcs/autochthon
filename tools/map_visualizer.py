@@ -177,6 +177,7 @@ class AlgorithmWidget(QWidget):
 
         self.choice = QComboBox()
         self.choice.addItems(list(ALGORITHMS.keys()))
+        self.choice.setMinimumWidth(178)
 
         choice_layout.addWidget(QLabel('Algorithm:'))
         choice_layout.addWidget(self.choice)
