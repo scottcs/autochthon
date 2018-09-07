@@ -37,12 +37,6 @@ class TileType(Enum):
     wall_h = auto()
 
 
-class Tile(NamedTuple):
-    """Tile id and color."""
-    id: int = 0
-    color: int = Palette.black
-
-
 class Map(tcod.map.Map):
     """Game map."""
 
@@ -106,15 +100,27 @@ class Map(tcod.map.Map):
             pass
         return TileType.wall_v
 
-    def _get_tile(self, x: int, y: int) -> Tile:
+    @staticmethod
+    def _tile_id_from_type(tile_type: TileType) -> int:
         # TODO: move these definitions to a data file/change based on map "theme"
-        tile_type = self._calculate_tile_type(x, y)
         if tile_type == TileType.wall_v:
-            return Tile(TileCache.id_from_name('terrain_wallAVerticalA'), Palette.brown)
+            return TileCache.id_from_name('terrain_wallAVerticalA')
         elif tile_type == TileType.wall_h:
-            return Tile(TileCache.id_from_name('terrain_wallAHorizontalA'), Palette.brown)
+            return TileCache.id_from_name('terrain_wallAHorizontalA')
         elif tile_type == TileType.floor:
-            return Tile(TileCache.id_from_name('terrain_floorGravelSmall'), Palette.dark_grey)
+            return TileCache.id_from_name('terrain_floorGravelSmall')
+        else:
+            raise RuntimeError(f'Unknown tile type: {tile_type}')
+
+    @staticmethod
+    def _tile_color_from_type(tile_type: TileType) -> int:
+        # TODO: move these definitions to a data file/change based on map "theme"
+        if tile_type == TileType.wall_v:
+            return Palette.brown
+        elif tile_type == TileType.wall_h:
+            return Palette.brown
+        elif tile_type == TileType.floor:
+            return Palette.dark_grey
         else:
             raise RuntimeError(f'Unknown tile type: {tile_type}')
 
@@ -136,7 +142,7 @@ class Map(tcod.map.Map):
 
     def __getitem__(self, item: Tuple[int, int]) -> MapCell:
         x, y = item
-        tile = self._get_tile(x, y)
+        tile_type = self._calculate_tile_type(x, y)
         try:
             return MapCell(
                 x,
@@ -148,8 +154,8 @@ class Map(tcod.map.Map):
                 self.spawnable_player[y, x],
                 self.spawnable_enemy[y, x],
                 self.spawnable_item[y, x],
-                tile.id,
-                tile.color,
+                self._tile_id_from_type(tile_type),
+                self._tile_color_from_type(tile_type),
             )
         except IndexError:
             raise IndexError(f'Location ({x}, {y}) in map not found.')
