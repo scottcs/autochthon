@@ -20,7 +20,7 @@ from gamedata.palette import Palette
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
-STYLESHEET = Path('static/css/theme.qss')
+STYLESHEET = Path('static/css/darkorange.qss')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
@@ -41,10 +41,6 @@ class RenderWidget(QWidget):
         super().__init__(parent)
         self.setMinimumSize(32, 48)
         self.setMaximumSize(32, 48)
-        pal = QPalette()
-        pal.setColor(QPalette.Background, Qt.black)
-        self.setAutoFillBackground(True)
-        self.setPalette(pal)
         self.tile_id = None
         self.color = None
         self.sprite = None
@@ -115,6 +111,7 @@ class RenderWidget(QWidget):
         painter.end()
 
         painter.begin(self)
+        painter.fillRect(self.rect(), Qt.black)
         painter.drawImage(8, 12, mask)
         painter.end()
 
@@ -312,9 +309,7 @@ class ComponentList(QWidget):
         header_layout.setMargin(0)
 
         self.add_button = QPushButton('+')
-        self.add_button.setObjectName('smallButton')
         self.remove_button = QPushButton('-')
-        self.remove_button.setObjectName('smallButton')
         self.component_list = QListWidget(self)
 
         header_layout.addWidget(QLabel('Components'))
@@ -423,7 +418,7 @@ class ComponentDetailsTable(QTableWidget):
             self.setVerticalHeaderItem(row, header_item)
             item = QTableWidgetItem(str(self.data.get(param_name, '')))
             if param.default is param.empty:
-                item.setBackgroundColor('#dfe5eb')
+                item.setBackgroundColor('#5C554E')
             self.setItem(row, 0, item)
             row += 1
         self.setRowCount(row)
@@ -503,7 +498,7 @@ class ComponentPane(QWidget):
 
         self.component_list = ComponentList(self)
         details_label = QLabel('Component Details')
-        details_label.setMinimumHeight(32)
+        details_label.setMinimumHeight(23)
         details_layout.addWidget(details_label)
         self.details_widget = ComponentDetailsTable()
         self.renderable_widget = RenderableComponentDetails()
