@@ -20,7 +20,7 @@ from gamedata.palette import Palette
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
-STYLESHEET = Path('static/css/theme.qss')
+STYLESHEET = Path('static/css/darkorange.qss')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
@@ -41,10 +41,6 @@ class RenderWidget(QWidget):
         super().__init__(parent)
         self.setMinimumSize(32, 48)
         self.setMaximumSize(32, 48)
-        pal = QPalette()
-        pal.setColor(QPalette.Background, Qt.black)
-        self.setAutoFillBackground(True)
-        self.setPalette(pal)
         self.tile_id = None
         self.color = None
         self.sprite = None
@@ -115,6 +111,7 @@ class RenderWidget(QWidget):
         painter.end()
 
         painter.begin(self)
+        painter.fillRect(self.rect(), Qt.black)
         painter.drawImage(8, 12, mask)
         painter.end()
 
@@ -648,6 +645,7 @@ class AssemblageEditor(QWidget):
 def main() -> int:
     """ Main function """
     app = QApplication(sys.argv)
+    # app.setStyle('Fusion')
     with STYLESHEET.open() as f:
         app.setStyleSheet(f.read())
     assemblage_edit = AssemblageEditor()
