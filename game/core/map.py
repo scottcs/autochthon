@@ -122,15 +122,22 @@ class Map(tcod.map.Map):
             pass
         return TileType.wall_v
 
-    @staticmethod
-    def _tile_id_from_type(tile_type: TileType) -> int:
+    def _tile_id_from_type(self, tile_type: TileType, x: int, y: int) -> int:
         # TODO: move these definitions to a data file/change based on map "theme"
+        suffixes = 'ABCD'
+        idx = 0
+        if self.alt_tile_3[y, x]:
+            idx += 1
+        if self.alt_tile_2[y, x]:
+            idx += 1
+        if self.alt_tile_1[y, x]:
+            idx += 1
         if tile_type == TileType.wall_v:
-            return TileCache.id_from_name('terrain_wallAVerticalA')
+            return TileCache.id_from_name('terrain_wallAVertical' + suffixes[idx])
         elif tile_type == TileType.wall_h:
-            return TileCache.id_from_name('terrain_wallAHorizontalA')
+            return TileCache.id_from_name('terrain_wallAHorizontal' + suffixes[idx])
         elif tile_type == TileType.floor:
-            return TileCache.id_from_name('terrain_floorGravelSmall')
+            return TileCache.id_from_name('terrain_floorOverlay' + suffixes[idx])
         else:
             raise RuntimeError(f'Unknown tile type: {tile_type}')
 
@@ -179,7 +186,7 @@ class Map(tcod.map.Map):
                 self.alt_tile_1[y, x],
                 self.alt_tile_2[y, x],
                 self.alt_tile_3[y, x],
-                self._tile_id_from_type(tile_type),
+                self._tile_id_from_type(tile_type, x, y),
                 self._tile_color_from_type(tile_type),
             )
         except IndexError:
@@ -213,9 +220,9 @@ class ClassicMap(Map):
                     self.spawnable_item[y, x] = True
                 if self._rng.percent(0.01):
                     self.alt_tile_1[y, x] = True
-                if self._rng.percent(0.02):
+                if self._rng.percent(0.01):
                     self.alt_tile_2[y, x] = True
-                if self._rng.percent(0.03):
+                if self._rng.percent(0.01):
                     self.alt_tile_3[y, x] = True
 
     def create_h_tunnel(self, x1: int, x2: int, y: int) -> None:
