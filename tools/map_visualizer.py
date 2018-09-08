@@ -14,12 +14,13 @@ from typing import Optional, Any, Tuple, Mapping, MutableMapping
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb
 from PySide2.QtWidgets import (QFileDialog, QHBoxLayout, QLabel,
-                               QSpacerItem, QVBoxLayout, QCheckBox,
+                               QSpacerItem, QVBoxLayout,
                                QWidget, QScrollArea)
 
 from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
-from tools.widgets import msg_error, ToolApp, ToolComboBox, ToolLineEdit, ToolPushButton
+from tools.widgets import (msg_error, ToolApp, ToolComboBox, ToolLineEdit, ToolPushButton,
+                           ToolCheckBox)
 
 CONFIG_FILE = Path('data') / Path('config.json')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
@@ -304,33 +305,6 @@ class ButtonsWidget(QWidget):
         self.save_image.emit()
 
 
-class LayersItem(QWidget):
-    """Map Visualizer Layer item widget."""
-
-    state_changed = Signal(str, bool)
-
-    def __init__(self, name: str, parent: Optional[QWidget]=None) -> None:
-        super().__init__(parent)
-        layout = QHBoxLayout()
-        layout.setSpacing(8)
-        layout.setMargin(0)
-
-        self.check = QCheckBox()
-        self.check.setChecked(True)
-        self.name = QLabel(name)
-
-        layout.addWidget(self.check)
-        layout.addWidget(self.name)
-        layout.addStretch()
-
-        self.setLayout(layout)
-
-        self.check.stateChanged.connect(self._on_state_changed)
-
-    def _on_state_changed(self, state: int) -> None:
-        self.state_changed.emit(self.name.text(), bool(state))
-
-
 class LayersWidget(QWidget):
     """Map Visualizer layers widget."""
 
@@ -339,7 +313,7 @@ class LayersWidget(QWidget):
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout()
-        layout.setSpacing(0)
+        layout.setSpacing(8)
         layout.setMargin(0)
         self.setFixedWidth(200)
 
@@ -349,7 +323,7 @@ class LayersWidget(QWidget):
         for layer in reversed(list(MAP_LAYERS.keys())):
             if layer == 'base':
                 continue
-            item = LayersItem(layer)
+            item = ToolCheckBox(layer, checked=True)
             self.layers.append(item)
             layout.addWidget(item)
             item.state_changed.connect(self._on_layer_state_changed)
@@ -468,8 +442,9 @@ class CentralWidget(QWidget):
 
     def _on_layer_state_changed(self, name: str, enabled: bool) -> None:
         self.image_widget.set_layer(name, enabled)
-        self.image_widget.draw_map(self.game_map, self.scale_factor)
-        self.image_widget.repaint()
+        if self.game_map:
+            self.image_widget.draw_map(self.game_map, self.scale_factor)
+            self.image_widget.repaint()
 
     def _on_options_changed(self, options: Mapping) -> None:
         self.options_changed.emit(options)
