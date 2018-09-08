@@ -17,7 +17,8 @@ from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
 from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
-from tools.widgets import msg_error, ToolApp, ToolComboBox, ToolLineEdit, ToolPushButton
+from tools.widgets import (msg_error, ToolApp, ToolComboBox, ToolMutableComboBox,
+                           ToolLineEdit, ToolPushButton)
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
@@ -573,7 +574,7 @@ class AssemblageEditor(QWidget):
         self.render_widget = RenderWidget(self)
         self.file_widget = FileLoadSave(self)
 
-        self.assemblage_name = ToolLineEdit('Assemblage name:')
+        self.assemblage_name = ToolMutableComboBox('Assemblage Name:')
         self.component_widget = ComponentPane(self)
 
         header_right_layout.addWidget(self.file_widget)
@@ -586,7 +587,6 @@ class AssemblageEditor(QWidget):
 
         self.setLayout(layout)
 
-        self.assemblage_name.editing_finished.connect(self._new_assemblage_name)
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
