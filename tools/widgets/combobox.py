@@ -2,7 +2,8 @@
 from typing import Optional, Sequence, Any
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtWidgets import QComboBox, QWidget, QLabel, QHBoxLayout, QSpacerItem, QInputDialog
+from PySide2.QtWidgets import (QComboBox, QWidget, QLabel, QHBoxLayout, QSpacerItem, QInputDialog,
+                               QMessageBox)
 
 from .pushbutton import ToolPushButton
 
@@ -186,5 +187,12 @@ class ToolMutableComboBox(ToolComboBox):
             self.set_via_text(item)
 
     def _on_remove_item(self) -> None:
-        idx = self._combobox.currentIndex()
-        self.remove_item_by_index(idx)
+        # noinspection PyCallByClass
+        yes = QMessageBox.question(self,
+                                   'Remove Item?',
+                                   f'Are you sure you want to remove "{self.text()}"?',
+                                   QMessageBox.StandardButtons(QMessageBox.Yes | QMessageBox.No),
+                                   QMessageBox.Yes)
+        if yes == QMessageBox.Yes:
+            idx = self._combobox.currentIndex()
+            self.remove_item_by_index(idx)
