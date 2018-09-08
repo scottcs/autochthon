@@ -14,12 +14,12 @@ from typing import Optional, Any, Tuple, Mapping, MutableMapping
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb
 from PySide2.QtWidgets import (QFileDialog, QHBoxLayout, QLabel,
-                               QPushButton, QSpacerItem, QVBoxLayout, QCheckBox,
+                               QSpacerItem, QVBoxLayout, QCheckBox,
                                QWidget, QScrollArea)
 
 from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
-from tools.widgets import msg_error, ToolApp, ToolComboBox, ToolLineEdit
+from tools.widgets import msg_error, ToolApp, ToolComboBox, ToolLineEdit, ToolPushButton
 
 CONFIG_FILE = Path('data') / Path('config.json')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
@@ -195,10 +195,7 @@ class SeedWidget(QWidget):
         layout.setMargin(0)
 
         self.value = ToolLineEdit('Seed:', default_text='1')
-        self.reset_button = QPushButton('Reset')
-        self.reset_button.setFocusPolicy(Qt.NoFocus)
-        self.reset_button.setAutoDefault(False)
-        self.reset_button.setDefault(False)
+        self.reset_button = ToolPushButton('Reset')
 
         layout.addWidget(self.value)
         layout.addWidget(self.reset_button)
@@ -286,14 +283,9 @@ class ButtonsWidget(QWidget):
         layout.setMargin(0)
         layout.setAlignment(Qt.AlignRight)
 
-        self.generate_button = QPushButton('Generate')
+        self.generate_button = ToolPushButton('Generate', allow_focus=True)
         self.generate_button.setObjectName('largeButton')
-        self.generate_button.setAutoDefault(True)
-        self.generate_button.setDefault(True)
-        self.save_image_button = QPushButton('Save Image')
-        self.save_image_button.setFocusPolicy(Qt.NoFocus)
-        self.save_image_button.setAutoDefault(False)
-        self.save_image_button.setDefault(False)
+        self.save_image_button = ToolPushButton('Save Image')
 
         layout.addStretch()
         layout.addSpacerItem(QSpacerItem(80, 1))

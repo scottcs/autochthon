@@ -10,14 +10,14 @@ from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QColor
 from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
                                QFileDialog, QHBoxLayout, QLabel, QListWidget,
-                               QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
+                               QListWidgetItem, QMessageBox, QSpacerItem,
                                QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
                                QWidget)
 
 from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
-from tools.widgets import msg_error, ToolApp, ToolComboBox, ToolLineEdit
+from tools.widgets import msg_error, ToolApp, ToolComboBox, ToolLineEdit, ToolPushButton
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
@@ -130,12 +130,9 @@ class FileLoadSave(QWidget):
         self.edit = ToolLineEdit('File:')
         self.edit.disable()
 
-        self.load_button = QPushButton('Load')
-        self.load_button.setFocusPolicy(Qt.NoFocus)
-
-        self.save_button = QPushButton('Save')
+        self.load_button = ToolPushButton('Load')
+        self.save_button = ToolPushButton('Save')
         self.save_button.setDisabled(True)
-        self.save_button.setFocusPolicy(Qt.NoFocus)
 
         layout.addWidget(self.edit)
         layout.addSpacerItem(QSpacerItem(4, 0))
@@ -302,8 +299,8 @@ class ComponentList(QWidget):
         header_layout.setSpacing(0)
         header_layout.setMargin(0)
 
-        self.add_button = QPushButton('+')
-        self.remove_button = QPushButton('-')
+        self.add_button = ToolPushButton('+')
+        self.remove_button = ToolPushButton('-')
         self.component_list = QListWidget(self)
 
         header_layout.addWidget(QLabel('Components'))
