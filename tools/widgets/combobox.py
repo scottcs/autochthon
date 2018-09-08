@@ -41,6 +41,10 @@ class ToolComboBox(QWidget):
         """Set the current selection that matches the given text."""
         self._combobox.setCurrentIndex(self._combobox.findText(text))
 
+    def reset(self) -> None:
+        """Reset to default index."""
+        self._combobox.setCurrentIndex(0)
+
     def text(self) -> str:
         """Get the current text."""
         return self._combobox.currentText()
@@ -154,6 +158,7 @@ class ToolMutableComboBox(QWidget):
         item, ok = QInputDialog.getText(self, 'Add New Item', 'Item:')
         if ok:
             self.add_item(item)
+            self.set_via_text(item)
 
     def _on_remove_item(self) -> None:
         idx = self._combobox.currentIndex()
