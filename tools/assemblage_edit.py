@@ -178,7 +178,7 @@ class FileLoadSave(QWidget):
             return False
         for key in self.data.keys():
             if key == '':
-                msg_error('You must give the assemblage a name!', self)
+                msg_error('You must give all assemblages a name!', self)
                 return False
             if not self.data[key]:
                 msg_error('There is no component data to save!', self)
@@ -450,9 +450,14 @@ class RenderableComponentDetails(QWidget):
 
     def update_data(self, component_data: Mapping) -> None:
         """Refresh the list."""
-        self.tile_id.set_via_text(component_data['tile_id'])
-        self.tint.set_via_text(component_data['tint'].split('.')[-1])
-        self.layer.set_via_text(component_data['layer'].split('.')[-1])
+        if 'tile_id' in component_data:
+            self.tile_id.set_via_text(component_data['tile_id'])
+            self.tint.set_via_text(component_data['tint'].split('.')[-1])
+            self.layer.set_via_text(component_data['layer'].split('.')[-1])
+        else:
+            self.tile_id.reset()
+            self.tint.reset()
+            self.layer.reset()
 
     def _send_data(self) -> None:
         data = {
@@ -556,6 +561,7 @@ class AssemblageEditor(QWidget):
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
+        self.assemblage_data: dict = {}
         self.setWindowTitle('Assemblage Editor')
         self.setMinimumSize(800, 600)
 
@@ -571,11 +577,10 @@ class AssemblageEditor(QWidget):
         header_right_layout.setSpacing(0)
         header_right_layout.setMargin(0)
 
-        self.render_widget = RenderWidget(self)
-        self.file_widget = FileLoadSave(self)
-
+        self.render_widget = RenderWidget()
+        self.file_widget = FileLoadSave()
         self.assemblage_name = ToolMutableComboBox('Assemblage Name:')
-        self.component_widget = ComponentPane(self)
+        self.component_widget = ComponentPane()
 
         header_right_layout.addWidget(self.file_widget)
         header_right_layout.addWidget(self.assemblage_name)
@@ -587,30 +592,33 @@ class AssemblageEditor(QWidget):
 
         self.setLayout(layout)
 
+        self.assemblage_name.selection_changed.connect(self._on_assemblage_name_changed)
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
     def _on_file_loaded(self, data: Mapping) -> None:
+        self.assemblage_data = data
         self.render_widget.clear_sprite()
-        for name, assemblage_data in data.items():
-            self.assemblage_name.set_text(name)
-            self.component_widget.update_data(assemblage_data)
-            self._update_render_widget(assemblage_data)
-            # TODO: allow more than one assemblage per file
-            break  # only one assemblage per file
+        self.assemblage_name.clear()
+        self.assemblage_name.add_items(list(data.keys()))
+        self._on_assemblage_name_changed()
+
+    def _on_assemblage_name_changed(self) -> None:
+        name = self.assemblage_name.text()
+        self.assemblage_data.setdefault(name, {'Components': {}})
+        self.component_widget.update_data(self.assemblage_data[name])
+        self._update_render_widget(self.assemblage_data[name])
         self.component_widget.hide_data()
-
-    def _on_data_changed(self, data: Mapping) -> None:
-        self.file_widget.update_data({self.assemblage_name.text(): data})
-        self._update_render_widget(data)
-
-    def _new_assemblage_name(self) -> None:
-        self.file_widget.update_assemblage_name(self.assemblage_name.text())
-        self.assemblage_name.clear_focus()
         self.update()
         self.repaint()
 
+    def _on_data_changed(self, data: Mapping) -> None:
+        self.assemblage_data[self.assemblage_name.text()] = data
+        self.file_widget.update_data(self.assemblage_data)
+        self._update_render_widget(data)
+
     def _update_render_widget(self, data: Mapping) -> None:
+        self.render_widget.clear_sprite()
         components = data.get('Components', {})
         renderable = components.get('render.Renderable', None)
         if renderable:
