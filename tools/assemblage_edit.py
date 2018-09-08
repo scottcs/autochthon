@@ -1,4 +1,5 @@
 """Assemblage editor."""
+from copy import deepcopy
 import json
 from inspect import signature
 from pathlib import Path
@@ -593,6 +594,7 @@ class AssemblageEditor(QWidget):
         self.setLayout(layout)
 
         self.assemblage_name.selection_changed.connect(self._on_assemblage_name_changed)
+        self.assemblage_name.duplicate_item.connect(self._on_assemblage_duplicate)
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
@@ -611,6 +613,11 @@ class AssemblageEditor(QWidget):
         self.component_widget.hide_data()
         self.update()
         self.repaint()
+
+    def _on_assemblage_duplicate(self, old: str) -> None:
+        name = self.assemblage_name.text()
+        self.assemblage_data[name] = deepcopy(self.assemblage_data[old])
+        self._on_assemblage_name_changed()
 
     def _on_data_changed(self, data: Mapping) -> None:
         self.assemblage_data[self.assemblage_name.text()] = data

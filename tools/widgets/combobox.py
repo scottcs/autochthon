@@ -173,7 +173,7 @@ class ToolMutableComboBox(ToolComboBox):
         current = self.text()
         # noinspection PyCallByClass
         item, ok = QInputDialog.getText(self, 'Duplicate Item', 'Name of duplicate:', text=current)
-        if ok:
+        if ok and item != current:
             self.add_item(item)
             self.set_via_text(item)
             self.duplicate_item.emit(current)
