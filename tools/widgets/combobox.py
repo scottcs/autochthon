@@ -109,13 +109,17 @@ class ToolMutableComboBox(ToolComboBox):
     """A combobox that can have things added and removed from it."""
 
     selection_changed = Signal()
+    duplicate_item = Signal(str)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self._duplicate_button = ToolPushButton('∞')
         self._add_button = ToolPushButton('+')
         self._remove_button = ToolPushButton('-')
+        self._duplicate_button.clicked.connect(self._on_duplicate_item)
         self._add_button.clicked.connect(self._on_add_item)
         self._remove_button.clicked.connect(self._on_remove_item)
         super().__init__(*args, **kwargs)
+        self._check_buttons()
 
     def _setup_layout(self) -> None:
         layout = QHBoxLayout()
@@ -126,14 +130,57 @@ class ToolMutableComboBox(ToolComboBox):
         layout.addSpacerItem(QSpacerItem(4, 1))
         layout.addWidget(self._combobox, Qt.AlignLeft)
         layout.addSpacerItem(QSpacerItem(4, 1))
+        layout.addWidget(self._duplicate_button)
         layout.addWidget(self._add_button)
         layout.addWidget(self._remove_button)
 
         self.setLayout(layout)
 
+    def _check_buttons(self) -> None:
+        if self._combobox.count() == 0:
+            self._duplicate_button.setDisabled(True)
+            self._remove_button.setDisabled(True)
+        else:
+            self._duplicate_button.setEnabled(True)
+            self._remove_button.setEnabled(True)
+
+    def add_items(self, *args: Any, **kwargs: Any) -> None:
+        """Add items to the combobox."""
+        super().add_items(*args, **kwargs)
+        self._check_buttons()
+
+    def add_item(self, *args: Any, **kwargs: Any) -> None:
+        """Add a single item to the combobox."""
+        super().add_item(*args, **kwargs)
+        self._check_buttons()
+
+    def clear(self) -> None:
+        """Remove all items."""
+        super().clear()
+        self._check_buttons()
+
+    def remove_item_by_text(self, *args: Any, **kwargs: Any) -> None:
+        """Remove an item with the given text."""
+        super().remove_item_by_text(*args, **kwargs)
+        self._check_buttons()
+
+    def remove_item_by_index(self, *args: Any, **kwargs: Any) -> None:
+        """Remove an item with the given index."""
+        super().remove_item_by_index(*args, **kwargs)
+        self._check_buttons()
+
+    def _on_duplicate_item(self) -> None:
+        current = self.text()
+        # noinspection PyCallByClass
+        item, ok = QInputDialog.getText(self, 'Duplicate Item', 'Name of duplicate:', text=current)
+        if ok:
+            self.add_item(item)
+            self.set_via_text(item)
+            self.duplicate_item.emit(current)
+
     def _on_add_item(self) -> None:
         # noinspection PyCallByClass
-        item, ok = QInputDialog.getText(self, 'Add New Item', 'Item:')
+        item, ok = QInputDialog.getText(self, 'Add New Item', 'Name of new item:')
         if ok:
             self.add_item(item)
             self.set_via_text(item)
