@@ -1,4 +1,5 @@
 """Assemblage editor."""
+from copy import deepcopy
 import json
 from inspect import signature
 from pathlib import Path
@@ -7,31 +8,27 @@ import sys
 from typing import Optional, Any, List, Sequence, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QImage, QPainter, QPalette, QColor
-from PySide2.QtWidgets import (QApplication, QAbstractItemView, QDialog, QDialogButtonBox,
-                               QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
-                               QListWidgetItem, QMessageBox, QPushButton, QSpacerItem,
+from PySide2.QtGui import QImage, QPainter, QColor
+from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
+                               QFileDialog, QHBoxLayout, QLabel, QListWidget,
+                               QListWidgetItem, QMessageBox, QSpacerItem,
                                QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
-                               QWidget, QComboBox, QGridLayout, QSizePolicy)
+                               QWidget)
 
 from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
+from tools.widgets import (msg_error, ToolApp, ToolComboBox, ToolMutableComboBox,
+                           ToolLineEdit, ToolPushButton)
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
-STYLESHEET = Path('static/css/darkorange.qss')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
 
 with TILE_IDS_FILE.open() as tile_ids_file_handle:
     TILE_IDS = json.load(tile_ids_file_handle)
-
-
-def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
-    """Show an error message."""
-    QMessageBox().critical(parent, 'Error!', msg)
 
 
 class RenderWidget(QWidget):
@@ -132,17 +129,13 @@ class FileLoadSave(QWidget):
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.label = QLabel('File: ')
-        self.edit = QLineEdit()
-        self.edit.setDisabled(True)
-        self.load_button = QPushButton('Load')
-        self.save_button = QPushButton('Save')
+        self.edit = ToolLineEdit('File:')
+        self.edit.disable()
+
+        self.load_button = ToolPushButton('Load')
+        self.save_button = ToolPushButton('Save')
         self.save_button.setDisabled(True)
 
-        self.load_button.setFocusPolicy(Qt.NoFocus)
-        self.save_button.setFocusPolicy(Qt.NoFocus)
-
-        layout.addWidget(self.label)
         layout.addWidget(self.edit)
         layout.addSpacerItem(QSpacerItem(4, 0))
         layout.addWidget(self.load_button)
@@ -155,8 +148,8 @@ class FileLoadSave(QWidget):
     def _on_load(self) -> None:
         if self.save_button.isEnabled():
             message_box = QMessageBox()
-            message_box.setText("The document has been modified.")
-            message_box.setInformativeText("Do you want to save your changes?")
+            message_box.setText('The document has been modified.')
+            message_box.setInformativeText('Do you want to save your changes?')
             message_box.setStandardButtons(
                 QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
             message_box.setDefaultButton(QMessageBox.Save)
@@ -177,7 +170,7 @@ class FileLoadSave(QWidget):
         if filename:
             self.filename = Path(filename)
             text = filename.split(f'{DATA_DIR}/')[-1]
-            self.edit.setText(text)
+            self.edit.set_text(text)
             self._load_file()
 
     def _on_save(self) -> bool:
@@ -186,7 +179,7 @@ class FileLoadSave(QWidget):
             return False
         for key in self.data.keys():
             if key == '':
-                msg_error('You must give the assemblage a name!', self)
+                msg_error('You must give all assemblages a name!', self)
                 return False
             if not self.data[key]:
                 msg_error('There is no component data to save!', self)
@@ -196,7 +189,7 @@ class FileLoadSave(QWidget):
         if filename:
             self.filename = Path(filename)
             text = filename.split(f'{DATA_DIR}/')[-1]
-            self.edit.setText(text)
+            self.edit.set_text(text)
             self._save_file()
             return True
         return False
@@ -308,8 +301,8 @@ class ComponentList(QWidget):
         header_layout.setSpacing(0)
         header_layout.setMargin(0)
 
-        self.add_button = QPushButton('+')
-        self.remove_button = QPushButton('-')
+        self.add_button = ToolPushButton('+')
+        self.remove_button = ToolPushButton('-')
         self.component_list = QListWidget(self)
 
         header_layout.addWidget(QLabel('Components'))
@@ -432,46 +425,46 @@ class RenderableComponentDetails(QWidget):
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.tile_id = QComboBox()
-        self.tile_id.addItems(sorted([t['name'] for t in TILE_IDS.values()]))
-        self.tint = QComboBox()
-        self.tint.addItems([a for a in vars(Palette).keys() if not a.startswith('_')])
-        self.layer = QComboBox()
-        self.layer.addItems(list(RenderLayer.__members__.keys()))
+        min_label_width = 100
 
-        layout.addWidget(QLabel('Tile ID: '), 0, 0, Qt.AlignTop)
-        layout.addWidget(self.tile_id, 0, 1, Qt.AlignTop)
-        layout.addWidget(QLabel('Tint: '), 1, 0, Qt.AlignTop)
-        layout.addWidget(self.tint, 1, 1, Qt.AlignTop)
-        layout.addWidget(QLabel('RenderLayer: '), 2, 0, Qt.AlignTop)
-        layout.addWidget(self.layer, 2, 1, Qt.AlignTop)
-        layout.addItem(
-            QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding), 3, 0, Qt.AlignTop)
+        self.tile_id = ToolComboBox('Tile ID:', min_label_width=min_label_width)
+        self.tile_id.add_items(sorted([t['name'] for t in TILE_IDS.values()]))
+        self.tint = ToolComboBox('Tint:', min_label_width=min_label_width)
+        self.tint.add_items([a for a in vars(Palette).keys() if not a.startswith('_')])
+        self.layer = ToolComboBox('RenderLayer:', min_label_width=min_label_width)
+        self.layer.add_items(list(RenderLayer.__members__.keys()))
+
+        layout.addWidget(self.tile_id)
+        layout.addWidget(self.tint)
+        layout.addWidget(self.layer)
+        layout.addStretch()
 
         self.setLayout(layout)
 
-        self.tile_id.currentIndexChanged.connect(self._send_data)
-        self.tint.currentIndexChanged.connect(self._send_data)
-        self.layer.currentIndexChanged.connect(self._send_data)
+        self.tile_id.selection_changed.connect(self._send_data)
+        self.tint.selection_changed.connect(self._send_data)
+        self.layer.selection_changed.connect(self._send_data)
 
     def update_data(self, component_data: Mapping) -> None:
         """Refresh the list."""
-        tile_id = self.tile_id.findText(component_data['tile_id'])
-        self.tile_id.setCurrentIndex(tile_id)
-        tint = self.tint.findText(component_data['tint'].split('.')[-1])
-        self.tint.setCurrentIndex(tint)
-        layer = self.layer.findText(component_data['layer'].split('.')[-1])
-        self.layer.setCurrentIndex(layer)
+        if 'tile_id' in component_data:
+            self.tile_id.set_via_text(component_data['tile_id'])
+            self.tint.set_via_text(component_data['tint'].split('.')[-1])
+            self.layer.set_via_text(component_data['layer'].split('.')[-1])
+        else:
+            self.tile_id.reset()
+            self.tint.reset()
+            self.layer.reset()
 
     def _send_data(self) -> None:
         data = {
-            'tile_id': self.tile_id.currentText(),
-            'tint': f'Palette.{self.tint.currentText()}',
-            'layer': f'RenderLayer.{self.layer.currentText()}',
+            'tile_id': self.tile_id.text(),
+            'tint': f'Palette.{self.tint.text()}',
+            'layer': f'RenderLayer.{self.layer.text()}',
         }
         self.data_changed.emit(data)
 
@@ -569,9 +562,9 @@ class AssemblageEditor(QWidget):
 
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
+        self.assemblage_data: dict = {}
         self.setWindowTitle('Assemblage Editor')
         self.setMinimumSize(800, 600)
-        self.setObjectName('MainApp')
 
         layout = QVBoxLayout()
         layout.setSpacing(0)
@@ -585,18 +578,13 @@ class AssemblageEditor(QWidget):
         header_right_layout.setSpacing(0)
         header_right_layout.setMargin(0)
 
-        self.render_widget = RenderWidget(self)
-        self.file_widget = FileLoadSave(self)
-
-        name_layout = QHBoxLayout()
-        self.assemblage_name = QLineEdit()
-        self.assemblage_name.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        name_layout.addWidget(QLabel('Assemblage name: '))
-        name_layout.addWidget(self.assemblage_name)
-        self.component_widget = ComponentPane(self)
+        self.render_widget = RenderWidget()
+        self.file_widget = FileLoadSave()
+        self.assemblage_name = ToolMutableComboBox('Assemblage Name:', sort=True)
+        self.component_widget = ComponentPane()
 
         header_right_layout.addWidget(self.file_widget)
-        header_right_layout.addLayout(name_layout)
+        header_right_layout.addWidget(self.assemblage_name)
         header_layout.addWidget(self.render_widget)
         header_layout.addSpacerItem(QSpacerItem(8, 0))
         header_layout.addLayout(header_right_layout)
@@ -605,31 +593,39 @@ class AssemblageEditor(QWidget):
 
         self.setLayout(layout)
 
-        self.assemblage_name.editingFinished.connect(self._new_assemblage_name)
+        self.assemblage_name.selection_changed.connect(self._on_assemblage_name_changed)
+        self.assemblage_name.duplicate_item.connect(self._on_assemblage_duplicate)
         self.file_widget.file_loaded.connect(self._on_file_loaded)
         self.component_widget.data_changed.connect(self._on_data_changed)
 
     def _on_file_loaded(self, data: Mapping) -> None:
+        self.assemblage_data = data
         self.render_widget.clear_sprite()
-        for name, assemblage_data in data.items():
-            self.assemblage_name.setText(name)
-            self.component_widget.update_data(assemblage_data)
-            self._update_render_widget(assemblage_data)
-            # TODO: allow more than one assemblage per file
-            break  # only one assemblage per file
+        self.assemblage_name.clear()
+        self.assemblage_name.add_items(list(data.keys()))
+        self._on_assemblage_name_changed()
+
+    def _on_assemblage_name_changed(self) -> None:
+        name = self.assemblage_name.text()
+        self.assemblage_data.setdefault(name, {'Components': {}})
+        self.component_widget.update_data(self.assemblage_data[name])
+        self._update_render_widget(self.assemblage_data[name])
         self.component_widget.hide_data()
-
-    def _on_data_changed(self, data: Mapping) -> None:
-        self.file_widget.update_data({self.assemblage_name.text(): data})
-        self._update_render_widget(data)
-
-    def _new_assemblage_name(self) -> None:
-        self.file_widget.update_assemblage_name(self.assemblage_name.text())
-        self.assemblage_name.clearFocus()
         self.update()
         self.repaint()
 
+    def _on_assemblage_duplicate(self, old: str) -> None:
+        name = self.assemblage_name.text()
+        self.assemblage_data[name] = deepcopy(self.assemblage_data[old])
+        self._on_assemblage_name_changed()
+
+    def _on_data_changed(self, data: Mapping) -> None:
+        self.assemblage_data[self.assemblage_name.text()] = data
+        self.file_widget.update_data(self.assemblage_data)
+        self._update_render_widget(data)
+
     def _update_render_widget(self, data: Mapping) -> None:
+        self.render_widget.clear_sprite()
         components = data.get('Components', {})
         renderable = components.get('render.Renderable', None)
         if renderable:
@@ -642,9 +638,7 @@ class AssemblageEditor(QWidget):
 
 def main() -> int:
     """ Main function """
-    app = QApplication(sys.argv)
-    with STYLESHEET.open() as f:
-        app.setStyleSheet(f.read())
+    app = ToolApp(sys.argv)
     assemblage_edit = AssemblageEditor()
     assemblage_edit.show()
     return app.exec_()

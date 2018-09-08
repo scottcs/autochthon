@@ -12,16 +12,17 @@ import sys
 from typing import Optional, Any, Tuple, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb, QIntValidator
-from PySide2.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit,
-                               QMessageBox, QPushButton, QSpacerItem, QVBoxLayout, QCheckBox,
-                               QWidget, QComboBox, QGridLayout, QScrollArea)
+from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb
+from PySide2.QtWidgets import (QFileDialog, QHBoxLayout, QLabel,
+                               QSpacerItem, QVBoxLayout,
+                               QWidget, QScrollArea)
 
 from game.core.map import ClassicMap, Map, MapCell
 from game.utils.random import RNGCache
+from tools.widgets import (msg_error, ToolApp, ToolComboBox, ToolLineEdit, ToolPushButton,
+                           ToolCheckBox)
 
 CONFIG_FILE = Path('data') / Path('config.json')
-STYLESHEET = Path('static/css/darkorange.qss')
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 MAP_LAYERS = {
@@ -50,11 +51,6 @@ ALGORITHMS = {
 }
 
 
-def msg_error(msg: str, parent: Optional[QWidget]=None) -> None:
-    """Show an error message."""
-    QMessageBox().critical(parent, 'Error!', msg)
-
-
 class MapSizeWidget(QWidget):
     """Map size."""
 
@@ -67,37 +63,23 @@ class MapSizeWidget(QWidget):
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        v_size = QIntValidator(10, 234, self)
-        v_scale = QIntValidator(1, 20, self)
-        self.map_width = QLineEdit()
-        self.map_width.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_width.setFixedWidth(32)
-        self.map_width.setText('100')
-        self.map_width.setValidator(v_size)
-        self.map_height = QLineEdit()
-        self.map_height.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_height.setFixedWidth(32)
-        self.map_height.setText('100')
-        self.map_height.setValidator(v_size)
-        self.map_scale = QLineEdit()
-        self.map_scale.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.map_scale.setFixedWidth(24)
-        self.map_scale.setText('6')
-        self.map_scale.setValidator(v_scale)
+        self.map_width = ToolLineEdit('Map Size:', default_text='100', edit_width=32)
+        self.map_width.set_int_validator(10, 234)
+        self.map_height = ToolLineEdit('x', default_text='100', edit_width=32)
+        self.map_height.set_int_validator(10, 234)
+        self.map_scale = ToolLineEdit('Scale:', default_text='6', edit_width=24)
+        self.map_scale.set_int_validator(1, 20)
 
-        layout.addWidget(QLabel('Map Size: '))
         layout.addWidget(self.map_width)
-        layout.addWidget(QLabel('x'))
         layout.addWidget(self.map_height)
-        layout.addWidget(QLabel('   Scale: '))
         layout.addWidget(self.map_scale)
         layout.addStretch()
 
         self.setLayout(layout)
 
-        self.map_width.editingFinished.connect(self._on_size_changed)
-        self.map_height.editingFinished.connect(self._on_size_changed)
-        self.map_scale.editingFinished.connect(self._on_scale_changed)
+        self.map_width.editing_finished.connect(self._on_size_changed)
+        self.map_height.editing_finished.connect(self._on_size_changed)
+        self.map_scale.editing_finished.connect(self._on_scale_changed)
 
     def get_size(self) -> Tuple[int, int]:
         """Get the requested size of the map."""
@@ -126,26 +108,24 @@ class AlgorithmParametersWidget(QWidget):
         self.algorithm = algorithm
         self.line_edits = {}
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         layout.setSpacing(4)
         layout.setMargin(0)
 
         row = 0
         for opt, data in ALGORITHMS[algorithm]['opts'].items():
-            layout.addWidget(QLabel(f'{opt.capitalize()}: '), row, 0, Qt.AlignVCenter)
             if data['type'] == 'int':
-                self.line_edits[opt] = QLineEdit()
-                self.line_edits[opt].setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-                self.line_edits[opt].setFixedWidth(50)
-                self.line_edits[opt].setText(str(data['default']))
-                self.line_edits[opt].setValidator(QIntValidator(data['min'], data['max'], self))
-                layout.addWidget(self.line_edits[opt], row, 1, Qt.AlignTop)
-                self.line_edits[opt].editingFinished.connect(self._on_params_changed)
+                self.line_edits[opt] = ToolLineEdit(opt.capitalize() + ':',
+                                                    default_text=str(data['default']),
+                                                    edit_width=50)
+                self.line_edits[opt].set_int_validator(data['min'], data['max'])
+                self.line_edits[opt].editing_finished.connect(self._on_params_changed)
+                layout.addWidget(self.line_edits[opt])
             else:
                 msg_error(f'Option type {data["type"]} is not implemented!', self)
                 break
             row += 1
-        layout.setColumnStretch(2, 1)
+        layout.addStretch()
         self.setLayout(layout)
 
     def get_params(self) -> dict:
@@ -171,18 +151,10 @@ class AlgorithmWidget(QWidget):
         self.layout.setSpacing(0)
         self.layout.setMargin(0)
 
-        choice_layout = QHBoxLayout()
-        choice_layout.setSpacing(0)
-        choice_layout.setMargin(0)
+        self.choice = ToolComboBox('Algorithm:')
+        self.choice.add_items(list(ALGORITHMS.keys()))
 
-        self.choice = QComboBox()
-        self.choice.addItems(list(ALGORITHMS.keys()))
-        self.choice.setMinimumWidth(178)
-
-        choice_layout.addWidget(QLabel('Algorithm:'))
-        choice_layout.addWidget(self.choice)
-        choice_layout.addStretch()
-        self.layout.addLayout(choice_layout)
+        self.layout.addWidget(self.choice)
 
         self.params = AlgorithmParametersWidget(self.get_algorithm())
         self.layout.addSpacerItem(QSpacerItem(1, 10))
@@ -190,12 +162,12 @@ class AlgorithmWidget(QWidget):
 
         self.setLayout(self.layout)
 
-        self.choice.currentIndexChanged.connect(self._on_algorithm_changed)
+        self.choice.selection_changed.connect(self._on_algorithm_changed)
         self.params.params_changed.connect(self._on_params_changed)
 
     def get_algorithm(self) -> str:
         """Get the chosen algorithm."""
-        return self.choice.currentText()
+        return self.choice.text()
 
     def get_params(self) -> dict:
         """Get the algorithm parameters."""
@@ -223,21 +195,15 @@ class SeedWidget(QWidget):
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.value = QLineEdit()
-        self.value.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
-        self.value.setText('1')
-        self.reset_button = QPushButton('Reset')
-        self.reset_button.setFocusPolicy(Qt.NoFocus)
-        self.reset_button.setAutoDefault(False)
-        self.reset_button.setDefault(False)
+        self.value = ToolLineEdit('Seed:', default_text='1')
+        self.reset_button = ToolPushButton('Reset')
 
-        layout.addWidget(QLabel('Seed:'))
         layout.addWidget(self.value)
         layout.addWidget(self.reset_button)
 
         self.setLayout(layout)
 
-        self.value.editingFinished.connect(self._on_seed_changed)
+        self.value.editing_finished.connect(self._on_seed_changed)
         self.reset_button.clicked.connect(self._on_seed_reset)
 
     def get_seed(self) -> str:
@@ -318,14 +284,9 @@ class ButtonsWidget(QWidget):
         layout.setMargin(0)
         layout.setAlignment(Qt.AlignRight)
 
-        self.generate_button = QPushButton('Generate')
+        self.generate_button = ToolPushButton('Generate', allow_focus=True)
         self.generate_button.setObjectName('largeButton')
-        self.generate_button.setAutoDefault(True)
-        self.generate_button.setDefault(True)
-        self.save_image_button = QPushButton('Save Image')
-        self.save_image_button.setFocusPolicy(Qt.NoFocus)
-        self.save_image_button.setAutoDefault(False)
-        self.save_image_button.setDefault(False)
+        self.save_image_button = ToolPushButton('Save Image')
 
         layout.addStretch()
         layout.addSpacerItem(QSpacerItem(80, 1))
@@ -344,33 +305,6 @@ class ButtonsWidget(QWidget):
         self.save_image.emit()
 
 
-class LayersItem(QWidget):
-    """Map Visualizer Layer item widget."""
-
-    state_changed = Signal(str, bool)
-
-    def __init__(self, name: str, parent: Optional[QWidget]=None) -> None:
-        super().__init__(parent)
-        layout = QHBoxLayout()
-        layout.setSpacing(8)
-        layout.setMargin(0)
-
-        self.check = QCheckBox()
-        self.check.setChecked(True)
-        self.name = QLabel(name)
-
-        layout.addWidget(self.check)
-        layout.addWidget(self.name)
-        layout.addStretch()
-
-        self.setLayout(layout)
-
-        self.check.stateChanged.connect(self._on_state_changed)
-
-    def _on_state_changed(self, state: int) -> None:
-        self.state_changed.emit(self.name.text(), bool(state))
-
-
 class LayersWidget(QWidget):
     """Map Visualizer layers widget."""
 
@@ -379,7 +313,7 @@ class LayersWidget(QWidget):
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout()
-        layout.setSpacing(0)
+        layout.setSpacing(8)
         layout.setMargin(0)
         self.setFixedWidth(200)
 
@@ -389,7 +323,7 @@ class LayersWidget(QWidget):
         for layer in reversed(list(MAP_LAYERS.keys())):
             if layer == 'base':
                 continue
-            item = LayersItem(layer)
+            item = ToolCheckBox(layer, checked=True)
             self.layers.append(item)
             layout.addWidget(item)
             item.state_changed.connect(self._on_layer_state_changed)
@@ -476,7 +410,6 @@ class CentralWidget(QWidget):
 
         self.layers = LayersWidget()
         self.scroll_area = QScrollArea()
-        self.scroll_area.setObjectName('image')
         self.image_widget = ImageWidget()
         self.scroll_area.setWidget(self.image_widget)
         self.options = OptionsWidget()
@@ -509,8 +442,9 @@ class CentralWidget(QWidget):
 
     def _on_layer_state_changed(self, name: str, enabled: bool) -> None:
         self.image_widget.set_layer(name, enabled)
-        self.image_widget.draw_map(self.game_map, self.scale_factor)
-        self.image_widget.repaint()
+        if self.game_map:
+            self.image_widget.draw_map(self.game_map, self.scale_factor)
+            self.image_widget.repaint()
 
     def _on_options_changed(self, options: Mapping) -> None:
         self.options_changed.emit(options)
@@ -530,7 +464,6 @@ class MapVisualizer(QWidget):
         self.map_config: MutableMapping = map_config
         self.setWindowTitle('Map Visualizer')
         self.setMinimumSize(MIN_WIDTH, MIN_HEIGHT)
-        self.setObjectName('MainApp')
         self.game_map = None
 
         RNGCache.init(self.map_config['parent_seed'])
@@ -597,9 +530,7 @@ def main() -> int:
         parent_seed = sys.argv[1]
     except IndexError:
         parent_seed = 'MapVisualizer'
-    app = QApplication(sys.argv)
-    with STYLESHEET.open() as f:
-        app.setStyleSheet(f.read())
+    app = ToolApp(sys.argv)
     with CONFIG_FILE.open() as f:
         map_config = json.load(f)['map']
     map_config['parent_seed'] = parent_seed
