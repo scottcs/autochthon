@@ -579,7 +579,7 @@ class AssemblageEditor(QWidget):
 
         self.render_widget = RenderWidget()
         self.file_widget = FileLoadSave()
-        self.assemblage_name = ToolMutableComboBox('Assemblage Name:')
+        self.assemblage_name = ToolMutableComboBox('Assemblage Name:', sort=True)
         self.component_widget = ComponentPane()
 
         header_right_layout.addWidget(self.file_widget)
