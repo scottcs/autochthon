@@ -9,7 +9,7 @@ from typing import Optional, Any, List, Sequence, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QColor
-from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
+from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QScrollArea,
                                QFileDialog, QHBoxLayout, QLabel, QListWidget,
                                QListWidgetItem, QMessageBox, QSpacerItem,
                                QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
@@ -485,22 +485,14 @@ class ComponentPane(QWidget):
         details_layout.setSpacing(0)
         details_layout.setMargin(0)
 
-        self.details_stacked_layout = QStackedLayout()
-        self.details_stacked_layout.setSpacing(0)
-        self.details_stacked_layout.setMargin(0)
-
         self.component_list = ComponentList(self)
         details_label = QLabel('Component Details')
         details_label.setMinimumHeight(23)
         details_layout.addWidget(details_label)
-        self.details_widget = ComponentDetailsTable()
-        self.renderable_widget = RenderableComponentDetails()
+        self.params_widget = QScrollArea()
+        self.params_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        details_layout.addWidget(self.params_widget)
 
-        self.details_stacked_layout.addWidget(self.details_widget)
-        self.details_stacked_layout.addWidget(self.renderable_widget)
-        self.details_stacked_layout.setCurrentIndex(0)
-
-        details_layout.addLayout(self.details_stacked_layout)
         layout.addWidget(self.component_list)
         layout.addSpacerItem(QSpacerItem(4, 1))
         layout.addLayout(details_layout)
@@ -510,17 +502,22 @@ class ComponentPane(QWidget):
         self.component_list.selection_changed.connect(self._on_selection_changed)
         self.component_list.component_removed.connect(self._on_component_removed)
         self.component_list.components_added.connect(self._on_components_added)
-        self.details_widget.data_changed.connect(self._on_data_changed)
-        self.renderable_widget.data_changed.connect(self._on_data_changed)
 
     def _on_selection_changed(self, selected: str) -> None:
         self.selected = selected
-        if selected == 'render.Renderable':
-            self.renderable_widget.update_data(self.data[selected])
-            self.details_stacked_layout.setCurrentIndex(1)
-        else:
-            self.details_widget.update_data(selected, self.data[selected])
-            self.details_stacked_layout.setCurrentIndex(0)
+        self.data.setdefault(selected, {})
+        if self.params_widget.widget() is not None:
+            self.params_widget.widget().parameters_changed.disconnect(self._on_parameters_changed)
+        component_class = get_component_class(selected)
+        widget = ComponentPanel(selected, component_class, data=self.data[selected])
+        widget.parameters_changed.connect(self._on_parameters_changed)
+        self.params_widget.setWidget(widget)
+
+    def _on_parameters_changed(self):
+        params = self.params_widget.widget().get_parameters()
+        if self.selected:
+            self.data[self.selected] = params
+            self.data_changed.emit({'Components': self.data})
 
     def _on_component_removed(self, component_name: str) -> None:
         try:
@@ -538,11 +535,6 @@ class ComponentPane(QWidget):
         self.component_list.update_items(sorted(self.data.keys()))
         self.update()
 
-    def _on_data_changed(self, data: MutableMapping) -> None:
-        if self.selected:
-            self.data[self.selected] = data
-            self.data_changed.emit({'Components': self.data})
-
     def update_data(self, data: Mapping) -> None:
         """Update the data in this widget."""
         self.data = data['Components']
@@ -553,8 +545,7 @@ class ComponentPane(QWidget):
 
     def hide_data(self) -> None:
         """Hide the data pane."""
-        self.details_widget.clear()
-        self.details_stacked_layout.setCurrentIndex(0)
+        self.params_widget.takeWidget()
 
 
 class AssemblageEditor(QWidget):

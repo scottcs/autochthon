@@ -313,7 +313,7 @@ class LayersWidget(QWidget):
     def __init__(self, parent: Optional[QWidget]=None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout()
-        layout.setSpacing(8)
+        layout.setSpacing(0)
         layout.setMargin(0)
         self.setFixedWidth(200)
 

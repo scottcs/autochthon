@@ -14,7 +14,8 @@ class ToolLineEdit(QWidget):
     def __init__(self, label: str, parent: Optional[QWidget]=None,
                  default_text: Optional[str]=None,
                  edit_width: Optional[int]=None,
-                 min_label_width: Optional[int]=None) -> None:
+                 min_label_width: Optional[int]=None,
+                 required: bool=False) -> None:
         super().__init__(parent)
         self.name = label
         self._label = QLabel(self.name)
@@ -27,6 +28,9 @@ class ToolLineEdit(QWidget):
             self._edit.setText(default_text)
         if edit_width:
             self._edit.setFixedWidth(edit_width)
+        if required:
+            self._label.setProperty('status', 'required')
+            self._edit.setProperty('status', 'required')
 
         layout = QHBoxLayout()
         layout.setSpacing(0)

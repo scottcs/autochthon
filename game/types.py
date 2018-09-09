@@ -140,7 +140,7 @@ def parameter_types(func: Callable) -> dict:
     result = {}
     sig = inspect.signature(func)
     for name, parameter in sig.parameters.items():
-        if name == 'self':
+        if name in ('self', 'args', 'kwargs'):
             continue
         types = get_union_types(parameter.annotation)
         result[name] = {'types': types}

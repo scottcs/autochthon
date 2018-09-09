@@ -242,6 +242,11 @@ QHeaderView::section
     border: 1px solid #6c6c6c;
 }
 
+QCheckBox
+{
+    margin-bottom: 4px;
+}
+
 QCheckBox:disabled
 {
     color: #414141;
@@ -327,3 +332,14 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
 {
     border: 1px solid #444;
 }
+
+QLabel[status="required"]
+{
+    color: #ffebcc;
+}
+
+QLineEdit[status="required"]
+{
+    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4d4436, stop: 0 #635946, stop: 1 #5c5240);
+}
+
