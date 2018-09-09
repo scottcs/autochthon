@@ -1,5 +1,5 @@
 """Custom QLineEdit widget."""
-from typing import Optional
+from typing import Optional, Any
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QIntValidator
@@ -14,9 +14,11 @@ class ToolLineEdit(QWidget):
     def __init__(self, label: str, parent: Optional[QWidget]=None,
                  default_text: Optional[str]=None,
                  edit_width: Optional[int]=None,
-                 min_label_width: Optional[int]=None) -> None:
+                 min_label_width: Optional[int]=None,
+                 required: bool=False) -> None:
         super().__init__(parent)
-        self._label = QLabel(label)
+        self.name = label
+        self._label = QLabel(self.name)
         if min_label_width is not None:
             self._label.setMinimumWidth(min_label_width)
 
@@ -26,6 +28,9 @@ class ToolLineEdit(QWidget):
             self._edit.setText(default_text)
         if edit_width:
             self._edit.setFixedWidth(edit_width)
+        if required:
+            self._label.setProperty('status', 'required')
+            self._edit.setProperty('status', 'required')
 
         layout = QHBoxLayout()
         layout.setSpacing(0)
@@ -54,6 +59,10 @@ class ToolLineEdit(QWidget):
     def set_int_validator(self, min_val: Optional[int]=None, max_val: Optional[int]=None) -> None:
         """Set an int validator on this edit widget."""
         self._edit.setValidator(QIntValidator(min_val, max_val, self))
+
+    def set_custom_validator(self, validator: Any) -> None:
+        """Set a custom validator."""
+        self._edit.setValidator(validator)
 
     def disable(self) -> None:
         """Disable the line edit."""

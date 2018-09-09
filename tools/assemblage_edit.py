@@ -1,34 +1,26 @@
 """Assemblage editor."""
 from copy import deepcopy
 import json
-from inspect import signature
 from pathlib import Path
 import re
 import sys
-from typing import Optional, Any, List, Sequence, Mapping, MutableMapping
+from typing import Optional, List, Sequence, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QColor
-from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
+from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QScrollArea,
                                QFileDialog, QHBoxLayout, QLabel, QListWidget,
-                               QListWidgetItem, QMessageBox, QSpacerItem,
-                               QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
-                               QWidget)
+                               QListWidgetItem, QMessageBox, QSpacerItem, QVBoxLayout, QWidget)
 
-from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
-from gamedata.palette import Palette
-from tools.widgets import (msg_error, ToolApp, ToolComboBox, ToolMutableComboBox,
-                           ToolLineEdit, ToolPushButton)
+from gamedata.tile_ids import TILE_IDS
+from tools.widgets import (msg_error, ToolApp, ToolMutableComboBox, ToolLineEdit, ToolPushButton,
+                           ComponentPanel)
 
 DATA_DIR = Path('data/assemblage')
-TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
-
-with TILE_IDS_FILE.open() as tile_ids_file_handle:
-    TILE_IDS = json.load(tile_ids_file_handle)
 
 
 class RenderWidget(QWidget):
@@ -347,128 +339,6 @@ class ComponentList(QWidget):
         self.repaint()
 
 
-class ComponentDetailsTable(QTableWidget):
-    """Component details widget."""
-    data_changed = Signal(dict)
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.data = {}
-        self.signature = None
-        self.setColumnCount(1)
-        self.horizontalHeader().setStretchLastSection(True)
-        self.horizontalHeader().hide()
-        self.itemChanged.connect(self._on_item_changed)
-
-    def _on_item_changed(self, item: QTableWidgetItem) -> None:
-        param_name = self.verticalHeaderItem(item.row()).text()
-        old_data = str(self.data.get(param_name, ''))
-        new_data = item.text()
-        if old_data != new_data:
-            param = self.signature.parameters[param_name]
-            if param_name in self.data and new_data in ('', 'None'):
-                if param.default is param.empty:
-                    msg_error(f'Parameter "{param_name}" is required!', self)
-                    self.refresh()
-                del self.data[param_name]
-            else:
-                if new_data.lower() == 'true':
-                    self.data[param_name] = True
-                elif new_data.lower() == 'false':
-                    self.data[param_name] = False
-                else:
-                    try:
-                        self.data[param_name] = int(new_data)
-                    except ValueError:
-                        try:
-                            self.data[param_name] = float(new_data)
-                        except ValueError:
-                            self.data[param_name] = new_data
-            self.data_changed.emit(self.data)
-
-    def update_data(self, component_name: str, component_data: MutableMapping) -> None:
-        """Refresh the list."""
-        self.data = component_data
-        component_class = get_component_class(component_name)
-        self.signature = signature(component_class)
-        self.refresh()
-
-    def clear(self) -> None:
-        """Clear the table."""
-        super().clear()
-        self.setRowCount(0)
-        self.update()
-        self.repaint()
-
-    def refresh(self) -> None:
-        """Refresh data."""
-        self.clear()
-        self.setRowCount(100)
-        row = 0
-        for param_name, param in self.signature.parameters.items():
-            header_item = QTableWidgetItem(param_name)
-            header_item.setToolTip(str(param.annotation))
-            self.setVerticalHeaderItem(row, header_item)
-            item = QTableWidgetItem(str(self.data.get(param_name, '')))
-            if param.default is param.empty:
-                item.setBackgroundColor('#5C554E')
-            self.setItem(row, 0, item)
-            row += 1
-        self.setRowCount(row)
-        self.update()
-        self.repaint()
-
-
-class RenderableComponentDetails(QWidget):
-    """Renderable component details widget."""
-    data_changed = Signal(dict)
-
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
-        super().__init__(parent)
-        layout = QVBoxLayout()
-        layout.setSpacing(0)
-        layout.setMargin(0)
-
-        min_label_width = 100
-
-        self.tile_id = ToolComboBox('Tile ID:', min_label_width=min_label_width)
-        self.tile_id.add_items(sorted([t['name'] for t in TILE_IDS.values()]))
-        self.tint = ToolComboBox('Tint:', min_label_width=min_label_width)
-        self.tint.add_items([a for a in vars(Palette).keys() if not a.startswith('_')])
-        self.layer = ToolComboBox('RenderLayer:', min_label_width=min_label_width)
-        self.layer.add_items(list(RenderLayer.__members__.keys()))
-
-        layout.addWidget(self.tile_id)
-        layout.addWidget(self.tint)
-        layout.addWidget(self.layer)
-        layout.addStretch()
-
-        self.setLayout(layout)
-
-        self.tile_id.selection_changed.connect(self._send_data)
-        self.tint.selection_changed.connect(self._send_data)
-        self.layer.selection_changed.connect(self._send_data)
-
-    def update_data(self, component_data: Mapping) -> None:
-        """Refresh the list."""
-        if 'tile_id' in component_data:
-            self.tile_id.set_via_text(component_data['tile_id'])
-            self.tint.set_via_text(component_data['tint'].split('.')[-1])
-            self.layer.set_via_text(component_data['layer'].split('.')[-1])
-        else:
-            self.tile_id.reset()
-            self.tint.reset()
-            self.layer.reset()
-
-    def _send_data(self) -> None:
-        data = {
-            'tile_id': self.tile_id.text(),
-            'tint': f'Palette.{self.tint.text()}',
-            'layer': f'RenderLayer.{self.layer.text()}',
-        }
-        self.data_changed.emit(data)
-
-
 class ComponentPane(QWidget):
     """Component Pane widget."""
 
@@ -485,22 +355,14 @@ class ComponentPane(QWidget):
         details_layout.setSpacing(0)
         details_layout.setMargin(0)
 
-        self.details_stacked_layout = QStackedLayout()
-        self.details_stacked_layout.setSpacing(0)
-        self.details_stacked_layout.setMargin(0)
-
         self.component_list = ComponentList(self)
         details_label = QLabel('Component Details')
         details_label.setMinimumHeight(23)
         details_layout.addWidget(details_label)
-        self.details_widget = ComponentDetailsTable()
-        self.renderable_widget = RenderableComponentDetails()
+        self.params_widget = QScrollArea()
+        self.params_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        details_layout.addWidget(self.params_widget)
 
-        self.details_stacked_layout.addWidget(self.details_widget)
-        self.details_stacked_layout.addWidget(self.renderable_widget)
-        self.details_stacked_layout.setCurrentIndex(0)
-
-        details_layout.addLayout(self.details_stacked_layout)
         layout.addWidget(self.component_list)
         layout.addSpacerItem(QSpacerItem(4, 1))
         layout.addLayout(details_layout)
@@ -510,17 +372,22 @@ class ComponentPane(QWidget):
         self.component_list.selection_changed.connect(self._on_selection_changed)
         self.component_list.component_removed.connect(self._on_component_removed)
         self.component_list.components_added.connect(self._on_components_added)
-        self.details_widget.data_changed.connect(self._on_data_changed)
-        self.renderable_widget.data_changed.connect(self._on_data_changed)
 
     def _on_selection_changed(self, selected: str) -> None:
         self.selected = selected
-        if selected == 'render.Renderable':
-            self.renderable_widget.update_data(self.data[selected])
-            self.details_stacked_layout.setCurrentIndex(1)
-        else:
-            self.details_widget.update_data(selected, self.data[selected])
-            self.details_stacked_layout.setCurrentIndex(0)
+        self.data.setdefault(selected, {})
+        if self.params_widget.widget() is not None:
+            self.params_widget.widget().parameters_changed.disconnect(self._on_parameters_changed)
+        component_class = get_component_class(selected)
+        widget = ComponentPanel(selected, component_class, data=self.data[selected])
+        widget.parameters_changed.connect(self._on_parameters_changed)
+        self.params_widget.setWidget(widget)
+
+    def _on_parameters_changed(self):
+        params = self.params_widget.widget().get_parameters()
+        if self.selected:
+            self.data[self.selected] = params
+            self.data_changed.emit({'Components': self.data})
 
     def _on_component_removed(self, component_name: str) -> None:
         try:
@@ -538,11 +405,6 @@ class ComponentPane(QWidget):
         self.component_list.update_items(sorted(self.data.keys()))
         self.update()
 
-    def _on_data_changed(self, data: MutableMapping) -> None:
-        if self.selected:
-            self.data[self.selected] = data
-            self.data_changed.emit({'Components': self.data})
-
     def update_data(self, data: Mapping) -> None:
         """Update the data in this widget."""
         self.data = data['Components']
@@ -553,8 +415,7 @@ class ComponentPane(QWidget):
 
     def hide_data(self) -> None:
         """Hide the data pane."""
-        self.details_widget.clear()
-        self.details_stacked_layout.setCurrentIndex(0)
+        self.params_widget.takeWidget()
 
 
 class AssemblageEditor(QWidget):

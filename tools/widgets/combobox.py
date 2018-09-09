@@ -16,6 +16,7 @@ class ToolComboBox(QWidget):
     def __init__(self, label: str, parent: Optional[QWidget]=None,
                  min_label_width: Optional[int]=None, sort: bool=False) -> None:
         super().__init__(parent)
+        self.name = label
         self._items = []
         self._sorted = sort
         self._label = QLabel(label)

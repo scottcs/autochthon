@@ -1,5 +1,6 @@
 """Typing for the game module."""
 from enum import Enum, auto, IntEnum
+import inspect
 from typing import Dict, Callable, Any, NamedTuple, Union, Optional
 
 from game.utils.random import parse, RNGCache
@@ -116,3 +117,34 @@ class ComponentSchema(NamedTuple):
     type: Any
     args: tuple
     kwargs: dict
+
+
+def get_union_types(union_type: Union) -> tuple:
+    """Get a tuple of the types of a union."""
+    try:
+        if union_type.__origin__ is Union:
+            return union_type.__args__
+    except AttributeError:
+        pass
+    # noinspection PyRedundantParentheses
+    return (union_type,)
+
+
+def is_in_union(arg: Any, union_type: Union) -> bool:
+    """Return true if the given argument is included in the union type."""
+    return isinstance(arg, get_union_types(union_type))
+
+
+def parameter_types(func: Callable) -> dict:
+    """Get a dict of parameter names and allowed types from a function."""
+    result = {}
+    sig = inspect.signature(func)
+    for name, parameter in sig.parameters.items():
+        if name in ('self', 'args', 'kwargs'):
+            continue
+        types = get_union_types(parameter.annotation)
+        result[name] = {'types': types}
+        # noinspection PyProtectedMember
+        if parameter.default != inspect._empty:
+            result[name]['default'] = parameter.default
+    return result
