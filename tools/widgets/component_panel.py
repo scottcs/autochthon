@@ -1,22 +1,17 @@
 """Widget to represent an editable component."""
 from enum import Enum
-import json
-from pathlib import Path
 from typing import Optional, Any, Mapping
 
 from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QSpacerItem
 
 from game.types import parameter_types
+from gamedata.tile_ids import TILE_IDS
 from .checkbox import ToolCheckBox
 from .combobox import ToolComboBox
 from .lineedit import ToolLineEdit
 
 MIN_LABEL_WIDTH = 150
-TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
-
-with TILE_IDS_FILE.open() as tile_ids_file_handle:
-    TILE_IDS = json.load(tile_ids_file_handle)
 
 
 class ComponentPanel(QWidget):

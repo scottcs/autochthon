@@ -13,17 +13,14 @@ from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QSc
                                QListWidgetItem, QMessageBox, QSpacerItem, QVBoxLayout, QWidget)
 
 from game.utils.factory import get_component_class, convert_datum
+from gamedata.tile_ids import TILE_IDS
 from tools.widgets import (msg_error, ToolApp, ToolMutableComboBox, ToolLineEdit, ToolPushButton,
                            ComponentPanel)
 
 DATA_DIR = Path('data/assemblage')
-TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
 COMPONENT_DIR = Path('game/component')
 COMPONENT_RE = re.compile(r'(?<=^class )\w+')
 IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
-
-with TILE_IDS_FILE.open() as tile_ids_file_handle:
-    TILE_IDS = json.load(tile_ids_file_handle)
 
 
 class RenderWidget(QWidget):
