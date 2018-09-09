@@ -1,25 +1,20 @@
 """Assemblage editor."""
 from copy import deepcopy
 import json
-from inspect import signature
 from pathlib import Path
 import re
 import sys
-from typing import Optional, Any, List, Sequence, Mapping, MutableMapping
+from typing import Optional, List, Sequence, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QColor
 from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QScrollArea,
                                QFileDialog, QHBoxLayout, QLabel, QListWidget,
-                               QListWidgetItem, QMessageBox, QSpacerItem,
-                               QStackedLayout, QTableWidget, QTableWidgetItem, QVBoxLayout,
-                               QWidget)
+                               QListWidgetItem, QMessageBox, QSpacerItem, QVBoxLayout, QWidget)
 
-from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
-from gamedata.palette import Palette
-from tools.widgets import (msg_error, ToolApp, ToolComboBox, ToolMutableComboBox,
-                           ToolLineEdit, ToolPushButton, ComponentPanel)
+from tools.widgets import (msg_error, ToolApp, ToolMutableComboBox, ToolLineEdit, ToolPushButton,
+                           ComponentPanel)
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
@@ -345,128 +340,6 @@ class ComponentList(QWidget):
         self.sizeHint()
         self.update()
         self.repaint()
-
-
-class ComponentDetailsTable(QTableWidget):
-    """Component details widget."""
-    data_changed = Signal(dict)
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.data = {}
-        self.signature = None
-        self.setColumnCount(1)
-        self.horizontalHeader().setStretchLastSection(True)
-        self.horizontalHeader().hide()
-        self.itemChanged.connect(self._on_item_changed)
-
-    def _on_item_changed(self, item: QTableWidgetItem) -> None:
-        param_name = self.verticalHeaderItem(item.row()).text()
-        old_data = str(self.data.get(param_name, ''))
-        new_data = item.text()
-        if old_data != new_data:
-            param = self.signature.parameters[param_name]
-            if param_name in self.data and new_data in ('', 'None'):
-                if param.default is param.empty:
-                    msg_error(f'Parameter "{param_name}" is required!', self)
-                    self.refresh()
-                del self.data[param_name]
-            else:
-                if new_data.lower() == 'true':
-                    self.data[param_name] = True
-                elif new_data.lower() == 'false':
-                    self.data[param_name] = False
-                else:
-                    try:
-                        self.data[param_name] = int(new_data)
-                    except ValueError:
-                        try:
-                            self.data[param_name] = float(new_data)
-                        except ValueError:
-                            self.data[param_name] = new_data
-            self.data_changed.emit(self.data)
-
-    def update_data(self, component_name: str, component_data: MutableMapping) -> None:
-        """Refresh the list."""
-        self.data = component_data
-        component_class = get_component_class(component_name)
-        self.signature = signature(component_class)
-        self.refresh()
-
-    def clear(self) -> None:
-        """Clear the table."""
-        super().clear()
-        self.setRowCount(0)
-        self.update()
-        self.repaint()
-
-    def refresh(self) -> None:
-        """Refresh data."""
-        self.clear()
-        self.setRowCount(100)
-        row = 0
-        for param_name, param in self.signature.parameters.items():
-            header_item = QTableWidgetItem(param_name)
-            header_item.setToolTip(str(param.annotation))
-            self.setVerticalHeaderItem(row, header_item)
-            item = QTableWidgetItem(str(self.data.get(param_name, '')))
-            if param.default is param.empty:
-                item.setBackgroundColor('#5C554E')
-            self.setItem(row, 0, item)
-            row += 1
-        self.setRowCount(row)
-        self.update()
-        self.repaint()
-
-
-class RenderableComponentDetails(QWidget):
-    """Renderable component details widget."""
-    data_changed = Signal(dict)
-
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
-        super().__init__(parent)
-        layout = QVBoxLayout()
-        layout.setSpacing(0)
-        layout.setMargin(0)
-
-        min_label_width = 100
-
-        self.tile_id = ToolComboBox('Tile ID:', min_label_width=min_label_width)
-        self.tile_id.add_items(sorted([t['name'] for t in TILE_IDS.values()]))
-        self.tint = ToolComboBox('Tint:', min_label_width=min_label_width)
-        self.tint.add_items([a for a in vars(Palette).keys() if not a.startswith('_')])
-        self.layer = ToolComboBox('RenderLayer:', min_label_width=min_label_width)
-        self.layer.add_items(list(RenderLayer.__members__.keys()))
-
-        layout.addWidget(self.tile_id)
-        layout.addWidget(self.tint)
-        layout.addWidget(self.layer)
-        layout.addStretch()
-
-        self.setLayout(layout)
-
-        self.tile_id.selection_changed.connect(self._send_data)
-        self.tint.selection_changed.connect(self._send_data)
-        self.layer.selection_changed.connect(self._send_data)
-
-    def update_data(self, component_data: Mapping) -> None:
-        """Refresh the list."""
-        if 'tile_id' in component_data:
-            self.tile_id.set_via_text(component_data['tile_id'])
-            self.tint.set_via_text(component_data['tint'].split('.')[-1])
-            self.layer.set_via_text(component_data['layer'].split('.')[-1])
-        else:
-            self.tile_id.reset()
-            self.tint.reset()
-            self.layer.reset()
-
-    def _send_data(self) -> None:
-        data = {
-            'tile_id': self.tile_id.text(),
-            'tint': f'Palette.{self.tint.text()}',
-            'layer': f'RenderLayer.{self.layer.text()}',
-        }
-        self.data_changed.emit(data)
 
 
 class ComponentPane(QWidget):

@@ -1,9 +1,10 @@
 """Widget to represent an editable component."""
 from enum import Enum
-from typing import Optional, Any, Sequence, Mapping
+import json
+from pathlib import Path
+from typing import Optional, Any, Mapping
 
 from PySide2.QtCore import Signal
-from PySide2.QtGui import QValidator
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QSpacerItem
 
 from game.types import parameter_types
@@ -11,28 +12,11 @@ from .checkbox import ToolCheckBox
 from .combobox import ToolComboBox
 from .lineedit import ToolLineEdit
 
+MIN_LABEL_WIDTH = 150
+TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
 
-class MultiTypeValidator(QValidator):
-    """Validator that allows several types."""
-    def __init__(self, types: Sequence, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.types = types
-
-    def validate(self, text: str, pos: int) -> int:
-        """Validate the input."""
-        ok = False
-        for type_ in self.types:
-            try:
-                type_(str)
-                ok = True
-                break
-            except TypeError:
-                pass
-        if ok:
-            return QValidator.Acceptable
-        else:
-            return QValidator.Invalid
-        # return QValidator.Intermediate
+with TILE_IDS_FILE.open() as tile_ids_file_handle:
+    TILE_IDS = json.load(tile_ids_file_handle)
 
 
 class ComponentPanel(QWidget):
@@ -79,7 +63,7 @@ class ComponentPanel(QWidget):
                 widget.state_changed.connect(self._on_changes)
                 self._check_widgets.append(widget)
             elif is_enum:
-                widget = ToolComboBox(name, min_label_width=100)
+                widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
                 widget.enum_type = params['types'][0]
                 widget.add_items(list(widget.enum_type.__members__.keys()))
                 if name in self._data:
@@ -87,13 +71,20 @@ class ComponentPanel(QWidget):
                     widget.set_via_text(which)
                 widget.selection_changed.connect(self._on_changes)
                 self._combo_widgets.append(widget)
+            elif name == 'tile_id':
+                # special case for tile ids
+                widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
+                widget.enum_type = 'tile_id'
+                widget.add_items(sorted([t['name'] for t in TILE_IDS.values()]))
+                if name in self._data:
+                    widget.set_via_text(self._data[name])
+                widget.selection_changed.connect(self._on_changes)
+                self._combo_widgets.append(widget)
             else:
                 widget = ToolLineEdit(name,
                                       required=required,
                                       default_text=default,
-                                      min_label_width=100)
-                # types = params['types']
-                # widget.set_custom_validator(MultiTypeValidator(types))
+                                      min_label_width=MIN_LABEL_WIDTH)
                 if name in self._data:
                     widget.set_text(str(self._data[name]))
                 widget.editing_finished.connect(self._on_changes)
@@ -118,6 +109,9 @@ class ComponentPanel(QWidget):
         """Get all of the current values of the parameters for this component."""
         params = {widget.name: widget.text() for widget in self._edit_widgets}
         for widget in self._combo_widgets:
-            params[widget.name] = str(widget.enum_type.__members__[widget.text()])
+            if widget.enum_type == 'tile_id':
+                params[widget.name] = widget.text()
+            else:
+                params[widget.name] = str(widget.enum_type.__members__[widget.text()])
         params.update({widget.name: widget.isChecked() for widget in self._check_widgets})
         return params
