@@ -111,11 +111,11 @@ class Game:
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
         self.world.add_processor(HPProcessor(), priority=Priority.attributes)
         self.world.add_processor(GameLogProcessor(), priority=Priority.gamelog)
-        self.world.add_processor(render_processor,
-                                 priority=Priority.render,
-                                 group=ProcessGroup.render)
         self.world.add_processor(Psychopomps(),
                                  priority=Priority.psychopomps,
+                                 group=ProcessGroup.render)
+        self.world.add_processor(render_processor,
+                                 priority=Priority.render,
                                  group=ProcessGroup.render)
 
         current_map = ClassicMap(self.config['map']['max_tiles_w'],
@@ -127,7 +127,7 @@ class Game:
         enemy_factory = EnemyFactory(loader, self.world)
         item_factory = ItemFactory(loader, self.world)
         player_factory.make(['Orc'])
-        for _ in range(20):
+        for _ in range(200):
             enemy_factory.make(['TrainingDummy'])
         enemy_factory.make(['Crab'])
         enemy_factory.make(['Boar'])

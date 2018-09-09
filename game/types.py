@@ -25,8 +25,8 @@ class RenderLayer(Enum):
 
 class Priority(IntEnum):
     """Processor priorities."""
-    psychopomps = auto()
     render = auto()
+    psychopomps = auto()
     gamelog = auto()
     attributes = auto()
     movement = auto()
