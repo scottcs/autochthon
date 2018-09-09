@@ -127,6 +127,8 @@ class Game:
         enemy_factory = EnemyFactory(loader, self.world)
         item_factory = ItemFactory(loader, self.world)
         player_factory.make(['Orc'])
+        for _ in range(20):
+            enemy_factory.make(['TrainingDummy'])
         enemy_factory.make(['Crab'])
         enemy_factory.make(['Boar'])
         enemy_factory.make(['OrcShaman'])

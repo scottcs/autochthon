@@ -1,0 +1,25 @@
+{
+  "TrainingDummy": {
+    "Components": {
+      "attribute.HP": {
+        "initial": 1,
+        "minimum": "",
+        "maximum": ""
+      },
+      "descriptive.Name": {
+        "first": "training",
+        "last": "dummy",
+        "nickname": "",
+        "plural": "",
+        "titles": [],
+        "proper": false
+      },
+      "render.Renderable": {
+        "tile_id": "monster_bear3",
+        "tint": "Palette.white",
+        "layer": "RenderLayer.background"
+      },
+      "ai.AIDummy": {}
+    }
+  }
+}
