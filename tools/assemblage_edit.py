@@ -382,6 +382,7 @@ class ComponentPane(QWidget):
         widget = ComponentPanel(selected, component_class, data=self.data[selected])
         widget.parameters_changed.connect(self._on_parameters_changed)
         self.params_widget.setWidget(widget)
+        self.params_widget.setWidgetResizable(True)
 
     def _on_parameters_changed(self):
         params = self.params_widget.widget().get_parameters()

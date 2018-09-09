@@ -113,7 +113,8 @@ class ToolMutableComboBox(ToolComboBox):
     selection_changed = Signal()
     duplicate_item = Signal(str)
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, hide_duplicate_button: bool=False, **kwargs: Any) -> None:
+        self._hide_duplicate_button = hide_duplicate_button
         self._duplicate_button = ToolPushButton('∞')
         self._add_button = ToolPushButton('+')
         self._remove_button = ToolPushButton('-')
@@ -132,7 +133,8 @@ class ToolMutableComboBox(ToolComboBox):
         layout.addSpacerItem(QSpacerItem(4, 1))
         layout.addWidget(self._combobox, Qt.AlignLeft)
         layout.addSpacerItem(QSpacerItem(4, 1))
-        layout.addWidget(self._duplicate_button)
+        if not self._hide_duplicate_button:
+            layout.addWidget(self._duplicate_button)
         layout.addWidget(self._add_button)
         layout.addWidget(self._remove_button)
 
