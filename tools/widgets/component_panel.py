@@ -8,7 +8,7 @@ from PySide2.QtWidgets import QWidget, QVBoxLayout, QSpacerItem
 from game.types import parameter_types
 from gamedata.tile_ids import TILE_IDS
 from .checkbox import ToolCheckBox
-from .combobox import ToolComboBox
+from .combobox import ToolComboBox, ToolMutableComboBox
 from .lineedit import ToolLineEdit
 
 MIN_LABEL_WIDTH = 150
@@ -36,24 +36,18 @@ class ComponentPanel(QWidget):
         layout.setMargin(0)
 
         for name, params in self._parameters.items():
-            required = False
-            try:
-                default = params['default']
-                if default is None:
-                    default = ''
-                else:
-                    default = str(default)
-            except KeyError:
-                default = None
-                required = True
-
             try:
                 is_enum = issubclass(params['types'][0], Enum)
             except TypeError:
                 is_enum = False
 
+            try:
+                is_list = params['types'][0].__origin__ == list
+            except AttributeError:
+                is_list = list in params['types']
+
             if bool in params['types']:
-                checked = self._data.get(name, bool(default))
+                checked = self._data.get(name, params.get('default', False))
                 widget = ToolCheckBox(name, checked=checked)
                 widget.state_changed.connect(self._on_changes)
                 self._check_widgets.append(widget)
@@ -75,7 +69,27 @@ class ComponentPanel(QWidget):
                     widget.set_via_text(self._data[name])
                 widget.selection_changed.connect(self._on_changes)
                 self._combo_widgets.append(widget)
+            elif is_list:
+                # special case for lists
+                widget = ToolMutableComboBox(name, min_label_width=MIN_LABEL_WIDTH,
+                                             hide_duplicate_button=True)
+                widget.enum_type = 'list'
+                if name in self._data:
+                    widget.add_items(self._data[name])
+                widget.selection_changed.connect(self._on_changes)
+                self._combo_widgets.append(widget)
             else:
+                required = False
+                try:
+                    default = params['default']
+                    if default is None:
+                        default = ''
+                    else:
+                        default = str(default)
+                except KeyError:
+                    default = None
+                    required = True
+
                 widget = ToolLineEdit(name,
                                       required=required,
                                       default_text=default,
@@ -95,6 +109,7 @@ class ComponentPanel(QWidget):
         for widget in self._check_widgets:
             layout.addWidget(widget)
 
+        layout.addStretch()
         self.setLayout(layout)
 
     def _on_changes(self) -> None:
@@ -106,6 +121,8 @@ class ComponentPanel(QWidget):
         for widget in self._combo_widgets:
             if widget.enum_type == 'tile_id':
                 params[widget.name] = widget.text()
+            elif widget.enum_type == 'list':
+                params[widget.name] = list(widget.iter_texts())
             else:
                 params[widget.name] = str(widget.enum_type.__members__[widget.text()])
         params.update({widget.name: widget.isChecked() for widget in self._check_widgets})
