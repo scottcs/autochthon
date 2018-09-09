@@ -14,6 +14,17 @@ from .lineedit import ToolLineEdit
 MIN_LABEL_WIDTH = 150
 
 
+def int_float_self(arg: Any) -> Any:
+    """Convert an arg to int or float or itself."""
+    try:
+        return int(arg)
+    except ValueError:
+        try:
+            return float(arg)
+        except ValueError:
+            return arg
+
+
 class ComponentPanel(QWidget):
     """An editable game component."""
 
@@ -117,7 +128,7 @@ class ComponentPanel(QWidget):
 
     def get_parameters(self) -> dict:
         """Get all of the current values of the parameters for this component."""
-        params = {widget.name: widget.text() for widget in self._edit_widgets}
+        params = {widget.name: int_float_self(widget.text()) for widget in self._edit_widgets}
         for widget in self._combo_widgets:
             if widget.enum_type == 'tile_id':
                 params[widget.name] = widget.text()
