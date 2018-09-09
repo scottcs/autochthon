@@ -6,17 +6,7 @@
         "initial": "==1d6+1"
       },
       "descriptive.Name": {
-        "first": "ghoul",
-        "last": "",
-        "nickname": "",
-        "plural": "",
-        "titles": [
-          "Thing",
-          "Shush",
-          "Grrr",
-          "Thing2"
-        ],
-        "proper": true
+        "first": "ghoul"
       },
       "render.Renderable": {
         "tile_id": "monster_ghoul1",

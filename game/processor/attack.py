@@ -67,7 +67,7 @@ class AttackMissProcessor(esper.Processor):
                 modifier = accumulate_modifiers(*mods)
                 chance = HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
-                if rng.percent(chance):
+                if not rng.percent(chance):
                     name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
                     combat_log.add(
                         *msg(self.world.players, (ent, target.entity), MsgMiss, name.specific))
@@ -109,7 +109,7 @@ class AttackDefenseProcessor(esper.Processor):
                 modifier = accumulate_modifiers(*mods)
                 chance = self.base_chance + modifier.factor
                 if chance > 0:
-                    if rng.percent(chance):
+                    if not rng.percent(chance):
                         combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
                         name = self.world.get_or_add_component(
                             target.entity, Name, f'Entity {target.entity}')
