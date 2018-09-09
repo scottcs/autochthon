@@ -36,17 +36,6 @@ class ComponentPanel(QWidget):
         layout.setMargin(0)
 
         for name, params in self._parameters.items():
-            required = False
-            try:
-                default = params['default']
-                if default is None:
-                    default = ''
-                else:
-                    default = str(default)
-            except KeyError:
-                default = None
-                required = True
-
             try:
                 is_enum = issubclass(params['types'][0], Enum)
             except TypeError:
@@ -58,7 +47,7 @@ class ComponentPanel(QWidget):
                 is_list = list in params['types']
 
             if bool in params['types']:
-                checked = self._data.get(name, bool(default))
+                checked = self._data.get(name, params.get('default', False))
                 widget = ToolCheckBox(name, checked=checked)
                 widget.state_changed.connect(self._on_changes)
                 self._check_widgets.append(widget)
@@ -90,6 +79,17 @@ class ComponentPanel(QWidget):
                 widget.selection_changed.connect(self._on_changes)
                 self._combo_widgets.append(widget)
             else:
+                required = False
+                try:
+                    default = params['default']
+                    if default is None:
+                        default = ''
+                    else:
+                        default = str(default)
+                except KeyError:
+                    default = None
+                    required = True
+
                 widget = ToolLineEdit(name,
                                       required=required,
                                       default_text=default,
