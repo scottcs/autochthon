@@ -385,7 +385,11 @@ class ComponentPane(QWidget):
         self.params_widget.setWidgetResizable(True)
 
     def _on_parameters_changed(self):
-        params = self.params_widget.widget().get_parameters()
+        try:
+            params = self.params_widget.widget().get_parameters()
+        except AttributeError:
+            print(f'SOMETHING WEIRD - no widget?: {self.selected}')
+            params = {}
         if self.selected:
             self.data[self.selected] = params
             self.data_changed.emit({'Components': self.data})
