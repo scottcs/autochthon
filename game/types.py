@@ -119,11 +119,20 @@ class ComponentSchema(NamedTuple):
     kwargs: dict
 
 
+def get_union_types(union_type: Union) -> tuple:
+    """Get a tuple of the types of a union."""
+    try:
+        if union_type.__origin__ is Union:
+            return union_type.__args__
+    except AttributeError:
+        pass
+    # noinspection PyRedundantParentheses
+    return (union_type,)
+
+
 def is_in_union(arg: Any, union_type: Union) -> bool:
     """Return true if the given argument is included in the union type."""
-    if union_type.__origin__ is Union:
-        return isinstance(arg, union_type.__args__)
-    return False
+    return isinstance(arg, get_union_types(union_type))
 
 
 def parameter_types(func: Callable) -> dict:
@@ -133,10 +142,7 @@ def parameter_types(func: Callable) -> dict:
     for name, parameter in sig.parameters.items():
         if name == 'self':
             continue
-        try:
-            types = parameter.annotation.__args__
-        except AttributeError:
-            types = (parameter.annotation,)
+        types = get_union_types(parameter.annotation)
         result[name] = {'types': types}
         # noinspection PyProtectedMember
         if parameter.default != inspect._empty:

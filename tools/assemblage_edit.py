@@ -19,7 +19,7 @@ from game.types import RenderLayer
 from game.utils.factory import get_component_class, convert_datum
 from gamedata.palette import Palette
 from tools.widgets import (msg_error, ToolApp, ToolComboBox, ToolMutableComboBox,
-                           ToolLineEdit, ToolPushButton)
+                           ToolLineEdit, ToolPushButton, ComponentPanel)
 
 DATA_DIR = Path('data/assemblage')
 TILE_IDS_FILE = Path('static/img/oryx_ur/tile_ids.json')
