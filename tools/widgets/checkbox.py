@@ -15,3 +15,8 @@ class ToolCheckBox(QCheckBox):
 
     def _on_state_changed(self, state: int) -> None:
         self.state_changed.emit(self.text(), bool(state))
+
+    @property
+    def name(self):
+        """name property"""
+        return self.text()
