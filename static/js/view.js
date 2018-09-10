@@ -9,9 +9,9 @@
         const tileset_fx_projectiles = tileset_dir + 'FX_Projectiles.json';
         const tileset_items = tileset_dir + 'Items.json';
         const tileset_monsters = tileset_dir + 'Monsters.json';
-        const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.png';
+        const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.json';
         const tileset_terrain = tileset_dir + 'Terrain.json';
-        const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.png';
+        const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.json';
         const tile_id_table = tileset_dir + 'tile_ids.json';
         const config_json = 'data/config.json';
         const keys_json = 'data/keys.json';
