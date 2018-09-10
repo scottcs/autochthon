@@ -120,6 +120,8 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def on_close(self) -> None:
         """Called when closing a connection."""
         self.connections.remove(self)
+        UpdateMapRenderEvent.unhandle(self._on_update_map_render)
+        GameLogEvent.unhandle(self._on_game_log)
 
     def get_compression_options(self) -> Optional[dict]:
         """Override default class to turn on compression.
