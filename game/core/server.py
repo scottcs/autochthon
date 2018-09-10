@@ -59,8 +59,10 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         super().__init__(*args, **kwargs)
         with open(WEBSOCKET_EVENTS_JSON) as f:
             self.socket_events = json.load(f)
-        GameLogEvent.handle(self._on_game_log)
-        UpdateMapRenderEvent.handle(self._on_update_map_render)
+        if len(self.connections) == 0:
+            # TODO: need some way to determine which connection is the player, even after refresh
+            GameLogEvent.handle(self._on_game_log)
+            UpdateMapRenderEvent.handle(self._on_update_map_render)
         self.game_callback: GameCallback = GameCallback(config=config)
         self.game_callback.start()
 
