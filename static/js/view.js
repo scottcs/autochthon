@@ -145,12 +145,19 @@
             const cell_size = 12;  // cell size in bytes
             for (let i = 0; i < num_cells; i++) {
                 const cell_offset = offset + (i * cell_size);
+                const cell_color_offset = cell_offset + 8;
+                const cell_r = view.getUint8(cell_color_offset);
+                const cell_g = view.getUint8(cell_color_offset + 1);
+                const cell_b = view.getUint8(cell_color_offset + 2);
+                const cell_a = view.getUint8(cell_color_offset + 3) / 255.0;
+                const cell_tint = 65536*cell_r + 256*cell_g + cell_b;
                 const cell = {
                     id: view.getUint16(cell_offset),
                     x: view.getUint16(cell_offset + 2),
                     y: view.getUint16(cell_offset + 4),
                     tile_id: view.getUint16(cell_offset + 6),
-                    tint: view.getUint32(cell_offset + 8),
+                    tint: cell_tint,
+                    alpha: cell_a
                 };
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
@@ -165,6 +172,7 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
+            sprite.alpha = cell.alpha;
 
             const cameraRect = new PIXI.Rectangle();
             cameraRect.x = camera.pivot.x - app.screen.width / 2;
@@ -174,6 +182,7 @@
 
             sprite.visible = (
                 (cell.tile_id > 0) &&
+                (cell.alpha > 0) &&
                 (sprite.x > (cameraRect.left - 3*tile_width)) &&
                 (sprite.y > (cameraRect.top - 3*tile_height)) &&
                 (sprite.x < (cameraRect.right + 3*tile_width)) &&
@@ -188,6 +197,7 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
+            sprite.alpha = cell.alpha;
             camera.addChild(sprite);
             cells[cell.id] = sprite;
         }
