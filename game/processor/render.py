@@ -49,16 +49,24 @@ class WebRenderProcessor(esper.Processor):
                                    radius=7,  # TODO: make part of a component/vision stat
                                    light_walls=True)
         for cell in self.world.map:
-            data_length += 1
+            alpha = 0x00
+            if cell.explored:
+                alpha = 0x60
+            if cell.fov:
+                self.world.map.explored[cell.y, cell.x] = True
+                alpha = 0xff
+            if alpha == 0:
+                continue
+
+            tile_id = cell.tile_id
+            color = cell.tile_color
+
             # WARNING: this will override any entities with ID >= 10000!
             #          also limits map size to about 235x235
             cell_id = 10000 + self.world.map.width * cell.x + cell.y
             b_cells.extend(cell_id.to_bytes(2, 'big'))
             b_cells.extend(cell.x.to_bytes(2, 'big'))
             b_cells.extend(cell.y.to_bytes(2, 'big'))
-            tile_id = cell.tile_id
-            color = cell.tile_color
-            alpha = 0x00
             layer = RenderLayer.floor.value
 
             if cell.spawnable_player:
@@ -66,11 +74,6 @@ class WebRenderProcessor(esper.Processor):
                 tile_id = 229
                 color = Palette.cyan
 
-            if cell.explored:
-                alpha = 0x60
-            if cell.fov:
-                self.world.map.explored[cell.y, cell.x] = True
-                alpha = 0xff
             if not cell.walkable:
                 # TODO: other layers (debris, decoration)
                 layer = RenderLayer.wall.value
@@ -79,6 +82,7 @@ class WebRenderProcessor(esper.Processor):
             b_cells.extend(color.to_bytes(3, 'big'))
             b_cells.extend(alpha.to_bytes(1, 'big'))
             b_cells.extend(layer.to_bytes(1, 'big'))
+            data_length += 1
 
         # RENDERABLE ENTITIES
         for ent, components in sorted(self.world.get_components(Position, Renderable),
@@ -88,24 +92,31 @@ class WebRenderProcessor(esper.Processor):
             pos_x = positional.x
             pos_y = positional.y
             can_see_now = self.world.map.fov[positional.y, positional.x]
-            seen = renderable.last_seen_x is not None
-            can_see_prev = seen and self.world.map.fov[renderable.last_seen_y,
-                                                       renderable.last_seen_x]
+            if renderable.last_seen_x is None:
+                seen = False
+                can_see_prev = False
+            else:
+                seen = True
+                can_see_prev = self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]
+
             # if we can see it now, draw it and update seen pos
             if can_see_now:
                 alpha = 0xff
                 renderable.last_seen_x = positional.x
                 renderable.last_seen_y = positional.y
-            # else if we've seen it, and we can't see where it last was, draw it faded and remember
-            elif seen and not can_see_prev:
-                alpha = 0x60
-                pos_x = renderable.last_seen_x
-                pos_y = renderable.last_seen_y
             # else if we can see where it last was, forget where we've seen it and don't draw it
             elif can_see_prev:
                 renderable.last_seen_x = None
                 renderable.last_seen_y = None
+            # else if we've seen it, draw it faded where we last saw it
+            elif seen:
+                alpha = 0x60
+                pos_x = renderable.last_seen_x
+                pos_y = renderable.last_seen_y
             # else don't draw it
+
+            if alpha == 0:
+                continue
 
             b_cells.extend(ent.to_bytes(2, 'big'))
             b_cells.extend(pos_x.to_bytes(2, 'big'))

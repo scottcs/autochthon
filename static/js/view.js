@@ -160,6 +160,7 @@
         }
 
         function handleUpdateMap(data) {
+            setAllSpritesInvisible();
             const view = new DataView(data);
             const player_x = view.getUint16(0) * tile_width;
             const player_y = view.getUint16(2) * tile_height;
@@ -191,6 +192,12 @@
                     updateSprite(cell);
                 }
             }
+        }
+
+        function setAllSpritesInvisible() {
+            Object.keys(cells).forEach(function(key) {
+                cells[key].visible = false;
+            })
         }
 
         function updateSprite(cell) {
