@@ -29,12 +29,14 @@ class WebRenderProcessor(esper.Processor):
         data_length: int = 0
         player_x: int = 0
         player_y: int = 0
+        fov: int = 1
 
         # PLAYER POSITION
         for ent, components in self.world.get_components(PlayerControlled, Renderable, Position):
             position = components[-1]
             player_x = position.x
             player_y = position.y
+            fov = components[0].fov
             # TODO: handle more than one player controlled object?
             break
 
@@ -46,7 +48,7 @@ class WebRenderProcessor(esper.Processor):
         # MAP
         self.world.map.compute_fov(player_x, player_y,
                                    algorithm=tcod.FOV_PERMISSIVE_3,
-                                   radius=7,  # TODO: make part of a component/vision stat
+                                   radius=fov,
                                    light_walls=True)
         for cell in self.world.map:
             alpha = 0x00
