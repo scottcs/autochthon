@@ -3,12 +3,14 @@ import logging
 from typing import Any
 
 import esper
+import tcod
 
 from game.component.status import Dead
 from game.component.player import PlayerControlled
 from game.component.movement import Position
 from game.component.render import Renderable
 from game.events import UpdateMapRenderEvent
+from game.types import RenderLayer
 from gamedata.palette import Palette
 
 log = logging.getLogger(__name__)
@@ -27,12 +29,14 @@ class WebRenderProcessor(esper.Processor):
         data_length: int = 0
         player_x: int = 0
         player_y: int = 0
+        fov: int = 1
 
         # PLAYER POSITION
         for ent, components in self.world.get_components(PlayerControlled, Renderable, Position):
             position = components[-1]
             player_x = position.x
             player_y = position.y
+            fov = components[0].fov
             # TODO: handle more than one player controlled object?
             break
 
@@ -42,36 +46,93 @@ class WebRenderProcessor(esper.Processor):
         b_cells.extend(data_length.to_bytes(2, 'big'))
 
         # MAP
+        self.world.map.compute_fov(player_x, player_y,
+                                   algorithm=tcod.FOV_PERMISSIVE_3,
+                                   radius=fov,
+                                   light_walls=True)
         for cell in self.world.map:
-            data_length += 1
+            alpha = 0x00
+            if cell.explored:
+                alpha = 0x60
+            if cell.fov:
+                self.world.map.explored[cell.y, cell.x] = True
+                alpha = 0xff
+            if alpha == 0:
+                continue
+
+            tile_id = cell.tile_id
+            color = cell.tile_color
+
             # WARNING: this will override any entities with ID >= 10000!
             #          also limits map size to about 235x235
             cell_id = 10000 + self.world.map.width * cell.x + cell.y
             b_cells.extend(cell_id.to_bytes(2, 'big'))
             b_cells.extend(cell.x.to_bytes(2, 'big'))
             b_cells.extend(cell.y.to_bytes(2, 'big'))
+            layer = RenderLayer.floor.value
+
             if cell.spawnable_player:
-                tile_id = 229  # TODO: move this to map
-                b_cells.extend(tile_id.to_bytes(2, 'big'))
-                b_cells.extend(Palette.cyan.to_bytes(4, 'big'))
-            else:
-                b_cells.extend(cell.tile_id.to_bytes(2, 'big'))
-                b_cells.extend(cell.tile_color.to_bytes(4, 'big'))
+                # TODO: move this to map
+                tile_id = 229
+                color = Palette.cyan
+
+            if not cell.walkable:
+                # TODO: other layers (debris, decoration)
+                layer = RenderLayer.wall.value
+
+            b_cells.extend(tile_id.to_bytes(2, 'big'))
+            b_cells.extend(color.to_bytes(3, 'big'))
+            b_cells.extend(alpha.to_bytes(1, 'big'))
+            b_cells.extend(layer.to_bytes(1, 'big'))
+            data_length += 1
 
         # RENDERABLE ENTITIES
         for ent, components in sorted(self.world.get_components(Position, Renderable),
                                       key=lambda x: x[1][1].layer.value):
             positional, renderable = components
+            alpha = 0x00
+            pos_x = positional.x
+            pos_y = positional.y
+            can_see_now = self.world.map.fov[positional.y, positional.x]
+            if renderable.last_seen_x is None:
+                seen = False
+                can_see_prev = False
+            else:
+                seen = True
+                can_see_prev = self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]
+
+            # if we can see it now, draw it and update seen pos
+            if can_see_now:
+                alpha = 0xff
+                renderable.last_seen_x = positional.x
+                renderable.last_seen_y = positional.y
+            # else if we can see where it last was, forget where we've seen it and don't draw it
+            elif can_see_prev:
+                renderable.last_seen_x = None
+                renderable.last_seen_y = None
+            # else if we've seen it, draw it faded where we last saw it
+            elif seen:
+                alpha = 0x60
+                pos_x = renderable.last_seen_x
+                pos_y = renderable.last_seen_y
+            # else don't draw it
+
+            if alpha == 0:
+                continue
+
             b_cells.extend(ent.to_bytes(2, 'big'))
-            b_cells.extend(positional.x.to_bytes(2, 'big'))
-            b_cells.extend(positional.y.to_bytes(2, 'big'))
+            b_cells.extend(pos_x.to_bytes(2, 'big'))
+            b_cells.extend(pos_y.to_bytes(2, 'big'))
             if self.world.has_component(ent, Dead):
                 tile_id = 0
             else:
                 tile_id = renderable.tile_id
             b_cells.extend(tile_id.to_bytes(2, 'big'))
-            b_cells.extend(renderable.tint.to_bytes(4, 'big'))
+            b_cells.extend(renderable.tint.to_bytes(3, 'big'))
+            b_cells.extend(alpha.to_bytes(1, 'big'))
+            b_cells.extend(renderable.layer.value.to_bytes(1, 'big'))
             data_length += 1
+
         # Overwrite data_length now that we've counted them
         b_cells[4:6] = data_length.to_bytes(2, 'big')
         ##########################################
@@ -86,6 +147,8 @@ class WebRenderProcessor(esper.Processor):
         #        2 bytes: position y
         #        2 bytes: tile id
         #        3 bytes: tint
+        #        1 byte : alpha
+        #        1 byte : render layer
         ##########################################
         UpdateMapRenderEvent.fire({'bytearray': b_cells})
 

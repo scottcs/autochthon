@@ -28,7 +28,17 @@
         let world_width;
         let world_height;
         let camera;
+        let layer_background;
+        let layer_floor;
+        let layer_item;
+        let layer_wall;
+        let layer_icon;
+        let layer_enemy;
+        let layer_player;
+        let layer_effect;
         let app;
+
+        PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
         // noinspection JSUnresolvedFunction
         PIXI.loader
@@ -71,16 +81,32 @@
 
             const renderDiv = document.getElementById('render');
 
-            // noinspection JSValidateTypes
-            PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-
             app = new PIXI.Application({
                 width: window.innerWidth * main_width_scale,
                 height: window.innerHeight * main_height_scale,
+                antialias: false,
                 transparent: true
             });
             camera = new PIXI.Container();
+            layer_background = new PIXI.Container();
+            layer_floor = new PIXI.Container();
+            layer_item = new PIXI.Container();
+            layer_wall = new PIXI.Container();
+            layer_icon = new PIXI.Container();
+            layer_enemy = new PIXI.Container();
+            layer_player = new PIXI.Container();
+            layer_effect = new PIXI.Container();
             app.stage.addChild(camera);
+            camera.addChild(layer_background);
+            camera.addChild(layer_floor);
+            camera.addChild(layer_item);
+            camera.addChild(layer_wall);
+            camera.addChild(layer_icon);
+            camera.addChild(layer_enemy);
+            camera.addChild(layer_player);
+            camera.addChild(layer_effect);
+            // camera.scale.set(2);
+
             renderDiv.appendChild(app.view);
             window.addEventListener('resize', resize);
 
@@ -135,6 +161,7 @@
         }
 
         function handleUpdateMap(data) {
+            setAllSpritesInvisible();
             const view = new DataView(data);
             const player_x = view.getUint16(0) * tile_width;
             const player_y = view.getUint16(2) * tile_height;
@@ -142,15 +169,23 @@
             camera.pivot.y = player_y;
             const num_cells = view.getUint16(4);
             const offset = 6;      // header size in bytes
-            const cell_size = 12;  // cell size in bytes
+            const cell_size = 13;  // cell size in bytes
             for (let i = 0; i < num_cells; i++) {
                 const cell_offset = offset + (i * cell_size);
+                const cell_color_offset = cell_offset + 8;
+                const cell_r = view.getUint8(cell_color_offset);
+                const cell_g = view.getUint8(cell_color_offset + 1);
+                const cell_b = view.getUint8(cell_color_offset + 2);
+                const cell_a = view.getUint8(cell_color_offset + 3) / 255.0;
+                const cell_tint = 65536*cell_r + 256*cell_g + cell_b;
                 const cell = {
                     id: view.getUint16(cell_offset),
                     x: view.getUint16(cell_offset + 2),
                     y: view.getUint16(cell_offset + 4),
                     tile_id: view.getUint16(cell_offset + 6),
-                    tint: view.getUint32(cell_offset + 8),
+                    tint: cell_tint,
+                    alpha: cell_a,
+                    layer: view.getUint8(cell_offset + 12)
                 };
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
@@ -160,11 +195,18 @@
             }
         }
 
+        function setAllSpritesInvisible() {
+            Object.keys(cells).forEach(function(key) {
+                cells[key].visible = false;
+            })
+        }
+
         function updateSprite(cell) {
             const sprite = cells[cell.id];
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
+            sprite.alpha = cell.alpha;
 
             const cameraRect = new PIXI.Rectangle();
             cameraRect.x = camera.pivot.x - app.screen.width / 2;
@@ -174,6 +216,7 @@
 
             sprite.visible = (
                 (cell.tile_id > 0) &&
+                (cell.alpha > 0) &&
                 (sprite.x > (cameraRect.left - 3*tile_width)) &&
                 (sprite.y > (cameraRect.top - 3*tile_height)) &&
                 (sprite.x < (cameraRect.right + 3*tile_width)) &&
@@ -188,7 +231,33 @@
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
-            camera.addChild(sprite);
+            sprite.alpha = cell.alpha;
+            // We'll assume sprites won't change layers
+            switch (cell.layer) {
+                case 2:
+                    layer_floor.addChild(sprite);
+                    break;
+                case 3:
+                    layer_item.addChild(sprite);
+                    break;
+                case 4:
+                    layer_wall.addChild(sprite);
+                    break;
+                case 5:
+                    layer_icon.addChild(sprite);
+                    break;
+                case 6:
+                    layer_enemy.addChild(sprite);
+                    break;
+                case 7:
+                    layer_player.addChild(sprite);
+                    break;
+                case 8:
+                    layer_effect.addChild(sprite);
+                    break;
+                default:
+                    layer_background.addChild(sprite);
+            }
             cells[cell.id] = sprite;
         }
 
@@ -303,10 +372,10 @@
                 }
             };
 
-            if (modal.style.display === "none") {
-                openModal();
-            } else {
+            if (modal.style.display === "block") {
                 closeModal();
+            } else {
+                openModal();
             }
         }
 

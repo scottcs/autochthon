@@ -10,3 +10,6 @@ class GUTPlayerBump:
 
 class PlayerControlled:
     """Player controlled component."""
+
+    def __init__(self, fov: int=7) -> None:
+        self.fov = fov
