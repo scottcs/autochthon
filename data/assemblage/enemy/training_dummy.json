@@ -12,7 +12,7 @@
       "render.Renderable": {
         "tile_id": "monster_bear3",
         "tint": "Palette.white",
-        "layer": "RenderLayer.background"
+        "layer": "RenderLayer.enemy"
       },
       "ai.AIDummy": {}
     }

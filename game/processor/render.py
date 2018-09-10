@@ -10,6 +10,7 @@ from game.component.player import PlayerControlled
 from game.component.movement import Position
 from game.component.render import Renderable
 from game.events import UpdateMapRenderEvent
+from game.types import RenderLayer
 from gamedata.palette import Palette
 
 log = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ class WebRenderProcessor(esper.Processor):
             tile_id = cell.tile_id
             color = cell.tile_color
             alpha = 0x00
+            layer = RenderLayer.floor.value
 
             if cell.spawnable_player:
                 # TODO: move this to map
@@ -69,10 +71,14 @@ class WebRenderProcessor(esper.Processor):
             if cell.fov:
                 self.world.map.explored[cell.y, cell.x] = True
                 alpha = 0xff
+            if not cell.walkable:
+                # TODO: other layers (debris, decoration)
+                layer = RenderLayer.wall.value
 
             b_cells.extend(tile_id.to_bytes(2, 'big'))
             b_cells.extend(color.to_bytes(3, 'big'))
             b_cells.extend(alpha.to_bytes(1, 'big'))
+            b_cells.extend(layer.to_bytes(1, 'big'))
 
         # RENDERABLE ENTITIES
         for ent, components in sorted(self.world.get_components(Position, Renderable),
@@ -111,7 +117,9 @@ class WebRenderProcessor(esper.Processor):
             b_cells.extend(tile_id.to_bytes(2, 'big'))
             b_cells.extend(renderable.tint.to_bytes(3, 'big'))
             b_cells.extend(alpha.to_bytes(1, 'big'))
+            b_cells.extend(renderable.layer.value.to_bytes(1, 'big'))
             data_length += 1
+
         # Overwrite data_length now that we've counted them
         b_cells[4:6] = data_length.to_bytes(2, 'big')
         ##########################################
@@ -127,6 +135,7 @@ class WebRenderProcessor(esper.Processor):
         #        2 bytes: tile id
         #        3 bytes: tint
         #        1 byte : alpha
+        #        1 byte : render layer
         ##########################################
         UpdateMapRenderEvent.fire({'bytearray': b_cells})
 

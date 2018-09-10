@@ -28,6 +28,14 @@
         let world_width;
         let world_height;
         let camera;
+        let layer_background;
+        let layer_floor;
+        let layer_item;
+        let layer_wall;
+        let layer_icon;
+        let layer_enemy;
+        let layer_player;
+        let layer_effect;
         let app;
 
         // noinspection JSUnresolvedFunction
@@ -80,7 +88,24 @@
                 transparent: true
             });
             camera = new PIXI.Container();
+            layer_background = new PIXI.Container();
+            layer_floor = new PIXI.Container();
+            layer_item = new PIXI.Container();
+            layer_wall = new PIXI.Container();
+            layer_icon = new PIXI.Container();
+            layer_enemy = new PIXI.Container();
+            layer_player = new PIXI.Container();
+            layer_effect = new PIXI.Container();
             app.stage.addChild(camera);
+            camera.addChild(layer_background);
+            camera.addChild(layer_floor);
+            camera.addChild(layer_item);
+            camera.addChild(layer_wall);
+            camera.addChild(layer_icon);
+            camera.addChild(layer_enemy);
+            camera.addChild(layer_player);
+            camera.addChild(layer_effect);
+
             renderDiv.appendChild(app.view);
             window.addEventListener('resize', resize);
 
@@ -142,7 +167,7 @@
             camera.pivot.y = player_y;
             const num_cells = view.getUint16(4);
             const offset = 6;      // header size in bytes
-            const cell_size = 12;  // cell size in bytes
+            const cell_size = 13;  // cell size in bytes
             for (let i = 0; i < num_cells; i++) {
                 const cell_offset = offset + (i * cell_size);
                 const cell_color_offset = cell_offset + 8;
@@ -157,7 +182,8 @@
                     y: view.getUint16(cell_offset + 4),
                     tile_id: view.getUint16(cell_offset + 6),
                     tint: cell_tint,
-                    alpha: cell_a
+                    alpha: cell_a,
+                    layer: view.getUint8(cell_offset + 12)
                 };
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
@@ -198,7 +224,32 @@
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
             sprite.alpha = cell.alpha;
-            camera.addChild(sprite);
+            // We'll assume sprites won't change layers
+            switch (cell.layer) {
+                case 2:
+                    layer_floor.addChild(sprite);
+                    break;
+                case 3:
+                    layer_item.addChild(sprite);
+                    break;
+                case 4:
+                    layer_wall.addChild(sprite);
+                    break;
+                case 5:
+                    layer_icon.addChild(sprite);
+                    break;
+                case 6:
+                    layer_enemy.addChild(sprite);
+                    break;
+                case 7:
+                    layer_player.addChild(sprite);
+                    break;
+                case 8:
+                    layer_effect.addChild(sprite);
+                    break;
+                default:
+                    layer_background.addChild(sprite);
+            }
             cells[cell.id] = sprite;
         }
 

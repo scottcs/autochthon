@@ -135,7 +135,8 @@ class Game:
         enemy_factory.make(['OrcBrute'])
         enemy_factory.make(['Firefly'])
         enemy_factory.make(['SebastianBenini'])
-        item_factory.make(['Katana'])
+        for _ in range(200):
+            item_factory.make(['Katana'])
         item_factory.make(['Mace'])
         item_factory.make(['PlateArmor'])
 
