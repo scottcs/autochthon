@@ -45,7 +45,7 @@ class WebRenderProcessor(esper.Processor):
 
         # MAP
         self.world.map.compute_fov(player_x, player_y,
-                                   algorithm=tcod.FOV_BASIC,
+                                   algorithm=tcod.FOV_PERMISSIVE_3,
                                    radius=7,  # TODO: make part of a component/vision stat
                                    light_walls=True)
         for cell in self.world.map:
