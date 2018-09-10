@@ -313,10 +313,10 @@
                 }
             };
 
-            if (modal.style.display === "none") {
-                openModal();
-            } else {
+            if (modal.style.display === "block") {
                 closeModal();
+            } else {
+                openModal();
             }
         }
 
