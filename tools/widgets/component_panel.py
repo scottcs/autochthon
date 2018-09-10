@@ -6,7 +6,7 @@ from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QSpacerItem
 
 from game.types import parameter_types
-from gamedata.tile_ids import TILE_IDS
+from game.utils.render import TileCache
 from .checkbox import ToolCheckBox
 from .combobox import ToolComboBox, ToolMutableComboBox
 from .lineedit import ToolLineEdit
@@ -75,7 +75,7 @@ class ComponentPanel(QWidget):
                 # special case for tile ids
                 widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
                 widget.enum_type = 'tile_id'
-                widget.add_items(sorted([t['name'] for t in TILE_IDS.values()]))
+                widget.add_items(sorted(list(TileCache.iter_names())))
                 if name in self._data:
                     widget.set_via_text(self._data[name])
                 widget.selection_changed.connect(self._on_changes)
