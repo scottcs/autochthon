@@ -128,13 +128,27 @@ class ComponentPanel(QWidget):
 
     def get_parameters(self) -> dict:
         """Get all of the current values of the parameters for this component."""
-        params = {widget.name: int_float_self(widget.text()) for widget in self._edit_widgets}
+        params = {}
+        for widget in self._edit_widgets:
+            orig = self._parameters[widget.name]
+            text = widget.text()
+            value = int_float_self(text)
+            if text and value != orig.get('default', None):
+                params[widget.name] = value
         for widget in self._combo_widgets:
+            orig = self._parameters[widget.name]
             if widget.enum_type == 'tile_id':
                 params[widget.name] = widget.text()
             elif widget.enum_type == 'list':
-                params[widget.name] = list(widget.iter_texts())
+                items = list(widget.iter_texts())
+                if items:
+                    params[widget.name] = items
             else:
-                params[widget.name] = str(widget.enum_type.__members__[widget.text()])
-        params.update({widget.name: widget.isChecked() for widget in self._check_widgets})
+                value = str(widget.enum_type.__members__[widget.text()])
+                if 'default' not in orig or orig['default'] != value:
+                    params[widget.name] = value
+        for widget in self._check_widgets:
+            orig = self._parameters[widget.name]
+            if 'default' not in orig or orig['default'] != widget.isChecked():
+                params[widget.name] = widget.isChecked()
         return params
