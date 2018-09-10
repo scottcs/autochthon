@@ -38,6 +38,8 @@
         let layer_effect;
         let app;
 
+        PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+
         // noinspection JSUnresolvedFunction
         PIXI.loader
             .add([
@@ -79,12 +81,10 @@
 
             const renderDiv = document.getElementById('render');
 
-            // noinspection JSValidateTypes
-            PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-
             app = new PIXI.Application({
                 width: window.innerWidth * main_width_scale,
                 height: window.innerHeight * main_height_scale,
+                antialias: false,
                 transparent: true
             });
             camera = new PIXI.Container();
@@ -105,6 +105,7 @@
             camera.addChild(layer_enemy);
             camera.addChild(layer_player);
             camera.addChild(layer_effect);
+            // camera.scale.set(2);
 
             renderDiv.appendChild(app.view);
             window.addEventListener('resize', resize);
