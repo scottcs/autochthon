@@ -13,7 +13,7 @@ from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QSc
                                QListWidgetItem, QMessageBox, QSpacerItem, QVBoxLayout, QWidget)
 
 from game.utils.factory import get_component_class, convert_datum
-from gamedata.tile_ids import TILE_IDS
+from game.utils.render import TileCache
 from tools.widgets import (msg_error, ToolApp, ToolMutableComboBox, ToolLineEdit, ToolPushButton,
                            ComponentPanel)
 
@@ -30,13 +30,13 @@ class RenderWidget(QWidget):
         super().__init__(parent)
         self.setMinimumSize(32, 48)
         self.setMaximumSize(32, 48)
-        self.tile_id = None
+        self.tile_data = None
         self.color = None
         self.sprite = None
 
     def clear_sprite(self) -> None:
         """Clear the sprite."""
-        self.tile_id = None
+        self.tile_data = None
         self.color = None
         self.sprite = None
         self.update()
@@ -45,23 +45,13 @@ class RenderWidget(QWidget):
     def update_tile(self, tile_id: str, color: str) -> None:
         """Update the rendered tile."""
         try:
-            tile_id = int(tile_id)
-        except ValueError:
-            for id_, data in TILE_IDS.items():
-                if data['name'] == tile_id:
-                    tile_id = id_
-                    break
-        if str(tile_id) not in TILE_IDS:
+            self.tile_data = TileCache.data_from_name(tile_id)
+        except KeyError:
             msg_error(f'Tile id not found: {tile_id}', self)
             return
-        self.tile_id = str(tile_id)
-        if color.startswith('Palette.'):
-            try:
-                self.color = convert_datum(color)
-            except AttributeError:
-                msg_error(f'Unknown color: {color}', self)
-                return
-        else:
+        try:
+            self.color = convert_datum(color)
+        except AttributeError:
             msg_error(f'Unknown color: {color}', self)
             return
         self.set_sprite()
@@ -70,9 +60,8 @@ class RenderWidget(QWidget):
 
     def set_sprite(self) -> None:
         """Draw the image."""
-        data = TILE_IDS[self.tile_id]
-        tileset = Path(data['tileset'])
-        tile = data['tiles'][0]
+        tileset = Path(self.tile_data['tileset'])
+        tile = self.tile_data['tiles'][0]
         with tileset.open() as f:
             tileset_data = json.load(f)
         frame = None
@@ -385,7 +374,11 @@ class ComponentPane(QWidget):
         self.params_widget.setWidgetResizable(True)
 
     def _on_parameters_changed(self):
-        params = self.params_widget.widget().get_parameters()
+        try:
+            params = self.params_widget.widget().get_parameters()
+        except AttributeError:
+            print(f'SOMETHING WEIRD - no widget?: {self.selected}')
+            params = {}
         if self.selected:
             self.data[self.selected] = params
             self.data_changed.emit({'Components': self.data})
@@ -491,11 +484,7 @@ class AssemblageEditor(QWidget):
         components = data.get('Components', {})
         renderable = components.get('render.Renderable', None)
         if renderable:
-            try:
-                self.render_widget.update_tile(renderable['tile_id'], renderable['tint'])
-            except KeyError:
-                # Probably haven't finished editing
-                pass
+            self.render_widget.update_tile(renderable['tile_id'], renderable['tint'])
 
 
 def main() -> int:
