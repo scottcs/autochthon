@@ -78,22 +78,38 @@ class WebRenderProcessor(esper.Processor):
         for ent, components in sorted(self.world.get_components(Position, Renderable),
                                       key=lambda x: x[1][1].layer.value):
             positional, renderable = components
+            alpha = 0x00
+            pos_x = positional.x
+            pos_y = positional.y
+            can_see_now = self.world.map.fov[positional.y, positional.x]
+            seen = renderable.last_seen_x is not None
+            can_see_prev = seen and self.world.map.fov[renderable.last_seen_y,
+                                                       renderable.last_seen_x]
+            # if we can see it now, draw it and update seen pos
+            if can_see_now:
+                alpha = 0xff
+                renderable.last_seen_x = positional.x
+                renderable.last_seen_y = positional.y
+            # else if we've seen it, and we can't see where it last was, draw it faded and remember
+            elif seen and not can_see_prev:
+                alpha = 0x60
+                pos_x = renderable.last_seen_x
+                pos_y = renderable.last_seen_y
+            # else if we can see where it last was, forget where we've seen it and don't draw it
+            elif can_see_prev:
+                renderable.last_seen_x = None
+                renderable.last_seen_y = None
+            # else don't draw it
+
             b_cells.extend(ent.to_bytes(2, 'big'))
-            b_cells.extend(positional.x.to_bytes(2, 'big'))
-            b_cells.extend(positional.y.to_bytes(2, 'big'))
+            b_cells.extend(pos_x.to_bytes(2, 'big'))
+            b_cells.extend(pos_y.to_bytes(2, 'big'))
             if self.world.has_component(ent, Dead):
                 tile_id = 0
             else:
                 tile_id = renderable.tile_id
             b_cells.extend(tile_id.to_bytes(2, 'big'))
             b_cells.extend(renderable.tint.to_bytes(3, 'big'))
-            alpha = 0x00
-
-            if self.world.map.explored[positional.y, positional.x]:
-                alpha = 0x60
-            if self.world.map.fov[positional.y, positional.x]:
-                alpha = 0xff
-
             b_cells.extend(alpha.to_bytes(1, 'big'))
             data_length += 1
         # Overwrite data_length now that we've counted them
