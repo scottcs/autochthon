@@ -2,16 +2,11 @@
   "TrainingDummy": {
     "Components": {
       "attribute.HP": {
-        "initial": 1,
-        "minimum": "",
-        "maximum": ""
+        "initial": 10
       },
       "descriptive.Name": {
         "first": "training",
         "last": "dummy",
-        "nickname": "",
-        "plural": "",
-        "titles": [],
         "proper": false
       },
       "render.Renderable": {

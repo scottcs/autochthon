@@ -2,9 +2,7 @@
   "Ghoul": {
     "Components": {
       "ai.AISimpleMind": {},
-      "attribute.HP": {
-        "initial": "==1d6+1"
-      },
+      "attribute.HP": {},
       "descriptive.Name": {
         "first": "ghoul"
       },
@@ -15,6 +13,30 @@
       },
       "movement.MoveCostModifier": {
         "factor": -0.3
+      }
+    }
+  },
+  "Ghast": {
+    "Components": {
+      "ai.AISimpleMind": {},
+      "attribute.HP": {
+        "initial": 20
+      },
+      "descriptive.Name": {
+        "first": "ghast",
+        "proper": false
+      },
+      "render.Renderable": {
+        "tile_id": "monster_ghoul2",
+        "tint": "Palette.purple",
+        "layer": "RenderLayer.enemy"
+      },
+      "movement.MoveCostModifier": {
+        "factor": -0.3
+      },
+      "damage.ImmuneDamageSlashing": {},
+      "damage.ModifierInflictDamageBludgeoning": {
+        "addend": "4d5"
       }
     }
   }
