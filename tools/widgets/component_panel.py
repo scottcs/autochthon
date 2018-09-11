@@ -71,6 +71,9 @@ class ComponentPanel(QWidget):
                 widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
                 widget.enum_type = params["types"][0]
                 widget.add_items(list(widget.enum_type.__members__.keys()))
+                if "default" in params:
+                    which = str(params["default"]).split(".")[-1]
+                    widget.set_via_text(which)
                 if name in self._data:
                     which = self._data[name].split(".")[-1]
                     widget.set_via_text(which)
