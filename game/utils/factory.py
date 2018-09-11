@@ -1,5 +1,6 @@
 """Factory utilities."""
 import logging
+import pydoc
 from typing import Any, Optional, MutableSequence, Mapping, MutableMapping
 
 from game.component.movement import Position
@@ -32,13 +33,13 @@ def convert_datum(value: Any) -> Any:
         from gamedata.palette import Palette
 
         result = getattr(Palette, attr)
-    elif class_type == "RenderLayer":
-        from game.types import RenderLayer
-
-        result = getattr(RenderLayer, attr)
     else:
-        # allow exception to be raised here if it doesn't exist
-        result = getattr(globals()[class_type], attr)
+        imported = pydoc.locate(f'game.types.{class_type}')
+        if imported:
+            result = getattr(imported, attr)
+        else:
+            # allow exception to be raised here if it doesn't exist
+            result = getattr(globals()[class_type], attr)
     return result
 
 
@@ -207,3 +208,17 @@ class ItemFactory(BaseEntityFactory):
         # TODO: should placement be elsewhere?
         self.place_entity(ent, self._rng.choice(self._world.map.spawns_item()))
         return ent
+
+    def place_entity(self, ent: Entity, at: Point) -> None:
+        """Place an item on the map where no other items are."""
+        if not self._world.map:
+            raise FactoryException("There is no map!")
+        tries = 10000
+        # TODO: maybe allow spawning on tiles that have enemies?
+        while tries and self._world.get_entity_at_position(at.x, at.y):
+            tries -= 1
+            at = self._rng.choice(self._world.map.spawns_item())
+        if tries > 0:
+            super().place_entity(ent, at)
+        else:
+            raise FactoryException(f"Could not place item entity: {ent}")

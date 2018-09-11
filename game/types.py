@@ -74,6 +74,30 @@ class AttackType(Enum):
     projectile = auto()
 
 
+class EquipType(Enum):
+    """Equipment types -- where an item was intended to be worn/held."""
+
+    none = auto()
+    main_hand = auto()
+    off_hand = auto()
+    two_hand = auto()
+    foot = auto()
+    legs = auto()
+    tail = auto()
+    torso = auto()
+    body = auto()
+    arm = auto()
+    wrist = auto()
+    hand = auto()
+    finger = auto()
+    neck = auto()
+    back = auto()
+    face = auto()
+    head = auto()
+    implant = auto()
+    any = auto()
+
+
 Number = Union[int, float]
 
 

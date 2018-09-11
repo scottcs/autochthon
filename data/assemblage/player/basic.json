@@ -33,7 +33,16 @@
         "tint": "Palette.yellow",
         "layer": "RenderLayer.player"
       },
-      "status.Solid": {}
+      "status.Solid": {},
+      "container.Container": {
+        "name": "Backpack",
+        "max_slots": 52,
+        "equip_type": "EquipType.any"
+      },
+      "container.EquipmentSlotTorso": {},
+      "container.EquipmentSlotHand": {},
+      "container.EquipmentSlotHead": {},
+      "container.EquipmentSlotMainHand": {}
     }
   }
 }

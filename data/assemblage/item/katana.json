@@ -17,6 +17,9 @@
       },
       "damage.ModifierInflictDamageSlashing": {
         "addend": "3d6"
+      },
+      "container.Containable": {
+        "equip_type": "EquipType.main_hand"
       }
     }
   }

@@ -16,7 +16,10 @@
       "damage.ModifierTakeDamageBludgeoning": {
         "factor": -0.5
       },
-      "damage.ImmuneDamageSlashing": {}
+      "damage.ImmuneDamageSlashing": {},
+      "container.Containable": {
+        "equip_type": "EquipType.torso"
+      }
     }
   }
 }

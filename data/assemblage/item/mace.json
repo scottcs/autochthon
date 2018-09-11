@@ -17,6 +17,9 @@
       },
       "attack.AttackCostModifier": {
         "factor": -0.05
+      },
+      "container.Containable": {
+        "equip_type": "EquipType.main_hand"
       }
     }
   }
