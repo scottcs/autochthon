@@ -8,7 +8,7 @@ class Container:
     """This entity can contain Containable entities."""
 
     def __init__(
-            self, name: str, max_slots: int = 0, equip_type: EquipType = EquipType.any,
+        self, name: str, max_slots: int = 0, equip_type: EquipType = EquipType.any
     ) -> None:
         self.name: str = name
         self.max_slots: int = max_slots

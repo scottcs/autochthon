@@ -103,21 +103,22 @@ class PlayerInputProcessor(esper.Processor):
 
     def _try_command(self, key: str) -> bool:
         handled = False
-        if key == 'comma':
+        if key == "comma":
             for ent, _ in self.world.get_component(PlayerControlled):
                 at = self.world.component_for_entity(ent, Position)
                 item_ent = self.world.get_entity_at_position(at.x, at.y, Position, Containable)
                 if item_ent:
                     container = self.world.component_for_entity(ent, Container)
                     item = self.world.component_for_entity(item_ent, Containable)
-                    if (container.equip_type != EquipType.none and
-                            (container.equip_type == EquipType.any
-                             or container.equip_type == item.equip_type
-                             or item.equip_type == EquipType.any)):
+                    if container.equip_type != EquipType.none and (
+                        container.equip_type == EquipType.any
+                        or container.equip_type == item.equip_type
+                        or item.equip_type == EquipType.any
+                    ):
                         # find num filled slots in container
                         # if not max:
-                            # remove position from item
-                            # add contained to item
+                        # remove position from item
+                        # add contained to item
                         seen_slots = set()
                         for ie, contained in self.world.get_component(GUTContained):
                             if contained.ent == ent and contained.component_class == Container:
@@ -126,23 +127,25 @@ class PlayerInputProcessor(esper.Processor):
                             for slot in range(container.max_slots):
                                 if slot not in seen_slots:
                                     self.world.remove_component(item_ent, Position)
-                                    self.world.add_component(item_ent,
-                                                             GUTContained(ent, Container, slot))
+                                    self.world.add_component(
+                                        item_ent, GUTContained(ent, Container, slot)
+                                    )
                                     RefreshMapEvent.fire()
                                     break
                         else:
                             # TODO: Tell player they're full
-                            log.error('TELL PLAYER THEY ARE FULL AND CANNOT PICK THIS UP')
+                            log.error("TELL PLAYER THEY ARE FULL AND CANNOT PICK THIS UP")
                     else:
                         # TODO: tell the player they can't pick it up
-                        log.error('TELL PLAYER THEY CANNOT PICK THIS UP BECAUSE IT IS THE WRONG '
-                                  'TYPE')
+                        log.error(
+                            "TELL PLAYER THEY CANNOT PICK THIS UP BECAUSE IT IS THE WRONG " "TYPE"
+                        )
                 else:
                     # TODO: tell the player there's nothing to pick up
-                    log.error('TELL THE PLAYER THERE IS NOTHING TO PICK UP')
+                    log.error("TELL THE PLAYER THERE IS NOTHING TO PICK UP")
             handled = True
-        elif key == 'd':
+        elif key == "d":
             # TODO: drop item
             # TODO: show menu of items in inventory
-            log.error('IMPLEMENT DROP')
+            log.error("IMPLEMENT DROP")
         return handled

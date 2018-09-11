@@ -34,7 +34,7 @@ def convert_datum(value: Any) -> Any:
 
         result = getattr(Palette, attr)
     else:
-        imported = pydoc.locate(f'game.types.{class_type}')
+        imported = pydoc.locate(f"game.types.{class_type}")
         if imported:
             result = getattr(imported, attr)
         else:
