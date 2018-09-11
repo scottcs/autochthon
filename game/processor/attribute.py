@@ -6,7 +6,7 @@ import esper
 from game.component.attribute import GUTChangeHP, HP
 from game.component.descriptive import Name
 from game.component.gamelog import GUTStatusLog
-from game.component.status import Dead
+from game.component.status import GUTDead
 from game.utils.language import msg
 from gamedata.messages.status import MsgDeath
 
@@ -24,5 +24,5 @@ class HPProcessor(esper.Processor):
                 log = self.world.get_or_add_component(ent, GUTStatusLog)
                 log.add(*msg(self.world.players, (ent,), MsgDeath, name.specific))
                 # TODO: clean up dead entities (convert to corpses? that decay?)
-                self.world.add_component(ent, Dead())
+                self.world.add_component(ent, GUTDead())
             self.world.remove_component(ent, GUTChangeHP)

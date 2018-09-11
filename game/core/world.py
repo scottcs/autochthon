@@ -4,7 +4,7 @@ from typing import Any, Optional, Set, Callable, Tuple
 import esper
 
 from game.component.action import Actor
-from game.component.status import Dead
+from game.component.status import GUTDead
 from game.component.player import PlayerControlled
 from game.component.movement import Position
 from game.core.map import Map
@@ -55,7 +55,7 @@ class World(esper.World):
     def any_actors_can_act(self) -> bool:
         """Return true if any actors can act."""
         for ent, actor in self.get_component(Actor):
-            if not self.has_component(ent, Dead):
+            if not self.has_component(ent, GUTDead):
                 if actor.time_units >= 0:
                     return True
         return False

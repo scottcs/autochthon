@@ -5,7 +5,7 @@ import esper
 
 from game.component.action import Actor
 from game.component.base import accumulate_modifiers
-from game.component.status import Dead
+from game.component.status import GUTDead
 from game.component.movement import (
     GUTMoving,
     GUTWaiting,
@@ -24,14 +24,14 @@ class MovementProcessor(esper.Processor):
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process movement components."""
         for ent, components in self.world.get_components(Actor, GUTWaiting):
-            if self.world.has_component(ent, Dead):
+            if self.world.has_component(ent, GUTDead):
                 continue
             actor = components[0]
             self.world.remove_component(ent, GUTWaiting)
             actor.time_units -= self.get_wait_action_cost(ent)
 
         for ent, components in self.world.get_components(Position, Actor, GUTMoving):
-            if self.world.has_component(ent, Dead):
+            if self.world.has_component(ent, GUTDead):
                 continue
             position, actor, moving = components
             other_solid = self.world.get_entity_at_position(moving.x, moving.y, Solid)

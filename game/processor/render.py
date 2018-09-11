@@ -5,7 +5,7 @@ from typing import Any
 import esper
 import tcod
 
-from game.component.status import Dead
+from game.component.status import GUTDead
 from game.component.player import PlayerControlled
 from game.component.movement import Position
 from game.component.render import Renderable
@@ -123,7 +123,7 @@ class WebRenderProcessor(esper.Processor):
             b_cells.extend(ent.to_bytes(2, "big"))
             b_cells.extend(pos_x.to_bytes(2, "big"))
             b_cells.extend(pos_y.to_bytes(2, "big"))
-            if self.world.has_component(ent, Dead):
+            if self.world.has_component(ent, GUTDead):
                 tile_id = 0
             else:
                 tile_id = renderable.tile_id
