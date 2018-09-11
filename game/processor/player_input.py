@@ -7,6 +7,7 @@ from typing import Any, Mapping
 import esper
 
 from game.component.container import Containable, Container, GUTContained
+from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
 from game.component.player import GUTPlayerBump, PlayerControlled
 from game.events import InputEvent, RefreshMapEvent
@@ -115,10 +116,6 @@ class PlayerInputProcessor(esper.Processor):
                         or container.equip_type == item.equip_type
                         or item.equip_type == EquipType.any
                     ):
-                        # find num filled slots in container
-                        # if not max:
-                        # remove position from item
-                        # add contained to item
                         seen_slots = set()
                         for ie, contained in self.world.get_component(GUTContained):
                             if contained.ent == ent and contained.component_class == Container:
@@ -133,16 +130,14 @@ class PlayerInputProcessor(esper.Processor):
                                     RefreshMapEvent.fire()
                                     break
                         else:
-                            # TODO: Tell player they're full
-                            log.error("TELL PLAYER THEY ARE FULL AND CANNOT PICK THIS UP")
+                            cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                            cmd_log.add(f"Your {container.name} is full.")
                     else:
-                        # TODO: tell the player they can't pick it up
-                        log.error(
-                            "TELL PLAYER THEY CANNOT PICK THIS UP BECAUSE IT IS THE WRONG " "TYPE"
-                        )
+                        cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                        cmd_log.add(f"Your {container.name} can't hold that.")
                 else:
-                    # TODO: tell the player there's nothing to pick up
-                    log.error("TELL THE PLAYER THERE IS NOTHING TO PICK UP")
+                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                    cmd_log.add(f"There is nothing to pick up!")
             handled = True
         elif key == "d":
             # TODO: drop item

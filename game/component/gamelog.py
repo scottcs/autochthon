@@ -37,3 +37,7 @@ class GUTCombatLog(BaseLog):
 
 class GUTStatusLog(BaseLog):
     """Log status effects."""
+
+
+class GUTCommandLog(BaseLog):
+    """Log command results."""
