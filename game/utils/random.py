@@ -7,8 +7,6 @@ import random
 import re
 from typing import Any, Callable, Optional, Sequence
 
-from game.utils.pcg32 import PCG32Generator
-
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
@@ -16,6 +14,102 @@ WEIGHTED_DEF = re.compile(r'(?<=^weighted\(\()([^)]+)\), \(([^)]+)\)\)')
 STEP_DEF = re.compile(r'(?<=^step\()([^)]+)\)')
 DIE_DEF = re.compile(r'(\d+d\d+)([+-]\d+)?')
 WORDS_FILE = Path('/usr/share/dict/words')  # TODO: replace with one in this repo with game terms?
+
+
+######################################################################
+# From `clubsandwich`:
+#
+# Implementation of the PCG random number generator, Python OO style.
+#
+# For the original docs, read
+# `this <http://www.pcg-random.org/using-pcg-c-basic.html>`_.
+######################################################################
+
+
+def _uint32(n: int) -> int:
+    return n & 0xffffffff
+
+
+def _uint64(n: int) -> int:
+    return n & 0xffffffffffffffff
+
+
+class PCG32Generator:
+    """Implementation of the PCG random number generator, Python OO style."""
+    __slots__ = ['state', 'inc']
+
+    def __init__(self, state: int, seq: int) -> None:
+        """
+        :param state: Any 64-bit value. This is the "current state" of the
+                      generator within the output sequence. The RNG iterates
+                      through all 2^64 possible internal states.
+        :param seq: Any 64-bit value (only 63 bits are significant). This value
+                    defines which of the 2^63 possible random sequences the
+                    current state is iterating through; it holds the same value
+                    over the lifetime of the RNG.
+
+        Different values for sequence constant cause the generator to produce a
+        different (and unique) sequence of random numbers (sometimes called the
+        stream). In other words, it's as if you have 2^63 different RNGs available,
+        and this constant lets you choose which one you're using.
+
+        You can create as many separate RNGs as you like. If you give them
+        different sequence constants, they will be independent and uncorrelated
+        with each other (i.e., their sequences will not overlap at all).
+        """
+        self.state = 0
+        self.inc = _uint64(seq << 1) | 1
+        self._advance()
+        self.state = _uint64(self.state + state)
+        self._advance()
+
+    def _advance(self) -> int:
+        old_state = self.state
+        self.state = _uint64(old_state * 6364136223846793005 + self.inc)
+        xor_shifted = _uint32(((old_state >> 18) ^ old_state) >> 27)
+        rot = _uint32(old_state >> 59)
+        return _uint32((xor_shifted >> rot) | (xor_shifted << ((-rot) & 31)))
+
+    def get_next_uint32(self) -> int:
+        """
+        Mutates internal state and returns the next random value in the sequence,
+        a 32-bit unsigned integer.
+        """
+        return self._advance()
+
+    def get_next_uint(self, bound: int) -> int:
+        """
+        :param int bound: Max value (exclusive)
+
+        Return a value between zero (inclusive) and *bound* (exclusive).
+        """
+        # To avoid bias, we need to make the range of the RNG a multiple of
+        # bound, which we do by dropping output less than a threshold.
+        # A naive scheme to calculate the threshold would be to do
+        #
+        # uint32_t threshold = 0x100000000ull % bound;
+        #
+        # but 64-bit div/mod is slower than 32-bit div/mod (especially on
+        # 32-bit platforms). In essence, we do
+        #
+        # uint32_t threshold = (0x100000000ull-bound) % bound;
+        #
+        # because this version will calculate the same modulus, but the LHS
+        # value is less than 2^32.
+        bound = _uint32(bound)
+        threshold = _uint32(-bound) % bound
+
+        # Uniformity guarantees that this loop will terminate. In practice, it
+        # should usually terminate quickly; on average (assuming all bounds are
+        # equally likely), 82.25% of the time, we can expect it to require just
+        # one iteration. In the worst case, someone passes a bound of 2^31 + 1
+        # (i.e., 2147483649), which invalidates almost 50% of the range. In
+        # practice, bounds are typically small and only a tiny amount of the range
+        # is eliminated.
+        while True:
+            val = self.get_next_uint32()
+            if val >= threshold:
+                return val % bound
 
 
 class GameRNG:
@@ -110,39 +204,6 @@ class RNGCache:
         return result
 
 
-def parse(text: str, rng: GameRNG) -> Optional[Callable]:
-    """Parse a string and return a function to provide the requested randomness.
-
-    Looks for:
-        'step(min, max, step_amount)'
-            where min is a number, max is a number, and step_amount is a number.
-            returns a function that returns a number between min and max, at step_amount intervals
-            (ex: step(-0.1, 0.1, 0.1) returns either -0.1, 0.0, or 0.1)
-        'XdY+Z'
-            where X, Y and Z are integers (and +Z is optional)
-            returns a function that rolls X amount of Y-sided die and returns the sum + Z
-        'weighted((...), (...))'
-            where the first tuple is a list of items, and the second tuple is a list of integers
-            the two tuples must have the same length
-            returns a function that returns a value chosen from the values with the given weights
-            (ex: weighted(('a', 'b', 'c'), (1, 1, 2)) returns a choice from ['a', 'b', 'c', 'c'])
-
-    """
-    found = WEIGHTED_DEF.search(text)
-    func = None
-    if found:
-        func = _parse_weighted(rng, *found.groups())
-    else:
-        found = STEP_DEF.search(text)
-        if found:
-            func = _parse_step(rng, *found.groups())
-        else:
-            found = DIE_DEF.search(text)
-            if found:
-                func = _parse_die(rng, *found.groups())
-    return func
-
-
 def _parse_weighted(rng: GameRNG, items_str: str, weights_str: str) -> Callable:
     items = [i.strip(' \'"') for i in items_str.split(',')]
     weights = [int(w.strip()) for w in weights_str.split(',')]
@@ -186,3 +247,36 @@ def _parse_die(rng: GameRNG, expr: str, addend: Optional[str]=None) -> Callable:
         return total
 
     return _closure
+
+
+def parse(text: str, rng: GameRNG) -> Optional[Callable]:
+    """Parse a string and return a function to provide the requested randomness.
+
+    Looks for:
+        'step(min, max, step_amount)'
+            where min is a number, max is a number, and step_amount is a number.
+            returns a function that returns a number between min and max, at step_amount intervals
+            (ex: step(-0.1, 0.1, 0.1) returns either -0.1, 0.0, or 0.1)
+        'XdY+Z'
+            where X, Y and Z are integers (and +Z is optional)
+            returns a function that rolls X amount of Y-sided die and returns the sum + Z
+        'weighted((...), (...))'
+            where the first tuple is a list of items, and the second tuple is a list of integers
+            the two tuples must have the same length
+            returns a function that returns a value chosen from the values with the given weights
+            (ex: weighted(('a', 'b', 'c'), (1, 1, 2)) returns a choice from ['a', 'b', 'c', 'c'])
+
+    """
+    found = WEIGHTED_DEF.search(text)
+    func = None
+    if found:
+        func = _parse_weighted(rng, *found.groups())
+    else:
+        found = STEP_DEF.search(text)
+        if found:
+            func = _parse_step(rng, *found.groups())
+        else:
+            found = DIE_DEF.search(text)
+            if found:
+                func = _parse_die(rng, *found.groups())
+    return func
