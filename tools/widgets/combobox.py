@@ -101,6 +101,7 @@ class ToolComboBox(QWidget):
     def set_via_text(self, text: str) -> None:
         """Set the current selection that matches the given text."""
         self._combobox.setCurrentIndex(self._combobox.findText(text))
+        self._on_current_index_changed()
 
     def text(self) -> str:
         """Get the current text."""
