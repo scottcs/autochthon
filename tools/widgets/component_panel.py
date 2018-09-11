@@ -30,8 +30,13 @@ class ComponentPanel(QWidget):
 
     parameters_changed = Signal()
 
-    def __init__(self, name: str, component_class: Any, data: Optional[Mapping]=None,
-                 parent: Optional[QWidget]=None) -> None:
+    def __init__(
+        self,
+        name: str,
+        component_class: Any,
+        data: Optional[Mapping] = None,
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
         self._name = name
         self._data = data or {}
@@ -48,33 +53,33 @@ class ComponentPanel(QWidget):
 
         for name, params in self._parameters.items():
             try:
-                is_enum = issubclass(params['types'][0], Enum)
+                is_enum = issubclass(params["types"][0], Enum)
             except TypeError:
                 is_enum = False
 
             try:
-                is_list = params['types'][0].__origin__ == list
+                is_list = params["types"][0].__origin__ == list
             except AttributeError:
-                is_list = list in params['types']
+                is_list = list in params["types"]
 
-            if bool in params['types']:
-                checked = self._data.get(name, params.get('default', False))
+            if bool in params["types"]:
+                checked = self._data.get(name, params.get("default", False))
                 widget = ToolCheckBox(name, checked=checked)
                 widget.state_changed.connect(self._on_changes)
                 self._check_widgets.append(widget)
             elif is_enum:
                 widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
-                widget.enum_type = params['types'][0]
+                widget.enum_type = params["types"][0]
                 widget.add_items(list(widget.enum_type.__members__.keys()))
                 if name in self._data:
-                    which = self._data[name].split('.')[-1]
+                    which = self._data[name].split(".")[-1]
                     widget.set_via_text(which)
                 widget.selection_changed.connect(self._on_changes)
                 self._combo_widgets.append(widget)
-            elif name == 'tile_id':
+            elif name == "tile_id":
                 # special case for tile ids
                 widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
-                widget.enum_type = 'tile_id'
+                widget.enum_type = "tile_id"
                 widget.add_items(sorted(list(TileCache.iter_names())))
                 if name in self._data:
                     widget.set_via_text(self._data[name])
@@ -82,9 +87,10 @@ class ComponentPanel(QWidget):
                 self._combo_widgets.append(widget)
             elif is_list:
                 # special case for lists
-                widget = ToolMutableComboBox(name, min_label_width=MIN_LABEL_WIDTH,
-                                             hide_duplicate_button=True)
-                widget.enum_type = 'list'
+                widget = ToolMutableComboBox(
+                    name, min_label_width=MIN_LABEL_WIDTH, hide_duplicate_button=True
+                )
+                widget.enum_type = "list"
                 if name in self._data:
                     widget.add_items(self._data[name])
                 widget.selection_changed.connect(self._on_changes)
@@ -92,19 +98,18 @@ class ComponentPanel(QWidget):
             else:
                 required = False
                 try:
-                    default = params['default']
+                    default = params["default"]
                     if default is None:
-                        default = ''
+                        default = ""
                     else:
                         default = str(default)
                 except KeyError:
                     default = None
                     required = True
 
-                widget = ToolLineEdit(name,
-                                      required=required,
-                                      default_text=default,
-                                      min_label_width=MIN_LABEL_WIDTH)
+                widget = ToolLineEdit(
+                    name, required=required, default_text=default, min_label_width=MIN_LABEL_WIDTH
+                )
                 if name in self._data:
                     widget.set_text(str(self._data[name]))
                 widget.editing_finished.connect(self._on_changes)
@@ -133,22 +138,22 @@ class ComponentPanel(QWidget):
             orig = self._parameters[widget.name]
             text = widget.text()
             value = int_float_self(text)
-            if text and value != orig.get('default', None):
+            if text and value != orig.get("default", None):
                 params[widget.name] = value
         for widget in self._combo_widgets:
             orig = self._parameters[widget.name]
-            if widget.enum_type == 'tile_id':
+            if widget.enum_type == "tile_id":
                 params[widget.name] = widget.text()
-            elif widget.enum_type == 'list':
+            elif widget.enum_type == "list":
                 items = list(widget.iter_texts())
                 if items:
                     params[widget.name] = items
             else:
                 value = str(widget.enum_type.__members__[widget.text()])
-                if 'default' not in orig or orig['default'] != value:
+                if "default" not in orig or orig["default"] != value:
                     params[widget.name] = value
         for widget in self._check_widgets:
             orig = self._parameters[widget.name]
-            if 'default' not in orig or orig['default'] != widget.isChecked():
+            if "default" not in orig or orig["default"] != widget.isChecked():
                 params[widget.name] = widget.isChecked()
         return params

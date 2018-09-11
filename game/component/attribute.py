@@ -9,5 +9,6 @@ class HP(BaseIntMinMaxComponent):
 
 class GUTChangeHP:
     """Change the HP attribute."""
+
     def __init__(self, amount: Number) -> None:
         self.amount: Number = amount

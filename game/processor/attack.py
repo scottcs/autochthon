@@ -19,6 +19,7 @@ from gamedata.messages.combat import MsgAttack, MsgMiss, MsgAttackImmune, MsgDef
 
 class AttackTargetingProcessor(esper.Processor):
     """Attack targeting processor."""
+
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process AttackTargeting components."""
         for ent, components in self.world.get_components(Actor, GUTCurrentTarget):
@@ -28,11 +29,20 @@ class AttackTargetingProcessor(esper.Processor):
                 continue
             actor.time_units -= self.get_action_cost(ent)
             combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
-            aggressor_name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
-            defender_name = self.world.get_or_add_component(target.entity, Name,
-                                                            f'Entity {target.entity}')
-            combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttack,
-                                aggressor_name.specific, defender_name.specific, target.attack))
+            aggressor_name = self.world.get_or_add_component(ent, Name, f"Entity {ent}")
+            defender_name = self.world.get_or_add_component(
+                target.entity, Name, f"Entity {target.entity}"
+            )
+            combat_log.add(
+                *msg(
+                    self.world.players,
+                    (ent, target.entity),
+                    MsgAttack,
+                    aggressor_name.specific,
+                    defender_name.specific,
+                    target.attack,
+                )
+            )
             self.world.add_component(ent, combat_log)
 
     def still_can_target(self, _ent: Entity, target: GUTCurrentTarget) -> bool:
@@ -55,9 +65,10 @@ class AttackTargetingProcessor(esper.Processor):
 
 class AttackMissProcessor(esper.Processor):
     """Process whether attack missed."""
+
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process whether attack missed."""
-        rng = RNGCache.get('AttackProcessor')
+        rng = RNGCache.get("AttackProcessor")
         for ent, target in self.world.get_component(GUTCurrentTarget):
             if target.attack == AttackType.melee:
                 mods = []
@@ -68,19 +79,23 @@ class AttackMissProcessor(esper.Processor):
                 chance = HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
                 if not rng.percent(chance):
-                    name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+                    name = self.world.get_or_add_component(ent, Name, f"Entity {ent}")
                     combat_log.add(
-                        *msg(self.world.players, (ent, target.entity), MsgMiss, name.specific))
+                        *msg(self.world.players, (ent, target.entity), MsgMiss, name.specific)
+                    )
                     self.world.remove_component(ent, GUTCurrentTarget)
 
 
 class AttackDefenseProcessor(esper.Processor):
     """Process whether attack was defended."""
-    def __init__(self,
-                 verb: Verb,
-                 modifier_component_class: Any,
-                 immunity_component_class: Any,
-                 base_chance: Number) -> None:
+
+    def __init__(
+        self,
+        verb: Verb,
+        modifier_component_class: Any,
+        immunity_component_class: Any,
+        base_chance: Number,
+    ) -> None:
         super().__init__()
         self.verb: Verb = verb
         self.modifier_component_class: Any = modifier_component_class
@@ -89,17 +104,24 @@ class AttackDefenseProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process whether an attack was defended."""
-        rng = RNGCache.get('AttackProcessor')
+        rng = RNGCache.get("AttackProcessor")
         for ent, target in self.world.get_component(GUTCurrentTarget):
             if self.world.has_component(ent, self.immunity_component_class):
                 # This attack cannot be thwarted by this defense
                 immune = self.world.component_for_entity(ent, self.immunity_component_class)
                 if immune.temporary:
                     self.world.remove_component(ent, self.immunity_component_class)
-                name = self.world.get_or_add_component(ent, Name, f'Entity {ent}')
+                name = self.world.get_or_add_component(ent, Name, f"Entity {ent}")
                 combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
-                combat_log.add(*msg(self.world.players, (ent, target.entity), MsgAttackImmune,
-                                    name.specific, self.verb.past))
+                combat_log.add(
+                    *msg(
+                        self.world.players,
+                        (ent, target.entity),
+                        MsgAttackImmune,
+                        name.specific,
+                        self.verb.past,
+                    )
+                )
                 continue
             if target.attack == AttackType.melee:
                 mods = []
@@ -112,15 +134,24 @@ class AttackDefenseProcessor(esper.Processor):
                     if not rng.percent(chance):
                         combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
                         name = self.world.get_or_add_component(
-                            target.entity, Name, f'Entity {target.entity}')
-                        combat_log.add(*msg(self.world.players, (target.entity, ent), MsgDefend,
-                                            name.specific, self.verb.present))
+                            target.entity, Name, f"Entity {target.entity}"
+                        )
+                        combat_log.add(
+                            *msg(
+                                self.world.players,
+                                (target.entity, ent),
+                                MsgDefend,
+                                name.specific,
+                                self.verb.present,
+                            )
+                        )
                         # TODO: Add success comp for other processors (DeflectSuccess -> Disarm)
                         self.world.remove_component(ent, GUTCurrentTarget)
 
 
 class AttackHitProcessor(esper.Processor):
     """Attack happened, nothing stopped it, so generate AttackHit."""
+
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process AttackHappening."""
         for ent, target in self.world.get_component(GUTCurrentTarget):

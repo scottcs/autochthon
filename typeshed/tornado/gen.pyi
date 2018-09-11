@@ -71,6 +71,7 @@ class YieldFuture(YieldPoint):
     def get_result(self): ...
 
 def multi(children: Any, quiet_exceptions: Any = ...): ...
+
 Multi = multi
 
 class MultiYieldPoint(YieldPoint):
@@ -116,7 +117,7 @@ class Runner:
     def result_callback(self, key: Any): ...
     def handle_exception(self, typ: Any, value: Any, tb: Any): ...
 
-Arguments = namedtuple('Arguments', ['args', 'kwargs'])
+Arguments = namedtuple("Arguments", ["args", "kwargs"])
 
 def convert_yielded(yielded: Any): ...
 

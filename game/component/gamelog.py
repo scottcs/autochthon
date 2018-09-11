@@ -7,18 +7,19 @@ from gamedata.palette import MessagePalette
 
 class BaseLog:
     """Component for the game log."""
-    def __init__(self,
-                 initial_line: Optional[str]=None,
-                 initial_color: Optional[int]=None) -> None:
+
+    def __init__(
+        self, initial_line: Optional[str] = None, initial_color: Optional[int] = None
+    ) -> None:
         self.lines: list = []
         if initial_line is not None:
             self.add(initial_line, color=initial_color)
 
-    def add(self, message: str, color: Optional[int]=None) -> None:
+    def add(self, message: str, color: Optional[int] = None) -> None:
         """Add a new line to the log."""
         if color is None:
             color = MessagePalette.default
-        capitalized = f'{message[0].upper()}{message[1:]}'
+        capitalized = f"{message[0].upper()}{message[1:]}"
         self.lines.append(LogLine(capitalized, color))
 
     def append_last(self, message: str) -> None:

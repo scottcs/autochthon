@@ -13,6 +13,7 @@ Entity = int
 
 class RenderLayer(Enum):
     """Render layers, from bottom to top."""
+
     background = auto()
     floor = auto()
     item = auto()
@@ -25,6 +26,7 @@ class RenderLayer(Enum):
 
 class Priority(IntEnum):
     """Processor priorities."""
+
     render = auto()
     psychopomps = auto()
     gamelog = auto()
@@ -46,6 +48,7 @@ class Priority(IntEnum):
 
 class ProcessGroup(Enum):
     """Groups of processors."""
+
     default = auto()
     player = auto()
     time = auto()
@@ -54,6 +57,7 @@ class ProcessGroup(Enum):
 
 class GameState(Enum):
     """Game states."""
+
     unknown = auto()
     loading = auto()
     main_menu = auto()
@@ -65,6 +69,7 @@ class GameState(Enum):
 
 class AttackType(Enum):
     """Attack types."""
+
     melee = auto()
     projectile = auto()
 
@@ -75,13 +80,13 @@ Number = Union[int, float]
 class Modifier:
     """Modifier set."""
 
-    def __init__(self, addend: Union[Number, str]=0, factor: Union[Number, str]=0) -> None:
+    def __init__(self, addend: Union[Number, str] = 0, factor: Union[Number, str] = 0) -> None:
         self._addend: Number = 0
         self._factor: Number = 0
         self._addend_func: Optional[Callable[[], Number]] = None
         self._factor_func: Optional[Callable[[], Number]] = None
         # TODO: I'm not convinced this is the best way to do this. RNG per entity instead? How?
-        rng = RNGCache.get('ModifierClass')
+        rng = RNGCache.get("ModifierClass")
         if isinstance(addend, str):
             self._addend_func = parse(addend, rng)
         else:
@@ -108,12 +113,14 @@ class Modifier:
 
 class LogLine(NamedTuple):
     """A Game log message with color."""
-    message: str = ''
+
+    message: str = ""
     color: int = 0xffffff
 
 
 class ComponentSchema(NamedTuple):
     """A schema for a component."""
+
     type: Any
     args: tuple
     kwargs: dict
@@ -140,10 +147,10 @@ def parameter_types(func: Callable) -> dict:
     result = {}
     sig = inspect.signature(func)
     for name, parameter in sig.parameters.items():
-        if name in ('self', 'args', 'kwargs'):
+        if name in ("self", "args", "kwargs"):
             continue
         types = get_union_types(parameter.annotation)
-        result[name] = {'types': types}
+        result[name] = {"types": types}
         if parameter.default != inspect.Parameter.empty:
-            result[name]['default'] = parameter.default
+            result[name]["default"] = parameter.default
     return result

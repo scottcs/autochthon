@@ -17,6 +17,7 @@ class PlayerBumpProcessor(esper.Processor):
 
     Determine what player action was meant.
     """
+
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process player components."""
         for ent, bump in self.world.get_component(GUTPlayerBump):

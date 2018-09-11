@@ -7,14 +7,24 @@ import time
 import esper
 
 from game import VERSION
-from game.component.attack import (AttackDodgeModifier, ImmuneToDodge, AttackBlockModifier,
-                                   ImmuneToBlock, AttackDeflectModifier, ImmuneToDeflect)
+from game.component.attack import (
+    AttackDodgeModifier,
+    ImmuneToDodge,
+    AttackBlockModifier,
+    ImmuneToBlock,
+    AttackDeflectModifier,
+    ImmuneToDeflect,
+)
 from game.utils.dataloader import DataLoader
 from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent, GameLogEvent
 from game.core.map import ClassicMap
 from game.processor.ai import AIProcessor
-from game.processor.attack import (AttackHitProcessor, AttackTargetingProcessor,
-                                   AttackMissProcessor, AttackDefenseProcessor)
+from game.processor.attack import (
+    AttackHitProcessor,
+    AttackTargetingProcessor,
+    AttackMissProcessor,
+    AttackDefenseProcessor,
+)
 from game.processor.attribute import HPProcessor
 from game.processor.damage import DamageBludgeoningMitigationProcessor, DamageBludgeoningProcessor
 from game.processor.gamelog import GameLogProcessor
@@ -38,11 +48,11 @@ def setup_morgue(base_dir: str, player: str) -> logging.Logger:
     """Set up the morgue log."""
     morgue_dir = Path(base_dir) / Path(player)
     morgue_dir.mkdir(parents=True, exist_ok=True)
-    log_file = morgue_dir / Path(f'{time.time()}.morgue')
+    log_file = morgue_dir / Path(f"{time.time()}.morgue")
     handler = logging.FileHandler(str(log_file))
     handler.setLevel(logging.INFO)
-    handler.setFormatter(logging.Formatter('%(message)s'))
-    morgue_log = logging.getLogger('morgue')
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    morgue_log = logging.getLogger("morgue")
     morgue_log.setLevel(logging.INFO)
     for old_handler in morgue_log.handlers[:]:
         log.removeHandler(old_handler)
@@ -54,13 +64,13 @@ def setup_morgue(base_dir: str, player: str) -> logging.Logger:
 class Game:
     """Main game object."""
 
-    def __init__(self, render_processor: esper.Processor, config: Optional[dict]=None) -> None:
+    def __init__(self, render_processor: esper.Processor, config: Optional[dict] = None) -> None:
         self.config: dict = config or {}
         self.game_over: bool = False
         self.player_acted: bool = False
         self.world: World = World()
         self.state: GameState = GameState.unknown
-        self.morgue: logging.Logger = setup_morgue(self.config['morgue']['directory'], 'UNKNOWN')
+        self.morgue: logging.Logger = setup_morgue(self.config["morgue"]["directory"], "UNKNOWN")
         version_string = f'* {self.config["title"]} version {VERSION}'
         log.info(version_string)
         self.morgue.info(version_string)
@@ -69,8 +79,9 @@ class Game:
         # TODO: allow player to set seed and pass it here
         self.set_state_playing(render_processor)
 
-    def set_state_playing(self, render_processor: esper.Processor,
-                          seed: Optional[str]=None) -> None:
+    def set_state_playing(
+        self, render_processor: esper.Processor, seed: Optional[str] = None
+    ) -> None:
         """Set the game state to playing."""
         RNGCache.init(seed)
         self.state = GameState.playing
@@ -84,21 +95,22 @@ class Game:
         loader.load_all_json()
 
         dodge_processor = AttackDefenseProcessor(
-            Verb('dodges', 'dodged'), AttackDodgeModifier, ImmuneToDodge, DODGE_CHANCE)
+            Verb("dodges", "dodged"), AttackDodgeModifier, ImmuneToDodge, DODGE_CHANCE
+        )
         block_processor = AttackDefenseProcessor(
-            Verb('blocks', 'blocked'), AttackBlockModifier, ImmuneToBlock, BLOCK_CHANCE)
+            Verb("blocks", "blocked"), AttackBlockModifier, ImmuneToBlock, BLOCK_CHANCE
+        )
         deflect_processor = AttackDefenseProcessor(
-            Verb('deflects', 'deflected'), AttackDeflectModifier, ImmuneToDeflect, DEFLECT_CHANCE)
+            Verb("deflects", "deflected"), AttackDeflectModifier, ImmuneToDeflect, DEFLECT_CHANCE
+        )
 
-        self.world.add_processor(PlayerInputProcessor(),
-                                 priority=Priority.player_input,
-                                 group=ProcessGroup.player)
-        self.world.add_processor(PlayerBumpProcessor(),
-                                 priority=Priority.player_bump,
-                                 group=ProcessGroup.player)
-        self.world.add_processor(TimeProcessor(),
-                                 priority=Priority.time,
-                                 group=ProcessGroup.time)
+        self.world.add_processor(
+            PlayerInputProcessor(), priority=Priority.player_input, group=ProcessGroup.player
+        )
+        self.world.add_processor(
+            PlayerBumpProcessor(), priority=Priority.player_bump, group=ProcessGroup.player
+        )
+        self.world.add_processor(TimeProcessor(), priority=Priority.time, group=ProcessGroup.time)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(AttackTargetingProcessor(), priority=Priority.targeting)
         self.world.add_processor(AttackMissProcessor(), priority=Priority.attack_miss)
@@ -111,34 +123,35 @@ class Game:
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
         self.world.add_processor(HPProcessor(), priority=Priority.attributes)
         self.world.add_processor(GameLogProcessor(), priority=Priority.gamelog)
-        self.world.add_processor(Psychopomps(),
-                                 priority=Priority.psychopomps,
-                                 group=ProcessGroup.render)
-        self.world.add_processor(render_processor,
-                                 priority=Priority.render,
-                                 group=ProcessGroup.render)
+        self.world.add_processor(
+            Psychopomps(), priority=Priority.psychopomps, group=ProcessGroup.render
+        )
+        self.world.add_processor(
+            render_processor, priority=Priority.render, group=ProcessGroup.render
+        )
 
-        current_map = ClassicMap(self.config['map']['max_tiles_w'],
-                                 self.config['map']['max_tiles_h'])
+        current_map = ClassicMap(
+            self.config["map"]["max_tiles_w"], self.config["map"]["max_tiles_h"]
+        )
         current_map.create()
         self.world.map = current_map
 
         player_factory = PlayerFactory(loader, self.world)
         enemy_factory = EnemyFactory(loader, self.world)
         item_factory = ItemFactory(loader, self.world)
-        player_factory.make(['Orc'])
+        player_factory.make(["Orc"])
         for _ in range(200):
-            enemy_factory.make(['TrainingDummy'])
-        enemy_factory.make(['Crab'])
-        enemy_factory.make(['Boar'])
-        enemy_factory.make(['OrcShaman'])
-        enemy_factory.make(['OrcBrute'])
-        enemy_factory.make(['Firefly'])
-        enemy_factory.make(['SebastianBenini'])
+            enemy_factory.make(["TrainingDummy"])
+        enemy_factory.make(["Crab"])
+        enemy_factory.make(["Boar"])
+        enemy_factory.make(["OrcShaman"])
+        enemy_factory.make(["OrcBrute"])
+        enemy_factory.make(["Firefly"])
+        enemy_factory.make(["SebastianBenini"])
         for _ in range(200):
-            item_factory.make(['Katana'])
-        item_factory.make(['Mace'])
-        item_factory.make(['PlateArmor'])
+            item_factory.make(["Katana"])
+        item_factory.make(["Mace"])
+        item_factory.make(["PlateArmor"])
 
     def _on_refresh_map(self, _event: EventType) -> None:
         self.world.process_group(ProcessGroup.render)
@@ -147,12 +160,12 @@ class Game:
         self.player_acted = True
 
     def _on_game_log(self, event: EventType) -> None:
-        for line in event['lines']:
+        for line in event["lines"]:
             self.morgue.info(line.message)
-        
+
     def _on_game_over(self, event: EventType) -> None:
-        if event.get('shutdown'):
-            log.info('Shutting down.')
+        if event.get("shutdown"):
+            log.info("Shutting down.")
             self.game_over = True
 
     def update(self) -> None:

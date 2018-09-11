@@ -6,8 +6,13 @@ import esper
 from game.component.action import Actor
 from game.component.base import accumulate_modifiers
 from game.component.status import Dead
-from game.component.movement import (GUTMoving, GUTWaiting, Position, MoveCostModifier,
-                                     WaitCostModifier)
+from game.component.movement import (
+    GUTMoving,
+    GUTWaiting,
+    Position,
+    MoveCostModifier,
+    WaitCostModifier,
+)
 from game.component.status import Solid
 from gamedata.base_engine_values import WAIT_COST, MOVE_COST
 from game.types import Entity
@@ -15,6 +20,7 @@ from game.types import Entity
 
 class MovementProcessor(esper.Processor):
     """Movement processor."""
+
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process movement components."""
         for ent, components in self.world.get_components(Actor, GUTWaiting):

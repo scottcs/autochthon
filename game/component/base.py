@@ -7,16 +7,20 @@ from game.types import Number, Modifier
 
 class BaseModifierComponent:
     """Base modifier component."""
-    def __init__(self, addend: Union[Number, str]=0, factor: Union[Number, str]=0) -> None:
+
+    def __init__(self, addend: Union[Number, str] = 0, factor: Union[Number, str] = 0) -> None:
         self.modifier: Modifier = Modifier(addend, factor)
 
 
 class BaseIntMinMaxComponent:
     """Base integer with min and max values component."""
-    def __init__(self,
-                 initial: Number=1,
-                 minimum: Optional[Number]=None,
-                 maximum: Optional[Number]=None) -> None:
+
+    def __init__(
+        self,
+        initial: Number = 1,
+        minimum: Optional[Number] = None,
+        maximum: Optional[Number] = None,
+    ) -> None:
         self.value: int = floor(initial)
         self.min: int = floor(minimum or 0)
         self.max: int = floor(maximum or initial)
@@ -36,7 +40,8 @@ class BaseIntMinMaxComponent:
 
 class BaseTemporaryComponent:
     """Basic component that can optionally be temporary."""
-    def __init__(self, temporary: bool=False) -> None:
+
+    def __init__(self, temporary: bool = False) -> None:
         self.temporary = temporary
 
 

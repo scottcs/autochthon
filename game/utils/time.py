@@ -12,7 +12,8 @@ class GameTime:
     considered as TURNS.MOMENTS, while integers are simply MOMENTS.
 
     """
-    def __init__(self, time: Optional[Union[GameTime, int]]=None) -> None:
+
+    def __init__(self, time: Optional[Union[GameTime, int]] = None) -> None:
         self._last_time = 0
         self._time: int = int(time or 0)
 
@@ -80,4 +81,4 @@ class GameTime:
         return self._time
 
     def __repr__(self) -> str:
-        return f'{self._time / MOMENTS_PER_TURN}'
+        return f"{self._time / MOMENTS_PER_TURN}"

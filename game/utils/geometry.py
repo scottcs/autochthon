@@ -18,7 +18,7 @@ class Rect:
         self.p2: Point = Point(x + (w - 1), y + (h - 1))
 
     def __repr__(self) -> str:
-        return f'Rect<{self.p1}, {self.p2}>'
+        return f"Rect<{self.p1}, {self.p2}>"
 
     def __hash__(self) -> int:
         return hash(repr(self))
@@ -32,5 +32,9 @@ class Rect:
 
     def intersects(self, other: Rect) -> bool:
         """Check whether this rectangle intersects with another one."""
-        return (self.p1.x <= other.p2.x and self.p2.x >= other.p1.x and
-                self.p1.y <= other.p2.y and self.p2.y >= other.p1.y)
+        return (
+            self.p1.x <= other.p2.x
+            and self.p2.x >= other.p1.x
+            and self.p1.y <= other.p2.y
+            and self.p2.y >= other.p1.y
+        )

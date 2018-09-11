@@ -9,6 +9,7 @@ from game.component.player import PlayerControlled
 
 class TimeProcessor(esper.Processor):
     """Time Processor."""
+
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process time."""
         while self._should_tick():

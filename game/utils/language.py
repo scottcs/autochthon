@@ -9,16 +9,15 @@ class Verb:
 
     Tense is always active, never passive.
     """
+
     def __init__(self, present: str, past: str) -> None:
         self.present: str = present
         self.past: str = past
 
 
-def msg(players: AbstractSet[Entity],
-        entities: Iterable[Entity],
-        messages: tuple,
-        *args: Any
-        ) -> Tuple[str, int]:
+def msg(
+    players: AbstractSet[Entity], entities: Iterable[Entity], messages: tuple, *args: Any
+) -> Tuple[str, int]:
     """Determine the message based on which entity, if any, is the player."""
     for i, ent in enumerate(entities):
         if ent in players:
