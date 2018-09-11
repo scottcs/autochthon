@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 import random
 import re
-from typing import Any, Callable, Optional, Sequence
+from typing import Callable, Optional, Sequence, Dict, Union, List, TypeVar, NamedTuple
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -14,6 +14,7 @@ WEIGHTED_DEF = re.compile(r'(?<=^weighted\(\()([^)]+)\), \(([^)]+)\)\)')
 STEP_DEF = re.compile(r'(?<=^step\()([^)]+)\)')
 DIE_DEF = re.compile(r'(\d+d\d+)([+-]\d+)?')
 WORDS_FILE = Path('/usr/share/dict/words')  # TODO: replace with one in this repo with game terms?
+T = TypeVar('T')
 
 
 ######################################################################
@@ -115,7 +116,7 @@ class PCG32Generator:
 class GameRNG:
     """RNG with game related function."""
 
-    def __init__(self, name: str, rng: Any) -> None:
+    def __init__(self, name: str, rng: PCG32Generator) -> None:
         self.name = name
         self._rng = rng
 
@@ -135,11 +136,11 @@ class GameRNG:
                 return lower
             return lower + self._rng.get_next_uint((upper - lower) + 1)
 
-    def percent(self, percent: float, precision: Optional[int]=1000) -> bool:
+    def percent(self, percent: float, precision: int=1000) -> bool:
         """Return whether not a percentage roll succeeds."""
         return self._rng.get_next_uint(precision) < (percent * precision)
 
-    def choice(self, options: Sequence[Any]) -> Any:
+    def choice(self, options: Sequence[T]) -> T:
         """Return a random choice amongst the options."""
         return options[self.rand(len(options) - 1)]
 
@@ -151,10 +152,10 @@ class GameRNG:
 class RNGCache:
     """Random number generator cache."""
 
-    seed: str = None
-    _rng: PCG32Generator = None
-    _cache: dict = {}
-    _collision_check: dict = {}
+    seed: Optional[str] = None
+    _rng: Optional[PCG32Generator] = None
+    _cache: Dict[str, GameRNG] = {}
+    _collision_check: Dict[int, str] = {}
 
     @classmethod
     def init(cls, seed: Optional[str]=None) -> None:
@@ -169,7 +170,7 @@ class RNGCache:
     @classmethod
     def get(cls, stream: Optional[str]=None) -> GameRNG:
         """Get a sub-rng."""
-        if cls._rng is None:
+        if cls._rng is None or cls.seed is None:
             raise RuntimeError('Attempt to get RNG from uninitialized cache')
         if not stream:
             stream = cls.get_random_words()
@@ -205,45 +206,57 @@ class RNGCache:
 
 
 def _parse_weighted(rng: GameRNG, items_str: str, weights_str: str) -> Callable:
-    items = [i.strip(' \'"') for i in items_str.split(',')]
-    weights = [int(w.strip()) for w in weights_str.split(',')]
-    choices = []
+    items: List[str] = [i.strip(' \'"') for i in items_str.split(',')]
+    weights: List[int] = [int(w.strip()) for w in weights_str.split(',')]
+    choices: List[str] = []
     for i, item in enumerate(items):
         choices.extend([item for _ in range(weights[i])])
 
-    def _closure():
+    def _closure() -> str:
         return rng.choice(choices)
 
     return _closure
+
+
+class _MinMaxStep(NamedTuple):
+    min: Union[int, float]
+    max: Union[int, float]
+    step: Union[int, float]
 
 
 def _parse_step(rng: GameRNG, expr: str) -> Callable:
     try:
-        s_min, s_max, s_step = [int(e.strip()) for e in expr.split(',')]
+        s: _MinMaxStep = _MinMaxStep(*[int(e.strip()) for e in expr.split(',')])
     except ValueError:
-        s_min, s_max, s_step = [float(e.strip()) for e in expr.split(',')]
-    x = s_min
-    choices = []
-    while x < s_max:
+        s = _MinMaxStep(*[float(e.strip()) for e in expr.split(',')])
+    x = s.min
+    choices: List[Union[int, float]] = []
+    while x < s.max:
         choices.append(x)
-        x += s_step
-    choices.append(s_max)
+        x += s.step
+    choices.append(s.max)
 
-    def _closure():
+    def _closure() -> Union[int, float]:
         return rng.choice(choices)
 
     return _closure
 
 
-def _parse_die(rng: GameRNG, expr: str, addend: Optional[str]=None) -> Callable:
-    amt, sides = [int(x.strip()) for x in expr.split('d')]
-    if addend is not None:
-        addend = int(addend.strip())
+class _Die(NamedTuple):
+    amt: int
+    sides: int
 
-    def _closure():
-        total = addend or 0
-        for _ in range(amt):
-            total += rng.rand(1, sides)
+
+def _parse_die(rng: GameRNG, expr: str, addend: Optional[str]=None) -> Callable:
+    _addend: int = 0
+    if addend is not None:
+        _addend = int(addend.strip())
+    die = _Die(*[int(x.strip()) for x in expr.split('d')])
+
+    def _closure() -> int:
+        total: int = _addend
+        for _ in range(die.amt):
+            total += rng.rand(1, die.sides)
         return total
 
     return _closure

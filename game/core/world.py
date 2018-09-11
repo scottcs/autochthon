@@ -57,7 +57,8 @@ class World(esper.World):
                     return True
         return False
 
-    def get_entity_at_position(self, x: int, y: int, *required_components) -> Optional[Entity]:
+    def get_entity_at_position(self, x: int, y: int,
+                               *required_components: Any) -> Optional[Entity]:
         """Return any entity at the given position, with the optional required components."""
         for ent, components in self.get_components(Position, *required_components):
             other_pos = components[0]
@@ -123,7 +124,7 @@ class World(esper.World):
         if component_type in self._entities[entity]:
             yield self._entities[entity][component_type]
 
-    def optional_component_for_entity(self, entity, component_type) -> Optional[Any]:
+    def optional_component_for_entity(self, entity: Entity, component_type: Any) -> Optional[Any]:
         """Retrieve a Component instance for a specific Entity.
 
         Retrieve a Component instance for a specific Entity. In some cases,

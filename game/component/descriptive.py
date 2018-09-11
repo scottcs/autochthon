@@ -35,7 +35,7 @@ class Name:
         return f'a {self}'
 
     @property
-    def plural(self):
+    def plural(self) -> str:
         """Many of this entity."""
         if self._plural is None:
             return f'{self}s'

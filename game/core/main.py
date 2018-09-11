@@ -60,8 +60,8 @@ class Game:
         self.player_acted: bool = False
         self.world: World = World()
         self.state: GameState = GameState.unknown
-        self.morgue = setup_morgue(config['morgue']['directory'], 'UNKNOWN')
-        version_string = f'* {config["title"]} version {VERSION}'
+        self.morgue: logging.Logger = setup_morgue(self.config['morgue']['directory'], 'UNKNOWN')
+        version_string = f'* {self.config["title"]} version {VERSION}'
         log.info(version_string)
         self.morgue.info(version_string)
 

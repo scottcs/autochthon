@@ -1,7 +1,7 @@
 """Game map."""
 from __future__ import annotations
 from enum import Enum, auto
-from typing import List, Optional, Tuple, NamedTuple, Mapping
+from typing import List, Optional, Tuple, NamedTuple, Mapping, Any
 
 import numpy as np
 import tcod.map
@@ -199,7 +199,7 @@ class Map(tcod.map.Map):
 class ClassicMap(Map):
     """Classic rogue-style map."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.max_rooms: int = self.config.get('max_rooms', 50)
         self.room_min_size: int = self.config.get('room_min_size', 5)

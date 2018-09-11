@@ -122,9 +122,10 @@ class BaseEntityFactory:
             else:
                 try:
                     if value.startswith(ON_CREATE):
-                        converted_func = parse(value[len(ON_CREATE):], self._rng)
-                        if converted_func is not None:
-                            new_data[key] = converted_func()
+                        if self._rng:
+                            converted_func = parse(value[len(ON_CREATE):], self._rng)
+                            if converted_func is not None:
+                                new_data[key] = converted_func()
                 except AttributeError:
                     pass
         return new_data
@@ -135,11 +136,13 @@ class PlayerFactory(BaseEntityFactory):
 
     def __init__(self, loader: DataLoader, world: World) -> None:
         super().__init__(loader, world)
-        self._rng = RNGCache.get('PlayerFactory')
-        self._data_key = 'assemblage.player'
+        self._rng: GameRNG = RNGCache.get('PlayerFactory')
+        self._data_key: str = 'assemblage.player'
 
     def make(self, templates: MutableSequence[str]) -> Entity:
         """Make a player entity."""
+        if not self._world.map:
+            raise FactoryException('There is no map!')
         if 'BasicPlayer' not in templates:
             templates.insert(0, 'BasicPlayer')
         ent = self._make_entity(templates)
@@ -154,11 +157,13 @@ class EnemyFactory(BaseEntityFactory):
 
     def __init__(self, loader: DataLoader, world: World) -> None:
         super().__init__(loader, world)
-        self._rng = RNGCache.get('EnemyFactory')
-        self._data_key = 'assemblage.enemy'
+        self._rng: GameRNG = RNGCache.get('EnemyFactory')
+        self._data_key: str = 'assemblage.enemy'
 
     def make(self, templates: MutableSequence[str]) -> Entity:
         """Make a player entity."""
+        if not self._world.map:
+            raise FactoryException('There is no map!')
         if 'BasicEnemy' not in templates:
             templates.insert(0, 'BasicEnemy')
         ent = self._make_entity(templates)
@@ -168,6 +173,8 @@ class EnemyFactory(BaseEntityFactory):
 
     def place_entity(self, ent: Entity, at: Point) -> None:
         """Place an enemy on the map where no other entities are."""
+        if not self._world.map:
+            raise FactoryException('There is no map!')
         tries = 10000
         while tries and self._world.get_entity_at_position(at.x, at.y):
             tries -= 1
@@ -183,11 +190,13 @@ class ItemFactory(BaseEntityFactory):
 
     def __init__(self, loader: DataLoader, world: World) -> None:
         super().__init__(loader, world)
-        self._rng = RNGCache.get('ItemFactory')
-        self._data_key = 'assemblage.item'
+        self._rng: GameRNG = RNGCache.get('ItemFactory')
+        self._data_key: str = 'assemblage.item'
 
     def make(self, templates: MutableSequence[str]) -> Entity:
         """Make a player entity."""
+        if not self._world.map:
+            raise FactoryException('There is no map!')
         if 'BasicItem' not in templates:
             templates.insert(0, 'BasicItem')
         ent = self._make_entity(templates)

@@ -75,11 +75,11 @@ Number = Union[int, float]
 class Modifier:
     """Modifier set."""
 
-    def __init__(self, addend: Union[Number, str]=0, factor: Union[Number, str]=0):
+    def __init__(self, addend: Union[Number, str]=0, factor: Union[Number, str]=0) -> None:
         self._addend: Number = 0
         self._factor: Number = 0
-        self._addend_func: Optional[Callable] = None
-        self._factor_func: Optional[Callable] = None
+        self._addend_func: Optional[Callable[[], Number]] = None
+        self._factor_func: Optional[Callable[[], Number]] = None
         # TODO: I'm not convinced this is the best way to do this. RNG per entity instead? How?
         rng = RNGCache.get('ModifierClass')
         if isinstance(addend, str):
@@ -92,14 +92,14 @@ class Modifier:
             self._factor = factor
 
     @property
-    def addend(self):
+    def addend(self) -> Number:
         """Get addend, calling its func if it exists."""
         if self._addend_func is not None:
             return self._addend_func()
         return self._addend
 
     @property
-    def factor(self):
+    def factor(self) -> Number:
         """Get factor, calling its func if it exists."""
         if self._factor_func is not None:
             return self._factor_func()
@@ -119,12 +119,12 @@ class ComponentSchema(NamedTuple):
     kwargs: dict
 
 
-def get_union_types(union_type: Union) -> tuple:
+def get_union_types(union_type: Any) -> tuple:
     """Get a tuple of the types of a union."""
     try:
         if union_type.__origin__ is Union:
-            return union_type.__args__
-    except AttributeError:
+            return tuple(union_type.__args__)
+    except (AttributeError, TypeError):
         pass
     # noinspection PyRedundantParentheses
     return (union_type,)
@@ -144,7 +144,6 @@ def parameter_types(func: Callable) -> dict:
             continue
         types = get_union_types(parameter.annotation)
         result[name] = {'types': types}
-        # noinspection PyProtectedMember
-        if parameter.default != inspect._empty:
+        if parameter.default != inspect.Parameter.empty:
             result[name]['default'] = parameter.default
     return result

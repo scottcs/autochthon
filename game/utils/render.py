@@ -1,4 +1,6 @@
 """Render utilities."""
+from typing import Generator
+
 from gamedata.tile_ids import TILE_IDS
 
 
@@ -30,7 +32,7 @@ class _TileCache:
         return TILE_IDS[str(self.id_from_name(name))]
 
     @staticmethod
-    def iter_names() -> str:
+    def iter_names() -> Generator[str, None, None]:
         """Iterate over tile names."""
         for data in TILE_IDS.values():
             yield data['name']
