@@ -4,6 +4,7 @@ from enum import IntEnum
 
 class Palette(IntEnum):
     """Color palette."""
+
     black = 0x000000
     white = 0xffffff
     red = 0xff0000
@@ -19,6 +20,7 @@ class Palette(IntEnum):
 
 class DangerPalette(IntEnum):
     """Danger level colors."""
+
     deadly = 0xff6699
     dangerous = 0xff6666
     threatening = 0xffff66
@@ -29,6 +31,7 @@ class DangerPalette(IntEnum):
 
 class MessagePalette(IntEnum):
     """Message colors."""
+
     danger = 0xff6666
     warning = 0xffff66
     side_note = 0x666666
@@ -42,6 +45,7 @@ class MessagePalette(IntEnum):
 
 class ItemPalette(IntEnum):
     """Colors for item descriptions."""
+
     trash = 0x666666
     common = 0xaaaaaa
     uncommon = 0x66ff66

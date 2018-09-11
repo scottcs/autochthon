@@ -5,6 +5,15 @@
 from typing import Any, Optional
 
 class Noise:
-    def __init__(self, algorithm: str = ..., mode: str = ..., hurst: float = ..., lacunarity: float = ..., octaves: float = ..., seed: Optional[Any] = ..., dimensions: int = ...) -> None: ...
+    def __init__(
+        self,
+        algorithm: str = ...,
+        mode: str = ...,
+        hurst: float = ...,
+        lacunarity: float = ...,
+        octaves: float = ...,
+        seed: Optional[Any] = ...,
+        dimensions: int = ...,
+    ) -> None: ...
     def __copy__(self): ...
     def get_point(self, *position: Any): ...

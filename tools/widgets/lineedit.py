@@ -11,11 +11,15 @@ class ToolLineEdit(QWidget):
 
     editing_finished = Signal()
 
-    def __init__(self, label: str, parent: Optional[QWidget]=None,
-                 default_text: Optional[str]=None,
-                 edit_width: Optional[int]=None,
-                 min_label_width: Optional[int]=None,
-                 required: bool=False) -> None:
+    def __init__(
+        self,
+        label: str,
+        parent: Optional[QWidget] = None,
+        default_text: Optional[str] = None,
+        edit_width: Optional[int] = None,
+        min_label_width: Optional[int] = None,
+        required: bool = False,
+    ) -> None:
         super().__init__(parent)
         self.name = label
         self._label = QLabel(self.name)
@@ -29,8 +33,8 @@ class ToolLineEdit(QWidget):
         if edit_width:
             self._edit.setFixedWidth(edit_width)
         if required:
-            self._label.setProperty('status', 'required')
-            self._edit.setProperty('status', 'required')
+            self._label.setProperty("status", "required")
+            self._edit.setProperty("status", "required")
 
         layout = QHBoxLayout()
         layout.setSpacing(0)
@@ -56,7 +60,9 @@ class ToolLineEdit(QWidget):
         """Clear the focus of the line edit widget."""
         self._edit.clearFocus()
 
-    def set_int_validator(self, min_val: Optional[int]=None, max_val: Optional[int]=None) -> None:
+    def set_int_validator(
+        self, min_val: Optional[int] = None, max_val: Optional[int] = None
+    ) -> None:
         """Set an int validator on this edit widget."""
         self._edit.setValidator(QIntValidator(min_val, max_val, self))
 

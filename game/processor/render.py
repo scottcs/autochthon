@@ -41,15 +41,14 @@ class WebRenderProcessor(esper.Processor):
             break
 
         # HEADER
-        b_cells.extend(player_x.to_bytes(2, 'big'))
-        b_cells.extend(player_y.to_bytes(2, 'big'))
-        b_cells.extend(data_length.to_bytes(2, 'big'))
+        b_cells.extend(player_x.to_bytes(2, "big"))
+        b_cells.extend(player_y.to_bytes(2, "big"))
+        b_cells.extend(data_length.to_bytes(2, "big"))
 
         # MAP
-        self.world.map.compute_fov(player_x, player_y,
-                                   algorithm=tcod.FOV_PERMISSIVE_3,
-                                   radius=fov,
-                                   light_walls=True)
+        self.world.map.compute_fov(
+            player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
+        )
         for cell in self.world.map:
             alpha = 0x00
             if cell.explored:
@@ -66,9 +65,9 @@ class WebRenderProcessor(esper.Processor):
             # WARNING: this will override any entities with ID >= 10000!
             #          also limits map size to about 235x235
             cell_id = 10000 + self.world.map.width * cell.x + cell.y
-            b_cells.extend(cell_id.to_bytes(2, 'big'))
-            b_cells.extend(cell.x.to_bytes(2, 'big'))
-            b_cells.extend(cell.y.to_bytes(2, 'big'))
+            b_cells.extend(cell_id.to_bytes(2, "big"))
+            b_cells.extend(cell.x.to_bytes(2, "big"))
+            b_cells.extend(cell.y.to_bytes(2, "big"))
             layer = RenderLayer.floor.value
 
             if cell.spawnable_player:
@@ -80,15 +79,16 @@ class WebRenderProcessor(esper.Processor):
                 # TODO: other layers (debris, decoration)
                 layer = RenderLayer.wall.value
 
-            b_cells.extend(tile_id.to_bytes(2, 'big'))
-            b_cells.extend(color.to_bytes(3, 'big'))
-            b_cells.extend(alpha.to_bytes(1, 'big'))
-            b_cells.extend(layer.to_bytes(1, 'big'))
+            b_cells.extend(tile_id.to_bytes(2, "big"))
+            b_cells.extend(color.to_bytes(3, "big"))
+            b_cells.extend(alpha.to_bytes(1, "big"))
+            b_cells.extend(layer.to_bytes(1, "big"))
             data_length += 1
 
         # RENDERABLE ENTITIES
-        for ent, components in sorted(self.world.get_components(Position, Renderable),
-                                      key=lambda x: x[1][1].layer.value):
+        for ent, components in sorted(
+            self.world.get_components(Position, Renderable), key=lambda x: x[1][1].layer.value
+        ):
             positional, renderable = components
             alpha = 0x00
             pos_x = positional.x
@@ -120,21 +120,21 @@ class WebRenderProcessor(esper.Processor):
             if alpha == 0:
                 continue
 
-            b_cells.extend(ent.to_bytes(2, 'big'))
-            b_cells.extend(pos_x.to_bytes(2, 'big'))
-            b_cells.extend(pos_y.to_bytes(2, 'big'))
+            b_cells.extend(ent.to_bytes(2, "big"))
+            b_cells.extend(pos_x.to_bytes(2, "big"))
+            b_cells.extend(pos_y.to_bytes(2, "big"))
             if self.world.has_component(ent, Dead):
                 tile_id = 0
             else:
                 tile_id = renderable.tile_id
-            b_cells.extend(tile_id.to_bytes(2, 'big'))
-            b_cells.extend(renderable.tint.to_bytes(3, 'big'))
-            b_cells.extend(alpha.to_bytes(1, 'big'))
-            b_cells.extend(renderable.layer.value.to_bytes(1, 'big'))
+            b_cells.extend(tile_id.to_bytes(2, "big"))
+            b_cells.extend(renderable.tint.to_bytes(3, "big"))
+            b_cells.extend(alpha.to_bytes(1, "big"))
+            b_cells.extend(renderable.layer.value.to_bytes(1, "big"))
             data_length += 1
 
         # Overwrite data_length now that we've counted them
-        b_cells[4:6] = data_length.to_bytes(2, 'big')
+        b_cells[4:6] = data_length.to_bytes(2, "big")
         ##########################################
         # Map Data:
         #     Header:
@@ -150,16 +150,16 @@ class WebRenderProcessor(esper.Processor):
         #        1 byte : alpha
         #        1 byte : render layer
         ##########################################
-        UpdateMapRenderEvent.fire({'bytearray': b_cells})
+        UpdateMapRenderEvent.fire({"bytearray": b_cells})
 
 
 class TCODRenderProcessor(esper.Processor):
     """Game render processor for local TCOD console."""
 
-    def __init__(self, _title: str, width: int=80, height: int=40) -> None:
+    def __init__(self, _title: str, width: int = 80, height: int = 40) -> None:
         super().__init__()
         # Someday, implement this?
-        log.error(f'Someday maybe this will be a {width}x{height} console.')
+        log.error(f"Someday maybe this will be a {width}x{height} console.")
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""

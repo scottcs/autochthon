@@ -13,16 +13,19 @@ from game.types import ProcessGroup, Entity, ComponentSchema
 
 class World(esper.World):
     """Esper's World class that always iterates the Player first."""
-    def __init__(self, timed: bool=False) -> None:
+
+    def __init__(self, timed: bool = False) -> None:
         super().__init__(timed)
         self._processor_groups: dict = {}
         self.map: Optional[Map] = None
         self.players: Set[Entity] = set()
 
-    def add_processor(self,
-                      processor_instance: esper.Processor,
-                      priority: int=0,
-                      group: Optional[ProcessGroup]=None) -> None:
+    def add_processor(
+        self,
+        processor_instance: esper.Processor,
+        priority: int = 0,
+        group: Optional[ProcessGroup] = None,
+    ) -> None:
         """Add a Processor instance to the World.
 
         :param processor_instance: An instance of a Processor,
@@ -57,7 +60,9 @@ class World(esper.World):
                     return True
         return False
 
-    def get_entity_at_position(self, x: int, y: int, *required_components) -> Optional[Entity]:
+    def get_entity_at_position(
+        self, x: int, y: int, *required_components: Any
+    ) -> Optional[Entity]:
         """Return any entity at the given position, with the optional required components."""
         for ent, components in self.get_components(Position, *required_components):
             other_pos = components[0]
@@ -123,7 +128,7 @@ class World(esper.World):
         if component_type in self._entities[entity]:
             yield self._entities[entity][component_type]
 
-    def optional_component_for_entity(self, entity, component_type) -> Optional[Any]:
+    def optional_component_for_entity(self, entity: Entity, component_type: Any) -> Optional[Any]:
         """Retrieve a Component instance for a specific Entity.
 
         Retrieve a Component instance for a specific Entity. In some cases,
@@ -140,8 +145,9 @@ class World(esper.World):
         except KeyError:
             return None
 
-    def get_or_add_component(self, entity: Entity, component_type: Any,
-                             *args: Any, **kwargs: Any) -> Any:
+    def get_or_add_component(
+        self, entity: Entity, component_type: Any, *args: Any, **kwargs: Any
+    ) -> Any:
         """Get a component for the given entity if it exists, or else create a new one."""
         try:
             return self.component_for_entity(entity, component_type)

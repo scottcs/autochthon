@@ -25,7 +25,19 @@ class KeyEvent(Event):
     left_meta: Any = ...
     right_meta: Any = ...
     meta: Any = ...
-    def __init__(self, key: str = ..., char: str = ..., text: str = ..., shift: bool = ..., left_alt: bool = ..., right_alt: bool = ..., left_control: bool = ..., right_control: bool = ..., left_meta: bool = ..., right_meta: bool = ...) -> None: ...
+    def __init__(
+        self,
+        key: str = ...,
+        char: str = ...,
+        text: str = ...,
+        shift: bool = ...,
+        left_alt: bool = ...,
+        right_alt: bool = ...,
+        left_control: bool = ...,
+        right_control: bool = ...,
+        left_meta: bool = ...,
+        right_meta: bool = ...,
+    ) -> None: ...
 
 class KeyDown(KeyEvent):
     type: str = ...

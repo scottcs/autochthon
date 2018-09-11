@@ -8,15 +8,16 @@ from typing import List, Dict
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        description='build master tile ids file from all of the tile atlases')
-    parser.add_argument('directory')
+        description="build master tile ids file from all of the tile atlases"
+    )
+    parser.add_argument("directory")
     return parser.parse_args()
 
 
 def get_key(string: str) -> str:
     """Get a key name from a line."""
     try:
-        key, num = string.rsplit('_', 1)
+        key, num = string.rsplit("_", 1)
         int(num)
     except ValueError:
         key = string
@@ -25,7 +26,7 @@ def get_key(string: str) -> str:
 
 def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
     """Parse a tile atlas."""
-    tileset: str = atlas_file.with_suffix('.json').as_posix()
+    tileset: str = atlas_file.with_suffix(".json").as_posix()
     atlas_data: list = []
     tiles_data: dict = {}
     num_anim_frames: int = 1
@@ -34,16 +35,16 @@ def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
         for line in f.readlines():
             line = line.strip()
 
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 # blank line or comment
                 continue
 
-            if line.startswith('=='):
+            if line.startswith("=="):
                 # header
                 num_anim_frames = int(line.split()[-1])
                 continue
 
-            if line == '>>':
+            if line == ">>":
                 # skip to next row
                 continue
 
@@ -54,15 +55,11 @@ def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
                 tiles_data[key].append(line)
             else:
                 for i in range(num_anim_frames):
-                    tiles_data[key].append(f'{line}_{i + 1}')
+                    tiles_data[key].append(f"{line}_{i + 1}")
 
     for data in tiles_data.values():
         name_guess = get_key(data[0])
-        atlas_data.append({
-            'name': name_guess,
-            'tileset': tileset,
-            'tiles': sorted(data),
-        })
+        atlas_data.append({"name": name_guess, "tileset": tileset, "tiles": sorted(data)})
 
     return atlas_data
 
@@ -71,12 +68,12 @@ def main(args: argparse.Namespace) -> None:
     """The main function."""
     directory = pathlib.Path(args.directory)
     tile_ids = []
-    for atlas_file in directory.glob('*.txt'):
+    for atlas_file in directory.glob("*.txt"):
         tile_ids.extend(get_atlas_info(atlas_file))
     master_tile_ids = {i: data for i, data in enumerate(tile_ids, start=1)}
-    with open(directory / pathlib.Path('tile_ids.json'), 'w') as f:
+    with open(directory / pathlib.Path("tile_ids.json"), "w") as f:
         json.dump(master_tile_ids, f, indent=2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(parse_args())

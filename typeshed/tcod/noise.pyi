@@ -11,7 +11,16 @@ TURBULENCE: int
 class Noise:
     noise_c: Any = ...
     implementation: Any = ...
-    def __init__(self, dimensions: Any, algorithm: int = ..., implementation: Any = ..., hurst: float = ..., lacunarity: float = ..., octaves: int = ..., seed: Optional[Any] = ...) -> None: ...
+    def __init__(
+        self,
+        dimensions: Any,
+        algorithm: int = ...,
+        implementation: Any = ...,
+        hurst: float = ...,
+        lacunarity: float = ...,
+        octaves: int = ...,
+        seed: Optional[Any] = ...,
+    ) -> None: ...
     @property
     def dimensions(self): ...
     @property

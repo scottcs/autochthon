@@ -9,3 +9,4 @@ alias tile_ids='python -m tools.make_tile_ids static/img/oryx_ur'
 alias typeshed='cp -rf typeshed/* ~/.venv/autochthon/lib/mypy/typeshed/third_party/3'
 alias typing='mypy --strict -p game'
 alias rg="rg --iglob '!static/js/pixi*' --iglob '!typeshed'"
+alias black='black -l 99 --py36 game gamedata tools typeshed'

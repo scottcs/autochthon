@@ -5,6 +5,7 @@ from game.types import Number
 
 class BaseDamageComponent:
     """Base damage component."""
+
     def __init__(self, amount: Number) -> None:
         self.amount: Number = amount
 

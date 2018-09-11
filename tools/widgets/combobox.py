@@ -2,8 +2,15 @@
 from typing import Optional, Sequence, Any
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtWidgets import (QComboBox, QWidget, QLabel, QHBoxLayout, QSpacerItem, QInputDialog,
-                               QMessageBox)
+from PySide2.QtWidgets import (
+    QComboBox,
+    QWidget,
+    QLabel,
+    QHBoxLayout,
+    QSpacerItem,
+    QInputDialog,
+    QMessageBox,
+)
 
 from .pushbutton import ToolPushButton
 
@@ -13,8 +20,13 @@ class ToolComboBox(QWidget):
 
     selection_changed = Signal()
 
-    def __init__(self, label: str, parent: Optional[QWidget]=None,
-                 min_label_width: Optional[int]=None, sort: bool=False) -> None:
+    def __init__(
+        self,
+        label: str,
+        parent: Optional[QWidget] = None,
+        min_label_width: Optional[int] = None,
+        sort: bool = False,
+    ) -> None:
         super().__init__(parent)
         self.name = label
         self._items = []
@@ -113,11 +125,11 @@ class ToolMutableComboBox(ToolComboBox):
     selection_changed = Signal()
     duplicate_item = Signal(str)
 
-    def __init__(self, *args: Any, hide_duplicate_button: bool=False, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, hide_duplicate_button: bool = False, **kwargs: Any) -> None:
         self._hide_duplicate_button = hide_duplicate_button
-        self._duplicate_button = ToolPushButton('∞')
-        self._add_button = ToolPushButton('+')
-        self._remove_button = ToolPushButton('-')
+        self._duplicate_button = ToolPushButton("∞")
+        self._add_button = ToolPushButton("+")
+        self._remove_button = ToolPushButton("-")
         self._duplicate_button.clicked.connect(self._on_duplicate_item)
         self._add_button.clicked.connect(self._on_add_item)
         self._remove_button.clicked.connect(self._on_remove_item)
@@ -176,7 +188,7 @@ class ToolMutableComboBox(ToolComboBox):
     def _on_duplicate_item(self) -> None:
         current = self.text()
         # noinspection PyCallByClass
-        item, ok = QInputDialog.getText(self, 'Duplicate Item', 'Name of duplicate:', text=current)
+        item, ok = QInputDialog.getText(self, "Duplicate Item", "Name of duplicate:", text=current)
         if ok and item != current:
             self.add_item(item)
             self.set_via_text(item)
@@ -184,18 +196,20 @@ class ToolMutableComboBox(ToolComboBox):
 
     def _on_add_item(self) -> None:
         # noinspection PyCallByClass
-        item, ok = QInputDialog.getText(self, 'Add New Item', 'Name of new item:')
+        item, ok = QInputDialog.getText(self, "Add New Item", "Name of new item:")
         if ok:
             self.add_item(item)
             self.set_via_text(item)
 
     def _on_remove_item(self) -> None:
         # noinspection PyCallByClass
-        yes = QMessageBox.question(self,
-                                   'Remove Item?',
-                                   f'Are you sure you want to remove "{self.text()}"?',
-                                   QMessageBox.StandardButtons(QMessageBox.Yes | QMessageBox.No),
-                                   QMessageBox.Yes)
+        yes = QMessageBox.question(
+            self,
+            "Remove Item?",
+            f'Are you sure you want to remove "{self.text()}"?',
+            QMessageBox.StandardButtons(QMessageBox.Yes | QMessageBox.No),
+            QMessageBox.Yes,
+        )
         if yes == QMessageBox.Yes:
             idx = self._combobox.currentIndex()
             self.remove_item_by_index(idx)

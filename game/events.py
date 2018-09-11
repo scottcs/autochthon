@@ -15,7 +15,9 @@ class Event:
     also guaranteed to be ordered.
 
     """
-    def __init__(self) -> None:
+
+    def __init__(self, name: str) -> None:
+        self.name = name
         self.handlers: Dict[EventHandler, bool] = dict()
 
     def handle(self, handler: EventHandler) -> Event:
@@ -31,7 +33,7 @@ class Event:
             raise ValueError("Handler is not handling this event, so cannot unhandle it.")
         return self
 
-    def fire(self, event: Optional[EventType]=None) -> None:
+    def fire(self, event: Optional[EventType] = None) -> None:
         """Fire the event."""
         for handler in self.handlers.keys():
             handler(event or {})
@@ -40,13 +42,16 @@ class Event:
         """Get the number of handlers."""
         return len(self.handlers)
 
+    def __repr__(self) -> str:
+        return f"<{self.name}>"
+
     __call__ = fire
     __len__ = num_handlers
 
 
-GameLogEvent: Event = Event()
-GameOverEvent: Event = Event()
-InputEvent: Event = Event()
-RefreshMapEvent: Event = Event()
-PlayerActedEvent: Event = Event()
-UpdateMapRenderEvent: Event = Event()
+GameLogEvent: Event = Event("GameLogEvent")
+GameOverEvent: Event = Event("GameOverEvent")
+InputEvent: Event = Event("InputEvent")
+RefreshMapEvent: Event = Event("RefreshMapEvent")
+PlayerActedEvent: Event = Event("PlayerActedEvent")
+UpdateMapRenderEvent: Event = Event("UpdateMapRenderEvent")

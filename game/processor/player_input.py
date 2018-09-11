@@ -10,47 +10,50 @@ from game.events import InputEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
 
-KEYS_JSON = Path('data') / Path('keys.json')
+KEYS_JSON = Path("data") / Path("keys.json")
 
 
 class PlayerInputProcessor(esper.Processor):
     """Process user input and issue events."""
+
     def __init__(self) -> None:
         super().__init__()
         self.input_queue: list = []
         InputEvent.handle(self._on_input)
         with open(KEYS_JSON) as f:
             keys: dict = json.load(f)
-        self.keys: dict = keys['Keys']
+        self.keys: dict = keys["Keys"]
         self.keys_reverse: dict = {v: k for k, v in self.keys.items()}
-        self.modifiers: dict = keys['Modifiers']
-        self.events: dict = keys['Events']
+        self.modifiers: dict = keys["Modifiers"]
+        self.events: dict = keys["Events"]
 
     def _on_input(self, event: EventType) -> None:
-        modifiers: dict = self._unpack_modifiers(event['modifiers'])
-        key: str = self._get_key(event['code'])
-        coords: Point = Point(event['x_coord'], event['y_coord'])
-        self.input_queue.append({
-            'event': event['event'],
-            'state': event.get('state', GameState.unknown),
-            'modifiers': modifiers,
-            'key': key,
-            'coords': coords,
-        })
+        modifiers: dict = self._unpack_modifiers(event["modifiers"])
+        key: str = self._get_key(event["code"])
+        coords: Point = Point(event["x_coord"], event["y_coord"])
+        self.input_queue.append(
+            {
+                "event": event["event"],
+                "state": event.get("state", GameState.unknown),
+                "modifiers": modifiers,
+                "key": key,
+                "coords": coords,
+            }
+        )
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process the input queue."""
         while self.input_queue:
             event = self.input_queue.pop()
-            if event['event'] == self.events['KeyPress']:
-                if event['state'] == GameState.playing:
-                    self.handle_keypress_playing(event['modifiers'], event['key'], event['coords'])
+            if event["event"] == self.events["KeyPress"]:
+                if event["state"] == GameState.playing:
+                    self.handle_keypress_playing(event["modifiers"], event["key"], event["coords"])
 
     def _unpack_modifiers(self, modifiers: int) -> dict:
         return {
-            'shift': modifiers & self.modifiers['Shift'] != 0,
-            'ctrl': modifiers & self.modifiers['Ctrl'] != 0,
-            'alt': modifiers & self.modifiers['Alt'] != 0,
+            "shift": modifiers & self.modifiers["Shift"] != 0,
+            "ctrl": modifiers & self.modifiers["Ctrl"] != 0,
+            "alt": modifiers & self.modifiers["Alt"] != 0,
         }
 
     def _get_key(self, code: int) -> str:
@@ -61,11 +64,11 @@ class PlayerInputProcessor(esper.Processor):
 
     def handle_keypress_playing(self, _modifiers: Mapping, key: str, _coords: Point) -> None:
         """Handle input event in the PLAYING state."""
-        bump_up = key in 'kyu'
-        bump_down = key in 'jbn'
-        bump_left = key in 'hyb'
-        bump_right = key in 'lun'
-        wait = key == 'period'
+        bump_up = key in "kyu"
+        bump_down = key in "jbn"
+        bump_left = key in "hyb"
+        bump_right = key in "lun"
+        wait = key == "period"
 
         dx = 0
         dy = 0

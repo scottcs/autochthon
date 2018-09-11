@@ -1,7 +1,7 @@
 """Game map."""
 from __future__ import annotations
 from enum import Enum, auto
-from typing import List, Optional, Tuple, NamedTuple, Mapping
+from typing import List, Optional, Tuple, NamedTuple, Mapping, Any
 
 import numpy as np
 import tcod.map
@@ -11,13 +11,21 @@ from game.utils.render import TileCache
 from game.utils.random import RNGCache
 from gamedata.palette import Palette
 
-MAP_BITS = ('explored', 'spawnable_player', 'spawnable_enemy', 'spawnable_item',
-            'alt_tile_1', 'alt_tile_2', 'alt_tile_3')
+MAP_BITS = (
+    "explored",
+    "spawnable_player",
+    "spawnable_enemy",
+    "spawnable_item",
+    "alt_tile_1",
+    "alt_tile_2",
+    "alt_tile_3",
+)
 # TODO: item layer? interaction layer? enemy layer? etc?
 
 
 class MapCell(NamedTuple):
     """Map cell."""
+
     x: int = 0
     y: int = 0
     transparent: bool = False
@@ -36,6 +44,7 @@ class MapCell(NamedTuple):
 
 class TileType(Enum):
     """Tile types."""
+
     floor = auto()
     wall_v = auto()
     wall_h = auto()
@@ -44,8 +53,9 @@ class TileType(Enum):
 class Map(tcod.map.Map):
     """Game map."""
 
-    def __init__(self, width: int, height: int, seed: Optional[str]=None,
-                 config: Optional[Mapping]=None) -> None:
+    def __init__(
+        self, width: int, height: int, seed: Optional[str] = None, config: Optional[Mapping] = None
+    ) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
         self._iter_x: int = 0
@@ -57,13 +67,13 @@ class Map(tcod.map.Map):
     @property
     def explored(self) -> np.array:
         """Array of cells that have been explored."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('explored')]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("explored")]
         return buffer
 
     @property
     def spawnable_player(self) -> np.array:
         """Array of cells that can spawn a player."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_player')]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_player")]
         return buffer
 
     def spawns_player(self) -> List[Point]:
@@ -73,7 +83,7 @@ class Map(tcod.map.Map):
     @property
     def spawnable_enemy(self) -> np.array:
         """Array of cells that can spawn enemies."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_enemy')]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_enemy")]
         return buffer
 
     def spawns_enemy(self) -> List[Point]:
@@ -83,7 +93,7 @@ class Map(tcod.map.Map):
     @property
     def spawnable_item(self) -> np.array:
         """Array of cells that can spawn items."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('spawnable_item')]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_item")]
         return buffer
 
     def spawns_item(self) -> List[Point]:
@@ -93,30 +103,30 @@ class Map(tcod.map.Map):
     @property
     def alt_tile_1(self) -> np.array:
         """Array of cells that the alt tile 1 bit set."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('alt_tile_1')]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("alt_tile_1")]
         return buffer
 
     @property
     def alt_tile_2(self) -> np.array:
         """Array of cells that the alt tile 2 bit set."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('alt_tile_2')]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("alt_tile_2")]
         return buffer
 
     @property
     def alt_tile_3(self) -> np.array:
         """Array of cells that the alt tile 3 bit set."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index('alt_tile_3')]
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("alt_tile_3")]
         return buffer
 
     def create(self) -> None:
         """Create the map using the map's algorithm."""
-        raise NotImplementedError('This class must be subclassed.')
+        raise NotImplementedError("This class must be subclassed.")
 
     def _calculate_tile_type(self, x: int, y: int) -> TileType:
         if self.walkable[y, x]:
             return TileType.floor
         try:
-            if self.walkable[y+1, x]:
+            if self.walkable[y + 1, x]:
                 return TileType.wall_h
         except IndexError:
             pass
@@ -124,7 +134,7 @@ class Map(tcod.map.Map):
 
     def _tile_id_from_type(self, tile_type: TileType, x: int, y: int) -> int:
         # TODO: move these definitions to a data file/change based on map "theme"
-        suffixes = 'ABCD'
+        suffixes = "ABCD"
         idx = 0
         if self.alt_tile_3[y, x]:
             idx += 1
@@ -133,13 +143,13 @@ class Map(tcod.map.Map):
         if self.alt_tile_1[y, x]:
             idx += 1
         if tile_type == TileType.wall_v:
-            return TileCache.id_from_name('terrain_wallAVertical' + suffixes[idx])
+            return TileCache.id_from_name("terrain_wallAVertical" + suffixes[idx])
         elif tile_type == TileType.wall_h:
-            return TileCache.id_from_name('terrain_wallAHorizontal' + suffixes[idx])
+            return TileCache.id_from_name("terrain_wallAHorizontal" + suffixes[idx])
         elif tile_type == TileType.floor:
-            return TileCache.id_from_name('terrain_floorOverlay' + suffixes[idx])
+            return TileCache.id_from_name("terrain_floorOverlay" + suffixes[idx])
         else:
-            raise RuntimeError(f'Unknown tile type: {tile_type}')
+            raise RuntimeError(f"Unknown tile type: {tile_type}")
 
     @staticmethod
     def _tile_color_from_type(tile_type: TileType) -> int:
@@ -151,7 +161,7 @@ class Map(tcod.map.Map):
         elif tile_type == TileType.floor:
             return Palette.dark_grey
         else:
-            raise RuntimeError(f'Unknown tile type: {tile_type}')
+            raise RuntimeError(f"Unknown tile type: {tile_type}")
 
     def __iter__(self) -> Map:
         self._iter_x: int = 0
@@ -190,7 +200,7 @@ class Map(tcod.map.Map):
                 self._tile_color_from_type(tile_type),
             )
         except IndexError:
-            raise IndexError(f'Location ({x}, {y}) in map not found.')
+            raise IndexError(f"Location ({x}, {y}) in map not found.")
 
     def __len__(self) -> int:
         return self.width * self.height
@@ -199,11 +209,11 @@ class Map(tcod.map.Map):
 class ClassicMap(Map):
     """Classic rogue-style map."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.max_rooms: int = self.config.get('max_rooms', 50)
-        self.room_min_size: int = self.config.get('room_min_size', 5)
-        self.room_max_size: int = self.config.get('room_max_size', 20)
+        self.max_rooms: int = self.config.get("max_rooms", 50)
+        self.room_min_size: int = self.config.get("room_min_size", 5)
+        self.room_max_size: int = self.config.get("room_max_size", 20)
 
     def create_room(self, room: Rect) -> None:
         """Create a new room in the map at the given coordinates.
@@ -230,7 +240,7 @@ class ClassicMap(Map):
         for x in range(min(x1, x2), max(x1, x2) + 1):
             self.walkable[y, x] = True
             self.transparent[y, x] = True
-            for yy in range(y-1, y+2):
+            for yy in range(y - 1, y + 2):
                 try:
                     if self._rng.percent(0.01):
                         self.alt_tile_1[yy, x] = True
@@ -246,7 +256,7 @@ class ClassicMap(Map):
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.walkable[y, x] = True
             self.transparent[y, x] = True
-            for xx in range(x-1, x+2):
+            for xx in range(x - 1, x + 2):
                 try:
                     if self._rng.percent(0.01):
                         self.alt_tile_1[y, xx] = True

@@ -13,6 +13,7 @@ Entity = int
 
 class RenderLayer(Enum):
     """Render layers, from bottom to top."""
+
     background = auto()
     floor = auto()
     item = auto()
@@ -25,6 +26,7 @@ class RenderLayer(Enum):
 
 class Priority(IntEnum):
     """Processor priorities."""
+
     render = auto()
     psychopomps = auto()
     gamelog = auto()
@@ -46,6 +48,7 @@ class Priority(IntEnum):
 
 class ProcessGroup(Enum):
     """Groups of processors."""
+
     default = auto()
     player = auto()
     time = auto()
@@ -54,6 +57,7 @@ class ProcessGroup(Enum):
 
 class GameState(Enum):
     """Game states."""
+
     unknown = auto()
     loading = auto()
     main_menu = auto()
@@ -65,6 +69,7 @@ class GameState(Enum):
 
 class AttackType(Enum):
     """Attack types."""
+
     melee = auto()
     projectile = auto()
 
@@ -75,13 +80,13 @@ Number = Union[int, float]
 class Modifier:
     """Modifier set."""
 
-    def __init__(self, addend: Union[Number, str]=0, factor: Union[Number, str]=0):
+    def __init__(self, addend: Union[Number, str] = 0, factor: Union[Number, str] = 0) -> None:
         self._addend: Number = 0
         self._factor: Number = 0
-        self._addend_func: Optional[Callable] = None
-        self._factor_func: Optional[Callable] = None
+        self._addend_func: Optional[Callable[[], Number]] = None
+        self._factor_func: Optional[Callable[[], Number]] = None
         # TODO: I'm not convinced this is the best way to do this. RNG per entity instead? How?
-        rng = RNGCache.get('ModifierClass')
+        rng = RNGCache.get("ModifierClass")
         if isinstance(addend, str):
             self._addend_func = parse(addend, rng)
         else:
@@ -92,14 +97,14 @@ class Modifier:
             self._factor = factor
 
     @property
-    def addend(self):
+    def addend(self) -> Number:
         """Get addend, calling its func if it exists."""
         if self._addend_func is not None:
             return self._addend_func()
         return self._addend
 
     @property
-    def factor(self):
+    def factor(self) -> Number:
         """Get factor, calling its func if it exists."""
         if self._factor_func is not None:
             return self._factor_func()
@@ -108,23 +113,25 @@ class Modifier:
 
 class LogLine(NamedTuple):
     """A Game log message with color."""
-    message: str = ''
+
+    message: str = ""
     color: int = 0xffffff
 
 
 class ComponentSchema(NamedTuple):
     """A schema for a component."""
+
     type: Any
     args: tuple
     kwargs: dict
 
 
-def get_union_types(union_type: Union) -> tuple:
+def get_union_types(union_type: Any) -> tuple:
     """Get a tuple of the types of a union."""
     try:
         if union_type.__origin__ is Union:
-            return union_type.__args__
-    except AttributeError:
+            return tuple(union_type.__args__)
+    except (AttributeError, TypeError):
         pass
     # noinspection PyRedundantParentheses
     return (union_type,)
@@ -140,11 +147,10 @@ def parameter_types(func: Callable) -> dict:
     result = {}
     sig = inspect.signature(func)
     for name, parameter in sig.parameters.items():
-        if name in ('self', 'args', 'kwargs'):
+        if name in ("self", "args", "kwargs"):
             continue
         types = get_union_types(parameter.annotation)
-        result[name] = {'types': types}
-        # noinspection PyProtectedMember
-        if parameter.default != inspect._empty:
-            result[name]['default'] = parameter.default
+        result[name] = {"types": types}
+        if parameter.default != inspect.Parameter.empty:
+            result[name]["default"] = parameter.default
     return result

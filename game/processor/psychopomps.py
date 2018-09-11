@@ -13,11 +13,12 @@ log.setLevel(logging.DEBUG)
 
 class Psychopomps(esper.Processor):
     """Escort of the dead."""
+
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process dead entities."""
         for ent, _ in self.world.get_component(Dead):
-            name = f'Entity {ent}'
+            name = f"Entity {ent}"
             if self.world.has_component(ent, Name):
-                name = f'{self.world.component_for_entity(ent, Name).generic} (Entity {ent})'
-            log.debug(f'Escorting {name} to the afterlife.')
+                name = f"{self.world.component_for_entity(ent, Name).generic} (Entity {ent})"
+            log.debug(f"Escorting {name} to the afterlife.")
             self.world.delete_entity(ent)

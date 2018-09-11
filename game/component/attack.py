@@ -7,7 +7,10 @@ from game.types import Entity, AttackType
 
 class GUTCurrentTarget:
     """Component for targeting an entity or location."""
-    def __init__(self, x: int, y: int, attack: AttackType, entity: Optional[Entity]=None) -> None:
+
+    def __init__(
+        self, x: int, y: int, attack: AttackType, entity: Optional[Entity] = None
+    ) -> None:
         self.x: int = x
         self.y: int = y
         self.attack = attack

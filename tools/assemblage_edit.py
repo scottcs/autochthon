@@ -8,25 +8,43 @@ from typing import Optional, List, Sequence, Mapping, MutableMapping
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QColor
-from PySide2.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QScrollArea,
-                               QFileDialog, QHBoxLayout, QLabel, QListWidget,
-                               QListWidgetItem, QMessageBox, QSpacerItem, QVBoxLayout, QWidget)
+from PySide2.QtWidgets import (
+    QAbstractItemView,
+    QDialog,
+    QDialogButtonBox,
+    QScrollArea,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QSpacerItem,
+    QVBoxLayout,
+    QWidget,
+)
 
 from game.utils.factory import get_component_class, convert_datum
 from game.utils.render import TileCache
-from tools.widgets import (msg_error, ToolApp, ToolMutableComboBox, ToolLineEdit, ToolPushButton,
-                           ComponentPanel)
+from tools.widgets import (
+    msg_error,
+    ToolApp,
+    ToolMutableComboBox,
+    ToolLineEdit,
+    ToolPushButton,
+    ComponentPanel,
+)
 
-DATA_DIR = Path('data/assemblage')
-COMPONENT_DIR = Path('game/component')
-COMPONENT_RE = re.compile(r'(?<=^class )\w+')
-IGNORE_COMPONENT_PREFIXES = ('Base', 'GUT')
+DATA_DIR = Path("data/assemblage")
+COMPONENT_DIR = Path("game/component")
+COMPONENT_RE = re.compile(r"(?<=^class )\w+")
+IGNORE_COMPONENT_PREFIXES = ("Base", "GUT")
 
 
 class RenderWidget(QWidget):
     """Render widget."""
 
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setMinimumSize(32, 48)
         self.setMaximumSize(32, 48)
@@ -47,12 +65,12 @@ class RenderWidget(QWidget):
         try:
             self.tile_data = TileCache.data_from_name(tile_id)
         except KeyError:
-            msg_error(f'Tile id not found: {tile_id}', self)
+            msg_error(f"Tile id not found: {tile_id}", self)
             return
         try:
             self.color = convert_datum(color)
         except AttributeError:
-            msg_error(f'Unknown color: {color}', self)
+            msg_error(f"Unknown color: {color}", self)
             return
         self.set_sprite()
         self.update()
@@ -60,20 +78,20 @@ class RenderWidget(QWidget):
 
     def set_sprite(self) -> None:
         """Draw the image."""
-        tileset = Path(self.tile_data['tileset'])
-        tile = self.tile_data['tiles'][0]
+        tileset = Path(self.tile_data["tileset"])
+        tile = self.tile_data["tiles"][0]
         with tileset.open() as f:
             tileset_data = json.load(f)
         frame = None
-        for frame_name, frame_data in tileset_data['frames'].items():
+        for frame_name, frame_data in tileset_data["frames"].items():
             if frame_name == tile:
-                frame = frame_data['frame']
+                frame = frame_data["frame"]
                 break
         if not frame:
-            msg_error(f'Could not find frame for {tile}', self)
+            msg_error(f"Could not find frame for {tile}", self)
             return
-        sheet = QImage(str(tileset.parent / tileset_data['meta']['image']))
-        self.sprite = sheet.copy(frame['x'], frame['y'], frame['w'], frame['h'])
+        sheet = QImage(str(tileset.parent / tileset_data["meta"]["image"]))
+        self.sprite = sheet.copy(frame["x"], frame["y"], frame["w"], frame["h"])
 
     def paintEvent(self, event):
         """Called when this widget should be painted."""
@@ -99,7 +117,7 @@ class FileLoadSave(QWidget):
 
     file_loaded = Signal(dict)
 
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.filename = None
         self.data = {}
@@ -110,11 +128,11 @@ class FileLoadSave(QWidget):
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.edit = ToolLineEdit('File:')
+        self.edit = ToolLineEdit("File:")
         self.edit.disable()
 
-        self.load_button = ToolPushButton('Load')
-        self.save_button = ToolPushButton('Save')
+        self.load_button = ToolPushButton("Load")
+        self.save_button = ToolPushButton("Save")
         self.save_button.setDisabled(True)
 
         layout.addWidget(self.edit)
@@ -129,10 +147,11 @@ class FileLoadSave(QWidget):
     def _on_load(self) -> None:
         if self.save_button.isEnabled():
             message_box = QMessageBox()
-            message_box.setText('The document has been modified.')
-            message_box.setInformativeText('Do you want to save your changes?')
+            message_box.setText("The document has been modified.")
+            message_box.setInformativeText("Do you want to save your changes?")
             message_box.setStandardButtons(
-                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel
+            )
             message_box.setDefaultButton(QMessageBox.Save)
             ret = message_box.exec_()
             if ret == QMessageBox.Save:
@@ -147,29 +166,31 @@ class FileLoadSave(QWidget):
                 return
 
         filename = QFileDialog().getOpenFileName(
-            self, 'Open Assemblage', str(DATA_DIR), 'Assemblage Files (*.json)')[0]
+            self, "Open Assemblage", str(DATA_DIR), "Assemblage Files (*.json)"
+        )[0]
         if filename:
             self.filename = Path(filename)
-            text = filename.split(f'{DATA_DIR}/')[-1]
+            text = filename.split(f"{DATA_DIR}/")[-1]
             self.edit.set_text(text)
             self._load_file()
 
     def _on_save(self) -> bool:
         if not self.data:
-            msg_error('No data to save!', self)
+            msg_error("No data to save!", self)
             return False
         for key in self.data.keys():
-            if key == '':
-                msg_error('You must give all assemblages a name!', self)
+            if key == "":
+                msg_error("You must give all assemblages a name!", self)
                 return False
             if not self.data[key]:
-                msg_error('There is no component data to save!', self)
+                msg_error("There is no component data to save!", self)
                 return False
         filename = QFileDialog().getSaveFileName(
-            self, 'Save Assemblage As', str(DATA_DIR), 'Assemblage Files (*.json)')[0]
+            self, "Save Assemblage As", str(DATA_DIR), "Assemblage Files (*.json)"
+        )[0]
         if filename:
             self.filename = Path(filename)
-            text = filename.split(f'{DATA_DIR}/')[-1]
+            text = filename.split(f"{DATA_DIR}/")[-1]
             self.edit.set_text(text)
             self._save_file()
             return True
@@ -178,7 +199,7 @@ class FileLoadSave(QWidget):
     def _save_file(self) -> None:
         self.save_button.setDisabled(True)
         self.save_button.repaint()
-        with self.filename.open('w') as f:
+        with self.filename.open("w") as f:
             json.dump(self.data, f, indent=2)
 
     def _load_file(self) -> None:
@@ -219,9 +240,10 @@ class FileLoadSave(QWidget):
 
 class GetComponentDialog(QDialog):
     """Choose a component."""
+
     components = []
 
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setMinimumSize(400, 600)
         self._cache_component_list()
@@ -232,12 +254,13 @@ class GetComponentDialog(QDialog):
         self.components_list.addItems(self.components)
         self.components_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
-                                   Qt.Horizontal, self)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel, Qt.Horizontal, self
+        )
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
-        layout.addWidget(QLabel('Add Components: '))
+        layout.addWidget(QLabel("Add Components: "))
         layout.addWidget(self.components_list)
         layout.addWidget(buttons)
         self.setLayout(layout)
@@ -246,7 +269,7 @@ class GetComponentDialog(QDialog):
     def _cache_component_list(cls) -> None:
         if not cls.components:
             components = []
-            for filename in COMPONENT_DIR.glob('*.py'):
+            for filename in COMPONENT_DIR.glob("*.py"):
                 component_family = filename.stem
                 with filename.open() as f:
                     for line in f.readlines():
@@ -254,7 +277,7 @@ class GetComponentDialog(QDialog):
                         if found:
                             name = found.group(0)
                             if not any([name.startswith(p) for p in IGNORE_COMPONENT_PREFIXES]):
-                                components.append(f'{component_family}.{name}')
+                                components.append(f"{component_family}.{name}")
             cls.components = sorted(components)
 
     def get(self) -> List[str]:
@@ -269,11 +292,12 @@ class GetComponentDialog(QDialog):
 
 class ComponentList(QWidget):
     """Component list widget."""
+
     selection_changed = Signal(str)
     component_removed = Signal(str)
     components_added = Signal(list)
 
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout()
         layout.setSpacing(0)
@@ -282,11 +306,11 @@ class ComponentList(QWidget):
         header_layout.setSpacing(0)
         header_layout.setMargin(0)
 
-        self.add_button = ToolPushButton('+')
-        self.remove_button = ToolPushButton('-')
+        self.add_button = ToolPushButton("+")
+        self.remove_button = ToolPushButton("-")
         self.component_list = QListWidget(self)
 
-        header_layout.addWidget(QLabel('Components'))
+        header_layout.addWidget(QLabel("Components"))
         header_layout.addStretch()
         header_layout.addWidget(self.add_button)
         header_layout.addWidget(self.remove_button)
@@ -333,7 +357,7 @@ class ComponentPane(QWidget):
 
     data_changed = Signal(dict)
 
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.data = {}
         self.selected = None
@@ -345,7 +369,7 @@ class ComponentPane(QWidget):
         details_layout.setMargin(0)
 
         self.component_list = ComponentList(self)
-        details_label = QLabel('Component Details')
+        details_label = QLabel("Component Details")
         details_label.setMinimumHeight(23)
         details_layout.addWidget(details_label)
         self.params_widget = QScrollArea()
@@ -377,31 +401,31 @@ class ComponentPane(QWidget):
         try:
             params = self.params_widget.widget().get_parameters()
         except AttributeError:
-            print(f'SOMETHING WEIRD - no widget?: {self.selected}')
+            print(f"SOMETHING WEIRD - no widget?: {self.selected}")
             params = {}
         if self.selected:
             self.data[self.selected] = params
-            self.data_changed.emit({'Components': self.data})
+            self.data_changed.emit({"Components": self.data})
 
     def _on_component_removed(self, component_name: str) -> None:
         try:
             del self.data[component_name]
-            self.data_changed.emit({'Components': self.data})
+            self.data_changed.emit({"Components": self.data})
         except KeyError:
-            msg_error(f'Attempt to delete a component that does not exist: {component_name}', self)
+            msg_error(f"Attempt to delete a component that does not exist: {component_name}", self)
         if self.component_list.component_list.count() == 0:
             self.hide_data()
 
     def _on_components_added(self, component_names: Sequence[str]) -> None:
         for component_name in component_names:
             self.data.setdefault(component_name, {})
-        self.data_changed.emit({'Components': self.data})
+        self.data_changed.emit({"Components": self.data})
         self.component_list.update_items(sorted(self.data.keys()))
         self.update()
 
     def update_data(self, data: Mapping) -> None:
         """Update the data in this widget."""
-        self.data = data['Components']
+        self.data = data["Components"]
         self.component_list.update_items(sorted(self.data.keys()))
         self.sizeHint()
         self.update()
@@ -415,10 +439,10 @@ class ComponentPane(QWidget):
 class AssemblageEditor(QWidget):
     """Assemblage editor parent widget."""
 
-    def __init__(self, parent: Optional[QWidget]=None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.assemblage_data: dict = {}
-        self.setWindowTitle('Assemblage Editor')
+        self.setWindowTitle("Assemblage Editor")
         self.setMinimumSize(800, 600)
 
         layout = QVBoxLayout()
@@ -435,7 +459,7 @@ class AssemblageEditor(QWidget):
 
         self.render_widget = RenderWidget()
         self.file_widget = FileLoadSave()
-        self.assemblage_name = ToolMutableComboBox('Assemblage Name:', sort=True)
+        self.assemblage_name = ToolMutableComboBox("Assemblage Name:", sort=True)
         self.component_widget = ComponentPane()
 
         header_right_layout.addWidget(self.file_widget)
@@ -462,7 +486,7 @@ class AssemblageEditor(QWidget):
 
     def _on_assemblage_name_changed(self) -> None:
         name = self.assemblage_name.text()
-        self.assemblage_data.setdefault(name, {'Components': {}})
+        self.assemblage_data.setdefault(name, {"Components": {}})
         self.component_widget.update_data(self.assemblage_data[name])
         self._update_render_widget(self.assemblage_data[name])
         self.component_widget.hide_data()
@@ -481,10 +505,10 @@ class AssemblageEditor(QWidget):
 
     def _update_render_widget(self, data: Mapping) -> None:
         self.render_widget.clear_sprite()
-        components = data.get('Components', {})
-        renderable = components.get('render.Renderable', None)
+        components = data.get("Components", {})
+        renderable = components.get("render.Renderable", None)
         if renderable:
-            self.render_widget.update_tile(renderable['tile_id'], renderable['tint'])
+            self.render_widget.update_tile(renderable["tile_id"], renderable["tint"])
 
 
 def main() -> int:
@@ -495,5 +519,5 @@ def main() -> int:
     return app.exec_()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
