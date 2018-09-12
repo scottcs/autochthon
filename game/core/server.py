@@ -8,7 +8,8 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-from game.events import InputEvent, UpdateMapRenderEvent, RefreshMapEvent, GameLogEvent
+from game.events import (InputEvent, UpdateMapRenderEvent, RefreshMapEvent, GameLogEvent,
+                         ChooseFromListEvent, ChoiceFromListEvent)
 from game.core.main import Game
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
@@ -63,6 +64,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
             self.socket_events = json.load(f)
         if len(self.connections) == 0:
             # TODO: need some way to determine which connection is the player, even after refresh
+            ChooseFromListEvent.handle(self._on_choose_from_list)
             GameLogEvent.handle(self._on_game_log)
             UpdateMapRenderEvent.handle(self._on_update_map_render)
         self.game_callback: GameCallback = GameCallback(config=config)
@@ -89,6 +91,13 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         log_string = json.dumps(event)
         ba = bytearray()
         ba.append(self.socket_events["FromServer"]["GameLog"])
+        ba.extend(log_string.encode("utf-8"))
+        self.write_all(ba)
+
+    def _on_choose_from_list(self, event: EventType) -> None:
+        log_string = json.dumps(event)
+        ba = bytearray()
+        ba.append(self.socket_events["FromServer"]["ChooseFromList"])
         ba.extend(log_string.encode("utf-8"))
         self.write_all(ba)
 
@@ -128,6 +137,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         self.connections.remove(self)
         UpdateMapRenderEvent.unhandle(self._on_update_map_render)
         GameLogEvent.unhandle(self._on_game_log)
+        ChooseFromListEvent.unhandle(self._on_choose_from_list)
 
     def get_compression_options(self) -> Optional[dict]:
         """Override default class to turn on compression.

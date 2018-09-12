@@ -138,6 +138,9 @@
                 case socket_events.FromServer.UpdateMap:
                     handleUpdateMap(actualData);
                     break;
+                case socket_events.FromServer.ChooseFromList:
+                    handleChooseFromList(actualData);
+                    break;
                 default:
                     console.error('Got unknown event from server.', headerByte);
             }
@@ -192,6 +195,31 @@
                     updateSprite(cell);
                 }
             }
+        }
+
+        function handleChooseFromList(data) {
+            const string = new TextDecoder().decode(data);
+            const parsed = JSON.parse(string);
+            const logDiv = document.getElementById('gameLog');
+            const choices = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let index = 0;
+            // TODO: show prompt
+            // TODO: bring up a modal and override input handler, then send response to server
+            parsed.forEach(function(line) {
+                const choiceSpan = document.createElement('span');
+                choiceSpan.classList.add('logline');
+                choiceSpan.textContent = choices[index] + ": ";
+                logDiv.appendChild(choiceSpan);
+                const newSpan = document.createElement('span');
+                color = '#' + line[1].toString(16).padStart(6, '0');
+                newSpan.classList.add('logline');
+                newSpan.setAttribute('style', 'color: ' + color + ';');
+                newSpan.textContent = line[0];
+                logDiv.appendChild(newSpan);
+                logDiv.appendChild(document.createElement('br'));
+                index++;
+            });
+            logDiv.scrollTop = logDiv.scrollHeight;
         }
 
         function setAllSpritesInvisible() {

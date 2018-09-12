@@ -11,10 +11,10 @@ from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
 from game.component.player import GUTPlayerBump, PlayerControlled
-from game.events import InputEvent, RefreshMapEvent
+from game.events import InputEvent, RefreshMapEvent, ChooseFromListEvent
 from game.types import EventType, GameState, EquipType
 from game.utils.geometry import Point
-from gamedata.palette import ItemPalette
+from gamedata.palette import ItemPalette, MessagePalette
 
 KEYS_JSON = Path("data") / Path("keys.json")
 log = logging.getLogger(__name__)
@@ -110,9 +110,22 @@ class PlayerInputProcessor(esper.Processor):
             self._command_pickup()
             handled = True
         elif key == "d":
-            # TODO: drop item
-            # TODO: show menu of items in inventory
+            # TODO: send message to client with item list and wait for response of choice (or none)
+            # TODO: drop item if chosen
             log.error("IMPLEMENT DROP")
+            for ent, _ in self.world.get_component(PlayerControlled):
+                items_carried = []
+                for item_ent, components in self.world.get_components(GUTContained, Name):
+                    contained, name = components
+                    if contained.ent == ent:
+                        # TODO: item rarity
+                        items_carried.append((name.generic, ItemPalette.rare))
+                if items_carried:
+                    # TODO: send prompt
+                    ChooseFromListEvent.fire(items_carried)
+                else:
+                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                    cmd_log.add("You have nothing to drop!")
         return handled
 
     def _command_pickup(self) -> None:

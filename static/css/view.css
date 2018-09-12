@@ -25,6 +25,7 @@ div#gameLog {
 }
 
 .logline {
+    color: #aaa;
     font-family: monospace;
 }
 

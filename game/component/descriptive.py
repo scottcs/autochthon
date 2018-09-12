@@ -55,3 +55,25 @@ class Name:
                 name += ":"
             name = f'{name} {", ".join(self.titles)}'
         return name
+
+
+# Ideas for making fatter components:
+# Name is not a component, but a type similar to the above class.
+# Same with Description.
+# Any stats relevant to the Item (or Species) should be stored on the component.
+# TODO: look for code that always lumps the same components together and consider making them fat
+#
+# class Item:
+#     """An item."""
+#
+#     def __init__(self, name: Name, description: Description, weight: int=0, rarity:
+#     Rarity=Rarity.common) -> None:
+#         pass
+#
+# class Species:
+#     """A species."""
+#
+#     def __init__(
+#         self, name: Name, description: Description, rarity: Rarity=Rarity.common
+#     ) -> None:
+#         pass

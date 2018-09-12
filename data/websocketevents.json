@@ -1,10 +1,12 @@
 {
   "ToServer": {
     "RefreshGraphics": 0,
-    "GameInput": 1
+    "GameInput": 1,
+    "ChoiceFromList": 2
   },
   "FromServer": {
     "GameLog": 0,
-    "UpdateMap": 1
+    "UpdateMap": 1,
+    "ChooseFromList": 2
   }
 }

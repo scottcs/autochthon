@@ -49,6 +49,8 @@ class Event:
     __len__ = num_handlers
 
 
+ChoiceFromListEvent = Event("ChoiceFromListEvent")
+ChooseFromListEvent = Event("ChooseFromListEvent")
 GameLogEvent: Event = Event("GameLogEvent")
 GameOverEvent: Event = Event("GameOverEvent")
 InputEvent: Event = Event("InputEvent")
