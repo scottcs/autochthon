@@ -1,4 +1,5 @@
 """Container components."""
+from __future__ import annotations
 from typing import Any
 
 from game.types import Entity, EquipType
@@ -7,18 +8,22 @@ from game.types import Entity, EquipType
 class Container:
     """This entity can contain Containable entities."""
 
+    # To facilitate iterating over all container components on an entity
+    container_types: set = set()
+
     def __init__(
         self, name: str, max_slots: int = 0, equip_type: EquipType = EquipType.any
     ) -> None:
         self.name: str = name
         self.max_slots: int = max_slots
         self.equip_type: EquipType = equip_type
+        self.container_types.add(self.__class__)
 
 
 class Containable:
     """This entity can be contained by a Container entity."""
 
-    def __init__(self, equip_type: EquipType = EquipType.none, stackable: bool = False):
+    def __init__(self, equip_type: EquipType = EquipType.none, stackable: bool = False) -> None:
         self.equip_type: EquipType = equip_type
         self.stackable: bool = stackable
         self.count: int = 1
