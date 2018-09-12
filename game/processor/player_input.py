@@ -141,15 +141,14 @@ class PlayerInputProcessor(esper.Processor):
                                 )
                                 name = self.world.component_for_entity(item_ent, Name)
                                 # TODO: colorize the item by rarity?
-                                # TODO: be able to colorize part of a log line
                                 cmd_log.add(f"You pick up ")
-                                cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
-                                cmd_log.add(".")
+                                cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
+                                cmd_log.append(".")
                                 RefreshMapEvent.fire()
                                 break
                     else:
-                        cmd_log.add(f"Your {container.name} is full.")
+                        cmd_log.add(f"{container.name} is full.")
                 else:
-                    cmd_log.add(f"Your {container.name} can't hold that.")
+                    cmd_log.add(f"{container.name} can't hold that.")
             else:
                 cmd_log.add(f"There is nothing to pick up!")

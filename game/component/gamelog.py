@@ -9,26 +9,33 @@ class BaseLog:
     """Component for the game log."""
 
     def __init__(
-        self, initial_line: Optional[str] = None, initial_color: Optional[int] = None
+        self, initial_line: Optional[str] = None, initial_color: int = MessagePalette.default
     ) -> None:
         self.lines: list = []
         if initial_line is not None:
             self.add(initial_line, color=initial_color)
 
-    def add(self, message: str, color: Optional[int] = None) -> None:
+    def add(self, message: str, color: int = MessagePalette.default) -> None:
         """Add a new line to the log."""
-        if color is None:
-            color = MessagePalette.default
-        capitalized = f"{message[0].upper()}{message[1:]}"
-        self.lines.append(LogLine(capitalized, color))
+        # capitalize
+        message = f"{message[0].upper()}{message[1:]}"
 
-    def append_last(self, message: str) -> None:
-        """Append to the last log line."""
+        # if this isn't the first line, add a space before it
         try:
             last = self.lines.pop()
-            self.add(last.message + message, last.color)
         except IndexError:
-            self.add(message)
+            last = None
+        if last:
+            if last.color == color:
+                message = f"{last.message} {message}"
+            else:
+                self.lines.append(last)
+                message = " " + message
+        self.append(message, color)
+
+    def append(self, message: str, color: int = MessagePalette.default) -> None:
+        """Append to the log without a space."""
+        self.lines.append(LogLine(message, color))
 
 
 class GUTCombatLog(BaseLog):

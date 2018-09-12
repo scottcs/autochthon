@@ -4,6 +4,7 @@ import inspect
 from typing import Dict, Callable, Any, NamedTuple, Union, Optional
 
 from game.utils.random import parse, RNGCache
+from gamedata.palette import MessagePalette
 
 EventType = Dict
 EventHandler = Callable[[EventType], Any]
@@ -139,7 +140,7 @@ class LogLine(NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: int = 0xffffff
+    color: int = MessagePalette.default
 
 
 class ComponentSchema(NamedTuple):

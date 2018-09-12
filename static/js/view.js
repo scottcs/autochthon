@@ -154,7 +154,6 @@
                 newSpan.setAttribute('style', 'color: ' + color + ';');
                 newSpan.textContent = line[0];
                 logDiv.appendChild(newSpan);
-                logDiv.innerHTML += ' ';
             });
             logDiv.appendChild(document.createElement('br'));
             logDiv.scrollTop = logDiv.scrollHeight;
