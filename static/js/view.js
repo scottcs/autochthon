@@ -200,11 +200,9 @@
         function handleChooseFromList(data) {
             const string = new TextDecoder().decode(data);
             const parsed = JSON.parse(string);
-            const logDiv = document.getElementById('gameLog');
             let index = 0;
-            // TODO: show prompt
             const div = document.createElement('div');
-            parsed.forEach(function(line) {
+            parsed.items.forEach(function(line) {
                 const choiceSpan = document.createElement('span');
                 choiceSpan.classList.add('choice');
                 choiceSpan.textContent = line[0] + ": ";
@@ -233,10 +231,12 @@
             };
 
             const openModal = function() {
-                const modal_content = document.getElementById('gameModalContent');
+                const modal_header = document.getElementById('gameModalHeader');
+                const modal_inner_content = document.getElementById('gameModalInnerContent');
                 modal.style.display = "block";
-                modal_content.innerHTML = html;
-                modal_content.scrollTop = modal_content.scrollHeight;
+                modal_header.innerText = parsed.prompt;
+                modal_inner_content.innerHTML = html;
+                modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
                 window.addEventListener('click', onModalClick);
                 document.removeEventListener("keypress", defaultKeyHandler);
                 document.addEventListener("keypress", onKeyPress);
@@ -258,8 +258,8 @@
                         if (!event.shiftKey) {
                             code = code.toLowerCase();
                         }
-                        for (let i = 0; i < parsed.length; i++) {
-                            const line = parsed[i];
+                        for (let i = 0; i < parsed.items.length; i++) {
+                            const line = parsed.items[i];
                             if (line[0] === code) {
                                 sendChoiceToServer(event);
                                 closeModal()
@@ -488,11 +488,13 @@
             };
 
             const openModal = function() {
-                const modal_game_log = document.getElementById('gameModalContent');
+                const modal_header = document.getElementById('gameModalHeader');
+                const modal_inner_content = document.getElementById('gameModalInnerContent');
                 const game_log = document.getElementById('gameLog');
                 modal.style.display = "block";
-                modal_game_log.innerHTML = game_log.innerHTML;
-                modal_game_log.scrollTop = modal_game_log.scrollHeight;
+                modal_header.innerText = 'Game Log:';
+                modal_inner_content.innerHTML = game_log.innerHTML;
+                modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
                 window.addEventListener('click', onModalClick);
                 document.removeEventListener("keypress", defaultKeyHandler);
                 document.addEventListener("keypress", onKeyPress);

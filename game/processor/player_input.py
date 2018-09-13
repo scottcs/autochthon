@@ -132,9 +132,10 @@ class PlayerInputProcessor(esper.Processor):
                 if contained.by_ent == ent:
                     items_carried.append((contained.label, name.generic, ItemPalette.rare))
             if items_carried:
-                # TODO: send prompt
                 ChoiceFromListEvent.handle(self._on_drop_choice)
-                ChooseFromListEvent.fire(sorted(items_carried))
+                ChooseFromListEvent.fire({'prompt': 'Drop what?',
+                                          'items': sorted(items_carried),
+                                          'multiple': True})
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You have nothing to drop!")
