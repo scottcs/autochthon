@@ -6,13 +6,13 @@ from typing import Any, Mapping
 
 import esper
 
-from game.component.container import Containable, Container, GUTContained, GUTContainerInsert
+from game.component.container import Containable, GUTContained, GUTContainerTransfer
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
 from game.component.player import GUTPlayerBump, PlayerControlled
-from game.events import InputEvent, RefreshMapEvent, ChooseFromListEvent, ChoiceFromListEvent
-from game.types import EventType, GameState, EquipType
+from game.events import InputEvent, ChooseFromListEvent, ChoiceFromListEvent
+from game.types import EventType, GameState
 from game.utils.geometry import Point
 from gamedata.palette import ItemPalette
 
@@ -120,21 +120,16 @@ class PlayerInputProcessor(esper.Processor):
             cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
             item_ent = self.world.get_entity_at_position(at.x, at.y, Position, Containable)
             if item_ent:
-                self.world.add_component(item_ent, GUTContainerInsert(ent))
+                self.world.add_component(item_ent, GUTContainerTransfer(ent))
             else:
                 cmd_log.add(f"There is nothing to pick up!")
 
     def _command_drop(self) -> None:
-        # TODO: send message to client with item list and wait for response of choice (or none)
-        # TODO: drop item if chosen
-        log.error("IMPLEMENT DROP")
         for ent, _ in self.world.get_component(PlayerControlled):
-            # TODO: assign letter choice to contained component
             items_carried = []
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
                 if contained.by_ent == ent:
-                    # TODO: item rarity
                     items_carried.append((contained.label, name.generic, ItemPalette.rare))
             if items_carried:
                 # TODO: send prompt
@@ -154,9 +149,5 @@ class PlayerInputProcessor(esper.Processor):
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
                 if contained.by_ent == ent and contained.label == key:
-                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-                    # TODO: colorize the item by rarity?
-                    cmd_log.add(f"You drop ")
-                    cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
-                    cmd_log.append(".")
+                    self.world.add_component(item_ent, GUTContainerTransfer())
                     break
