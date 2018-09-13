@@ -36,7 +36,8 @@
       "status.Solid": {},
       "container.Container": {
         "name": "your backpack",
-        "max_slots": 52,
+        "insert_msg": "you pick up",
+        "max_slots": 2,
         "equip_type": "EquipType.any"
       },
       "container.EquipmentSlotTorso": {},

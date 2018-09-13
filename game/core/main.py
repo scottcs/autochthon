@@ -26,6 +26,7 @@ from game.processor.attack import (
     AttackDefenseProcessor,
 )
 from game.processor.attribute import HPProcessor
+from game.processor.container import ContainerProcessor
 from game.processor.damage import DamageBludgeoningMitigationProcessor, DamageBludgeoningProcessor
 from game.processor.gamelog import GameLogProcessor
 from game.processor.movement import MovementProcessor
@@ -111,7 +112,9 @@ class Game:
             PlayerBumpProcessor(), priority=Priority.player_bump, group=ProcessGroup.player
         )
         self.world.add_processor(TimeProcessor(), priority=Priority.time, group=ProcessGroup.time)
+        self.world.add_processor(ContainerProcessor(), priority=Priority.container)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
+        self.world.add_processor(MovementProcessor(), priority=Priority.movement)
         self.world.add_processor(AttackTargetingProcessor(), priority=Priority.targeting)
         self.world.add_processor(AttackMissProcessor(), priority=Priority.attack_miss)
         self.world.add_processor(dodge_processor, priority=Priority.attack_dodge)
@@ -120,7 +123,6 @@ class Game:
         self.world.add_processor(AttackHitProcessor(), priority=Priority.attack_hit)
         self.world.add_processor(DamageBludgeoningMitigationProcessor(), priority=Priority.defense)
         self.world.add_processor(DamageBludgeoningProcessor(), priority=Priority.damage_resolution)
-        self.world.add_processor(MovementProcessor(), priority=Priority.movement)
         self.world.add_processor(HPProcessor(), priority=Priority.attributes)
         self.world.add_processor(GameLogProcessor(), priority=Priority.gamelog)
         self.world.add_processor(

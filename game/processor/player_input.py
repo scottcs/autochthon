@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 import esper
 
-from game.component.container import Containable, Container, GUTContained
+from game.component.container import Containable, Container, GUTContained, GUTContainerInsert
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
@@ -14,7 +14,7 @@ from game.component.player import GUTPlayerBump, PlayerControlled
 from game.events import InputEvent, RefreshMapEvent, ChooseFromListEvent, ChoiceFromListEvent
 from game.types import EventType, GameState, EquipType
 from game.utils.geometry import Point
-from gamedata.palette import ItemPalette, MessagePalette
+from gamedata.palette import ItemPalette
 
 KEYS_JSON = Path("data") / Path("keys.json")
 log = logging.getLogger(__name__)
@@ -120,35 +120,7 @@ class PlayerInputProcessor(esper.Processor):
             cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
             item_ent = self.world.get_entity_at_position(at.x, at.y, Position, Containable)
             if item_ent:
-                container = self.world.component_for_entity(ent, Container)
-                item = self.world.component_for_entity(item_ent, Containable)
-                if container.equip_type != EquipType.none and (
-                        container.equip_type == EquipType.any
-                        or container.equip_type == item.equip_type
-                        or item.equip_type == EquipType.any
-                ):
-                    seen_slots = set()
-                    for ie, contained in self.world.get_component(GUTContained):
-                        if contained.ent == ent and contained.component_class == Container:
-                            seen_slots.add(contained.slot)
-                    if len(seen_slots) < container.max_slots:
-                        for slot in range(container.max_slots):
-                            if slot not in seen_slots:
-                                self.world.remove_component(item_ent, Position)
-                                self.world.add_component(
-                                    item_ent, GUTContained(ent, Container, slot)
-                                )
-                                name = self.world.component_for_entity(item_ent, Name)
-                                # TODO: colorize the item by rarity?
-                                cmd_log.add(f"You pick up ")
-                                cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
-                                cmd_log.append(".")
-                                RefreshMapEvent.fire()
-                                break
-                    else:
-                        cmd_log.add(f"{container.name} is full.")
-                else:
-                    cmd_log.add(f"{container.name} can't hold that.")
+                self.world.add_component(item_ent, GUTContainerInsert(ent))
             else:
                 cmd_log.add(f"There is nothing to pick up!")
 
@@ -163,7 +135,7 @@ class PlayerInputProcessor(esper.Processor):
             idx = 0
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
-                if contained.ent == ent:
+                if contained.by_ent == ent:
                     # TODO: item rarity
                     items_carried.append((name.generic, ItemPalette.rare, choices[idx]))
                     idx += 1
@@ -186,7 +158,7 @@ class PlayerInputProcessor(esper.Processor):
             idx = 0
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
-                if contained.ent == ent:
+                if contained.by_ent == ent:
                     if choices[idx] == key:
                         cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                         # TODO: colorize the item by rarity?
