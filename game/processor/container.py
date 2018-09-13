@@ -35,13 +35,12 @@ class ContainerProcessor(esper.Processor):
             self.world.remove_component(containable_ent, GUTContainerInsert)
             cmd_log = self.world.get_or_add_component(containable_ent, GUTCommandLog)
             contained = self.world.optional_component_for_entity(containable_ent, GUTContained)
+            container = self.world.component_for_entity(insert.container_ent, Container)
             if contained:
-                container_name = self.world.component_for_entity(contained.ent, Name)
                 insert_name = self.world.component_for_entity(insert.container_ent, Name)
                 cmd_log.add(f"{name} cannot be put into {insert_name}; it is already in "
-                            f"{container_name}!", MessagePalette.warning)
+                            f"{container.name}!", MessagePalette.warning)
             else:
-                container = self.world.component_for_entity(insert.container_ent, Container)
                 if container.equip_type != EquipType.none and (
                         container.equip_type == EquipType.any
                         or container.equip_type == containable.equip_type
@@ -62,7 +61,7 @@ class ContainerProcessor(esper.Processor):
                                     # TODO: colorize the item by rarity?
                                     cmd_log.add(f"{container.insert_msg} ")
                                     cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
-                                    cmd_log.append(".")
+                                    cmd_log.append(f" in {container.name}.")
                                     RefreshMapEvent.fire()
                                 break
                     else:

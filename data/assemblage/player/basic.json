@@ -37,6 +37,7 @@
       "container.Container": {
         "name": "your backpack",
         "insert_msg": "you pick up",
+        "remove_msg": "you drop",
         "max_slots": 2,
         "equip_type": "EquipType.any"
       },

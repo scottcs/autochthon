@@ -12,10 +12,12 @@ class Container:
     container_types: set = set()
 
     def __init__(
-        self, name: str, insert_msg: str, max_slots: int = 0, equip_type: EquipType = EquipType.any
+        self, name: str, insert_msg: str, remove_msg: str, max_slots: int = 0,
+            equip_type: EquipType = EquipType.any
     ) -> None:
         self.name: str = name
         self.insert_msg: str = insert_msg
+        self.remove_msg: str = remove_msg
         self.max_slots: int = max_slots
         self.equip_type: EquipType = equip_type
         self.container_types.add(self.__class__)
@@ -69,25 +71,25 @@ class EquipmentSlotHead(Container):
     """Equipment slot intended for the head."""
 
     def __init__(self, max_slots: int = 1, equip_type: EquipType = EquipType.head) -> None:
-        super().__init__("head", "you put on", max_slots, equip_type)
+        super().__init__("your head", "you put on", "you take off", max_slots, equip_type)
 
 
 class EquipmentSlotTorso(Container):
     """Equipment slot intended for the torso."""
 
     def __init__(self, max_slots: int = 1, equip_type: EquipType = EquipType.torso) -> None:
-        super().__init__("torso", "you put on", max_slots, equip_type)
+        super().__init__("your torso", "you put on", "you take off", max_slots, equip_type)
 
 
 class EquipmentSlotHand(Container):
     """Equipment slot intended for the hand."""
 
     def __init__(self, max_slots: int = 2, equip_type: EquipType = EquipType.hand) -> None:
-        super().__init__("hand", "you put on", max_slots, equip_type)
+        super().__init__("your hands", "you put on", "you take off", max_slots, equip_type)
 
 
 class EquipmentSlotMainHand(Container):
     """Equipment slot intended for the main_hand."""
 
     def __init__(self, max_slots: int = 1, equip_type: EquipType = EquipType.main_hand) -> None:
-        super().__init__("main-hand", "you wield", max_slots, equip_type)
+        super().__init__("your main-hand", "you wield", "you stow", max_slots, equip_type)

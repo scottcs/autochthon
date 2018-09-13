@@ -203,18 +203,17 @@
             const logDiv = document.getElementById('gameLog');
             let index = 0;
             // TODO: show prompt
-            // TODO: bring up a modal and override input handler, then send response to server
             const div = document.createElement('div');
             parsed.forEach(function(line) {
                 const choiceSpan = document.createElement('span');
                 choiceSpan.classList.add('choice');
-                choiceSpan.textContent = line[2] + ": ";
+                choiceSpan.textContent = line[0] + ": ";
                 div.appendChild(choiceSpan);
                 const newSpan = document.createElement('span');
-                color = '#' + line[1].toString(16).padStart(6, '0');
+                color = '#' + line[2].toString(16).padStart(6, '0');
                 newSpan.classList.add('choice');
                 newSpan.setAttribute('style', 'color: ' + color + ';');
-                newSpan.textContent = line[0];
+                newSpan.textContent = line[1];
                 div.appendChild(newSpan);
                 div.appendChild(document.createElement('br'));
                 index++;
@@ -261,8 +260,7 @@
                         }
                         for (let i = 0; i < parsed.length; i++) {
                             const line = parsed[i];
-                            if (line[2] === code) {
-                                // TODO: send index to server instead of writing to log here
+                            if (line[0] === code) {
                                 sendChoiceToServer(event);
                                 closeModal()
                                 break;

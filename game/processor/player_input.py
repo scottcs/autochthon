@@ -130,19 +130,16 @@ class PlayerInputProcessor(esper.Processor):
         log.error("IMPLEMENT DROP")
         for ent, _ in self.world.get_component(PlayerControlled):
             # TODO: assign letter choice to contained component
-            choices = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
             items_carried = []
-            idx = 0
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
                 if contained.by_ent == ent:
                     # TODO: item rarity
-                    items_carried.append((name.generic, ItemPalette.rare, choices[idx]))
-                    idx += 1
+                    items_carried.append((contained.label, name.generic, ItemPalette.rare))
             if items_carried:
                 # TODO: send prompt
                 ChoiceFromListEvent.handle(self._on_drop_choice)
-                ChooseFromListEvent.fire(items_carried)
+                ChooseFromListEvent.fire(sorted(items_carried))
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You have nothing to drop!")
@@ -150,20 +147,16 @@ class PlayerInputProcessor(esper.Processor):
     def _on_drop_choice(self, event: EventType) -> None:
         modifiers: dict = self._unpack_modifiers(event["modifiers"])
         key: str = self._get_key(event["code"])
-        choices = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
         ChoiceFromListEvent.unhandle(self._on_drop_choice)
         if modifiers['shift']:
             key = key.upper()
         for ent, _ in self.world.get_component(PlayerControlled):
-            idx = 0
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
-                if contained.by_ent == ent:
-                    if choices[idx] == key:
-                        cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-                        # TODO: colorize the item by rarity?
-                        cmd_log.add(f"You drop ")
-                        cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
-                        cmd_log.append(".")
-                        break
-                    idx += 1
+                if contained.by_ent == ent and contained.label == key:
+                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                    # TODO: colorize the item by rarity?
+                    cmd_log.add(f"You drop ")
+                    cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
+                    cmd_log.append(".")
+                    break
