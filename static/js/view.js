@@ -508,7 +508,7 @@
 
             const onKeyPress = function(event) {
                 keyHandler(event, function (event) {
-                    if (event.code === 'Escape') {
+                    if ((event.code === 'Escape') || (event.ctrlKey && event.code === 'KeyP')) {
                         closeModal();
                     }
                 })
