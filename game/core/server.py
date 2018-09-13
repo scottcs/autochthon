@@ -109,8 +109,8 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def on_message(self, message: Union[str, bytes]) -> None:
         """Called when a message is received over the connection."""
         if isinstance(message, bytes):
-            # ---- refresh event
             if message[0] == self.socket_events["ToServer"]["RefreshGraphics"]:
+                # ---- refresh event
                 RefreshMapEvent.fire()
             elif message[0] == self.socket_events["ToServer"]["GameInput"]:
                 # ---- input event
@@ -129,6 +129,14 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
                         "state": self.game_callback.get_game_state(),
                     }
                 )
+            elif message[0] == self.socket_events["ToServer"]["ChoiceFromList"]:
+                # ---- choice from list event
+                # byte 1: modifiers
+                # byte 2: key/button code
+                ChoiceFromListEvent.fire({
+                    "modifiers": message[1],
+                    "code": message[2],
+                })
             else:
                 log.error(f"Unprocessed message type: {message[0]}")
 

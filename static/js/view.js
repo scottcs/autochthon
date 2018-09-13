@@ -256,14 +256,14 @@
                     } else {
                         const modifiers = getKeyModifiers(event);
                         let code = getKeyLetter(event);
-                        if (!modifiers.shift) {
+                        if (!event.shiftKey) {
                             code = code.toLowerCase();
                         }
                         for (let i = 0; i < parsed.length; i++) {
                             const line = parsed[i];
                             if (line[2] === code) {
                                 // TODO: send index to server instead of writing to log here
-                                writeToLog('Drop ' + line[0]);
+                                sendChoiceToServer(event);
                                 closeModal()
                                 break;
                             }
@@ -410,7 +410,7 @@
         function defaultKeyHandler(event) {
             keyHandler(event, function(event) {
                 if (!keyHandled(event)) {
-                    sendInputToServer(event)
+                    sendInputToServer(event);
                 }
             })
         }
@@ -459,6 +459,21 @@
             view.setUint8(3, code);
             view.setUint16(4, 0);
             view.setUint16(6, 0);
+            const data = new Uint8Array(buffer);
+            ws.send(data);
+        }
+
+        function sendChoiceToServer(event) {
+            const modifiers = getKeyModifiers(event);
+            const code = getKeyCodeForServer(event);
+            let buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+            // byte 0: socket event type
+            // byte 1: modifier keys
+            // byte 2: key/button code
+            view.setUint8(0, socket_events.ToServer.ChoiceFromList);
+            view.setUint8(1, modifiers);
+            view.setUint8(2, code);
             const data = new Uint8Array(buffer);
             ws.send(data);
         }

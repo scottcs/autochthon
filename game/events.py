@@ -1,6 +1,6 @@
 """Game Events."""
 from __future__ import annotations
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from game.types import EventHandler, EventType
 
@@ -19,6 +19,7 @@ class Event:
     def __init__(self, name: str) -> None:
         self.name = name
         self.handlers: Dict[EventHandler, bool] = dict()
+        self._to_unhandle: List[EventHandler] = []
 
     def handle(self, handler: EventHandler) -> Event:
         """Register a handler."""
@@ -27,16 +28,22 @@ class Event:
 
     def unhandle(self, handler: EventHandler) -> Event:
         """Unregister a handler."""
-        try:
-            del self.handlers[handler]
-        except KeyError:
-            raise ValueError("Handler is not handling this event, so cannot unhandle it.")
+        self._to_unhandle.append(handler)
         return self
+
+    def _remove_handlers(self) -> None:
+        while self._to_unhandle:
+            handler = self._to_unhandle.pop()
+            try:
+                del self.handlers[handler]
+            except KeyError:
+                raise ValueError("Handler is not handling this event, so cannot unhandle it.")
 
     def fire(self, event: Optional[EventType] = None) -> None:
         """Fire the event."""
         for handler in self.handlers.keys():
             handler(event or {})
+        self._remove_handlers()
 
     def num_handlers(self) -> int:
         """Get the number of handlers."""
