@@ -201,24 +201,91 @@
             const string = new TextDecoder().decode(data);
             const parsed = JSON.parse(string);
             const logDiv = document.getElementById('gameLog');
-            const choices = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let index = 0;
             // TODO: show prompt
             // TODO: bring up a modal and override input handler, then send response to server
+            const div = document.createElement('div');
             parsed.forEach(function(line) {
                 const choiceSpan = document.createElement('span');
-                choiceSpan.classList.add('logline');
-                choiceSpan.textContent = choices[index] + ": ";
-                logDiv.appendChild(choiceSpan);
+                choiceSpan.classList.add('choice');
+                choiceSpan.textContent = line[2] + ": ";
+                div.appendChild(choiceSpan);
                 const newSpan = document.createElement('span');
                 color = '#' + line[1].toString(16).padStart(6, '0');
-                newSpan.classList.add('logline');
+                newSpan.classList.add('choice');
                 newSpan.setAttribute('style', 'color: ' + color + ';');
                 newSpan.textContent = line[0];
-                logDiv.appendChild(newSpan);
-                logDiv.appendChild(document.createElement('br'));
+                div.appendChild(newSpan);
+                div.appendChild(document.createElement('br'));
                 index++;
             });
+            getChoiceFromListModal(div.innerHTML, parsed);
+        }
+
+        function getChoiceFromListModal(html, parsed) {
+            const modal = document.getElementById('gameModal');
+
+            // When the user clicks anywhere outside of the modal, close it
+            const closeModal = function() {
+                modal.style.display = "none";
+                window.removeEventListener('click', onModalClick)
+                document.removeEventListener("keypress", onKeyPress);
+                document.addEventListener("keypress", defaultKeyHandler);
+            };
+
+            const openModal = function() {
+                const modal_content = document.getElementById('gameModalContent');
+                modal.style.display = "block";
+                modal_content.innerHTML = html;
+                modal_content.scrollTop = modal_content.scrollHeight;
+                window.addEventListener('click', onModalClick);
+                document.removeEventListener("keypress", defaultKeyHandler);
+                document.addEventListener("keypress", onKeyPress);
+            };
+
+            const onModalClick = function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+
+            const onKeyPress = function(event) {
+                keyHandler(event, function (event) {
+                    if (event.code === 'Escape') {
+                        closeModal();
+                    } else {
+                        const modifiers = getKeyModifiers(event);
+                        let code = getKeyLetter(event);
+                        if (!modifiers.shift) {
+                            code = code.toLowerCase();
+                        }
+                        for (let i = 0; i < parsed.length; i++) {
+                            const line = parsed[i];
+                            if (line[2] === code) {
+                                // TODO: send index to server instead of writing to log here
+                                writeToLog('Drop ' + line[0]);
+                                closeModal()
+                                break;
+                            }
+                        }
+                    }
+                })
+            };
+
+            if (modal.style.display === "block") {
+                closeModal();
+            } else {
+                openModal();
+            }
+        }
+
+        function writeToLog(msg) {
+            const logDiv = document.getElementById('gameLog');
+            const newSpan = document.createElement('span');
+            newSpan.classList.add('logline');
+            newSpan.textContent = msg;
+            logDiv.appendChild(newSpan);
+            logDiv.appendChild(document.createElement('br'));
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -288,37 +355,73 @@
             cells[cell.id] = sprite;
         }
 
+        function keyHandler(event, callback) {
+            let pausingKeyPress = false;
+            let pausingKeyPressTimer = null;
+            if (event.defaultPrevented) {
+                return;
+            }
+
+            if (pausingKeyPress) {
+                return;
+            }
+
+            if (pausingKeyPressTimer === null) {
+                pausingKeyPressTimer = setTimeout(function () {
+                    pausingKeyPress = false;
+                    clearTimeout(pausingKeyPressTimer);
+                    pausingKeyPressTimer = null;
+                }, 110);
+                pausingKeyPress = true;
+            }
+
+            callback(event);
+        }
+
+        function getKeyModifiers(event) {
+            let modifiers = 0;
+            if (event.shiftKey) {
+                modifiers |= keys_data.Modifiers.Shift;
+            }
+            if (event.ctrlKey) {
+                modifiers |= keys_data.Modifiers.Ctrl;
+            }
+            if (event.altKey) {
+                modifiers |= keys_data.Modifiers.Alt;
+            }
+            return modifiers;
+        }
+
+        function getKeyLetter(event) {
+            return event.code.replace(/^Key/, "").replace(/^Digit/, "");
+        }
+
+        function getKeyCodeForServer(event) {
+            const key = getKeyLetter(event);
+            let code = 0;
+            if (key.length === 1) {
+                code = key.charCodeAt(0);
+            } else {
+                code = keys_data.Keys[event.code] || 0;
+            }
+            return code;
+        }
+
+        function defaultKeyHandler(event) {
+            keyHandler(event, function(event) {
+                if (!keyHandled(event)) {
+                    sendInputToServer(event)
+                }
+            })
+        }
+
         function setupWebsockets(config) {
             const host = config.server.host;
             const port = config.server.port;
-            let pausingKeyPress = false;
-            let pausingKeyPressTimer = null;
             ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
             ws.binaryType = 'arraybuffer';
 
-            document.addEventListener("keypress", function (event) {
-                if (event.defaultPrevented) {
-                    return;
-                }
-
-                if (pausingKeyPress) {
-                    return;
-                }
-
-                if (pausingKeyPressTimer === null) {
-                    pausingKeyPressTimer = setTimeout(function () {
-                        pausingKeyPress = false;
-                        clearTimeout(pausingKeyPressTimer);
-                        pausingKeyPressTimer = null;
-                    }, 110);
-                    pausingKeyPress = true;
-                }
-
-                if (!keyHandled(event)) {
-                    sendInputToServer(event)
-
-                }
-            });
+            document.addEventListener("keypress", defaultKeyHandler);
 
             ws.onmessage = function (evt) {
                 handleBinaryData(evt.data)
@@ -340,23 +443,8 @@
         }
 
         function sendInputToServer(event) {
-            let modifiers = 0;
-            if (event.shiftKey) {
-                modifiers |= keys_data.Modifiers.Shift;
-            }
-            if (event.ctrlKey) {
-                modifiers |= keys_data.Modifiers.Ctrl;
-            }
-            if (event.altKey) {
-                modifiers |= keys_data.Modifiers.Alt;
-            }
-            const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
-            let code = 0;
-            if (key.length === 1) {
-                code = key.charCodeAt(0);
-            } else {
-                code = keys_data.Keys[event.code] || 0;
-            }
+            const modifiers = getKeyModifiers(event);
+            const code = getKeyCodeForServer(event);
             let buffer = new ArrayBuffer(8);
             const view = new DataView(buffer);
             // byte 0: socket event type
@@ -376,27 +464,39 @@
         }
 
         function toggleGameLogModal() {
-            const modal = document.getElementById('gameLogModal');
+            const modal = document.getElementById('gameModal');
 
             // When the user clicks anywhere outside of the modal, close it
             const closeModal = function() {
                 modal.style.display = "none";
-                window.removeEventListener('click', onModalClick)
+                window.removeEventListener('click', onModalClick);
+                document.removeEventListener("keypress", onKeyPress);
+                document.addEventListener("keypress", defaultKeyHandler);
             };
 
             const openModal = function() {
-                const modal_game_log = document.getElementById('gameLogModalContent');
+                const modal_game_log = document.getElementById('gameModalContent');
                 const game_log = document.getElementById('gameLog');
                 modal.style.display = "block";
                 modal_game_log.innerHTML = game_log.innerHTML;
                 modal_game_log.scrollTop = modal_game_log.scrollHeight;
                 window.addEventListener('click', onModalClick);
+                document.removeEventListener("keypress", defaultKeyHandler);
+                document.addEventListener("keypress", onKeyPress);
             };
 
             const onModalClick = function(event) {
                 if (event.target === modal) {
                     closeModal();
                 }
+            };
+
+            const onKeyPress = function(event) {
+                keyHandler(event, function (event) {
+                    if (event.code === 'Escape') {
+                        closeModal();
+                    }
+                })
             };
 
             if (modal.style.display === "block") {

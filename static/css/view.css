@@ -29,6 +29,11 @@ div#gameLog {
     font-family: monospace;
 }
 
+.choice {
+    color: #aaa;
+    font-family: monospace;
+}
+
  /* The Modal (background) */
 .modal {
     display: none; /* Hidden by default */

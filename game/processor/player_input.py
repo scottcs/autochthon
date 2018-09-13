@@ -114,12 +114,16 @@ class PlayerInputProcessor(esper.Processor):
             # TODO: drop item if chosen
             log.error("IMPLEMENT DROP")
             for ent, _ in self.world.get_component(PlayerControlled):
+                # TODO: assign letter choice to contained component
+                choices = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
                 items_carried = []
+                idx = 0
                 for item_ent, components in self.world.get_components(GUTContained, Name):
                     contained, name = components
                     if contained.ent == ent:
                         # TODO: item rarity
-                        items_carried.append((name.generic, ItemPalette.rare))
+                        items_carried.append((name.generic, ItemPalette.rare, choices[idx]))
+                        idx += 1
                 if items_carried:
                     # TODO: send prompt
                     ChooseFromListEvent.fire(items_carried)
