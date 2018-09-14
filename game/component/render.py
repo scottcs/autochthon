@@ -14,6 +14,6 @@ class Renderable:
     tint: Palette
     layer: RenderLayer
 
-    def ___post_init__(self) -> None:
+    def __post_init__(self) -> None:
         self.last_seen_x: Optional[int] = None
         self.last_seen_y: Optional[int] = None
