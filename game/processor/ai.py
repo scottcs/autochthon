@@ -39,7 +39,10 @@ class AIProcessor(esper.Processor):
                 dx = self._rng.rand(-1, 1)
                 dy = self._rng.rand(-1, 1)
             dest = Position(position.x + dx, position.y + dy)
-            other_entity = self.world.get_entity_at_position(dest.x, dest.y, Solid)
-            if other_entity is None and self.world.map[dest.x, dest.y].walkable:
+            is_solid = False
+            for _ in self.world.entities_at_position(dest.x, dest.y, Solid):
+                is_solid = True
+                break
+            if not is_solid and self.world.map[dest.x, dest.y].walkable:
                 self.world.add_component(ent, GUTMoving(dest.x, dest.y))
                 break

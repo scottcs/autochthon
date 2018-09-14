@@ -48,3 +48,7 @@ class GUTStatusLog(BaseLog):
 
 class GUTCommandLog(BaseLog):
     """Log command results."""
+
+
+class GUTDescriptionLog(BaseLog):
+    """Log descriptions."""

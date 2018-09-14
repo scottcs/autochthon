@@ -1,5 +1,5 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
-from typing import Any, Optional, Set, Callable, Tuple
+from typing import Any, Optional, Set, Callable, Tuple, Generator
 
 import esper
 
@@ -60,15 +60,14 @@ class World(esper.World):
                     return True
         return False
 
-    def get_entity_at_position(
+    def entities_at_position(
         self, x: int, y: int, *required_components: Any
-    ) -> Optional[Entity]:
-        """Return any entity at the given position, with the optional required components."""
+    ) -> Generator[Entity, None, None]:
+        """Yield any entities at the given position, with the optional required components."""
         for ent, components in self.get_components(Position, *required_components):
             other_pos = components[0]
             if other_pos.x == x and other_pos.y == y:
-                return ent
-        return None
+                yield ent
 
     def _get_component(self, component_type: Any) -> Any:
         """Get an iterator for Entity, Component pairs.

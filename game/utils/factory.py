@@ -181,7 +181,7 @@ class EnemyFactory(BaseEntityFactory):
         if not self._world.map:
             raise FactoryException("There is no map!")
         tries = 10000
-        while tries and self._world.get_entity_at_position(at.x, at.y):
+        while tries and list(self._world.entities_at_position(at.x, at.y)):
             tries -= 1
             at = self._rng.choice(self._world.map.spawns_enemy())
         if tries > 0:
@@ -215,7 +215,7 @@ class ItemFactory(BaseEntityFactory):
             raise FactoryException("There is no map!")
         tries = 10000
         # TODO: maybe allow spawning on tiles that have enemies?
-        while tries and self._world.get_entity_at_position(at.x, at.y):
+        while tries and list(self._world.entities_at_position(at.x, at.y)):
             tries -= 1
             at = self._rng.choice(self._world.map.spawns_item())
         if tries > 0:

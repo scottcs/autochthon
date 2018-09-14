@@ -3,7 +3,7 @@ from typing import Any
 
 import esper
 
-from game.component.gamelog import GUTCombatLog, GUTStatusLog, GUTCommandLog
+from game.component.gamelog import GUTCombatLog, GUTStatusLog, GUTCommandLog, GUTDescriptionLog
 from game.events import GameLogEvent
 
 
@@ -12,7 +12,7 @@ class GameLogProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process the game log."""
-        for component_class in (GUTCommandLog, GUTCombatLog, GUTStatusLog):
+        for component_class in (GUTCommandLog, GUTCombatLog, GUTStatusLog, GUTDescriptionLog):
             for ent, log in self.world.get_component(component_class):
                 if not log.lines:
                     continue

@@ -118,9 +118,9 @@ class PlayerInputProcessor(esper.Processor):
         for ent, _ in self.world.get_component(Player):
             at = self.world.component_for_entity(ent, Position)
             cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-            item_ent = self.world.get_entity_at_position(at.x, at.y, Position, Containable)
-            if item_ent:
+            for item_ent in self.world.entities_at_position(at.x, at.y, Position, Containable):
                 self.world.add_component(item_ent, GUTContainerTransfer(ent))
+                break
             else:
                 cmd_log.add(f"There is nothing to pick up!")
 
