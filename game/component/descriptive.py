@@ -12,9 +12,9 @@ class Name:
     titles: Optional[MutableSequence[str]] = None
     nickname: Optional[str] = None
     proper: bool = False
-    plural_str: InitVar[str] = None
+    plural_str: InitVar[Optional[str]] = None
 
-    def __post_init__(self, plural_str: str) -> None:
+    def __post_init__(self, plural_str: Optional[str]) -> None:
         self._plural = plural_str
 
     @property

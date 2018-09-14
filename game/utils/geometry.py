@@ -1,6 +1,7 @@
 """Geometry utility classes."""
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -25,8 +26,11 @@ class Rect:
     def __repr__(self) -> str:
         return f"Rect<{self.p1}, {self.p2}>"
 
-    def __eq__(self, other: Rect) -> bool:
-        return self.p1 == other.p1 and self.p2 == other.p2
+    def __eq__(self, other: Any) -> bool:
+        try:
+            return bool(self.p1 == other.p1 and self.p2 == other.p2)
+        except AttributeError:
+            return False
 
     def __hash__(self) -> int:
         return hash(repr(self))

@@ -73,7 +73,7 @@ class ContainerProcessor(esper.Processor):
                     log.error(f"{containable} has no Position!")
 
             # put it somewhere
-            if container is None:
+            if transfer.to_ent is None:
                 position = self.world.optional_component_for_entity(contained.by_ent, Position)
                 contained_ent_name = self.world.optional_component_for_entity(
                     contained.by_ent, Name
@@ -93,12 +93,16 @@ class ContainerProcessor(esper.Processor):
                     # TODO: what to do if can't drop?
                     log.error(f"{contained} has no Position!")
             else:
-                self.world.add_component(
-                    containable_ent, GUTContained(transfer.to_ent, Container, free_slot)
-                )
-                # TODO: colorize the item by rarity?
-                cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
-                cmd_log.append(f" is put into {container.name}.")
+                container_name = container and container.name or "Unknown Container"
+                if free_slot is None:
+                    log.error(f"{container_name} should not be full!")
+                else:
+                    self.world.add_component(
+                        containable_ent, GUTContained(transfer.to_ent, Container, free_slot)
+                    )
+                    # TODO: colorize the item by rarity?
+                    cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
+                    cmd_log.append(f" is put into {container_name}.")
 
     def _get_next_free_slot(self, ent: Entity, container: Container) -> Optional[int]:
         seen_slots = set()
