@@ -10,7 +10,7 @@ from game.component.container import Containable, GUTContained, GUTContainerTran
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
-from game.component.player import GUTPlayerBump, PlayerControlled
+from game.component.player import GUTPlayerBump, Player
 from game.events import InputEvent, ChooseFromListEvent, ChoiceFromListEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
@@ -100,7 +100,7 @@ class PlayerInputProcessor(esper.Processor):
         if not (dx or dy or wait):
             return False
 
-        for ent, _ in self.world.get_component(PlayerControlled):
+        for ent, _ in self.world.get_component(Player):
             self.world.add_component(ent, GUTPlayerBump(dx, dy))
         return True
 
@@ -115,7 +115,7 @@ class PlayerInputProcessor(esper.Processor):
         return handled
 
     def _command_pickup(self) -> None:
-        for ent, _ in self.world.get_component(PlayerControlled):
+        for ent, _ in self.world.get_component(Player):
             at = self.world.component_for_entity(ent, Position)
             cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
             item_ent = self.world.get_entity_at_position(at.x, at.y, Position, Containable)
@@ -125,7 +125,7 @@ class PlayerInputProcessor(esper.Processor):
                 cmd_log.add(f"There is nothing to pick up!")
 
     def _command_drop(self) -> None:
-        for ent, _ in self.world.get_component(PlayerControlled):
+        for ent, _ in self.world.get_component(Player):
             items_carried = []
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
@@ -146,7 +146,7 @@ class PlayerInputProcessor(esper.Processor):
         ChoiceFromListEvent.unhandle(self._on_drop_choice)
         if modifiers['shift']:
             key = key.upper()
-        for ent, _ in self.world.get_component(PlayerControlled):
+        for ent, _ in self.world.get_component(Player):
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
                 if contained.by_ent == ent and contained.label == key:

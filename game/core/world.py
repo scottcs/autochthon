@@ -5,7 +5,7 @@ import esper
 
 from game.component.action import Actor
 from game.component.status import GUTDead
-from game.component.player import PlayerControlled
+from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
 from game.types import ProcessGroup, Entity, ComponentSchema
@@ -79,7 +79,7 @@ class World(esper.World):
         entity_db = self._entities
         players = set()
 
-        for entity in self._components.get(PlayerControlled, []):
+        for entity in self._components.get(Player, []):
             players.add(entity)
             try:
                 yield entity, entity_db[entity][component_type]
@@ -101,7 +101,7 @@ class World(esper.World):
         comp_db = self._components
         players = set()
 
-        for entity in self._components.get(PlayerControlled, []):
+        for entity in self._components.get(Player, []):
             players.add(entity)
             try:
                 yield entity, [entity_db[entity][ct] for ct in component_types]
