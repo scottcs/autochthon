@@ -1,4 +1,5 @@
 """Base helper components to be subclassed."""
+from dataclasses import dataclass
 from math import floor
 from typing import Optional, Union
 
@@ -38,11 +39,11 @@ class BaseIntMinMaxComponent:
         self._set_clamp(self.value * amount)
 
 
+@dataclass
 class BaseTemporaryComponent:
     """Basic component that can optionally be temporary."""
 
-    def __init__(self, temporary: bool = False) -> None:
-        self.temporary = temporary
+    temporary: bool = False
 
 
 def accumulate_modifiers(*modifiers: BaseModifierComponent) -> Modifier:

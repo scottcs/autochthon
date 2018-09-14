@@ -1,18 +1,19 @@
 """Language related utilities."""
+from dataclasses import dataclass
 from typing import Tuple, Any, AbstractSet, Iterable
 
 from game.types import Entity
 
 
+@dataclass
 class Verb:
     """Represent a verb and it's tenses.
 
     Tense is always active, never passive.
     """
 
-    def __init__(self, present: str, past: str) -> None:
-        self.present: str = present
-        self.past: str = past
+    present: str
+    past: str
 
 
 def msg(

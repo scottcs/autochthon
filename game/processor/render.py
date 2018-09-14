@@ -6,7 +6,7 @@ import esper
 import tcod
 
 from game.component.status import GUTDead
-from game.component.player import PlayerControlled
+from game.component.player import Player
 from game.component.movement import Position
 from game.component.render import Renderable
 from game.events import UpdateMapRenderEvent
@@ -32,7 +32,7 @@ class WebRenderProcessor(esper.Processor):
         fov: int = 1
 
         # PLAYER POSITION
-        for ent, components in self.world.get_components(PlayerControlled, Renderable, Position):
+        for ent, components in self.world.get_components(Player, Renderable, Position):
             position = components[-1]
             player_x = position.x
             player_y = position.y

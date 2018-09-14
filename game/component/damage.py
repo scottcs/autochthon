@@ -1,15 +1,17 @@
 """Damage components."""
+from dataclasses import dataclass
 from game.component.base import BaseModifierComponent
 from game.types import Number
 
 
+@dataclass
 class BaseDamageComponent:
     """Base damage component."""
 
-    def __init__(self, amount: Number) -> None:
-        self.amount: Number = amount
+    amount: Number
 
 
+@dataclass
 class GUTTakeDamageBludgeoning(BaseDamageComponent):
     """Take Bludgeoning damage."""
 
@@ -26,6 +28,7 @@ class ImmuneDamageBludgeoning:
     """Entity is immune to Bludgeoning damage."""
 
 
+@dataclass
 class GUTTakeDamagePiercing(BaseDamageComponent):
     """Take Piercing damage."""
 
@@ -42,6 +45,7 @@ class ImmuneDamagePiercing:
     """Entity is immune to Piercing damage."""
 
 
+@dataclass
 class GUTTakeDamageSlashing(BaseDamageComponent):
     """Take Slashing damage."""
 
@@ -58,6 +62,7 @@ class ImmuneDamageSlashing:
     """Entity is immune to Slashing damage."""
 
 
+@dataclass
 class GUTTakeDamageElectric(BaseDamageComponent):
     """Take Electric damage."""
 
