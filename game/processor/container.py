@@ -100,9 +100,10 @@ class ContainerProcessor(esper.Processor):
                     self.world.add_component(
                         containable_ent, GUTContained(transfer.to_ent, Container, free_slot)
                     )
-                    # TODO: colorize the item by rarity?
-                    cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
-                    cmd_log.append(f" is put into {container_name}.")
+                    if contained:
+                        # TODO: colorize the item by rarity?
+                        cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
+                        cmd_log.append(f" is put into {container_name}.")
 
     def _get_next_free_slot(self, ent: Entity, container: Container) -> Optional[int]:
         seen_slots = set()
