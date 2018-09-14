@@ -335,7 +335,7 @@ class LayersWidget(QWidget):
         for layer in reversed(list(MAP_LAYERS.keys())):
             if layer == "base":
                 continue
-            item = ToolCheckBox(layer, checked=True)
+            item = ToolCheckBox(layer, checked=not layer.startswith("alt_"))
             self.layers.append(item)
             layout.addWidget(item)
             item.state_changed.connect(self._on_layer_state_changed)
@@ -354,7 +354,7 @@ class ImageWidget(QWidget):
         super().__init__(parent)
         self.img = None
         self.pixmap = None
-        self.layers = {n: True for n in MAP_LAYERS.keys()}
+        self.layers = {n: not n.startswith("alt_") for n in MAP_LAYERS.keys()}
         self.show()
 
     def draw_map(self, game_map: Map, scale_factor: int) -> None:
