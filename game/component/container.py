@@ -33,7 +33,7 @@ class GUTContained:
     by_ent: Entity
     component_class: Any
     slot: int
-    slot_labels: Sequence = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    slot_labels: Sequence = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
     @property
     def label(self) -> str:

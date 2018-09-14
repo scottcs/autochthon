@@ -27,8 +27,9 @@ class ContainerProcessor(esper.Processor):
         # TODO: process equip
 
         # process all container transfers
-        for containable_ent, components in self.world.get_components(GUTContainerTransfer,
-                                                                     Containable, Name):
+        for containable_ent, components in self.world.get_components(
+            GUTContainerTransfer, Containable, Name
+        ):
             transfer, containable, name = components
             self.world.remove_component(containable_ent, GUTContainerTransfer)
             cmd_log = self.world.get_or_add_component(containable_ent, GUTCommandLog)
@@ -52,7 +53,9 @@ class ContainerProcessor(esper.Processor):
                 self.world.remove_component(containable_ent, GUTContained)
             else:
                 position = self.world.optional_component_for_entity(containable_ent, Position)
-                container_ent_name = self.world.optional_component_for_entity(transfer.to_ent, Name)
+                container_ent_name = self.world.optional_component_for_entity(
+                    transfer.to_ent, Name
+                )
                 if position:
                     # it's on the ground, so something is picking it up
                     self.world.remove_component(containable_ent, Position)
@@ -72,7 +75,9 @@ class ContainerProcessor(esper.Processor):
             # put it somewhere
             if container is None:
                 position = self.world.optional_component_for_entity(contained.by_ent, Position)
-                contained_ent_name = self.world.optional_component_for_entity(contained.by_ent, Name)
+                contained_ent_name = self.world.optional_component_for_entity(
+                    contained.by_ent, Name
+                )
                 if position:
                     self.world.add_component(containable_ent, Position(position.x, position.y))
                     if contained_ent_name:
@@ -88,8 +93,9 @@ class ContainerProcessor(esper.Processor):
                     # TODO: what to do if can't drop?
                     log.error(f"{contained} has no Position!")
             else:
-                self.world.add_component(containable_ent, GUTContained(transfer.to_ent,
-                                                                       Container, free_slot))
+                self.world.add_component(
+                    containable_ent, GUTContained(transfer.to_ent, Container, free_slot)
+                )
                 # TODO: colorize the item by rarity?
                 cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
                 cmd_log.append(f" is put into {container.name}.")
@@ -108,7 +114,7 @@ class ContainerProcessor(esper.Processor):
     @staticmethod
     def _container_can_take(container: Container, containable: Containable) -> bool:
         return container.equip_type != EquipType.none and (
-                container.equip_type == EquipType.any
-                or container.equip_type == containable.equip_type
-                or containable.equip_type == EquipType.any
+            container.equip_type == EquipType.any
+            or container.equip_type == containable.equip_type
+            or containable.equip_type == EquipType.any
         )

@@ -8,8 +8,14 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-from game.events import (InputEvent, UpdateMapRenderEvent, RefreshMapEvent, GameLogEvent,
-                         ChooseFromListEvent, ChoiceFromListEvent)
+from game.events import (
+    InputEvent,
+    UpdateMapRenderEvent,
+    RefreshMapEvent,
+    GameLogEvent,
+    ChooseFromListEvent,
+    ChoiceFromListEvent,
+)
 from game.core.main import Game
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
@@ -133,10 +139,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
                 # ---- choice from list event
                 # byte 1: modifiers
                 # byte 2: key/button code
-                ChoiceFromListEvent.fire({
-                    "modifiers": message[1],
-                    "code": message[2],
-                })
+                ChoiceFromListEvent.fire({"modifiers": message[1], "code": message[2]})
             else:
                 log.error(f"Unprocessed message type: {message[0]}")
 

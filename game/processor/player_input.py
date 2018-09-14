@@ -133,9 +133,9 @@ class PlayerInputProcessor(esper.Processor):
                     items_carried.append((contained.label, name.generic, ItemPalette.rare))
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_drop_choice)
-                ChooseFromListEvent.fire({'prompt': 'Drop what?',
-                                          'items': sorted(items_carried),
-                                          'multiple': True})
+                ChooseFromListEvent.fire(
+                    {"prompt": "Drop what?", "items": sorted(items_carried), "multiple": True}
+                )
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You have nothing to drop!")
@@ -144,7 +144,7 @@ class PlayerInputProcessor(esper.Processor):
         modifiers: dict = self._unpack_modifiers(event["modifiers"])
         key: str = self._get_key(event["code"])
         ChoiceFromListEvent.unhandle(self._on_drop_choice)
-        if modifiers['shift']:
+        if modifiers["shift"]:
             key = key.upper()
         for ent, _ in self.world.get_component(Player):
             for item_ent, components in self.world.get_components(GUTContained, Name):

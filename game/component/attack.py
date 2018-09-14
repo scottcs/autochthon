@@ -9,6 +9,7 @@ from game.types import Entity, AttackType
 @dataclass
 class GUTCurrentTarget:
     """Component for targeting an entity or location."""
+
     x: int
     y: int
     attack: AttackType
