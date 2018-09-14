@@ -11,11 +11,14 @@ from game.utils.render import TileCache
 from game.utils.random import RNGCache
 from gamedata.palette import Palette
 
+LOOP_TRIES = 10000
 MAP_BITS = (
     "explored",
     "spawnable_player",
     "spawnable_enemy",
     "spawnable_item",
+    "contains_enemy",
+    "contains_item",
     "alt_tile_1",
     "alt_tile_2",
     "alt_tile_3",
@@ -35,6 +38,8 @@ class MapCell(NamedTuple):
     spawnable_player: bool = False
     spawnable_enemy: bool = False
     spawnable_item: bool = False
+    contains_enemy: bool = False
+    contains_item: bool = False
     alt_tile_1: bool = False
     alt_tile_2: bool = False
     alt_tile_3: bool = False
@@ -76,7 +81,7 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_player")]
         return buffer
 
-    def spawns_player(self) -> List[Point]:
+    def spawnable_player_list(self) -> List[Point]:
         """Return a list of only spawnable player coordinates."""
         return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_player.nonzero())]
 
@@ -86,7 +91,7 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_enemy")]
         return buffer
 
-    def spawns_enemy(self) -> List[Point]:
+    def spawnable_enemy_list(self) -> List[Point]:
         """Return a list of only spawnable enemy coordinates."""
         return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_enemy.nonzero())]
 
@@ -96,9 +101,29 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_item")]
         return buffer
 
-    def spawns_item(self) -> List[Point]:
+    def spawnable_item_list(self) -> List[Point]:
         """Return a list of only spawnable item coordinates."""
         return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_item.nonzero())]
+
+    @property
+    def contains_enemy(self) -> np.array:
+        """Array of cells that contain enemies."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_enemy")]
+        return buffer
+
+    def contains_enemy_list(self) -> List[Point]:
+        """Return a list of only coordinates occupied by enemies."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.contains_enemy.nonzero())]
+
+    @property
+    def contains_item(self) -> np.array:
+        """Array of cells that can spawn items."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_item")]
+        return buffer
+
+    def contains_item_list(self) -> List[Point]:
+        """Return a list of only coordinates occupied by items."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.contains_item.nonzero())]
 
     @property
     def alt_tile_1(self) -> np.array:
@@ -121,6 +146,30 @@ class Map(tcod.map.Map):
     def create(self) -> None:
         """Create the map using the map's algorithm."""
         raise NotImplementedError("This class must be subclassed.")
+
+    def find_enemy_spawn(self, at: Optional[Point] = None) -> Optional[Point]:
+        """Find an open enemy spawn point."""
+        if at is None:
+            at = self._rng.choice(self.spawnable_enemy_list())
+        tries = LOOP_TRIES
+        while tries and self.contains_enemy[at.y, at.x]:
+            tries -= 1
+            at = self._rng.choice(self.spawnable_enemy_list())
+        if tries > 0:
+            return at
+        return None
+
+    def find_item_spawn(self, at: Optional[Point] = None) -> Optional[Point]:
+        """Find an open item spawn point."""
+        if at is None:
+            at = self._rng.choice(self.spawnable_item_list())
+        tries = LOOP_TRIES
+        while tries and self.contains_item[at.y, at.x]:
+            tries -= 1
+            at = self._rng.choice(self.spawnable_item_list())
+        if tries > 0:
+            return at
+        return None
 
     def _calculate_tile_type(self, x: int, y: int) -> TileType:
         if self.walkable[y, x]:
@@ -193,6 +242,8 @@ class Map(tcod.map.Map):
                 self.spawnable_player[y, x],
                 self.spawnable_enemy[y, x],
                 self.spawnable_item[y, x],
+                self.contains_enemy[y, x],
+                self.contains_item[y, x],
                 self.alt_tile_1[y, x],
                 self.alt_tile_2[y, x],
                 self.alt_tile_3[y, x],

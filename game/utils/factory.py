@@ -153,7 +153,7 @@ class PlayerFactory(BaseEntityFactory):
         ent = self._make_entity(templates)
         self._world.players.add(ent)
         # TODO: should placement be elsewhere?
-        self.place_entity(ent, self._rng.choice(self._world.map.spawns_player()))
+        self.place_entity(ent, self._rng.choice(self._world.map.spawnable_player_list()))
         return ent
 
 
@@ -172,22 +172,13 @@ class EnemyFactory(BaseEntityFactory):
         if "BasicEnemy" not in templates:
             templates.insert(0, "BasicEnemy")
         ent = self._make_entity(templates)
-        # TODO: should placement be elsewhere?
-        self.place_entity(ent, self._rng.choice(self._world.map.spawns_enemy()))
-        return ent
-
-    def place_entity(self, ent: Entity, at: Point) -> None:
-        """Place an enemy on the map where no other entities are."""
-        if not self._world.map:
-            raise FactoryException("There is no map!")
-        tries = 10000
-        while tries and list(self._world.entities_at_position(at.x, at.y)):
-            tries -= 1
-            at = self._rng.choice(self._world.map.spawns_enemy())
-        if tries > 0:
-            super().place_entity(ent, at)
-        else:
+        loc: Optional[Point] = self._world.map.find_enemy_spawn()
+        if loc is None:
             raise FactoryException(f"Could not place enemy entity: {ent}")
+        else:
+            self.place_entity(ent, loc)
+            self._world.map.contains_enemy[loc.y, loc.x] = True
+        return ent
 
 
 class ItemFactory(BaseEntityFactory):
@@ -205,20 +196,10 @@ class ItemFactory(BaseEntityFactory):
         if "BasicItem" not in templates:
             templates.insert(0, "BasicItem")
         ent = self._make_entity(templates)
-        # TODO: should placement be elsewhere?
-        self.place_entity(ent, self._rng.choice(self._world.map.spawns_item()))
-        return ent
-
-    def place_entity(self, ent: Entity, at: Point) -> None:
-        """Place an item on the map where no other items are."""
-        if not self._world.map:
-            raise FactoryException("There is no map!")
-        tries = 10000
-        # TODO: maybe allow spawning on tiles that have enemies?
-        while tries and list(self._world.entities_at_position(at.x, at.y)):
-            tries -= 1
-            at = self._rng.choice(self._world.map.spawns_item())
-        if tries > 0:
-            super().place_entity(ent, at)
-        else:
+        loc: Optional[Point] = self._world.map.find_item_spawn()
+        if loc is None:
             raise FactoryException(f"Could not place item entity: {ent}")
+        else:
+            self.place_entity(ent, loc)
+            self._world.map.contains_item[loc.y, loc.x] = True
+        return ent

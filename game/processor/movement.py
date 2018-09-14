@@ -45,8 +45,9 @@ class MovementProcessor(esper.Processor):
                 actor.time_units -= self.get_move_action_cost(ent)
                 if ent in self.world.players:
                     names = []
-                    for here_ent in self.world.entities_at_position(position.x, position.y,
-                                                                    Containable):
+                    for here_ent in self.world.entities_at_position(
+                        position.x, position.y, Containable
+                    ):
                         name = self.world.optional_component_for_entity(here_ent, Name)
                         if name:
                             names.append(name)
