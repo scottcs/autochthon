@@ -2,6 +2,7 @@
   "BasicEnemy": {
     "Components": {
       "action.Actor": {},
+      "ai.Enemy": {},
       "attribute.HP": {
         "initial": 1
       },

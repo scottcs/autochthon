@@ -59,6 +59,7 @@ class ContainerProcessor(esper.Processor):
                 if position:
                     # it's on the ground, so something is picking it up
                     self.world.remove_component(containable_ent, Position)
+                    self.world.map.contains_item[position.y, position.x] = False
                     if container_ent_name:
                         if transfer.to_ent in self.world.players:
                             cmd_log.add("You pick up ")
@@ -80,6 +81,7 @@ class ContainerProcessor(esper.Processor):
                 )
                 if position:
                     self.world.add_component(containable_ent, Position(position.x, position.y))
+                    self.world.map.contains_item[position.y, position.x] = True
                     if contained_ent_name:
                         if contained.by_ent in self.world.players:
                             cmd_log.add("You drop ")

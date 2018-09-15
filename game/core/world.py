@@ -1,14 +1,20 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
+import logging
 from typing import Any, Optional, Set, Callable, Tuple, Generator
 
 import esper
 
 from game.component.action import Actor
+from game.component.ai import Enemy
+from game.component.container import Item, GUTContainerTransfer
 from game.component.status import GUTDead
 from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
 from game.types import ProcessGroup, Entity, ComponentSchema
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 class World(esper.World):
@@ -59,6 +65,54 @@ class World(esper.World):
                 if actor.time_units >= 0:
                     return True
         return False
+
+    def pickup_item(self, ent: Entity) -> Optional[Entity]:
+        """Pick up an item at an entity's location and return its id."""
+        at = self.component_for_entity(ent, Position)
+        item_ent = self.get_item_at_position(at.x, at.y)
+        if item_ent:
+            self.add_component(item_ent, GUTContainerTransfer(ent))
+            return item_ent
+        return None
+
+    def drop_item(self, ent: Entity, item: Entity) -> bool:
+        """Drop an item onto the map where the entity is."""
+        at = self.component_for_entity(ent, Position)
+        item_ent = self.get_item_at_position(at.x, at.y)
+        if item_ent:
+            return False
+        self.add_component(item, GUTContainerTransfer())
+        return True
+
+    def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:
+        """Get an enemy entity at the given position."""
+        if self.map[x, y].contains_enemy:
+            enemy = self.get_entity_at_position(x, y, Enemy)
+            if enemy:
+                return enemy
+            else:
+                log.error("Map and components out of sync for enemy location!")
+        return None
+
+    def get_item_at_position(self, x: int, y: int) -> Optional[Entity]:
+        """Get an item entity at the given position."""
+        if self.map[x, y].contains_item:
+            item = self.get_entity_at_position(x, y, Item)
+            if item:
+                return item
+            else:
+                log.error("Map and components out of sync for item location!")
+        return None
+
+    def get_entity_at_position(
+        self, x: int, y: int, *required_components: Any
+    ) -> Optional[Entity]:
+        """Get a single entity at the given position (the first found)."""
+        for ent, components in self.get_components(Position, *required_components):
+            other_pos = components[0]
+            if other_pos.x == x and other_pos.y == y:
+                return ent
+        return None
 
     def entities_at_position(
         self, x: int, y: int, *required_components: Any

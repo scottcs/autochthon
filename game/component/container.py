@@ -53,3 +53,7 @@ class GUTContainerTransfer:
     """
 
     to_ent: Optional[Entity] = None
+
+
+class Item:
+    """An Item."""

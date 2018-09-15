@@ -6,7 +6,6 @@ import esper
 from game.component.action import Actor
 from game.component.ai import AISimpleMind, AIDummy
 from game.component.movement import GUTMoving, Position, GUTWaiting
-from game.component.status import Solid
 from game.types import Entity
 from game.utils.random import RNGCache
 
@@ -39,10 +38,7 @@ class AIProcessor(esper.Processor):
                 dx = self._rng.rand(-1, 1)
                 dy = self._rng.rand(-1, 1)
             dest = Position(position.x + dx, position.y + dy)
-            is_solid = False
-            for _ in self.world.entities_at_position(dest.x, dest.y, Solid):
-                is_solid = True
-                break
-            if not is_solid and self.world.map[dest.x, dest.y].walkable:
+            cell = self.world.map[dest.x, dest.y]
+            if not cell.contains_enemy and not cell.contains_player and cell.walkable:
                 self.world.add_component(ent, GUTMoving(dest.x, dest.y))
                 break

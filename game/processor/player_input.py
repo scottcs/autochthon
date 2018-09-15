@@ -14,7 +14,7 @@ from game.component.player import GUTPlayerBump, Player
 from game.events import InputEvent, ChooseFromListEvent, ChoiceFromListEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
-from gamedata.palette import ItemPalette
+from gamedata.palette import ItemPalette, MessagePalette
 
 KEYS_JSON = Path("data") / Path("keys.json")
 log = logging.getLogger(__name__)
@@ -116,16 +116,21 @@ class PlayerInputProcessor(esper.Processor):
 
     def _command_pickup(self) -> None:
         for ent, _ in self.world.get_component(Player):
-            at = self.world.component_for_entity(ent, Position)
-            cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-            for item_ent in self.world.entities_at_position(at.x, at.y, Position, Containable):
-                self.world.add_component(item_ent, GUTContainerTransfer(ent))
-                break
-            else:
+            item = self.world.pickup_item(ent)
+            if not item:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add(f"There is nothing to pick up!")
 
     def _command_drop(self) -> None:
         for ent, _ in self.world.get_component(Player):
+            pos = self.world.component_for_entity(ent, Position)
+            item = self.world.get_item_at_position(pos.x, pos.y)
+            if item:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log.add(
+                    "There is already an item on the ground here!", MessagePalette.negative
+                )
+                return
             items_carried = []
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
@@ -150,5 +155,7 @@ class PlayerInputProcessor(esper.Processor):
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
                 if contained.by_ent == ent and contained.label == key:
-                    self.world.add_component(item_ent, GUTContainerTransfer())
+                    if not self.world.drop_item(ent, item_ent):
+                        cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                        cmd_log.add("You can't drop that!")
                     break

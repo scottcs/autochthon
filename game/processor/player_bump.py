@@ -3,11 +3,11 @@ from typing import Any
 
 import esper
 
+from game.component.ai import Enemy
 from game.component.attack import GUTCurrentTarget
 from game.component.attribute import HP
 from game.component.player import GUTPlayerBump
 from game.component.movement import GUTMoving, GUTWaiting, Position
-from game.component.status import Solid
 from game.events import PlayerActedEvent
 from game.types import AttackType, Entity
 
@@ -29,12 +29,11 @@ class PlayerBumpProcessor(esper.Processor):
         if not self._check_waiting(ent, bump):
             position = self.world.component_for_entity(ent, Position)
             destination = Position(position.x + bump.dx, position.y + bump.dy)
-            for existing in self.world.entities_at_position(destination.x, destination.y, Solid):
-                if self._try_attacking(ent, existing):
-                    break
-            else:
-                if self.world.map[destination.x, destination.y].walkable:
-                    self._try_moving(ent, destination)
+            enemy = self.world.get_enemy_at_position(destination.x, destination.y)
+            if enemy:
+                self._try_attacking(ent, enemy)
+            elif self.world.map[destination.x, destination.y].walkable:
+                self._try_moving(ent, destination)
             # TODO: resolve other kinds of collisions? Digging?
 
     def _check_waiting(self, ent: Entity, bump: GUTPlayerBump) -> bool:
@@ -44,15 +43,13 @@ class PlayerBumpProcessor(esper.Processor):
             return True
         return False
 
-    def _try_attacking(self, ent: Entity, other: Entity) -> bool:
+    def _try_attacking(self, ent: Entity, other: Entity) -> None:
         other_hp = self.world.optional_component_for_entity(other, HP)
         other_pos = self.world.optional_component_for_entity(other, Position)
         if other_hp and other_pos:
             target = GUTCurrentTarget(other_pos.x, other_pos.y, AttackType.melee, other)
             self.world.add_component(ent, target)
             PlayerActedEvent.fire()
-            return True
-        return False
 
     def _try_moving(self, ent: Entity, destination: Position) -> None:
         self.world.add_component(ent, GUTMoving(destination.x, destination.y))

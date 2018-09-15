@@ -48,9 +48,12 @@ class AttackTargetingProcessor(esper.Processor):
     def still_can_target(self, _ent: Entity, target: GUTCurrentTarget) -> bool:
         """Determine if target is still valid."""
         if target.attack == AttackType.melee:
-            for existing in self.world.entities_at_position(target.x, target.y, Solid):
+            for existing in self.world.entities_at_position(target.x, target.y):
                 if existing == target.entity:
+                    # TODO: NEED A MY_TURN AFTER ALL????
+                    print('STILL CAN TARGET')
                     return True
+        print('NOT STILL CAN TARGET')
         return False
 
     def get_action_cost(self, ent: Entity) -> int:

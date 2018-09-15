@@ -152,8 +152,12 @@ class PlayerFactory(BaseEntityFactory):
             templates.insert(0, "BasicPlayer")
         ent = self._make_entity(templates)
         self._world.players.add(ent)
-        # TODO: should placement be elsewhere?
-        self.place_entity(ent, self._rng.choice(self._world.map.spawnable_player_list()))
+        loc: Optional[Point] = self._world.map.find_player_spawn()
+        if loc is None:
+            raise FactoryException(f"Could not place player entity: {ent}")
+        else:
+            self.place_entity(ent, loc)
+            self._world.map.contains_player[loc.y, loc.x] = True
         return ent
 
 

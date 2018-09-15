@@ -17,6 +17,7 @@ MAP_BITS = (
     "spawnable_player",
     "spawnable_enemy",
     "spawnable_item",
+    "contains_player",
     "contains_enemy",
     "contains_item",
     "alt_tile_1",
@@ -38,6 +39,7 @@ class MapCell(NamedTuple):
     spawnable_player: bool = False
     spawnable_enemy: bool = False
     spawnable_item: bool = False
+    contains_player: bool = False
     contains_enemy: bool = False
     contains_item: bool = False
     alt_tile_1: bool = False
@@ -106,6 +108,16 @@ class Map(tcod.map.Map):
         return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_item.nonzero())]
 
     @property
+    def contains_player(self) -> np.array:
+        """Array of cells that contain players."""
+        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_player")]
+        return buffer
+
+    def contains_player_list(self) -> List[Point]:
+        """Return a list of only coordinates occupied by players."""
+        return [Point(int(x), int(y)) for y, x in np.transpose(self.contains_player.nonzero())]
+
+    @property
     def contains_enemy(self) -> np.array:
         """Array of cells that contain enemies."""
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_enemy")]
@@ -147,12 +159,24 @@ class Map(tcod.map.Map):
         """Create the map using the map's algorithm."""
         raise NotImplementedError("This class must be subclassed.")
 
+    def find_player_spawn(self, at: Optional[Point] = None) -> Optional[Point]:
+        """Find an open player spawn point."""
+        if at is None:
+            at = self._rng.choice(self.spawnable_player_list())
+        tries = LOOP_TRIES
+        while tries and self.contains_player[at.y, at.x] or self.contains_enemy[at.y, at.x]:
+            tries -= 1
+            at = self._rng.choice(self.spawnable_player_list())
+        if tries > 0:
+            return at
+        return None
+
     def find_enemy_spawn(self, at: Optional[Point] = None) -> Optional[Point]:
         """Find an open enemy spawn point."""
         if at is None:
             at = self._rng.choice(self.spawnable_enemy_list())
         tries = LOOP_TRIES
-        while tries and self.contains_enemy[at.y, at.x]:
+        while tries and self.contains_player[at.y, at.x] or self.contains_enemy[at.y, at.x]:
             tries -= 1
             at = self._rng.choice(self.spawnable_enemy_list())
         if tries > 0:
@@ -242,6 +266,7 @@ class Map(tcod.map.Map):
                 self.spawnable_player[y, x],
                 self.spawnable_enemy[y, x],
                 self.spawnable_item[y, x],
+                self.contains_player[y, x],
                 self.contains_enemy[y, x],
                 self.contains_item[y, x],
                 self.alt_tile_1[y, x],

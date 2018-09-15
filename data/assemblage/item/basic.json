@@ -10,7 +10,8 @@
         "layer": "RenderLayer.item"
       },
       "movement.Position": {},
-      "container.Containable": {}
+      "container.Containable": {},
+      "container.Item": {}
     }
   }
 }
