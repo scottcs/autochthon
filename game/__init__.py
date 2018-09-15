@@ -1,2 +1,2 @@
 """Game module."""
-VERSION = "2018.0.18-dev"
+VERSION = "2018.0.19-dev"
