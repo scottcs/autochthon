@@ -1,10 +1,11 @@
 """Time processor."""
-from typing import Any
+from typing import Any, List, Optional
 
 import esper
 
-from game.component.action import Actor, MyTurn
+from game.component.action import Actor, GUTMyTurn
 from game.component.player import Player
+from game.types import Entity
 
 
 class TimeProcessor(esper.Processor):
@@ -27,15 +28,32 @@ class TimeProcessor(esper.Processor):
 class TurnProcessor(esper.Processor):
     """Turn processor."""
 
+    queue: List[Entity] = []
+
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process turns."""
+        for _, _ in self.world.get_component(GUTMyTurn):
+            # if it's anyone's turn, don't do anything
+            return
+        next_ent = self._get_next()
+        if next_ent is not None:
+            self._give_turn(next_ent)
+
+    def _get_next(self) -> Optional[Entity]:
+        try:
+            return self.queue.pop(0)
+        except IndexError:
+            self._populate_queue()
+            try:
+                return self.queue.pop(0)
+            except IndexError:
+                return None
+
+    def _populate_queue(self) -> None:
         to_sort = []
-        for ent, _ in self.world.get_component(MyTurn):
-            self.world.remove_component(ent, MyTurn)
         for ent, actor in self.world.get_component(Actor):
             to_sort.append((actor.time_units, ent))
-        sorted_ents = sorted(to_sort, reverse=True)
-        print(f"Sorted ents: {sorted_ents}")
-        who_gets_turn = sorted_ents[0][1]
-        print(f"who gets turn? {who_gets_turn}")
-        self.world.add_component(who_gets_turn, MyTurn)
+        self.queue.extend([l[1] for l in sorted(to_sort, reverse=True)])
+
+    def _give_turn(self, ent: Entity) -> None:
+        self.world.add_component(ent, GUTMyTurn())

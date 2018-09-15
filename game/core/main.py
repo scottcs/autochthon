@@ -7,6 +7,7 @@ import time
 import esper
 
 from game import VERSION
+from game.component.action import GUTMyTurn
 from game.component.attack import (
     AttackDodgeModifier,
     ImmuneToDodge,
@@ -144,7 +145,8 @@ class Game:
         player_factory = PlayerFactory(loader, self.world)
         enemy_factory = EnemyFactory(loader, self.world)
         item_factory = ItemFactory(loader, self.world)
-        player_factory.make(["Orc"])
+        player = player_factory.make(["Orc"])
+        self.world.add_component(player, GUTMyTurn())
         for _ in range(200):
             enemy_factory.make(["TrainingDummy"])
         enemy_factory.make(["Crab"])

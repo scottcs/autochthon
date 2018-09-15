@@ -3,13 +3,12 @@ from typing import Any
 
 import esper
 
-from game.component.action import Actor
+from game.component.action import Actor, GUTMyTurn
 from game.component.attack import GUTCurrentTarget, AttackCostModifier, AttackHitModifier
 from game.component.base import accumulate_modifiers
 from game.component.damage import GUTTakeDamageBludgeoning, ModifierInflictDamageBludgeoning
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCombatLog
-from game.component.status import Solid
 from game.types import Entity, AttackType, Number
 from game.utils.language import Verb, msg
 from game.utils.random import RNGCache
@@ -22,12 +21,11 @@ class AttackTargetingProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process AttackTargeting components."""
-        for ent, components in self.world.get_components(Actor, GUTCurrentTarget):
-            actor, target = components
+        for ent, components in self.world.get_components(Actor, GUTCurrentTarget, GUTMyTurn):
+            actor, target = components[:2]
             if not self.still_can_target(ent, target):
-                self.world.remove_component(ent, GUTCurrentTarget)
+                self.world.actor_take_action(ent, actor, 0, GUTCurrentTarget)
                 continue
-            actor.time_units -= self.get_action_cost(ent)
             combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
             aggressor_name = self.world.get_or_add_component(ent, Name, f"Entity {ent}")
             defender_name = self.world.get_or_add_component(
@@ -44,6 +42,7 @@ class AttackTargetingProcessor(esper.Processor):
                 )
             )
             self.world.add_component(ent, combat_log)
+            self.world.actor_take_action(ent, actor, self.get_action_cost(ent))
 
     def still_can_target(self, _ent: Entity, target: GUTCurrentTarget) -> bool:
         """Determine if target is still valid."""

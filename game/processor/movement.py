@@ -3,7 +3,7 @@ from typing import Any
 
 import esper
 
-from game.component.action import Actor
+from game.component.action import Actor, GUTMyTurn
 from game.component.ai import Enemy
 from game.component.base import accumulate_modifiers
 from game.component.descriptive import Name
@@ -27,18 +27,17 @@ class MovementProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process movement components."""
-        for ent, components in self.world.get_components(Actor, GUTWaiting):
+        for ent, components in self.world.get_components(Actor, GUTWaiting, GUTMyTurn):
             if self.world.has_component(ent, GUTDead):
                 continue
-            actor = components[0]
-            self.world.remove_component(ent, GUTWaiting)
-            actor.time_units -= self.get_wait_action_cost(ent)
+            self.world.actor_take_action(ent, components[0], self.get_wait_action_cost(ent), GUTWaiting)
 
-        for ent, components in self.world.get_components(Position, Actor, GUTMoving):
+        for ent, components in self.world.get_components(Position, Actor, GUTMoving, GUTMyTurn):
             if self.world.has_component(ent, GUTDead):
                 continue
-            position, actor, moving = components
+            position, actor, moving = components[:3]
             cell = self.world.map[moving.x, moving.y]
+            cost = 0
             if not (cell.contains_enemy or cell.contains_player) and cell.walkable:
                 if self.world.optional_component_for_entity(ent, Player):
                     self.world.map.contains_player[position.y, position.x] = False
@@ -48,7 +47,7 @@ class MovementProcessor(esper.Processor):
                     self.world.map.contains_enemy[moving.y, moving.x] = True
                 position.x = moving.x
                 position.y = moving.y
-                actor.time_units -= self.get_move_action_cost(ent)
+                cost = self.get_move_action_cost(ent)
                 if ent in self.world.players:
                     item = self.world.get_item_at_position(moving.x, moving.y)
                     if item:
@@ -57,7 +56,7 @@ class MovementProcessor(esper.Processor):
                             desc_log = self.world.get_or_add_component(ent, GUTDescriptionLog)
                             desc_log.add(f"{name.generic}", ItemPalette.epic)
                             desc_log.append(" is here.")
-            self.world.remove_component(ent, GUTMoving)
+            self.world.actor_take_action(ent, actor, cost, GUTMoving)
 
     def get_wait_action_cost(self, ent: Entity) -> int:
         """Get wait action cost."""

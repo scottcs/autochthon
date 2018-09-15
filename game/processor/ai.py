@@ -3,7 +3,7 @@ from typing import Any
 
 import esper
 
-from game.component.action import Actor
+from game.component.action import Actor, GUTMyTurn
 from game.component.ai import AISimpleMind, AIDummy
 from game.component.movement import GUTMoving, Position, GUTWaiting
 from game.types import Entity
@@ -19,12 +19,12 @@ class AIProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process AI Components."""
-        for ent, components in self.world.get_components(Actor, AIDummy):
+        for ent, components in self.world.get_components(Actor, AIDummy, GUTMyTurn):
             actor = components[0]
             if actor.time_units < 0:
                 continue
             self.world.add_component(ent, GUTWaiting())
-        for ent, components in self.world.get_components(Position, Actor, AISimpleMind):
+        for ent, components in self.world.get_components(Position, Actor, AISimpleMind, GUTMyTurn):
             position, actor = components[:2]
             if actor.time_units < 0:
                 continue

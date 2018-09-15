@@ -4,7 +4,7 @@ from typing import Any, Optional, Set, Callable, Tuple, Generator
 
 import esper
 
-from game.component.action import Actor
+from game.component.action import Actor, GUTMyTurn
 from game.component.ai import Enemy
 from game.component.container import Item, GUTContainerTransfer
 from game.component.status import GUTDead
@@ -66,6 +66,15 @@ class World(esper.World):
                 if actor.time_units >= 0:
                     return True
         return False
+
+    def actor_take_action(
+            self, ent: Entity, actor: Actor, cost: int, *remove_components: Any
+    ) -> None:
+        """Have an actor take an action."""
+        actor.time_units -= cost
+        self.remove_component(ent, GUTMyTurn)
+        for component in remove_components:
+            self.remove_component(ent, component)
 
     def pickup_item(self, ent: Entity) -> Optional[Entity]:
         """Pick up an item at an entity's location and return its id."""

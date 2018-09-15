@@ -14,5 +14,5 @@ class Actor:
         return f"{self.time_units} ({self.rate}/turn)"
 
 
-class MyTurn:
+class GUTMyTurn:
     """Current Actor's turn."""
