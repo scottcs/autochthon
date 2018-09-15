@@ -5,6 +5,7 @@ import esper
 
 from game.component.action import Actor, GUTMyTurn
 from game.component.player import Player
+from game.component.status import GUTDead
 from game.types import Entity
 
 
@@ -32,10 +33,12 @@ class TurnProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process turns."""
-        for _, _ in self.world.get_component(GUTMyTurn):
+        for ent, _ in self.world.get_component(GUTMyTurn):
             # if it's anyone's turn, don't do anything
             return
         next_ent = self._get_next()
+        while next_ent and self.world.optional_component_for_entity(next_ent, GUTDead):
+            next_ent = self._get_next()
         if next_ent is not None:
             self._give_turn(next_ent)
 
@@ -52,7 +55,8 @@ class TurnProcessor(esper.Processor):
     def _populate_queue(self) -> None:
         to_sort = []
         for ent, actor in self.world.get_component(Actor):
-            to_sort.append((actor.time_units, ent))
+            if actor.time_units >= 0:
+                to_sort.append((actor.time_units, ent))
         self.queue.extend([l[1] for l in sorted(to_sort, reverse=True)])
 
     def _give_turn(self, ent: Entity) -> None:

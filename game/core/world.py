@@ -72,9 +72,23 @@ class World(esper.World):
     ) -> None:
         """Have an actor take an action."""
         actor.time_units -= cost
-        self.remove_component(ent, GUTMyTurn)
+        try:
+            self.remove_component(ent, GUTMyTurn)
+        except KeyError:
+            pass
         for component in remove_components:
-            self.remove_component(ent, component)
+            try:
+                self.remove_component(ent, component)
+            except KeyError:
+                pass
+
+    def kill_entity(self, ent: Entity):
+        """Kill an entity."""
+        try:
+            self.remove_component(ent, GUTMyTurn)
+        except KeyError:
+            pass
+        self.add_component(ent, GUTDead())
 
     def pickup_item(self, ent: Entity) -> Optional[Entity]:
         """Pick up an item at an entity's location and return its id."""

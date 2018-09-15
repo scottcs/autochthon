@@ -21,7 +21,6 @@ from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
 
 WEBSOCKET_EVENTS_JSON = Path("data") / Path("websocketevents.json")
-DESIRED_FPS = 30
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
@@ -42,7 +41,7 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
     def __init__(self, config: Optional[dict] = None) -> None:
         if GameCallback.game is None:
             GameCallback.game = Game(WebRenderProcessor(), config=config)
-        super().__init__(self.process_events, 1000 / DESIRED_FPS)
+        super().__init__(self.process_events, 1)
 
     @staticmethod
     def get_game_state() -> GameState:
