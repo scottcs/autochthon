@@ -43,6 +43,7 @@ class World(esper.World):
         group = group or ProcessGroup.default
         self._processor_groups.setdefault(group, [])
         self._processor_groups[group].append(processor_instance)
+        self._processor_groups[group].sort(key=lambda p: p.priority, reverse=True)
 
     def remove_processor(self, processor_type: esper.Processor) -> None:
         """Remove a processor."""
