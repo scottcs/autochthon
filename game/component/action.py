@@ -12,3 +12,7 @@ class Actor:
 
     def __str__(self) -> str:
         return f"{self.time_units} ({self.rate}/turn)"
+
+
+class MyTurn:
+    """Current Actor's turn."""
