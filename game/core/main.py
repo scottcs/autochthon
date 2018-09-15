@@ -33,7 +33,7 @@ from game.processor.movement import MovementProcessor
 from game.processor.player_bump import PlayerBumpProcessor
 from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
-from game.processor.time import TimeProcessor
+from game.processor.time import TimeProcessor, TurnProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
 from game.utils.factory import PlayerFactory, EnemyFactory, ItemFactory
 from game.utils.language import Verb
@@ -112,6 +112,7 @@ class Game:
             PlayerBumpProcessor(), priority=Priority.player_bump, group=ProcessGroup.player
         )
         self.world.add_processor(TimeProcessor(), priority=Priority.time, group=ProcessGroup.time)
+        self.world.add_processor(TurnProcessor(), priority=Priority.turn)
         self.world.add_processor(ContainerProcessor(), priority=Priority.container)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
@@ -124,12 +125,14 @@ class Game:
         self.world.add_processor(DamageBludgeoningMitigationProcessor(), priority=Priority.defense)
         self.world.add_processor(DamageBludgeoningProcessor(), priority=Priority.damage_resolution)
         self.world.add_processor(HPProcessor(), priority=Priority.attributes)
-        self.world.add_processor(GameLogProcessor(), priority=Priority.gamelog)
         self.world.add_processor(
             Psychopomps(), priority=Priority.psychopomps, group=ProcessGroup.render
         )
         self.world.add_processor(
             render_processor, priority=Priority.render, group=ProcessGroup.render
+        )
+        self.world.add_processor(
+            GameLogProcessor(), priority=Priority.gamelog, group=ProcessGroup.gamelog
         )
 
         current_map = ClassicMap(
@@ -180,3 +183,4 @@ class Game:
         self.world.process_group(ProcessGroup.default)
         if actors_could_act and not self.world.any_actors_can_act():
             self.world.process_group(ProcessGroup.render)
+        self.world.process_group(ProcessGroup.gamelog)
