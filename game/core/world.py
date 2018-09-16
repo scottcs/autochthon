@@ -11,6 +11,7 @@ from game.component.status import GUTDead
 from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
+from game.events import RefreshMapEvent
 from game.types import ProcessGroup, Entity, ComponentSchema
 
 log = logging.getLogger(__name__)
@@ -89,6 +90,7 @@ class World(esper.World):
         except KeyError:
             pass
         self.add_component(ent, GUTDead())
+        RefreshMapEvent.fire()
 
     def pickup_item(self, ent: Entity) -> Optional[Entity]:
         """Pick up an item at an entity's location and return its id."""

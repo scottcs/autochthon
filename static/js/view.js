@@ -207,6 +207,9 @@
                     cell.layer = view.getUint8(offset);
                     offset += 1;
                 }
+                if (bitmask & mapBits.delete) {
+                    cell.delete = true;
+                }
 
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
@@ -308,6 +311,13 @@
 
         function updateSprite(cell) {
             const sprite = cells[cell.id];
+            if (cell.delete) {
+                cells[cell.id] = undefined;
+                sprite.visible = false;
+                sprite.parent.removeChild(sprite);
+                return;
+            }
+
             if (cell.x !== undefined) {
                 sprite.x = tile_width * cell.x;
             }

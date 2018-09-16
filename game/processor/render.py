@@ -178,27 +178,33 @@ class WebRenderProcessor(esper.Processor):
             if alpha == 0:
                 continue
 
-            bitmask = (
-                    MAP_BITS["x"] |
-                    MAP_BITS["y"] |
-                    MAP_BITS["tile_id"] |
-                    MAP_BITS["tint"] |
-                    MAP_BITS["alpha"] |
-                    MAP_BITS["layer"]
-            )
-            b_cells.extend(ent.to_bytes(2, "big"))
-            b_cells.extend(bitmask.to_bytes(1, "big"))
-            b_cells.extend(pos_x.to_bytes(2, "big"))
-            b_cells.extend(pos_y.to_bytes(2, "big"))
             if self.world.has_component(ent, GUTDead):
-                tile_id = 0
+                bitmask = MAP_BITS["delete"]
             else:
-                tile_id = renderable.tile_id
-            b_cells.extend(tile_id.to_bytes(2, "big"))
-            b_cells.extend(renderable.tint.to_bytes(3, "big"))
-            b_cells.extend(alpha.to_bytes(1, "big"))
-            b_cells.extend(renderable.layer.value.to_bytes(1, "big"))
-            data_length += 1
+                bitmask = (
+                        MAP_BITS["x"] |
+                        MAP_BITS["y"] |
+                        MAP_BITS["tile_id"] |
+                        MAP_BITS["tint"] |
+                        MAP_BITS["alpha"] |
+                        MAP_BITS["layer"]
+                )
+            if bitmask > 0:
+                b_cells.extend(ent.to_bytes(2, "big"))
+                b_cells.extend(bitmask.to_bytes(1, "big"))
+                if bitmask & MAP_BITS["x"]:
+                    b_cells.extend(pos_x.to_bytes(2, "big"))
+                if bitmask & MAP_BITS["y"]:
+                    b_cells.extend(pos_y.to_bytes(2, "big"))
+                if bitmask & MAP_BITS["tile_id"]:
+                    b_cells.extend(renderable.tile_id.to_bytes(2, "big"))
+                if bitmask & MAP_BITS["tint"]:
+                    b_cells.extend(renderable.tint.to_bytes(3, "big"))
+                if bitmask & MAP_BITS["alpha"]:
+                    b_cells.extend(alpha.to_bytes(1, "big"))
+                if bitmask & MAP_BITS["layer"]:
+                    b_cells.extend(renderable.layer.value.to_bytes(1, "big"))
+                data_length += 1
 
         # Overwrite data_length now that we've counted them
         b_cells[4:6] = data_length.to_bytes(2, "big")
