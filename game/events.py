@@ -41,9 +41,6 @@ class Event:
 
     def fire(self, event: Optional[EventType] = None) -> None:
         """Fire the event."""
-        print(f"FIRE {self} {event}")
-        if event and "bytearray" in event:
-            print(f"{len(event['bytearray'])}")
         for handler in self.handlers.keys():
             handler(event or {})
         self._remove_handlers()
