@@ -19,6 +19,7 @@ from game.events import (
 from game.core.main import Game
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
+from gamedata.config import CONFIG
 
 WEBSOCKET_EVENTS_JSON = Path("data") / Path("websocketevents.json")
 log = logging.getLogger(__name__)
@@ -174,11 +175,11 @@ def make_app(config: Mapping) -> tornado.web.Application:
     )
 
 
-def run_server(config: Mapping) -> None:
+def run_server() -> None:
     """Run the game as a websockets server."""
-    port: int = config["server"]["port"]
-    host: str = config["server"]["host"]
-    app: tornado.web.Application = make_app(config)
+    port: int = CONFIG["server"]["port"]
+    host: str = CONFIG["server"]["host"]
+    app: tornado.web.Application = make_app(CONFIG)
     app.listen(port, address=host)
     log.info(f"Listening on {host}:{port}...")
     tornado.ioloop.IOLoop.current().start()
