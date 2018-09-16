@@ -22,6 +22,8 @@ class WebRenderProcessor(esper.Processor):
 
     def __init__(self) -> None:
         super().__init__()
+        self.last_player_x = -1
+        self.last_player_y = -1
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
@@ -46,9 +48,13 @@ class WebRenderProcessor(esper.Processor):
         b_cells.extend(data_length.to_bytes(2, "big"))
 
         # MAP
-        self.world.map.compute_fov(
-            player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
-        )
+        if player_x != self.last_player_x or player_y != self.last_player_y:
+            self.world.map.compute_fov(
+                player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
+            )
+        self.last_player_x = player_x
+        self.last_player_y = player_y
+
         for cell in self.world.map:
             alpha = 0x00
             if cell.explored:

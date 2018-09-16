@@ -37,6 +37,7 @@
         let layer_player;
         let layer_effect;
         let app;
+        let tmp;
 
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -295,6 +296,10 @@
 
         function updateSprite(cell) {
             const sprite = cells[cell.id];
+            if (cell.id === tmp) {
+                console.log(sprite);
+                console.log(cell);
+            }
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
@@ -328,6 +333,9 @@
             switch (cell.layer) {
                 case 2:
                     layer_floor.addChild(sprite);
+                    if (!tmp) {
+                        tmp = cell.id;
+                    }
                     break;
                 case 3:
                     layer_item.addChild(sprite);
