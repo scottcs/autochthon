@@ -60,30 +60,29 @@ class WebRenderProcessor(esper.Processor):
         self.cache["player_x"] = player_x
         self.cache["player_y"] = player_y
 
-        for cell in self.world.map:
+        for x, y in self.world.map:
             alpha = 0x00
-            if cell.explored:
+            if self.world.map.explored[y, x]:
                 alpha = 0x60
-            if cell.fov:
-                self.world.map.explored[cell.y, cell.x] = True
+            if self.world.map.fov[y, x]:
+                self.world.map.explored[y, x] = True
                 alpha = 0xff
             if alpha == 0:
                 continue
 
-            tile_id = cell.tile_id
-            color = cell.tile_color
+            tile_id, color = self.world.map.get_tile(x, y)
 
             # WARNING: this will override any entities with ID >= 10000!
             #          also limits map size to about 235x235
-            cell_id = 10000 + self.world.map.width * cell.x + cell.y
+            cell_id = 10000 + self.world.map.width * x + y
             layer = RenderLayer.floor.value
 
-            if cell.spawnable_player:
+            if self.world.map.spawnable_player[y, x]:
                 # TODO: move this to map
                 tile_id = 229
                 color = Palette.cyan
 
-            if not cell.walkable:
+            if not self.world.map.walkable[y, x]:
                 # TODO: other layers (debris, decoration)
                 layer = RenderLayer.wall.value
 
@@ -98,8 +97,8 @@ class WebRenderProcessor(esper.Processor):
                         MAP_BITS["layer"]
                 )
                 self.cache["cells"][cell_id] = {
-                    "x": cell.x,
-                    "y": cell.y,
+                    "x": x,
+                    "y": y,
                     "tile_id": tile_id,
                     "tint": color,
                     "alpha": alpha,
@@ -107,12 +106,12 @@ class WebRenderProcessor(esper.Processor):
                 }
             else:
                 bitmask = 0
-                if cell_cache["x"] != cell.x:
+                if cell_cache["x"] != x:
                     bitmask |= MAP_BITS["x"]
-                    cell_cache["x"] = cell.x
-                if cell_cache["y"] != cell.y:
+                    cell_cache["x"] = x
+                if cell_cache["y"] != y:
                     bitmask |= MAP_BITS["y"]
-                    cell_cache["y"] = cell.y
+                    cell_cache["y"] = y
                 if cell_cache["tile_id"] != tile_id:
                     bitmask |= MAP_BITS["tile_id"]
                     cell_cache["tile_id"] = tile_id
@@ -145,7 +144,7 @@ class WebRenderProcessor(esper.Processor):
 
         # RENDERABLE ENTITIES
         for ent, components in sorted(
-            self.world.get_components(Position, Renderable), key=lambda x: x[1][1].layer.value
+            self.world.get_components(Position, Renderable), key=lambda t: t[1][1].layer.value
         ):
             positional, renderable = components
             alpha = 0x00

@@ -112,7 +112,7 @@ class World(esper.World):
 
     def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:
         """Get an enemy entity at the given position."""
-        if self.map[x, y].contains_enemy:
+        if self.map.contains_enemy[y, x]:
             enemy = self.get_entity_at_position(x, y, Enemy)
             if enemy:
                 return enemy
@@ -122,7 +122,7 @@ class World(esper.World):
 
     def get_item_at_position(self, x: int, y: int) -> Optional[Entity]:
         """Get an item entity at the given position."""
-        if self.map[x, y].contains_item:
+        if self.map.contains_item[y, x]:
             item = self.get_entity_at_position(x, y, Item)
             if item:
                 return item

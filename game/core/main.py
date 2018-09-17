@@ -1,4 +1,5 @@
 """Main game class."""
+import cProfile
 import logging
 from pathlib import Path
 from typing import Optional
@@ -177,12 +178,17 @@ class Game:
 
     def update(self) -> None:
         """Update the game world."""
+        pr = cProfile.Profile()
+        pr.enable()
         self.player_acted = False
         self.world.process_group(ProcessGroup.player)
         if self.player_acted:
             self.world.process_group(ProcessGroup.time)
-        actors_could_act = self.world.any_actors_can_act()
+        # actors_could_act = self.world.any_actors_can_act()
         self.world.process_group(ProcessGroup.default)
-        if actors_could_act and not self.world.any_actors_can_act():
-            self.world.process_group(ProcessGroup.render)
+        # if actors_could_act and not self.world.any_actors_can_act():
+        #     self.world.process_group(ProcessGroup.render)
+        self.world.process_group(ProcessGroup.render)
         self.world.process_group(ProcessGroup.gamelog)
+        pr.disable()
+        pr.print_stats(sort='time')

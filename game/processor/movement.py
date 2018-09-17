@@ -36,9 +36,10 @@ class MovementProcessor(esper.Processor):
             if self.world.has_component(ent, GUTDead):
                 continue
             position, actor, moving = components[:3]
-            cell = self.world.map[moving.x, moving.y]
             cost = 0
-            if not (cell.contains_enemy or cell.contains_player) and cell.walkable:
+            if (not (self.world.map.contains_enemy[moving.y, moving.x]
+                     or self.world.map.contains_player[moving.y, moving.x])
+                    and self.world.map.walkable[moving.y, moving.x]):
                 if self.world.optional_component_for_entity(ent, Player):
                     self.world.map.contains_player[position.y, position.x] = False
                     self.world.map.contains_player[moving.y, moving.x] = True

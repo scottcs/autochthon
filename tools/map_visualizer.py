@@ -361,9 +361,9 @@ class ImageWidget(QWidget):
         """Draw the map to an image."""
         img = QImage(game_map.width, game_map.height, QImage.Format_RGB32)
 
-        for cell in game_map:
-            color = self._get_cell_color(cell)
-            img.setPixel(cell.x, cell.y, color)
+        for x, y in game_map:
+            color = self._get_cell_color(game_map, x, y)
+            img.setPixel(x, y, color)
         self.img = img.scaled(
             game_map.width * scale_factor, game_map.height * scale_factor, Qt.KeepAspectRatio
         )
@@ -396,12 +396,12 @@ class ImageWidget(QWidget):
         """Set a particular layer to enabled or disabled."""
         self.layers[name] = enabled
 
-    def _get_cell_color(self, cell: MapCell) -> qRgb:
+    def _get_cell_color(self, game_map: Map, x: int, y: int) -> qRgb:
         color = MAP_LAYERS["base"]
         # color gets replaced by each layer in order until the highest wins
         for layer_name, layer_color in MAP_LAYERS.items():
             if self.layers[layer_name]:
-                if hasattr(cell, layer_name) and getattr(cell, layer_name):
+                if hasattr(game_map, layer_name) and getattr(game_map, layer_name)[y, x]:
                     color = layer_color
         return color
 
