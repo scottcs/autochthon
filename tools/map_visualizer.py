@@ -361,7 +361,7 @@ class ImageWidget(QWidget):
         """Draw the map to an image."""
         img = QImage(game_map.width, game_map.height, QImage.Format_RGB32)
 
-        for x, y in game_map:
+        for y, x in game_map:
             color = self._get_cell_color(game_map, x, y)
             img.setPixel(x, y, color)
         self.img = img.scaled(

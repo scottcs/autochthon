@@ -60,7 +60,7 @@ class WebRenderProcessor(esper.Processor):
         self.cache["player_x"] = player_x
         self.cache["player_y"] = player_y
 
-        for x, y in self.world.map:
+        for y, x in self.world.map:
             alpha = 0x00
             if self.world.map.explored[y, x]:
                 alpha = 0x60
@@ -70,11 +70,11 @@ class WebRenderProcessor(esper.Processor):
             if alpha == 0:
                 continue
 
-            tile_id, color = self.world.map.get_tile(x, y)
+            tile_id, color = self.world.map.get_tile(y, x)
 
             # WARNING: this will override any entities with ID >= 10000!
             #          also limits map size to about 235x235
-            cell_id = 10000 + self.world.map.width * x + y
+            cell_id = 10000 + y + self.world.map.width * x
             layer = RenderLayer.floor.value
 
             if self.world.map.spawnable_player[y, x]:
@@ -148,8 +148,8 @@ class WebRenderProcessor(esper.Processor):
         ):
             positional, renderable = components
             alpha = 0x00
-            pos_x = positional.x
             pos_y = positional.y
+            pos_x = positional.x
             can_see_now = self.world.map.fov[positional.y, positional.x]
             if renderable.last_seen_x is None:
                 seen = False
@@ -161,17 +161,17 @@ class WebRenderProcessor(esper.Processor):
             # if we can see it now, draw it and update seen pos
             if can_see_now:
                 alpha = 0xff
-                renderable.last_seen_x = positional.x
                 renderable.last_seen_y = positional.y
+                renderable.last_seen_x = positional.x
             # else if we can see where it last was, forget where we've seen it and don't draw it
             elif can_see_prev:
-                renderable.last_seen_x = None
                 renderable.last_seen_y = None
+                renderable.last_seen_x = None
             # else if we've seen it, draw it faded where we last saw it
             elif seen:
                 alpha = 0x60
-                pos_x = renderable.last_seen_x
                 pos_y = renderable.last_seen_y
+                pos_x = renderable.last_seen_x
             # else don't draw it
 
             if alpha == 0:
