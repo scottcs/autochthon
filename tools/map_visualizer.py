@@ -23,7 +23,7 @@ from PySide2.QtWidgets import (
     QScrollArea,
 )
 
-from game.core.map import ClassicMap, Map, MapCell
+from game.core.map import ClassicMap, Map
 from game.utils.random import RNGCache
 from tools.widgets import (
     msg_error,

@@ -24,29 +24,7 @@ MAP_BITS = (
     "alt_tile_2",
     "alt_tile_3",
 )
-# TODO: item layer? interaction layer? enemy layer? etc?
-
-
-class MapCell(NamedTuple):
-    """Map cell."""
-
-    x: int = 0
-    y: int = 0
-    transparent: bool = False
-    walkable: bool = False
-    fov: bool = False
-    explored: bool = False
-    spawnable_player: bool = False
-    spawnable_enemy: bool = False
-    spawnable_item: bool = False
-    contains_player: bool = False
-    contains_enemy: bool = False
-    contains_item: bool = False
-    alt_tile_1: bool = False
-    alt_tile_2: bool = False
-    alt_tile_3: bool = False
-    tile_id: int = 0
-    tile_color: int = Palette.black
+# TODO: interaction layer? others?
 
 
 class TileType(Enum):
@@ -254,33 +232,6 @@ class Map(tcod.map.Map):
         """Determine the tile id and color at the given coordinate."""
         tile_type = self._calculate_tile_type(x, y)
         return self._tile_id_from_type(tile_type, x, y), self._tile_color_from_type(tile_type)
-
-    def get(self, item: Tuple[int, int]) -> MapCell:
-        """Get a MapCell."""
-        x, y = item
-        tile_type = self._calculate_tile_type(x, y)
-        try:
-            return MapCell(
-                x,
-                y,
-                self.transparent[y, x],
-                self.walkable[y, x],
-                self.fov[y, x],
-                self.explored[y, x],
-                self.spawnable_player[y, x],
-                self.spawnable_enemy[y, x],
-                self.spawnable_item[y, x],
-                self.contains_player[y, x],
-                self.contains_enemy[y, x],
-                self.contains_item[y, x],
-                self.alt_tile_1[y, x],
-                self.alt_tile_2[y, x],
-                self.alt_tile_3[y, x],
-                self._tile_id_from_type(tile_type, x, y),
-                self._tile_color_from_type(tile_type),
-            )
-        except IndexError:
-            raise IndexError(f"Location ({x}, {y}) in map not found.")
 
     def __len__(self) -> int:
         return self.width * self.height
