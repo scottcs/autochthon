@@ -69,7 +69,7 @@ class World(esper.World):
         return False
 
     def actor_take_action(
-            self, ent: Entity, actor: Actor, cost: int, *remove_components: Any
+        self, ent: Entity, actor: Actor, cost: int, *remove_components: Any
     ) -> None:
         """Have an actor take an action."""
         actor.time_units -= cost
@@ -83,7 +83,7 @@ class World(esper.World):
             except KeyError:
                 pass
 
-    def kill_entity(self, ent: Entity):
+    def kill_entity(self, ent: Entity) -> None:
         """Kill an entity."""
         try:
             self.remove_component(ent, GUTMyTurn)
@@ -112,7 +112,7 @@ class World(esper.World):
 
     def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:
         """Get an enemy entity at the given position."""
-        if self.map.contains_enemy[y, x]:
+        if self.map and self.map.contains_enemy[y, x]:
             enemy = self.get_entity_at_position(x, y, Enemy)
             if enemy:
                 return enemy
@@ -122,7 +122,7 @@ class World(esper.World):
 
     def get_item_at_position(self, x: int, y: int) -> Optional[Entity]:
         """Get an item entity at the given position."""
-        if self.map.contains_item[y, x]:
+        if self.map and self.map.contains_item[y, x]:
             item = self.get_entity_at_position(x, y, Item)
             if item:
                 return item

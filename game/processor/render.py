@@ -1,6 +1,6 @@
 """Render processors."""
 import logging
-from typing import Any
+from typing import Any, Dict
 
 import esper
 import tcod
@@ -24,11 +24,7 @@ class WebRenderProcessor(esper.Processor):
 
     def __init__(self) -> None:
         super().__init__()
-        self.cache = {
-            "player_x": -1,
-            "player_y": -1,
-            "cells": {},
-        }
+        self.cache: Dict[str, Any] = {"player_x": -1, "player_y": -1, "cells": {}}
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
@@ -89,12 +85,12 @@ class WebRenderProcessor(esper.Processor):
             cell_cache = self.cache["cells"].get(cell_id, None)
             if cell_cache is None:
                 bitmask = (
-                        MAP_BITS["x"] |
-                        MAP_BITS["y"] |
-                        MAP_BITS["tile_id"] |
-                        MAP_BITS["tint"] |
-                        MAP_BITS["alpha"] |
-                        MAP_BITS["layer"]
+                    MAP_BITS["x"]
+                    | MAP_BITS["y"]
+                    | MAP_BITS["tile_id"]
+                    | MAP_BITS["tint"]
+                    | MAP_BITS["alpha"]
+                    | MAP_BITS["layer"]
                 )
                 self.cache["cells"][cell_id] = {
                     "x": x,
@@ -181,12 +177,12 @@ class WebRenderProcessor(esper.Processor):
                 bitmask = MAP_BITS["delete"]
             else:
                 bitmask = (
-                        MAP_BITS["x"] |
-                        MAP_BITS["y"] |
-                        MAP_BITS["tile_id"] |
-                        MAP_BITS["tint"] |
-                        MAP_BITS["alpha"] |
-                        MAP_BITS["layer"]
+                    MAP_BITS["x"]
+                    | MAP_BITS["y"]
+                    | MAP_BITS["tile_id"]
+                    | MAP_BITS["tint"]
+                    | MAP_BITS["alpha"]
+                    | MAP_BITS["layer"]
                 )
             if bitmask > 0:
                 b_cells.extend(ent.to_bytes(2, "big"))

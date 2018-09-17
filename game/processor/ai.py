@@ -38,8 +38,10 @@ class AIProcessor(esper.Processor):
                 dx = self._rng.rand(-1, 1)
                 dy = self._rng.rand(-1, 1)
             dest = Position(position.x + dx, position.y + dy)
-            if (not self.world.map.contains_enemy[dest.y, dest.x]
-                    and not self.world.map.contains_player[dest.y, dest.x]
-                    and self.world.map.walkable[dest.y, dest.x]):
+            if (
+                not self.world.map.contains_enemy[dest.y, dest.x]
+                and not self.world.map.contains_player[dest.y, dest.x]
+                and self.world.map.walkable[dest.y, dest.x]
+            ):
                 self.world.add_component(ent, GUTMoving(dest.x, dest.y))
                 break

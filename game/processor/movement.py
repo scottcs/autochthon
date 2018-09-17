@@ -30,16 +30,22 @@ class MovementProcessor(esper.Processor):
         for ent, components in self.world.get_components(Actor, GUTWaiting, GUTMyTurn):
             if self.world.has_component(ent, GUTDead):
                 continue
-            self.world.actor_take_action(ent, components[0], self.get_wait_action_cost(ent), GUTWaiting)
+            self.world.actor_take_action(
+                ent, components[0], self.get_wait_action_cost(ent), GUTWaiting
+            )
 
         for ent, components in self.world.get_components(Position, Actor, GUTMoving, GUTMyTurn):
             if self.world.has_component(ent, GUTDead):
                 continue
             position, actor, moving = components[:3]
             cost = 0
-            if (not (self.world.map.contains_enemy[moving.y, moving.x]
-                     or self.world.map.contains_player[moving.y, moving.x])
-                    and self.world.map.walkable[moving.y, moving.x]):
+            if (
+                not (
+                    self.world.map.contains_enemy[moving.y, moving.x]
+                    or self.world.map.contains_player[moving.y, moving.x]
+                )
+                and self.world.map.walkable[moving.y, moving.x]
+            ):
                 if self.world.optional_component_for_entity(ent, Player):
                     self.world.map.contains_player[position.y, position.x] = False
                     self.world.map.contains_player[moving.y, moving.x] = True
