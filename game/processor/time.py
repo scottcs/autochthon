@@ -53,6 +53,7 @@ class TurnProcessor(esper.Processor):
                 return None
 
     def _populate_queue(self) -> None:
+        print("populate queue")
         to_sort = []
         for ent, actor in self.world.get_component(Actor):
             if actor.time_units >= 0:
@@ -60,4 +61,5 @@ class TurnProcessor(esper.Processor):
         self.queue.extend([l[1] for l in sorted(to_sort, reverse=True)])
 
     def _give_turn(self, ent: Entity) -> None:
+        print(f"give turn {ent}")
         self.world.add_component(ent, GUTMyTurn())

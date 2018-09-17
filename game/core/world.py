@@ -11,6 +11,7 @@ from game.component.status import GUTDead
 from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
+from game.events import RefreshMapEvent
 from game.types import ProcessGroup, Entity, ComponentSchema
 
 log = logging.getLogger(__name__)
@@ -68,7 +69,7 @@ class World(esper.World):
         return False
 
     def actor_take_action(
-            self, ent: Entity, actor: Actor, cost: int, *remove_components: Any
+        self, ent: Entity, actor: Actor, cost: int, *remove_components: Any
     ) -> None:
         """Have an actor take an action."""
         actor.time_units -= cost
@@ -82,13 +83,14 @@ class World(esper.World):
             except KeyError:
                 pass
 
-    def kill_entity(self, ent: Entity):
+    def kill_entity(self, ent: Entity) -> None:
         """Kill an entity."""
         try:
             self.remove_component(ent, GUTMyTurn)
         except KeyError:
             pass
         self.add_component(ent, GUTDead())
+        RefreshMapEvent.fire()
 
     def pickup_item(self, ent: Entity) -> Optional[Entity]:
         """Pick up an item at an entity's location and return its id."""
@@ -110,7 +112,7 @@ class World(esper.World):
 
     def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:
         """Get an enemy entity at the given position."""
-        if self.map[x, y].contains_enemy:
+        if self.map and self.map.contains_enemy[y, x]:
             enemy = self.get_entity_at_position(x, y, Enemy)
             if enemy:
                 return enemy
@@ -120,7 +122,7 @@ class World(esper.World):
 
     def get_item_at_position(self, x: int, y: int) -> Optional[Entity]:
         """Get an item entity at the given position."""
-        if self.map[x, y].contains_item:
+        if self.map and self.map.contains_item[y, x]:
             item = self.get_entity_at_position(x, y, Item)
             if item:
                 return item

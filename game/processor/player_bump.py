@@ -32,7 +32,7 @@ class PlayerBumpProcessor(esper.Processor):
             enemy = self.world.get_enemy_at_position(destination.x, destination.y)
             if enemy:
                 self._try_attacking(ent, enemy)
-            elif self.world.map[destination.x, destination.y].walkable:
+            elif self.world.map.walkable[destination.y, destination.x]:
                 self._try_moving(ent, destination)
             # TODO: resolve other kinds of collisions? Digging?
 

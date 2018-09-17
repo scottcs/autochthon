@@ -37,6 +37,7 @@
         let layer_player;
         let layer_effect;
         let app;
+        let mapBits;
 
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -68,6 +69,7 @@
 
         function setup(loader, resources) {
             const config = resources[config_json].data;
+            mapBits = config.map_bits;
             tile_info = resources[tile_id_table].data;
             keys_data = resources[keys_json].data;
             socket_events = resources[socket_events_json].data;
@@ -163,32 +165,52 @@
         }
 
         function handleUpdateMap(data) {
-            setAllSpritesInvisible();
             const view = new DataView(data);
             const player_x = view.getUint16(0) * tile_width;
             const player_y = view.getUint16(2) * tile_height;
             camera.pivot.x = player_x;
             camera.pivot.y = player_y;
             const num_cells = view.getUint16(4);
-            const offset = 6;      // header size in bytes
-            const cell_size = 13;  // cell size in bytes
+            let offset = 6;      // header size in bytes
             for (let i = 0; i < num_cells; i++) {
-                const cell_offset = offset + (i * cell_size);
-                const cell_color_offset = cell_offset + 8;
-                const cell_r = view.getUint8(cell_color_offset);
-                const cell_g = view.getUint8(cell_color_offset + 1);
-                const cell_b = view.getUint8(cell_color_offset + 2);
-                const cell_a = view.getUint8(cell_color_offset + 3) / 255.0;
-                const cell_tint = 65536*cell_r + 256*cell_g + cell_b;
-                const cell = {
-                    id: view.getUint16(cell_offset),
-                    x: view.getUint16(cell_offset + 2),
-                    y: view.getUint16(cell_offset + 4),
-                    tile_id: view.getUint16(cell_offset + 6),
-                    tint: cell_tint,
-                    alpha: cell_a,
-                    layer: view.getUint8(cell_offset + 12)
-                };
+                const cell_id = view.getUint16(offset);
+                offset += 2;
+                const bitmask = view.getUint8(offset);
+                offset += 1;
+                const cell = {id: cell_id}
+                if (bitmask & mapBits.x) {
+                    cell.x = view.getUint16(offset);
+                    offset += 2;
+                }
+                if (bitmask & mapBits.y) {
+                    cell.y = view.getUint16(offset);
+                    offset += 2;
+                }
+                if (bitmask & mapBits.tile_id) {
+                    cell.tile_id = view.getUint16(offset);
+                    offset += 2;
+                }
+                if (bitmask & mapBits.tint) {
+                    const cell_r = view.getUint8(offset);
+                    offset += 1;
+                    const cell_g = view.getUint8(offset);
+                    offset += 1;
+                    const cell_b = view.getUint8(offset);
+                    offset += 1;
+                    cell.tint = 65536*cell_r + 256*cell_g + cell_b;
+                }
+                if (bitmask & mapBits.alpha) {
+                    cell.alpha = view.getUint8(offset) / 255.0;
+                    offset += 1;
+                }
+                if (bitmask & mapBits.layer) {
+                    cell.layer = view.getUint8(offset);
+                    offset += 1;
+                }
+                if (bitmask & mapBits.delete) {
+                    cell.delete = true;
+                }
+
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
                 } else {
@@ -287,18 +309,28 @@
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
-        function setAllSpritesInvisible() {
-            Object.keys(cells).forEach(function(key) {
-                cells[key].visible = false;
-            })
-        }
-
         function updateSprite(cell) {
             const sprite = cells[cell.id];
-            sprite.x = tile_width * cell.x;
-            sprite.y = tile_height * cell.y;
-            sprite.tint = cell.tint;
-            sprite.alpha = cell.alpha;
+            if (cell.delete) {
+                cells[cell.id] = undefined;
+                sprite.visible = false;
+                sprite.parent.removeChild(sprite);
+                return;
+            }
+
+            if (cell.x !== undefined) {
+                sprite.x = tile_width * cell.x;
+            }
+            if (cell.y !== undefined) {
+                sprite.y = tile_height * cell.y;
+            }
+            if (cell.tint !== undefined) {
+                sprite.tint = cell.tint;
+            }
+            if (cell.alpha !== undefined) {
+                sprite.alpha = cell.alpha;
+            }
+            // Sprites don't change layers so we don't check cell.layer
 
             const cameraRect = new PIXI.Rectangle();
             cameraRect.x = camera.pivot.x - app.screen.width / 2;
@@ -307,8 +339,7 @@
             cameraRect.height = app.screen.height;
 
             sprite.visible = (
-                (cell.tile_id > 0) &&
-                (cell.alpha > 0) &&
+                (sprite.alpha > 0) &&
                 (sprite.x > (cameraRect.left - 3*tile_width)) &&
                 (sprite.y > (cameraRect.top - 3*tile_height)) &&
                 (sprite.x < (cameraRect.right + 3*tile_width)) &&
