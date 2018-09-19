@@ -10,8 +10,8 @@ from game.component.movement import Position
 from game.component.player import Player
 from game.component.render import Renderable
 from game.component.status import GUTDead
-from game.events import UpdateMapRenderEvent
-from game.types import RenderLayer
+from game.events import UpdateMapRenderEvent, RenderEntitiesEvent, RenderMapEvent
+from game.types import RenderLayer, EventType
 from gamedata.config import CONFIG
 from gamedata.palette import Palette
 
@@ -26,9 +26,27 @@ class WebRenderProcessor(esper.Processor):
     def __init__(self) -> None:
         super().__init__()
         self.cache: Dict[str, Any] = {"player_x": -1, "player_y": -1, "cells": {}}
+        self.render_map: bool = True
+        self.render_entities: list = []
+        RenderEntitiesEvent.handle(self._on_render_entities)
+        RenderMapEvent.handle(self._on_render_map)
+
+    def _on_render_entities(self, event: EventType) -> None:
+        for ent in event["entities"]:
+            renderable = self.world.optional_component_for_entity(ent, Renderable)
+            if renderable is None:
+                log.warning(f"Attempt to render non-renderable entity {ent}")
+                continue
+            self.render_entities.append((ent, renderable))
+
+    def _on_render_map(self, _event: EventType) -> None:
+        self.render_map = True
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
+        if not (self.render_map or self.render_entities):
+            return
+
         b_cells: bytearray = bytearray()
         data_length: int = 0
         player_x: int = 0
@@ -49,7 +67,49 @@ class WebRenderProcessor(esper.Processor):
         b_cells.extend(player_y.to_bytes(2, "big"))
         b_cells.extend(data_length.to_bytes(2, "big"))
 
-        # MAP
+        if self.render_map:
+            data_length += self._append_map_bytes(b_cells, player_x, player_y, fov)
+            self.render_map = False
+        if self.render_entities:
+            data_length += self._append_entity_bytes(b_cells)
+            self.render_entities.clear()
+
+        # Overwrite data_length now that we've counted them
+        b_cells[4:6] = data_length.to_bytes(2, "big")
+        ##########################################
+        # Map Data:
+        #     Header:
+        #        2 bytes: player x position
+        #        2 bytes: player y position
+        #        2 bytes: num cells
+        #     Each Cell:
+        #        2 bytes: entity id
+        #        1 byte: bitmask of what changed
+        #        2 bytes: position x if it changed
+        #        2 bytes: position y if it changed
+        #        2 bytes: tile id if it changed
+        #        3 bytes: tint if it changed
+        #        1 byte : alpha if it changed
+        #        1 byte : render layer if it changed
+        #
+        # Bitmask:
+        #   1 - position x
+        #   2 - position y
+        #   4 - tile id
+        #   8 - tint
+        #   16 - alpha
+        #   32 - render layer
+        #   64 - ?
+        #   128 - ?
+        #
+        # So:    header = 6 bytes
+        #     each cell = 3 bytes + (1-11 bytes) = 4-14 bytes, but usually 4-5 bytes
+        # AND we only send a cell if something has changed.
+        ##########################################
+        UpdateMapRenderEvent.fire({"bytearray": b_cells})
+
+    def _append_map_bytes(self, b_cells: bytearray, player_x: int, player_y: int, fov: int) -> int:
+        data_append_length = 0
         if player_x != self.cache["player_x"] or player_y != self.cache["player_y"]:
             self.world.map.compute_fov(
                 player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
@@ -137,12 +197,12 @@ class WebRenderProcessor(esper.Processor):
                     b_cells.extend(self.cache["cells"][cell_id]["alpha"].to_bytes(1, "big"))
                 if bitmask & MAP_BITS["layer"]:
                     b_cells.extend(self.cache["cells"][cell_id]["layer"].to_bytes(1, "big"))
-                data_length += 1
+                data_append_length += 1
+        return data_append_length
 
-        # RENDERABLE ENTITIES
-        for ent, renderable in sorted(
-            self.world.get_component(Renderable), key=lambda t: t[1].layer.value
-        ):
+    def _append_entity_bytes(self, b_cells: bytearray) -> int:
+        data_append_length = 0
+        for ent, renderable in sorted(self.render_entities, key=lambda t: t[1].layer.value):
             position = self.world.optional_component_for_entity(ent, Position)
             is_dead = self.world.has_component(ent, GUTDead)
             is_contained = self.world.has_component(ent, GUTContained)
@@ -207,41 +267,8 @@ class WebRenderProcessor(esper.Processor):
                     b_cells.extend(alpha.to_bytes(1, "big"))
                 if bitmask & MAP_BITS["layer"]:
                     b_cells.extend(renderable.layer.value.to_bytes(1, "big"))
-                data_length += 1
-
-        # Overwrite data_length now that we've counted them
-        b_cells[4:6] = data_length.to_bytes(2, "big")
-        ##########################################
-        # Map Data:
-        #     Header:
-        #        2 bytes: player x position
-        #        2 bytes: player y position
-        #        2 bytes: num cells
-        #     Each Cell:
-        #        2 bytes: entity id
-        #        1 byte: bitmask of what changed
-        #        2 bytes: position x if it changed
-        #        2 bytes: position y if it changed
-        #        2 bytes: tile id if it changed
-        #        3 bytes: tint if it changed
-        #        1 byte : alpha if it changed
-        #        1 byte : render layer if it changed
-        #
-        # Bitmask:
-        #   1 - position x
-        #   2 - position y
-        #   4 - tile id
-        #   8 - tint
-        #   16 - alpha
-        #   32 - render layer
-        #   64 - ?
-        #   128 - ?
-        #
-        # So:    header = 6 bytes
-        #     each cell = 3 bytes + (1-11 bytes) = 4-14 bytes, but usually 4-5 bytes
-        # AND we only send a cell if something has changed.
-        ##########################################
-        UpdateMapRenderEvent.fire({"bytearray": b_cells})
+                data_append_length += 1
+        return data_append_length
 
 
 class TCODRenderProcessor(esper.Processor):

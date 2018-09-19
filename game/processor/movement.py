@@ -17,7 +17,7 @@ from game.component.movement import (
     MoveCostModifier,
     WaitCostModifier,
 )
-from game.events import RequestRenderEvent
+from game.events import RenderEntitiesEvent, RenderMapEvent
 from game.types import Entity
 from gamedata.base_engine_values import WAIT_COST, MOVE_COST
 from gamedata.palette import ItemPalette
@@ -28,6 +28,7 @@ class MovementProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process movement components."""
+        entities_to_render: list = []
         for ent, components in self.world.get_components(Actor, GUTWaiting, GUTMyTurn):
             if self.world.has_component(ent, GUTDead):
                 continue
@@ -56,7 +57,9 @@ class MovementProcessor(esper.Processor):
                 position.x = moving.x
                 position.y = moving.y
                 cost = self.get_move_action_cost(ent)
+                entities_to_render.append(ent)
                 if ent in self.world.players:
+                    RenderMapEvent.fire()
                     item = self.world.get_item_at_position(moving.x, moving.y)
                     if item:
                         name = self.world.optional_component_for_entity(item, Name)
@@ -65,7 +68,8 @@ class MovementProcessor(esper.Processor):
                             desc_log.add(f"{name.generic}", ItemPalette.epic)
                             desc_log.append(" is here.")
             self.world.actor_take_action(ent, actor, cost, GUTMoving)
-            RequestRenderEvent.fire()
+            if entities_to_render:
+                RenderEntitiesEvent.fire({'entities': entities_to_render})
 
     def get_wait_action_cost(self, ent: Entity) -> int:
         """Get wait action cost."""

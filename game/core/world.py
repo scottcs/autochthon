@@ -11,7 +11,7 @@ from game.component.status import GUTDead
 from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
-from game.events import RequestRenderEvent
+from game.events import RenderEntitiesEvent
 from game.types import ProcessGroup, Entity, ComponentSchema
 
 log = logging.getLogger(__name__)
@@ -82,7 +82,7 @@ class World(esper.World):
         except KeyError:
             pass
         self.add_component(ent, GUTDead())
-        RequestRenderEvent.fire()
+        RenderEntitiesEvent.fire({"entities": [ent]})
 
     def pickup_item(self, ent: Entity) -> Optional[Entity]:
         """Pick up an item at an entity's location and return its id."""
@@ -90,18 +90,18 @@ class World(esper.World):
         item_ent = self.get_item_at_position(at.x, at.y)
         if item_ent:
             self.add_component(item_ent, GUTContainerTransfer(ent))
-            RequestRenderEvent.fire()
+            RenderEntitiesEvent.fire({"entities": [item_ent]})
             return item_ent
         return None
 
-    def drop_item(self, ent: Entity, item: Entity) -> bool:
+    def drop_item(self, ent: Entity, item_ent: Entity) -> bool:
         """Drop an item onto the map where the entity is."""
         at = self.component_for_entity(ent, Position)
-        item_ent = self.get_item_at_position(at.x, at.y)
-        if item_ent:
+        current_item_ent = self.get_item_at_position(at.x, at.y)
+        if current_item_ent:
             return False
-        self.add_component(item, GUTContainerTransfer())
-        RequestRenderEvent.fire()
+        self.add_component(item_ent, GUTContainerTransfer())
+        RenderEntitiesEvent.fire({"entities": [item_ent]})
         return True
 
     def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:

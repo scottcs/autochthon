@@ -17,7 +17,14 @@ from game.component.attack import (
     ImmuneToDeflect,
 )
 from game.utils.dataloader import DataLoader
-from game.events import GameOverEvent, PlayerActedEvent, RequestRenderEvent, GameLogEvent
+from game.events import (
+    GameOverEvent,
+    PlayerActedEvent,
+    RequestRenderEvent,
+    RenderMapEvent,
+    GameLogEvent,
+    InputEvent,
+)
 from game.core.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (
@@ -82,6 +89,7 @@ class Game:
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
         self.set_state_playing(render_processor)
+        InputEvent.handle(self._on_input)
 
     def set_state_playing(
         self, render_processor: esper.Processor, seed: Optional[str] = None
@@ -161,8 +169,12 @@ class Game:
         item_factory.make(["Mace"])
         item_factory.make(["PlateArmor"])
 
-    def _on_refresh_map(self, _event: EventType) -> None:
-        self.render_needed = True
+    def _on_input(self, _event: EventType) -> None:
+        self.got_player_input = True
+
+    @staticmethod
+    def _on_refresh_map(_event: EventType) -> None:
+        RenderMapEvent.fire()
 
     def _on_player_acted(self, _event: EventType) -> None:
         self.player_acted = True
@@ -175,6 +187,12 @@ class Game:
         if event.get("shutdown"):
             log.info("Shutting down.")
             self.game_over = True
+
+    def _is_player_turn(self) -> bool:
+        for ent in self.world.players:
+            if self.world.has_component(ent, GUTMyTurn):
+                return True
+        return False
 
     def update(self) -> None:
         """Update the game world."""
@@ -194,19 +212,10 @@ class Game:
         # if entities need render:
         #     render only entities that need it
         self.world.process_group(ProcessGroup.time)
-        player_turn: bool = False
-        for player in self.world.players:
-            if self.world.has_component(player, GUTMyTurn):
-                player_turn = True
-        if player_turn:
-            # TODO: listen for input event and set this flag
-            if not self.got_player_input:
-                return
-            self.got_player_input = False
-            self.world.process_group(ProcessGroup.player)
+        if self._is_player_turn():
+            if self.got_player_input:
+                self.got_player_input = False
+                self.world.process_group(ProcessGroup.player)
         self.world.process_group(ProcessGroup.default)
-        # TODO: in render processor, listen for map render event and entity render event
-        # TODO: only render map if map render event fired
-        # TODO: only render entities that were sent in entity render event
         self.world.process_group(ProcessGroup.render)
         self.world.process_group(ProcessGroup.gamelog)

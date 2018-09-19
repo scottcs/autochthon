@@ -56,6 +56,7 @@ class TurnProcessor(esper.Processor):
         return next_ent
 
     def _reset_actor(self, actor: Actor) -> None:
+        # TODO: get and apply initiative modifiers
         actor.initiative = actor.base_initiative + self._rng.rand(-2, 2)
         actor.counter = 0
 
