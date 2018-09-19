@@ -4,9 +4,6 @@
       "action.Actor": {
         "base_initiative": 10
       },
-      "attack.AttackCostModifier": {
-        "factor": -0.1
-      },
       "attack.AttackHitModifier": {
         "factor": 0.2
       },

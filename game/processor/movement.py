@@ -5,7 +5,6 @@ import esper
 
 from game.component.action import Actor, GUTMyTurn
 from game.component.ai import Enemy
-from game.component.base import accumulate_modifiers
 from game.component.descriptive import Name
 from game.component.player import Player
 from game.component.gamelog import GUTDescriptionLog
@@ -14,12 +13,8 @@ from game.component.movement import (
     GUTMoving,
     GUTWaiting,
     Position,
-    MoveCostModifier,
-    WaitCostModifier,
 )
 from game.events import RenderEntitiesEvent, RenderMapEvent
-from game.types import Entity
-from gamedata.base_engine_values import WAIT_COST, MOVE_COST
 from gamedata.palette import ItemPalette
 
 
@@ -32,15 +27,12 @@ class MovementProcessor(esper.Processor):
         for ent, components in self.world.get_components(Actor, GUTWaiting, GUTMyTurn):
             if self.world.has_component(ent, GUTDead):
                 continue
-            self.world.actor_take_action(
-                ent, components[0], self.get_wait_action_cost(ent), GUTWaiting
-            )
+            self.world.actor_takes_turn(ent, GUTWaiting)
 
         for ent, components in self.world.get_components(Position, Actor, GUTMoving, GUTMyTurn):
             if self.world.has_component(ent, GUTDead):
                 continue
             position, actor, moving = components[:3]
-            cost = 0
             if (
                 not (
                     self.world.map.contains_enemy[moving.y, moving.x]
@@ -56,7 +48,6 @@ class MovementProcessor(esper.Processor):
                     self.world.map.contains_enemy[moving.y, moving.x] = True
                 position.x = moving.x
                 position.y = moving.y
-                cost = self.get_move_action_cost(ent)
                 entities_to_render.append(ent)
                 if ent in self.world.players:
                     RenderMapEvent.fire()
@@ -67,24 +58,6 @@ class MovementProcessor(esper.Processor):
                             desc_log = self.world.get_or_add_component(ent, GUTDescriptionLog)
                             desc_log.add(f"{name.generic}", ItemPalette.epic)
                             desc_log.append(" is here.")
-            self.world.actor_take_action(ent, actor, cost, GUTMoving)
+            self.world.actor_takes_turn(ent, GUTMoving)
             if entities_to_render:
                 RenderEntitiesEvent.fire({'entities': entities_to_render})
-
-    def get_wait_action_cost(self, ent: Entity) -> int:
-        """Get wait action cost."""
-        mods = []
-        for mod in self.world.try_component(ent, WaitCostModifier):
-            mods.append(mod)
-        # TODO: Calculate any other waiting cost modifiers
-        modifier = accumulate_modifiers(*mods)
-        return int((WAIT_COST + modifier.addend) * (1 + modifier.factor))
-
-    def get_move_action_cost(self, ent: Entity) -> int:
-        """Get move action cost."""
-        mods = []
-        for mod in self.world.try_component(ent, MoveCostModifier):
-            mods.append(mod)
-        # TODO: Calculate any other moving cost modifiers
-        modifier = accumulate_modifiers(*mods)
-        return int((MOVE_COST + modifier.addend) * (1 + modifier.factor))

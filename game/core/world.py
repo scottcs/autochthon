@@ -4,7 +4,7 @@ from typing import Any, Optional, Set, Callable, Tuple, Generator
 
 import esper
 
-from game.component.action import Actor, GUTMyTurn
+from game.component.action import GUTMyTurn
 from game.component.ai import Enemy
 from game.component.container import Item, GUTContainerTransfer
 from game.component.status import GUTDead
@@ -60,11 +60,8 @@ class World(esper.World):
         for processor in self._processor_groups[group]:
             processor.process(*args, **kwargs)
 
-    def actor_take_action(
-        self, ent: Entity, actor: Actor, cost: int, *remove_components: Any
-    ) -> None:
-        """Have an actor take an action."""
-        actor.time_units -= cost
+    def actor_takes_turn(self, ent: Entity, *remove_components: Any) -> None:
+        """Clean up after an actor takes a turn."""
         try:
             self.remove_component(ent, GUTMyTurn)
         except KeyError:
