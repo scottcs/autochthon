@@ -39,7 +39,7 @@ class TurnProcessor(esper.Processor):
             to_remove: List[Entity] = []
             for ent in self.queue:
                 try:
-                    actor = self.world.component_for_entity(Actor)
+                    actor = self.world.component_for_entity(ent, Actor)
                 except KeyError:
                     to_remove.append(ent)
                     continue
