@@ -3,7 +3,7 @@ from typing import Any
 
 import esper
 
-from game.component.action import Actor
+from game.component.action import Actor, GUTMyTurn
 from game.component.ai import AISimpleMind, AIDummy
 from game.component.movement import GUTMoving, Position, GUTWaiting
 from game.types import Entity
@@ -19,15 +19,10 @@ class AIProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process AI Components."""
-        for ent, components in self.world.get_components(Actor, AIDummy):
-            actor = components[0]
-            if actor.time_units < 0:
-                continue
+        for ent, components in self.world.get_components(Actor, AIDummy, GUTMyTurn):
             self.world.add_component(ent, GUTWaiting())
-        for ent, components in self.world.get_components(Position, Actor, AISimpleMind):
+        for ent, components in self.world.get_components(Position, Actor, AISimpleMind, GUTMyTurn):
             position, actor = components[:2]
-            if actor.time_units < 0:
-                continue
             self._try_moving(ent, position)
 
     def _try_moving(self, ent: Entity, position: Position) -> None:
@@ -38,7 +33,10 @@ class AIProcessor(esper.Processor):
                 dx = self._rng.rand(-1, 1)
                 dy = self._rng.rand(-1, 1)
             dest = Position(position.x + dx, position.y + dy)
-            cell = self.world.map[dest.x, dest.y]
-            if not cell.contains_enemy and not cell.contains_player and cell.walkable:
+            if (
+                not self.world.map.contains_enemy[dest.y, dest.x]
+                and not self.world.map.contains_player[dest.y, dest.x]
+                and self.world.map.walkable[dest.y, dest.x]
+            ):
                 self.world.add_component(ent, GUTMoving(dest.x, dest.y))
                 break

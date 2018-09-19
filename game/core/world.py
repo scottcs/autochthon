@@ -4,13 +4,14 @@ from typing import Any, Optional, Set, Callable, Tuple, Generator
 
 import esper
 
-from game.component.action import Actor
+from game.component.action import GUTMyTurn
 from game.component.ai import Enemy
 from game.component.container import Item, GUTContainerTransfer
 from game.component.status import GUTDead
 from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
+from game.events import RenderEntitiesEvent
 from game.types import ProcessGroup, Entity, ComponentSchema
 
 log = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ class World(esper.World):
         group = group or ProcessGroup.default
         self._processor_groups.setdefault(group, [])
         self._processor_groups[group].append(processor_instance)
+        self._processor_groups[group].sort(key=lambda p: p.priority, reverse=True)
 
     def remove_processor(self, processor_type: esper.Processor) -> None:
         """Remove a processor."""
@@ -58,13 +60,26 @@ class World(esper.World):
         for processor in self._processor_groups[group]:
             processor.process(*args, **kwargs)
 
-    def any_actors_can_act(self) -> bool:
-        """Return true if any actors can act."""
-        for ent, actor in self.get_component(Actor):
-            if not self.has_component(ent, GUTDead):
-                if actor.time_units >= 0:
-                    return True
-        return False
+    def actor_takes_turn(self, ent: Entity, *remove_components: Any) -> None:
+        """Clean up after an actor takes a turn."""
+        try:
+            self.remove_component(ent, GUTMyTurn)
+        except KeyError:
+            pass
+        for component in remove_components:
+            try:
+                self.remove_component(ent, component)
+            except KeyError:
+                pass
+
+    def kill_entity(self, ent: Entity) -> None:
+        """Kill an entity."""
+        try:
+            self.remove_component(ent, GUTMyTurn)
+        except KeyError:
+            pass
+        self.add_component(ent, GUTDead())
+        RenderEntitiesEvent.fire({"entities": [ent]})
 
     def pickup_item(self, ent: Entity) -> Optional[Entity]:
         """Pick up an item at an entity's location and return its id."""
@@ -72,21 +87,23 @@ class World(esper.World):
         item_ent = self.get_item_at_position(at.x, at.y)
         if item_ent:
             self.add_component(item_ent, GUTContainerTransfer(ent))
+            RenderEntitiesEvent.fire({"entities": [item_ent]})
             return item_ent
         return None
 
-    def drop_item(self, ent: Entity, item: Entity) -> bool:
+    def drop_item(self, ent: Entity, item_ent: Entity) -> bool:
         """Drop an item onto the map where the entity is."""
         at = self.component_for_entity(ent, Position)
-        item_ent = self.get_item_at_position(at.x, at.y)
-        if item_ent:
+        current_item_ent = self.get_item_at_position(at.x, at.y)
+        if current_item_ent:
             return False
-        self.add_component(item, GUTContainerTransfer())
+        self.add_component(item_ent, GUTContainerTransfer())
+        RenderEntitiesEvent.fire({"entities": [item_ent]})
         return True
 
     def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:
         """Get an enemy entity at the given position."""
-        if self.map[x, y].contains_enemy:
+        if self.map and self.map.contains_enemy[y, x]:
             enemy = self.get_entity_at_position(x, y, Enemy)
             if enemy:
                 return enemy
@@ -96,7 +113,7 @@ class World(esper.World):
 
     def get_item_at_position(self, x: int, y: int) -> Optional[Entity]:
         """Get an item entity at the given position."""
-        if self.map[x, y].contains_item:
+        if self.map and self.map.contains_item[y, x]:
             item = self.get_entity_at_position(x, y, Item)
             if item:
                 return item

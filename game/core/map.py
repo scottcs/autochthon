@@ -24,29 +24,7 @@ MAP_BITS = (
     "alt_tile_2",
     "alt_tile_3",
 )
-# TODO: item layer? interaction layer? enemy layer? etc?
-
-
-class MapCell(NamedTuple):
-    """Map cell."""
-
-    x: int = 0
-    y: int = 0
-    transparent: bool = False
-    walkable: bool = False
-    fov: bool = False
-    explored: bool = False
-    spawnable_player: bool = False
-    spawnable_enemy: bool = False
-    spawnable_item: bool = False
-    contains_player: bool = False
-    contains_enemy: bool = False
-    contains_item: bool = False
-    alt_tile_1: bool = False
-    alt_tile_2: bool = False
-    alt_tile_3: bool = False
-    tile_id: int = 0
-    tile_color: int = Palette.black
+# TODO: interaction layer? others?
 
 
 class TileType(Enum):
@@ -195,7 +173,7 @@ class Map(tcod.map.Map):
             return at
         return None
 
-    def _calculate_tile_type(self, x: int, y: int) -> TileType:
+    def _calculate_tile_type(self, y: int, x: int) -> TileType:
         if self.walkable[y, x]:
             return TileType.floor
         try:
@@ -205,7 +183,7 @@ class Map(tcod.map.Map):
             pass
         return TileType.wall_v
 
-    def _tile_id_from_type(self, tile_type: TileType, x: int, y: int) -> int:
+    def _tile_id_from_type(self, tile_type: TileType, y: int, x: int) -> int:
         # TODO: move these definitions to a data file/change based on map "theme"
         suffixes = "ABCD"
         idx = 0
@@ -237,46 +215,23 @@ class Map(tcod.map.Map):
             raise RuntimeError(f"Unknown tile type: {tile_type}")
 
     def __iter__(self) -> Map:
+        self._iter_y: int = -1
         self._iter_x: int = 0
-        self._iter_y: int = 0
         return self
 
-    def __next__(self) -> MapCell:
-        try:
-            cell: MapCell = self[self._iter_x, self._iter_y]
-        except IndexError:
-            raise StopIteration
+    def __next__(self) -> Tuple[int, int]:
         self._iter_y += 1
         if self._iter_y == self.height:
             self._iter_y = 0
             self._iter_x += 1
-        return cell
+        if self._iter_x == self.width:
+            raise StopIteration
+        return self._iter_y, self._iter_x
 
-    def __getitem__(self, item: Tuple[int, int]) -> MapCell:
-        x, y = item
-        tile_type = self._calculate_tile_type(x, y)
-        try:
-            return MapCell(
-                x,
-                y,
-                self.transparent[y, x],
-                self.walkable[y, x],
-                self.fov[y, x],
-                self.explored[y, x],
-                self.spawnable_player[y, x],
-                self.spawnable_enemy[y, x],
-                self.spawnable_item[y, x],
-                self.contains_player[y, x],
-                self.contains_enemy[y, x],
-                self.contains_item[y, x],
-                self.alt_tile_1[y, x],
-                self.alt_tile_2[y, x],
-                self.alt_tile_3[y, x],
-                self._tile_id_from_type(tile_type, x, y),
-                self._tile_color_from_type(tile_type),
-            )
-        except IndexError:
-            raise IndexError(f"Location ({x}, {y}) in map not found.")
+    def get_tile(self, y: int, x: int) -> Tuple[int, int]:
+        """Determine the tile id and color at the given coordinate."""
+        tile_type = self._calculate_tile_type(y, x)
+        return self._tile_id_from_type(tile_type, y, x), self._tile_color_from_type(tile_type)
 
     def __len__(self) -> int:
         return self.width * self.height

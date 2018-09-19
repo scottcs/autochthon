@@ -28,9 +28,9 @@ class RenderLayer(Enum):
 class Priority(IntEnum):
     """Processor priorities."""
 
+    gamelog = auto()
     render = auto()
     psychopomps = auto()
-    gamelog = auto()
     attributes = auto()
     damage_resolution = auto()
     defense = auto()
@@ -43,6 +43,7 @@ class Priority(IntEnum):
     movement = auto()
     ai = auto()
     container = auto()
+    turn = auto()
     time = auto()
     player_bump = auto()
     player_input = auto()
@@ -55,6 +56,7 @@ class ProcessGroup(Enum):
     player = auto()
     time = auto()
     render = auto()
+    gamelog = auto()
 
 
 class GameState(Enum):

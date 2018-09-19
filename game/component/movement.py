@@ -1,8 +1,6 @@
 """Movement components."""
 from dataclasses import dataclass
 
-from game.component.base import BaseModifierComponent
-
 
 @dataclass
 class Position:
@@ -20,13 +18,5 @@ class GUTMoving:
     y: int
 
 
-class MoveCostModifier(BaseModifierComponent):
-    """Movement cost modifier."""
-
-
 class GUTWaiting:
     """Waiting component."""
-
-
-class WaitCostModifier(BaseModifierComponent):
-    """Wait cost modifier."""

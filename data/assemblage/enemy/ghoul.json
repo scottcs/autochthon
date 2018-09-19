@@ -10,9 +10,6 @@
         "tile_id": "monster_ghoul1",
         "tint": "Palette.purple",
         "layer": "RenderLayer.enemy"
-      },
-      "movement.MoveCostModifier": {
-        "factor": -0.3
       }
     }
   },
@@ -30,9 +27,6 @@
         "tile_id": "monster_ghoul2",
         "tint": "Palette.purple",
         "layer": "RenderLayer.enemy"
-      },
-      "movement.MoveCostModifier": {
-        "factor": -0.3
       },
       "damage.ImmuneDamageSlashing": {},
       "damage.ModifierInflictDamageBludgeoning": {

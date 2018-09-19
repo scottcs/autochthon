@@ -7,6 +7,7 @@ import time
 import esper
 
 from game import VERSION
+from game.component.action import GUTMyTurn
 from game.component.attack import (
     AttackDodgeModifier,
     ImmuneToDodge,
@@ -16,7 +17,15 @@ from game.component.attack import (
     ImmuneToDeflect,
 )
 from game.utils.dataloader import DataLoader
-from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent, GameLogEvent
+from game.events import (
+    GameOverEvent,
+    PlayerActedEvent,
+    RequestRenderEvent,
+    RenderEntitiesEvent,
+    RenderMapEvent,
+    GameLogEvent,
+    InputEvent,
+)
 from game.core.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (
@@ -33,7 +42,7 @@ from game.processor.movement import MovementProcessor
 from game.processor.player_bump import PlayerBumpProcessor
 from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
-from game.processor.time import TimeProcessor
+from game.processor.time import TurnProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
 from game.utils.factory import PlayerFactory, EnemyFactory, ItemFactory
 from game.utils.language import Verb
@@ -69,6 +78,8 @@ class Game:
         self.config: dict = config or {}
         self.game_over: bool = False
         self.player_acted: bool = False
+        self.render_needed: bool = True
+        self.got_player_input: bool = False
         self.world: World = World()
         self.state: GameState = GameState.unknown
         self.morgue: logging.Logger = setup_morgue(self.config["morgue"]["directory"], "UNKNOWN")
@@ -79,6 +90,7 @@ class Game:
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
         self.set_state_playing(render_processor)
+        InputEvent.handle(self._on_input)
 
     def set_state_playing(
         self, render_processor: esper.Processor, seed: Optional[str] = None
@@ -90,7 +102,7 @@ class Game:
         GameLogEvent.handle(self._on_game_log)
         GameOverEvent.handle(self._on_game_over)
         PlayerActedEvent.handle(self._on_player_acted)
-        RefreshMapEvent.handle(self._on_refresh_map)
+        RequestRenderEvent.handle(self._on_refresh_map)
 
         loader = DataLoader()
         loader.load_all_json()
@@ -111,7 +123,7 @@ class Game:
         self.world.add_processor(
             PlayerBumpProcessor(), priority=Priority.player_bump, group=ProcessGroup.player
         )
-        self.world.add_processor(TimeProcessor(), priority=Priority.time, group=ProcessGroup.time)
+        self.world.add_processor(TurnProcessor(), priority=Priority.turn, group=ProcessGroup.time)
         self.world.add_processor(ContainerProcessor(), priority=Priority.container)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
@@ -124,12 +136,14 @@ class Game:
         self.world.add_processor(DamageBludgeoningMitigationProcessor(), priority=Priority.defense)
         self.world.add_processor(DamageBludgeoningProcessor(), priority=Priority.damage_resolution)
         self.world.add_processor(HPProcessor(), priority=Priority.attributes)
-        self.world.add_processor(GameLogProcessor(), priority=Priority.gamelog)
         self.world.add_processor(
             Psychopomps(), priority=Priority.psychopomps, group=ProcessGroup.render
         )
         self.world.add_processor(
             render_processor, priority=Priority.render, group=ProcessGroup.render
+        )
+        self.world.add_processor(
+            GameLogProcessor(), priority=Priority.gamelog, group=ProcessGroup.gamelog
         )
 
         current_map = ClassicMap(
@@ -141,7 +155,8 @@ class Game:
         player_factory = PlayerFactory(loader, self.world)
         enemy_factory = EnemyFactory(loader, self.world)
         item_factory = ItemFactory(loader, self.world)
-        player_factory.make(["Orc"])
+        player = player_factory.make(["Orc"])
+        self.world.add_component(player, GUTMyTurn())
         for _ in range(200):
             enemy_factory.make(["TrainingDummy"])
         enemy_factory.make(["Crab"])
@@ -155,8 +170,13 @@ class Game:
         item_factory.make(["Mace"])
         item_factory.make(["PlateArmor"])
 
-    def _on_refresh_map(self, _event: EventType) -> None:
-        self.world.process_group(ProcessGroup.render)
+    def _on_input(self, _event: EventType) -> None:
+        self.got_player_input = True
+
+    @staticmethod
+    def _on_refresh_map(_event: EventType) -> None:
+        RenderMapEvent.fire()
+        RenderEntitiesEvent.fire({"entities": [], "all": True})
 
     def _on_player_acted(self, _event: EventType) -> None:
         self.player_acted = True
@@ -170,13 +190,34 @@ class Game:
             log.info("Shutting down.")
             self.game_over = True
 
+    def _is_player_turn(self) -> bool:
+        for ent in self.world.players:
+            if self.world.has_component(ent, GUTMyTurn):
+                return True
+        return False
+
     def update(self) -> None:
         """Update the game world."""
-        self.player_acted = False
-        self.world.process_group(ProcessGroup.player)
-        if self.player_acted:
-            self.world.process_group(ProcessGroup.time)
-        actors_could_act = self.world.any_actors_can_act()
+        # if it's currently nobody's turn:
+        #     if initiative queue is empty:
+        #         roll initiative for every actor and sort
+        #     set lowest initiative actor to MyTurn
+        # if it's the player's turn:
+        #     if no input:
+        #         continue
+        #     interpret input
+        #     do player turn
+        # else:
+        #     do actor's turn
+        # if map needs render:
+        #     render map
+        # if entities need render:
+        #     render only entities that need it
+        self.world.process_group(ProcessGroup.time)
+        if self._is_player_turn():
+            if self.got_player_input:
+                self.got_player_input = False
+                self.world.process_group(ProcessGroup.player)
         self.world.process_group(ProcessGroup.default)
-        if actors_could_act and not self.world.any_actors_can_act():
-            self.world.process_group(ProcessGroup.render)
+        self.world.process_group(ProcessGroup.render)
+        self.world.process_group(ProcessGroup.gamelog)

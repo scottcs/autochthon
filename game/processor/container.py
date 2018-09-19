@@ -8,12 +8,12 @@ from game.component.container import Container, Containable, GUTContained, GUTCo
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
-from game.events import RefreshMapEvent
+from game.events import RenderEntitiesEvent
 from game.types import EquipType, Entity
 from gamedata.palette import ItemPalette
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 
 class ContainerProcessor(esper.Processor):
@@ -21,6 +21,7 @@ class ContainerProcessor(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process container components."""
+        entities_to_render: list = []
 
         # TODO: process unequip
 
@@ -68,7 +69,8 @@ class ContainerProcessor(esper.Processor):
                         # TODO: colorize the item by rarity?
                         cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
                         cmd_log.append(f".")
-                    RefreshMapEvent.fire()
+                        log.debug(f"Picked up {containable_ent}")
+                    entities_to_render.append(containable_ent)
                 else:
                     # TODO: what to do if can't pick up?
                     log.error(f"{containable} has no Position!")
@@ -90,7 +92,7 @@ class ContainerProcessor(esper.Processor):
                         # TODO: colorize the item by rarity?
                         cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
                         cmd_log.append(".")
-                    RefreshMapEvent.fire()
+                    entities_to_render.append(containable_ent)
                 else:
                     # TODO: what to do if can't drop?
                     log.error(f"{contained} has no Position!")
@@ -106,6 +108,7 @@ class ContainerProcessor(esper.Processor):
                         # TODO: colorize the item by rarity?
                         cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
                         cmd_log.append(f" is put into {container_name}.")
+        RenderEntitiesEvent.fire({"entities": entities_to_render})
 
     def _get_next_free_slot(self, ent: Entity, container: Container) -> Optional[int]:
         seen_slots = set()

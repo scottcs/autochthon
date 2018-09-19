@@ -11,7 +11,7 @@ import tornado.websocket
 from game.events import (
     InputEvent,
     UpdateMapRenderEvent,
-    RefreshMapEvent,
+    RequestRenderEvent,
     GameLogEvent,
     ChooseFromListEvent,
     ChoiceFromListEvent,
@@ -19,9 +19,9 @@ from game.events import (
 from game.core.main import Game
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
+from gamedata.config import CONFIG
 
 WEBSOCKET_EVENTS_JSON = Path("data") / Path("websocketevents.json")
-DESIRED_FPS = 30
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
@@ -42,7 +42,7 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
     def __init__(self, config: Optional[dict] = None) -> None:
         if GameCallback.game is None:
             GameCallback.game = Game(WebRenderProcessor(), config=config)
-        super().__init__(self.process_events, 1000 / DESIRED_FPS)
+        super().__init__(self.process_events, 1)
 
     @staticmethod
     def get_game_state() -> GameState:
@@ -117,7 +117,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         if isinstance(message, bytes):
             if message[0] == self.socket_events["ToServer"]["RefreshGraphics"]:
                 # ---- refresh event
-                RefreshMapEvent.fire()
+                RequestRenderEvent.fire()
             elif message[0] == self.socket_events["ToServer"]["GameInput"]:
                 # ---- input event
                 # byte 1: input event flags
@@ -175,11 +175,11 @@ def make_app(config: Mapping) -> tornado.web.Application:
     )
 
 
-def run_server(config: Mapping) -> None:
+def run_server() -> None:
     """Run the game as a websockets server."""
-    port: int = config["server"]["port"]
-    host: str = config["server"]["host"]
-    app: tornado.web.Application = make_app(config)
+    port: int = CONFIG["server"]["port"]
+    host: str = CONFIG["server"]["host"]
+    app: tornado.web.Application = make_app(CONFIG)
     app.listen(port, address=host)
     log.info(f"Listening on {host}:{port}...")
     tornado.ioloop.IOLoop.current().start()

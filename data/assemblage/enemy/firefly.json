@@ -5,9 +5,6 @@
       "attribute.HP": {
         "initial": "==1d6+1"
       },
-      "movement.MoveCostModifier": {
-        "factor": "==step(-0.1, 0.1, 0.1)"
-      },
       "descriptive.Name": {
         "first": "firefly"
       },
