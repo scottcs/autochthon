@@ -27,7 +27,7 @@ class WebRenderProcessor(esper.Processor):
         super().__init__()
         self.cache: Dict[str, Any] = {"player_x": -1, "player_y": -1, "cells": {}}
         self.render_map: bool = True
-        self.render_entities: list = []
+        self.render_entities: set = set()
         RenderEntitiesEvent.handle(self._on_render_entities)
         RenderMapEvent.handle(self._on_render_map)
 
@@ -40,7 +40,7 @@ class WebRenderProcessor(esper.Processor):
             if renderable is None:
                 log.warning(f"Attempt to render non-renderable entity {ent}")
                 continue
-            self.render_entities.append((ent, renderable))
+            self.render_entities.add((renderable.layer.value, ent))
 
     def _on_render_map(self, _event: EventType) -> None:
         self.render_map = True
@@ -117,6 +117,7 @@ class WebRenderProcessor(esper.Processor):
             self.world.map.compute_fov(
                 player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
             )
+            self._add_fov_entities_to_render()
         self.cache["player_x"] = player_x
         self.cache["player_y"] = player_y
 
@@ -203,9 +204,21 @@ class WebRenderProcessor(esper.Processor):
                 data_append_length += 1
         return data_append_length
 
+    def _add_fov_entities_to_render(self) -> None:
+        for ent, renderable in self.world.get_component(Renderable):
+            position = self.world.optional_component_for_entity(ent, Position)
+            if position is not None:
+                if self.world.map.fov[position.y, position.x]:
+                    # we can see it now
+                    self.render_entities.add((renderable.layer.value, ent))
+            if renderable.last_seen_x is not None:
+                # we've seen it before
+                self.render_entities.add((renderable.layer.value, ent))
+
     def _append_entity_bytes(self, b_cells: bytearray) -> int:
         data_append_length = 0
-        for ent, renderable in sorted(self.render_entities, key=lambda t: t[1].layer.value):
+        for _, ent in sorted(self.render_entities):
+            renderable = self.world.component_for_entity(ent, Renderable)
             position = self.world.optional_component_for_entity(ent, Position)
             is_dead = self.world.has_component(ent, GUTDead)
             is_contained = self.world.has_component(ent, GUTContained)
