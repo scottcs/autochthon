@@ -34,7 +34,7 @@ from game.processor.movement import MovementProcessor
 from game.processor.player_bump import PlayerBumpProcessor
 from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
-from game.processor.time import TimeProcessor, TurnProcessor
+from game.processor.time import TurnProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
 from game.utils.factory import PlayerFactory, EnemyFactory, ItemFactory
 from game.utils.language import Verb
@@ -71,6 +71,7 @@ class Game:
         self.game_over: bool = False
         self.player_acted: bool = False
         self.render_needed: bool = True
+        self.got_player_input: bool = False
         self.world: World = World()
         self.state: GameState = GameState.unknown
         self.morgue: logging.Logger = setup_morgue(self.config["morgue"]["directory"], "UNKNOWN")
@@ -113,8 +114,7 @@ class Game:
         self.world.add_processor(
             PlayerBumpProcessor(), priority=Priority.player_bump, group=ProcessGroup.player
         )
-        self.world.add_processor(TimeProcessor(), priority=Priority.time, group=ProcessGroup.time)
-        self.world.add_processor(TurnProcessor(), priority=Priority.turn)
+        self.world.add_processor(TurnProcessor(), priority=Priority.turn, group=ProcessGroup.time)
         self.world.add_processor(ContainerProcessor(), priority=Priority.container)
         self.world.add_processor(AIProcessor(), priority=Priority.ai)
         self.world.add_processor(MovementProcessor(), priority=Priority.movement)
@@ -178,23 +178,6 @@ class Game:
 
     def update(self) -> None:
         """Update the game world."""
-        self.player_acted = False
-        # if player input:
-        #    do player turn
-        #    if map needs render:
-        #        render map
-        #    if entities need render:
-        #        render only entities that need it
-        #    if player turn cost action points:
-        #        for each other actor in order of highest energy (until nobody has energy):
-        #            do actor turn
-        #            if map needs render:
-        #                render map
-        #            if entities need render:
-        #                render only entities that need it
-        #        give everyone action points = player action points spent
-        # OR
-        #
         # if it's currently nobody's turn:
         #     if initiative queue is empty:
         #         roll initiative for every actor and sort
@@ -210,13 +193,20 @@ class Game:
         #     render map
         # if entities need render:
         #     render only entities that need it
-
-        self.world.process_group(ProcessGroup.player)
-        if self.player_acted:
-            self.world.process_group(ProcessGroup.time)
-            self.render_needed = True
+        self.world.process_group(ProcessGroup.time)
+        player_turn: bool = False
+        for player in self.world.players:
+            if self.world.has_component(player, GUTMyTurn):
+                player_turn = True
+        if player_turn:
+            # TODO: listen for input event and set this flag
+            if not self.got_player_input:
+                return
+            self.got_player_input = False
+            self.world.process_group(ProcessGroup.player)
         self.world.process_group(ProcessGroup.default)
-        if self.render_needed:
-            self.world.process_group(ProcessGroup.render)
-            self.render_needed = False
+        # TODO: in render processor, listen for map render event and entity render event
+        # TODO: only render map if map render event fired
+        # TODO: only render entities that were sent in entity render event
+        self.world.process_group(ProcessGroup.render)
         self.world.process_group(ProcessGroup.gamelog)
