@@ -16,10 +16,6 @@ class GUTCurrentTarget:
     entity: Optional[Entity] = None
 
 
-class AttackCostModifier(BaseModifierComponent):
-    """Attack cost modifier."""
-
-
 class AttackHitModifier(BaseModifierComponent):
     """Attack modifier for hit chance."""
 

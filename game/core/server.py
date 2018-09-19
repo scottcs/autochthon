@@ -11,7 +11,7 @@ import tornado.websocket
 from game.events import (
     InputEvent,
     UpdateMapRenderEvent,
-    RefreshMapEvent,
+    RequestRenderEvent,
     GameLogEvent,
     ChooseFromListEvent,
     ChoiceFromListEvent,
@@ -117,7 +117,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         if isinstance(message, bytes):
             if message[0] == self.socket_events["ToServer"]["RefreshGraphics"]:
                 # ---- refresh event
-                RefreshMapEvent.fire()
+                RequestRenderEvent.fire()
             elif message[0] == self.socket_events["ToServer"]["GameInput"]:
                 # ---- input event
                 # byte 1: input event flags

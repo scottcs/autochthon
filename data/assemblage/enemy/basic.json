@@ -1,7 +1,9 @@
 {
   "BasicEnemy": {
     "Components": {
-      "action.Actor": {},
+      "action.Actor": {
+        "base_initiative": 10
+      },
       "ai.Enemy": {},
       "attribute.HP": {
         "initial": 1

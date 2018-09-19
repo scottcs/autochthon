@@ -1,9 +1,8 @@
 {
   "BasicPlayer": {
     "Components": {
-      "action.Actor": {},
-      "attack.AttackCostModifier": {
-        "factor": -0.1
+      "action.Actor": {
+        "base_initiative": 10
       },
       "attack.AttackHitModifier": {
         "factor": 0.2

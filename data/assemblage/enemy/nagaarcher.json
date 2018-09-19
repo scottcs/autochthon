@@ -13,9 +13,6 @@
         "tile_id": "monster_naga2",
         "tint": "Palette.green",
         "layer": "RenderLayer.enemy"
-      },
-      "movement.MoveCostModifier": {
-        "factor": -0.3
       }
     }
   }

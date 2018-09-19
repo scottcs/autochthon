@@ -44,7 +44,7 @@ def convert_datum(value: Any) -> Any:
 
 
 def get_component_class(class_substring: str) -> Any:
-    """Get a component class from a substring like `attack.AttackCostModifier`."""
+    """Get a component class from a substring like `attack.AttackHitModifier`."""
     component_group, component_class = class_substring.split(".")
     mod_name = f"game.component.{component_group}"
     _tmp = __import__(mod_name, globals=globals(), locals=locals(), fromlist=[component_class])
