@@ -21,6 +21,7 @@ from game.events import (
     GameOverEvent,
     PlayerActedEvent,
     RequestRenderEvent,
+    RenderEntitiesEvent,
     RenderMapEvent,
     GameLogEvent,
     InputEvent,
@@ -175,6 +176,7 @@ class Game:
     @staticmethod
     def _on_refresh_map(_event: EventType) -> None:
         RenderMapEvent.fire()
+        RenderEntitiesEvent.fire({"entities": [], "all": True})
 
     def _on_player_acted(self, _event: EventType) -> None:
         self.player_acted = True

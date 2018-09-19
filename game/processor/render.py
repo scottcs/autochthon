@@ -32,7 +32,10 @@ class WebRenderProcessor(esper.Processor):
         RenderMapEvent.handle(self._on_render_map)
 
     def _on_render_entities(self, event: EventType) -> None:
-        for ent in event["entities"]:
+        entities_to_render = event["entities"]
+        if event.get("all", False):
+            entities_to_render.extend([ent for ent, _ in self.world.get_components(Renderable)])
+        for ent in entities_to_render:
             renderable = self.world.optional_component_for_entity(ent, Renderable)
             if renderable is None:
                 log.warning(f"Attempt to render non-renderable entity {ent}")
