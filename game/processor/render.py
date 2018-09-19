@@ -225,8 +225,6 @@ class WebRenderProcessor(esper.Processor):
             pos_x = pos_y = None
             can_see_now = can_see_prev = seen = False
 
-            print(f"{ent} {position} {is_dead} {is_contained}")
-
             if position is not None:
                 pos_x = position.x
                 pos_y = position.y
@@ -253,11 +251,7 @@ class WebRenderProcessor(esper.Processor):
                 pos_x = renderable.last_seen_x
             # else don't draw it
 
-            print(f"{can_see_now} {can_see_prev} {seen} {alpha}")
-
             if is_dead or is_contained or position is None:
-                print(f"delete {ent}")
-                print(position)
                 bitmask = MAP_BITS["delete"]
             else:
                 bitmask = (
