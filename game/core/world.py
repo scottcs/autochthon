@@ -11,7 +11,7 @@ from game.component.status import GUTDead
 from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
-from game.events import RefreshMapEvent
+from game.events import RequestRenderEvent
 from game.types import ProcessGroup, Entity, ComponentSchema
 
 log = logging.getLogger(__name__)
@@ -60,14 +60,6 @@ class World(esper.World):
         for processor in self._processor_groups[group]:
             processor.process(*args, **kwargs)
 
-    def any_actors_can_act(self) -> bool:
-        """Return true if any actors can act."""
-        for ent, actor in self.get_component(Actor):
-            if not self.has_component(ent, GUTDead):
-                if actor.time_units >= 0:
-                    return True
-        return False
-
     def actor_take_action(
         self, ent: Entity, actor: Actor, cost: int, *remove_components: Any
     ) -> None:
@@ -90,7 +82,7 @@ class World(esper.World):
         except KeyError:
             pass
         self.add_component(ent, GUTDead())
-        RefreshMapEvent.fire()
+        RequestRenderEvent.fire()
 
     def pickup_item(self, ent: Entity) -> Optional[Entity]:
         """Pick up an item at an entity's location and return its id."""
@@ -98,6 +90,7 @@ class World(esper.World):
         item_ent = self.get_item_at_position(at.x, at.y)
         if item_ent:
             self.add_component(item_ent, GUTContainerTransfer(ent))
+            RequestRenderEvent.fire()
             return item_ent
         return None
 
@@ -108,6 +101,7 @@ class World(esper.World):
         if item_ent:
             return False
         self.add_component(item, GUTContainerTransfer())
+        RequestRenderEvent.fire()
         return True
 
     def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:

@@ -17,7 +17,7 @@ from game.component.attack import (
     ImmuneToDeflect,
 )
 from game.utils.dataloader import DataLoader
-from game.events import GameOverEvent, PlayerActedEvent, RefreshMapEvent, GameLogEvent
+from game.events import GameOverEvent, PlayerActedEvent, RequestRenderEvent, GameLogEvent
 from game.core.map import ClassicMap
 from game.processor.ai import AIProcessor
 from game.processor.attack import (
@@ -70,6 +70,7 @@ class Game:
         self.config: dict = config or {}
         self.game_over: bool = False
         self.player_acted: bool = False
+        self.render_needed: bool = True
         self.world: World = World()
         self.state: GameState = GameState.unknown
         self.morgue: logging.Logger = setup_morgue(self.config["morgue"]["directory"], "UNKNOWN")
@@ -91,7 +92,7 @@ class Game:
         GameLogEvent.handle(self._on_game_log)
         GameOverEvent.handle(self._on_game_over)
         PlayerActedEvent.handle(self._on_player_acted)
-        RefreshMapEvent.handle(self._on_refresh_map)
+        RequestRenderEvent.handle(self._on_refresh_map)
 
         loader = DataLoader()
         loader.load_all_json()
@@ -161,7 +162,7 @@ class Game:
         item_factory.make(["PlateArmor"])
 
     def _on_refresh_map(self, _event: EventType) -> None:
-        self.world.process_group(ProcessGroup.render)
+        self.render_needed = True
 
     def _on_player_acted(self, _event: EventType) -> None:
         self.player_acted = True
@@ -178,11 +179,44 @@ class Game:
     def update(self) -> None:
         """Update the game world."""
         self.player_acted = False
+        # if player input:
+        #    do player turn
+        #    if map needs render:
+        #        render map
+        #    if entities need render:
+        #        render only entities that need it
+        #    if player turn cost action points:
+        #        for each other actor in order of highest energy (until nobody has energy):
+        #            do actor turn
+        #            if map needs render:
+        #                render map
+        #            if entities need render:
+        #                render only entities that need it
+        #        give everyone action points = player action points spent
+        # OR
+        #
+        # if it's currently nobody's turn:
+        #     if initiative queue is empty:
+        #         roll initiative for every actor and sort
+        #     set lowest initiative actor to MyTurn
+        # if it's the player's turn:
+        #     if no input:
+        #         continue
+        #     interpret input
+        #     do player turn
+        # else:
+        #     do actor's turn
+        # if map needs render:
+        #     render map
+        # if entities need render:
+        #     render only entities that need it
+
         self.world.process_group(ProcessGroup.player)
         if self.player_acted:
             self.world.process_group(ProcessGroup.time)
-        actors_could_act = self.world.any_actors_can_act()
+            self.render_needed = True
         self.world.process_group(ProcessGroup.default)
-        if actors_could_act and not self.world.any_actors_can_act():
+        if self.render_needed:
             self.world.process_group(ProcessGroup.render)
+            self.render_needed = False
         self.world.process_group(ProcessGroup.gamelog)

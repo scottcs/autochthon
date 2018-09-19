@@ -5,14 +5,15 @@ from typing import Any, Dict
 import esper
 import tcod
 
-from game.component.status import GUTDead
-from game.component.player import Player
+from game.component.container import GUTContained
 from game.component.movement import Position
+from game.component.player import Player
 from game.component.render import Renderable
+from game.component.status import GUTDead
 from game.events import UpdateMapRenderEvent
 from game.types import RenderLayer
-from gamedata.palette import Palette
 from gamedata.config import CONFIG
+from gamedata.palette import Palette
 
 MAP_BITS = CONFIG["map_bits"]
 log = logging.getLogger(__name__)
@@ -139,26 +140,32 @@ class WebRenderProcessor(esper.Processor):
                 data_length += 1
 
         # RENDERABLE ENTITIES
-        for ent, components in sorted(
-            self.world.get_components(Position, Renderable), key=lambda t: t[1][1].layer.value
+        for ent, renderable in sorted(
+            self.world.get_component(Renderable), key=lambda t: t[1].layer.value
         ):
-            positional, renderable = components
+            position = self.world.optional_component_for_entity(ent, Position)
+            is_dead = self.world.has_component(ent, GUTDead)
+            is_contained = self.world.has_component(ent, GUTContained)
+            pos_x = pos_y = None
+            can_see_now = can_see_prev = seen = False
+
+            print(f"{ent} {position} {is_dead} {is_contained}")
+
+            if position is not None:
+                pos_x = position.x
+                pos_y = position.y
+                can_see_now = self.world.map.fov[position.y, position.x]
+
             alpha = 0x00
-            pos_y = positional.y
-            pos_x = positional.x
-            can_see_now = self.world.map.fov[positional.y, positional.x]
-            if renderable.last_seen_x is None:
-                seen = False
-                can_see_prev = False
-            else:
+            if renderable.last_seen_x is not None:
                 seen = True
                 can_see_prev = self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]
 
             # if we can see it now, draw it and update seen pos
             if can_see_now:
                 alpha = 0xff
-                renderable.last_seen_y = positional.y
-                renderable.last_seen_x = positional.x
+                renderable.last_seen_y = position.y
+                renderable.last_seen_x = position.x
             # else if we can see where it last was, forget where we've seen it and don't draw it
             elif can_see_prev:
                 renderable.last_seen_y = None
@@ -170,10 +177,11 @@ class WebRenderProcessor(esper.Processor):
                 pos_x = renderable.last_seen_x
             # else don't draw it
 
-            if alpha == 0:
-                continue
+            print(f"{can_see_now} {can_see_prev} {seen} {alpha}")
 
-            if self.world.has_component(ent, GUTDead):
+            if is_dead or is_contained or position is None:
+                print(f"delete {ent}")
+                print(position)
                 bitmask = MAP_BITS["delete"]
             else:
                 bitmask = (

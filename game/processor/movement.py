@@ -17,6 +17,7 @@ from game.component.movement import (
     MoveCostModifier,
     WaitCostModifier,
 )
+from game.events import RequestRenderEvent
 from game.types import Entity
 from gamedata.base_engine_values import WAIT_COST, MOVE_COST
 from gamedata.palette import ItemPalette
@@ -64,6 +65,7 @@ class MovementProcessor(esper.Processor):
                             desc_log.add(f"{name.generic}", ItemPalette.epic)
                             desc_log.append(" is here.")
             self.world.actor_take_action(ent, actor, cost, GUTMoving)
+            RequestRenderEvent.fire()
 
     def get_wait_action_cost(self, ent: Entity) -> int:
         """Get wait action cost."""
