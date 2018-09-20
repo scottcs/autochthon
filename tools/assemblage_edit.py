@@ -122,7 +122,6 @@ class FileLoadSave(QWidget):
         self.filename = None
         self.data = {}
         self.original_json = None
-        self.original_name = None
 
         layout = QHBoxLayout()
         layout.setSpacing(0)
@@ -208,9 +207,6 @@ class FileLoadSave(QWidget):
         with self.filename.open() as f:
             self.data = json.load(f)
             self.original_json = json.dumps(self.data, sort_keys=True)
-            for key in self.data.keys():
-                self.original_name = key
-                break  # only one object per file
         if self.data:
             self.file_loaded.emit(self.data)
 
@@ -227,15 +223,6 @@ class FileLoadSave(QWidget):
         else:
             self.save_button.setDisabled(True)
         self.save_button.repaint()
-
-    def update_assemblage_name(self, name: str) -> None:
-        """Update the assemblage name in our data."""
-        if name:
-            new_data = {}
-            for value in self.data.values():
-                new_data[name] = value
-                break  # should only be one value
-            self.update_data(new_data)
 
 
 class GetComponentDialog(QDialog):
