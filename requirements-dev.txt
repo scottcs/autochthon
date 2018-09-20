@@ -1,4 +1,4 @@
 PySide2==5.11.1
 black==18.6b4
-bump2version==0.5.8
-mypy==0.620
+bump2version==0.5.10
+mypy==0.630
