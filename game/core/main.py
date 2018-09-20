@@ -76,7 +76,6 @@ class Game:
     def __init__(self, render_processor: esper.Processor, config: Optional[dict] = None) -> None:
         self.config: dict = config or {}
         self.game_over: bool = False
-        self.render_needed: bool = True
         self.got_player_input: bool = False
         self.world: World = World()
         self.state: GameState = GameState.unknown
