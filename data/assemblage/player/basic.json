@@ -36,7 +36,8 @@
         "name": "your backpack",
         "max_slots": 62,
         "equip_type": "EquipType.any"
-      }
+      },
+      "container.Equipment": {}
     }
   }
 }
