@@ -17,8 +17,7 @@
         "tile_id": "monster_angel1",
         "tint": "Palette.white",
         "layer": "RenderLayer.enemy"
-      },
-      "status.Solid": {}
+      }
     }
   }
 }

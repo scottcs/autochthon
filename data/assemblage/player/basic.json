@@ -32,7 +32,6 @@
         "tint": "Palette.yellow",
         "layer": "RenderLayer.player"
       },
-      "status.Solid": {},
       "container.Container": {
         "name": "your backpack",
         "max_slots": 62,
