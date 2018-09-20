@@ -10,3 +10,4 @@ alias typeshed='cp -rf typeshed/* ~/.venv/autochthon/lib/python3.7/site-packages
 alias typing='mypy --strict -p game'
 alias rg="rg --iglob '!static/js/pixi*' --iglob '!typeshed'"
 alias black='black -l 99 --py36 game gamedata tools typeshed'
+alias vulture='python -m vulture --exclude data/,__pycache__/,templates/,typeshed/,.vscode/,.idea/,node_modules/,build/,dist/,static/,.git/,.serverless/ . whitelist.py'
