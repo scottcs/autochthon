@@ -22,7 +22,7 @@ class Containable:
     equip_type: EquipType = EquipType.none
     stackable: bool = False
 
-    def __post__init__(self) -> None:
+    def __post_init__(self) -> None:
         self.count: int = 1
         self.equipped = False
 
@@ -101,21 +101,21 @@ class Equipment:
         ranged_max: int = 1,
     ):
         self.slots = {
-            EquipType.head: {'name': head_name, 'slots': head_max},
-            EquipType.face: {'name': face_name, 'slots': face_max},
-            EquipType.neck: {'name': neck_name, 'slots': neck_max},
-            EquipType.shoulder: {'name': shoulder_name, 'slots': shoulder_max},
-            EquipType.back: {'name': back_name, 'slots': back_max},
-            EquipType.torso: {'name': torso_name, 'slots': torso_max},
-            EquipType.waist: {'name': waist_name, 'slots': waist_max},
-            EquipType.tail: {'name': tail_name, 'slots': tail_max},
-            EquipType.wrist: {'name': wrist_name, 'slots': wrist_max},
-            EquipType.hand: {'name': hand_name, 'slots': hand_max},
-            EquipType.finger: {'name': finger_name, 'slots': finger_max},
-            EquipType.leg: {'name': leg_name, 'slots': leg_max},
-            EquipType.foot: {'name': foot_name, 'slots': foot_max},
-            EquipType.implant: {'name': implant_name, 'slots': implant_max},
-            EquipType.shield: {'name': shield_name, 'slots': shield_max},
-            EquipType.melee: {'name': melee_name, 'slots': melee_max},
-            EquipType.ranged: {'name': ranged_name, 'slots': ranged_max},
+            EquipType.head: {'name': head_name, 'max': head_max},
+            EquipType.face: {'name': face_name, 'max': face_max},
+            EquipType.neck: {'name': neck_name, 'max': neck_max},
+            EquipType.shoulder: {'name': shoulder_name, 'max': shoulder_max},
+            EquipType.back: {'name': back_name, 'max': back_max},
+            EquipType.torso: {'name': torso_name, 'max': torso_max},
+            EquipType.waist: {'name': waist_name, 'max': waist_max},
+            EquipType.tail: {'name': tail_name, 'max': tail_max},
+            EquipType.wrist: {'name': wrist_name, 'max': wrist_max},
+            EquipType.hand: {'name': hand_name, 'max': hand_max},
+            EquipType.finger: {'name': finger_name, 'max': finger_max},
+            EquipType.leg: {'name': leg_name, 'max': leg_max},
+            EquipType.foot: {'name': foot_name, 'max': foot_max},
+            EquipType.implant: {'name': implant_name, 'max': implant_max},
+            EquipType.shield: {'name': shield_name, 'max': shield_max},
+            EquipType.melee: {'name': melee_name, 'max': melee_max},
+            EquipType.ranged: {'name': ranged_name, 'max': ranged_max},
         }

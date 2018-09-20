@@ -6,13 +6,13 @@ from typing import Any, Mapping
 
 import esper
 
-from game.component.container import Containable, GUTContained, GUTContainerTransfer
+from game.component.container import Containable, GUTContained, Equipment
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
 from game.component.player import GUTPlayerBump, Player
 from game.events import InputEvent, ChooseFromListEvent, ChoiceFromListEvent
-from game.types import EventType, GameState
+from game.types import EventType, GameState, EquipType
 from game.utils.geometry import Point
 from gamedata.palette import ItemPalette, MessagePalette
 
@@ -112,6 +112,10 @@ class PlayerInputProcessor(esper.Processor):
             self._command_drop()
         elif key == "i":
             self._command_inventory()
+        elif key == "e":
+            self._command_equip()
+        elif key == "r":
+            self._command_unequip()
         else:
             handled = False
         return handled
@@ -193,3 +197,60 @@ class PlayerInputProcessor(esper.Processor):
                     cmd_log.append(name.generic, ItemPalette.epic)
                     cmd_log.append(".")
                     break
+
+    def _command_equip(self) -> None:
+        for ent, _ in self.world.get_component(Player):
+            equippable_items = []
+            for item_ent, components in self.world.get_components(GUTContained, Name, Containable):
+                contained, name, containable = components
+                if (
+                    contained.by_ent == ent
+                    and not containable.equipped
+                    and containable.equip_type != EquipType.none
+                ):
+                    equippable_items.append((contained.label, name.generic, ItemPalette.rare))
+            if equippable_items:
+                ChoiceFromListEvent.handle(self._on_equip_choice)
+                ChooseFromListEvent.fire(
+                    {"prompt": "Equip what?", "items": sorted(equippable_items)}
+                )
+            else:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log.add("You have nothing to eqiup!")
+
+    def _on_equip_choice(self, event: EventType) -> None:
+        modifiers: dict = self._unpack_modifiers(event["modifiers"])
+        key: str = self._get_key(event["code"])
+        ChoiceFromListEvent.unhandle(self._on_equip_choice)
+        if modifiers["shift"]:
+            key = key.upper()
+        for ent, _ in self.world.get_component(Player):
+            equipment = self.world.component_for_entity(ent, Equipment)
+            want_to_equip = None
+            for item_ent, components in self.world.get_components(GUTContained, Name, Containable):
+                contained, name, containable = components
+                if contained.by_ent == ent and contained.label == key:
+                    if containable.equip_type != EquipType.none and equipment:
+                        want_to_equip = (containable, name)
+                        break
+            if want_to_equip:
+                equip_count = 0
+                for item_ent, components in self.world.get_components(GUTContained, Containable):
+                    contained, containable = components
+                    if containable.equipped and containable.equip_type == want_to_equip[1]:
+                        equip_count += 1
+                equipment_slot = equipment.slots[want_to_equip[0].equip_type]
+                if equipment_slot["max"] > equip_count:
+                    want_to_equip[0].equipped = True
+                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                    cmd_log.add("You equip ")
+                    cmd_log.append(want_to_equip[1].generic, ItemPalette.epic)
+                    cmd_log.append(f" in your {equipment_slot['name']} slot.")
+                else:
+                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                    cmd_log.add(
+                        f"You can't equip any more items in your {equipment_slot['name']} slot."
+                    )
+            else:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log.add("You can't find the item you want to equip.")

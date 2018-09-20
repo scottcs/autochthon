@@ -16,7 +16,7 @@
         "factor": 0.05
       },
       "container.Containable": {
-        "equip_type": "EquipType.main_hand"
+        "equip_type": "EquipType.melee"
       }
     }
   }
