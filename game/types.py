@@ -146,14 +146,6 @@ class LogLine(NamedTuple):
     color: int = MessagePalette.default
 
 
-class ComponentSchema(NamedTuple):
-    """A schema for a component."""
-
-    type: Any
-    args: tuple
-    kwargs: dict
-
-
 def get_union_types(union_type: Any) -> tuple:
     """Get a tuple of the types of a union."""
     try:

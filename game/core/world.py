@@ -12,7 +12,7 @@ from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
 from game.events import RenderEntitiesEvent
-from game.types import ProcessGroup, Entity, ComponentSchema
+from game.types import ProcessGroup, Entity
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
