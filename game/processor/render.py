@@ -265,9 +265,9 @@ class WebRenderProcessor(esper.Processor):
             if bitmask > 0:
                 b_cells.extend(ent.to_bytes(2, "big"))
                 b_cells.extend(bitmask.to_bytes(1, "big"))
-                if bitmask & MAP_BITS["x"]:
+                if pos_x and bitmask & MAP_BITS["x"]:
                     b_cells.extend(pos_x.to_bytes(2, "big"))
-                if bitmask & MAP_BITS["y"]:
+                if pos_y and bitmask & MAP_BITS["y"]:
                     b_cells.extend(pos_y.to_bytes(2, "big"))
                 if bitmask & MAP_BITS["tile_id"]:
                     b_cells.extend(renderable.tile_id.to_bytes(2, "big"))

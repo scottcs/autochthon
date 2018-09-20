@@ -13,7 +13,7 @@ class TurnProcessor(esper.Processor):
 
     queue: List[Entity] = []
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._rng = RNGCache.get("TurnProcessor")
 
@@ -23,16 +23,16 @@ class TurnProcessor(esper.Processor):
             # someone hasn't taken their turn yet
             return
         if len(self.queue) > 0:
-            next_ent = self._rng.choice(self.queue)
+            next_ent: Entity = self._rng.choice(self.queue)
             self.queue.remove(next_ent)
         else:
             self._reduce_initiatives()
             try:
                 next_ent = self.queue.pop()
             except IndexError:
-                next_ent = None
-        if next_ent is not None:
-            self._give_turn(next_ent)
+                pass
+            else:
+                self._give_turn(next_ent)
 
     def _reduce_initiatives(self) -> None:
         for ent, actor in self.world.get_component(Actor):
