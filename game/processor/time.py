@@ -44,7 +44,6 @@ class TurnProcessor(esper.Processor):
     def _reset_actor(self, actor: Actor) -> None:
         # TODO: get and apply initiative modifiers
         actor.initiative = actor.base_initiative + self._rng.rand(-2, 2)
-        actor.counter = 0
 
     def _give_turn(self, ent: Entity) -> None:
         self.world.add_component(ent, GUTMyTurn())

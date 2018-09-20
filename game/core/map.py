@@ -1,7 +1,7 @@
 """Game map."""
 from __future__ import annotations
 from enum import Enum, auto
-from typing import List, Optional, Tuple, NamedTuple, Mapping, Any
+from typing import List, Optional, Tuple, Mapping, Any
 
 import numpy as np
 import tcod.map
@@ -302,7 +302,7 @@ class ClassicMap(Map):
         """Create the map."""
         rooms: List[Rect] = []
 
-        for r in range(self.max_rooms):
+        for _ in range(self.max_rooms):
             w: int = self._rng.rand(self.room_min_size, self.room_max_size)
             h: int = self._rng.rand(self.room_min_size, self.room_max_size)
             x: int = self._rng.rand(self.width - w - 1)
