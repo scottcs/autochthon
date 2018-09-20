@@ -9,11 +9,7 @@ from game.component.descriptive import Name
 from game.component.player import Player
 from game.component.gamelog import GUTDescriptionLog
 from game.component.status import GUTDead
-from game.component.movement import (
-    GUTMoving,
-    GUTWaiting,
-    Position,
-)
+from game.component.movement import GUTMoving, GUTWaiting, Position
 from game.events import RenderEntitiesEvent, RenderMapEvent
 from gamedata.palette import ItemPalette
 
@@ -60,4 +56,4 @@ class MovementProcessor(esper.Processor):
                             desc_log.append(" is here.")
             self.world.actor_takes_turn(ent, GUTMoving)
             if entities_to_render:
-                RenderEntitiesEvent.fire({'entities': entities_to_render})
+                RenderEntitiesEvent.fire({"entities": entities_to_render})
