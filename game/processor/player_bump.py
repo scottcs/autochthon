@@ -3,12 +3,10 @@ from typing import Any
 
 import esper
 
-from game.component.ai import Enemy
 from game.component.attack import GUTCurrentTarget
 from game.component.attribute import HP
 from game.component.player import GUTPlayerBump
 from game.component.movement import GUTMoving, GUTWaiting, Position
-from game.events import PlayerActedEvent
 from game.types import AttackType, Entity
 
 
@@ -39,7 +37,6 @@ class PlayerBumpProcessor(esper.Processor):
     def _check_waiting(self, ent: Entity, bump: GUTPlayerBump) -> bool:
         if bump.dx == 0 and bump.dy == 0:
             self.world.add_component(ent, GUTWaiting())
-            PlayerActedEvent.fire()
             return True
         return False
 
@@ -49,8 +46,6 @@ class PlayerBumpProcessor(esper.Processor):
         if other_hp and other_pos:
             target = GUTCurrentTarget(other_pos.x, other_pos.y, AttackType.melee, other)
             self.world.add_component(ent, target)
-            PlayerActedEvent.fire()
 
     def _try_moving(self, ent: Entity, destination: Position) -> None:
         self.world.add_component(ent, GUTMoving(destination.x, destination.y))
-        PlayerActedEvent.fire()

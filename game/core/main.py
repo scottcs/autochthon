@@ -19,7 +19,6 @@ from game.component.attack import (
 from game.utils.dataloader import DataLoader
 from game.events import (
     GameOverEvent,
-    PlayerActedEvent,
     RequestRenderEvent,
     RenderEntitiesEvent,
     RenderMapEvent,
@@ -77,7 +76,6 @@ class Game:
     def __init__(self, render_processor: esper.Processor, config: Optional[dict] = None) -> None:
         self.config: dict = config or {}
         self.game_over: bool = False
-        self.player_acted: bool = False
         self.render_needed: bool = True
         self.got_player_input: bool = False
         self.world: World = World()
@@ -101,7 +99,6 @@ class Game:
 
         GameLogEvent.handle(self._on_game_log)
         GameOverEvent.handle(self._on_game_over)
-        PlayerActedEvent.handle(self._on_player_acted)
         RequestRenderEvent.handle(self._on_refresh_map)
 
         loader = DataLoader()
@@ -177,9 +174,6 @@ class Game:
     def _on_refresh_map(_event: EventType) -> None:
         RenderMapEvent.fire()
         RenderEntitiesEvent.fire({"entities": [], "all": True})
-
-    def _on_player_acted(self, _event: EventType) -> None:
-        self.player_acted = True
 
     def _on_game_log(self, event: EventType) -> None:
         for line in event["lines"]:
