@@ -1,0 +1,8 @@
+_.propagate  # unused attribute (game/core/main.py:69)
+on_message  # unused function (game/core/server.py:115)
+on_close  # unused function (game/core/server.py:146)
+get_compression_options  # unused function (game/core/server.py:153)
+_get_component  # unused function (game/core/world.py:143)
+_get_components  # unused function (game/core/world.py:162)
+paintEvent  # unused function (tools/assemblage_edit.py:96)
+paintEvent  # unused function (tools/map_visualizer.py:386)

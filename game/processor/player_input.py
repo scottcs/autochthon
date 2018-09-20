@@ -1,16 +1,24 @@
 """User input processing."""
 import json
+import logging
 from pathlib import Path
 from typing import Any, Mapping
 
 import esper
 
-from game.component.player import GUTPlayerBump, PlayerControlled
-from game.events import InputEvent
+from game.component.container import Containable, GUTContained, GUTContainerTransfer
+from game.component.descriptive import Name
+from game.component.gamelog import GUTCommandLog
+from game.component.movement import Position
+from game.component.player import GUTPlayerBump, Player
+from game.events import InputEvent, ChooseFromListEvent, ChoiceFromListEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
+from gamedata.palette import ItemPalette, MessagePalette
 
 KEYS_JSON = Path("data") / Path("keys.json")
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 class PlayerInputProcessor(esper.Processor):
@@ -64,6 +72,14 @@ class PlayerInputProcessor(esper.Processor):
 
     def handle_keypress_playing(self, _modifiers: Mapping, key: str, _coords: Point) -> None:
         """Handle input event in the PLAYING state."""
+        handled = self._try_bump(key)
+        if not handled:
+            handled = self._try_command(key)
+        if not handled:
+            # TODO: more?
+            pass
+
+    def _try_bump(self, key: str) -> bool:
         bump_up = key in "kyu"
         bump_down = key in "jbn"
         bump_left = key in "hyb"
@@ -82,7 +98,98 @@ class PlayerInputProcessor(esper.Processor):
             dx += 1
 
         if not (dx or dy or wait):
-            return
+            return False
 
-        for ent, _ in self.world.get_component(PlayerControlled):
+        for ent, _ in self.world.get_component(Player):
             self.world.add_component(ent, GUTPlayerBump(dx, dy))
+        return True
+
+    def _try_command(self, key: str) -> bool:
+        handled = True
+        if key == "comma":
+            self._command_pickup()
+        elif key == "d":
+            self._command_drop()
+        elif key == "i":
+            self._command_inventory()
+        else:
+            handled = False
+        return handled
+
+    def _command_pickup(self) -> None:
+        for ent, _ in self.world.get_component(Player):
+            item = self.world.pickup_item(ent)
+            if not item:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log.add(f"There is nothing to pick up!")
+
+    def _command_drop(self) -> None:
+        for ent, _ in self.world.get_component(Player):
+            pos = self.world.component_for_entity(ent, Position)
+            item = self.world.get_item_at_position(pos.x, pos.y)
+            if item:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log.add(
+                    "There is already an item on the ground here!", MessagePalette.negative
+                )
+                return
+            items_carried = []
+            for item_ent, components in self.world.get_components(GUTContained, Name):
+                contained, name = components
+                if contained.by_ent == ent:
+                    items_carried.append((contained.label, name.generic, ItemPalette.rare))
+            if items_carried:
+                ChoiceFromListEvent.handle(self._on_drop_choice)
+                ChooseFromListEvent.fire(
+                    {"prompt": "Drop what?", "items": sorted(items_carried), "multiple": True}
+                )
+            else:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log.add("You have nothing to drop!")
+
+    def _on_drop_choice(self, event: EventType) -> None:
+        modifiers: dict = self._unpack_modifiers(event["modifiers"])
+        key: str = self._get_key(event["code"])
+        ChoiceFromListEvent.unhandle(self._on_drop_choice)
+        if modifiers["shift"]:
+            key = key.upper()
+        for ent, _ in self.world.get_component(Player):
+            for item_ent, components in self.world.get_components(GUTContained, Name):
+                contained, name = components
+                if contained.by_ent == ent and contained.label == key:
+                    if not self.world.drop_item(ent, item_ent):
+                        cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                        cmd_log.add("You can't drop that!")
+                    break
+
+    def _command_inventory(self) -> None:
+        for ent, _ in self.world.get_component(Player):
+            items_carried = []
+            for item_ent, components in self.world.get_components(GUTContained, Name):
+                contained, name = components
+                if contained.by_ent == ent:
+                    items_carried.append((contained.label, name.generic, ItemPalette.rare))
+            if items_carried:
+                ChoiceFromListEvent.handle(self._on_inventory_choice)
+                ChooseFromListEvent.fire(
+                    {"prompt": "Describe what?", "items": sorted(items_carried)}
+                )
+            else:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log.add("You aren't carrying anything!")
+
+    def _on_inventory_choice(self, event: EventType) -> None:
+        modifiers: dict = self._unpack_modifiers(event["modifiers"])
+        key: str = self._get_key(event["code"])
+        ChoiceFromListEvent.unhandle(self._on_inventory_choice)
+        if modifiers["shift"]:
+            key = key.upper()
+        for ent, _ in self.world.get_component(Player):
+            for item_ent, components in self.world.get_components(GUTContained, Name):
+                contained, name = components
+                if contained.by_ent == ent and contained.label == key:
+                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                    cmd_log.add("It's ")
+                    cmd_log.append(name.generic, ItemPalette.epic)
+                    cmd_log.append(".")
+                    break

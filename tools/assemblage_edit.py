@@ -122,7 +122,6 @@ class FileLoadSave(QWidget):
         self.filename = None
         self.data = {}
         self.original_json = None
-        self.original_name = None
 
         layout = QHBoxLayout()
         layout.setSpacing(0)
@@ -208,9 +207,6 @@ class FileLoadSave(QWidget):
         with self.filename.open() as f:
             self.data = json.load(f)
             self.original_json = json.dumps(self.data, sort_keys=True)
-            for key in self.data.keys():
-                self.original_name = key
-                break  # only one object per file
         if self.data:
             self.file_loaded.emit(self.data)
 
@@ -227,15 +223,6 @@ class FileLoadSave(QWidget):
         else:
             self.save_button.setDisabled(True)
         self.save_button.repaint()
-
-    def update_assemblage_name(self, name: str) -> None:
-        """Update the assemblage name in our data."""
-        if name:
-            new_data = {}
-            for value in self.data.values():
-                new_data[name] = value
-                break  # should only be one value
-            self.update_data(new_data)
 
 
 class GetComponentDialog(QDialog):
@@ -322,6 +309,7 @@ class ComponentList(QWidget):
         self.add_button.clicked.connect(self._on_add)
         self.remove_button.clicked.connect(self._on_remove)
         self.component_list.itemSelectionChanged.connect(self._on_selection)
+        self.enable_buttons(False)
 
     def _on_add(self) -> None:
         component_names = GetComponentDialog().get()
@@ -342,6 +330,11 @@ class ComponentList(QWidget):
             self.selection_changed.emit(selected.text())
         except IndexError:
             pass
+
+    def enable_buttons(self, enable: bool = True):
+        """Enable or disable the +/- buttons."""
+        self.add_button.setEnabled(enable)
+        self.remove_button.setEnabled(enable)
 
     def update_items(self, items: Sequence) -> None:
         """Update the items in the list."""
@@ -486,10 +479,14 @@ class AssemblageEditor(QWidget):
 
     def _on_assemblage_name_changed(self) -> None:
         name = self.assemblage_name.text()
-        self.assemblage_data.setdefault(name, {"Components": {}})
-        self.component_widget.update_data(self.assemblage_data[name])
-        self._update_render_widget(self.assemblage_data[name])
-        self.component_widget.hide_data()
+        if name:
+            self.assemblage_data.setdefault(name, {"Components": {}})
+            self.component_widget.update_data(self.assemblage_data[name])
+            self._update_render_widget(self.assemblage_data[name])
+            self.component_widget.hide_data()
+            self.component_widget.component_list.enable_buttons()
+        else:
+            self.component_widget.component_list.enable_buttons(False)
         self.update()
         self.repaint()
 

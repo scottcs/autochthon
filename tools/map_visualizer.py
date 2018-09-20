@@ -23,7 +23,7 @@ from PySide2.QtWidgets import (
     QScrollArea,
 )
 
-from game.core.map import ClassicMap, Map, MapCell
+from game.core.map import ClassicMap, Map
 from game.utils.random import RNGCache
 from tools.widgets import (
     msg_error,
@@ -335,7 +335,7 @@ class LayersWidget(QWidget):
         for layer in reversed(list(MAP_LAYERS.keys())):
             if layer == "base":
                 continue
-            item = ToolCheckBox(layer, checked=True)
+            item = ToolCheckBox(layer, checked=not layer.startswith("alt_"))
             self.layers.append(item)
             layout.addWidget(item)
             item.state_changed.connect(self._on_layer_state_changed)
@@ -354,16 +354,16 @@ class ImageWidget(QWidget):
         super().__init__(parent)
         self.img = None
         self.pixmap = None
-        self.layers = {n: True for n in MAP_LAYERS.keys()}
+        self.layers = {n: not n.startswith("alt_") for n in MAP_LAYERS.keys()}
         self.show()
 
     def draw_map(self, game_map: Map, scale_factor: int) -> None:
         """Draw the map to an image."""
         img = QImage(game_map.width, game_map.height, QImage.Format_RGB32)
 
-        for cell in game_map:
-            color = self._get_cell_color(cell)
-            img.setPixel(cell.x, cell.y, color)
+        for y, x in game_map:
+            color = self._get_cell_color(game_map, x, y)
+            img.setPixel(x, y, color)
         self.img = img.scaled(
             game_map.width * scale_factor, game_map.height * scale_factor, Qt.KeepAspectRatio
         )
@@ -396,12 +396,12 @@ class ImageWidget(QWidget):
         """Set a particular layer to enabled or disabled."""
         self.layers[name] = enabled
 
-    def _get_cell_color(self, cell: MapCell) -> qRgb:
+    def _get_cell_color(self, game_map: Map, x: int, y: int) -> qRgb:
         color = MAP_LAYERS["base"]
         # color gets replaced by each layer in order until the highest wins
         for layer_name, layer_color in MAP_LAYERS.items():
             if self.layers[layer_name]:
-                if hasattr(cell, layer_name) and getattr(cell, layer_name):
+                if hasattr(game_map, layer_name) and getattr(game_map, layer_name)[y, x]:
                     color = layer_color
         return color
 

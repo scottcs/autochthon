@@ -37,6 +37,7 @@
         let layer_player;
         let layer_effect;
         let app;
+        let mapBits;
 
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -68,6 +69,7 @@
 
         function setup(loader, resources) {
             const config = resources[config_json].data;
+            mapBits = config.map_bits;
             tile_info = resources[tile_id_table].data;
             keys_data = resources[keys_json].data;
             socket_events = resources[socket_events_json].data;
@@ -138,6 +140,9 @@
                 case socket_events.FromServer.UpdateMap:
                     handleUpdateMap(actualData);
                     break;
+                case socket_events.FromServer.ChooseFromList:
+                    handleChooseFromList(actualData);
+                    break;
                 default:
                     console.error('Got unknown event from server.', headerByte);
             }
@@ -154,39 +159,58 @@
                 newSpan.setAttribute('style', 'color: ' + color + ';');
                 newSpan.textContent = line[0];
                 logDiv.appendChild(newSpan);
-                logDiv.innerHTML += ' ';
             });
             logDiv.appendChild(document.createElement('br'));
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
         function handleUpdateMap(data) {
-            setAllSpritesInvisible();
             const view = new DataView(data);
             const player_x = view.getUint16(0) * tile_width;
             const player_y = view.getUint16(2) * tile_height;
             camera.pivot.x = player_x;
             camera.pivot.y = player_y;
             const num_cells = view.getUint16(4);
-            const offset = 6;      // header size in bytes
-            const cell_size = 13;  // cell size in bytes
+            let offset = 6;      // header size in bytes
             for (let i = 0; i < num_cells; i++) {
-                const cell_offset = offset + (i * cell_size);
-                const cell_color_offset = cell_offset + 8;
-                const cell_r = view.getUint8(cell_color_offset);
-                const cell_g = view.getUint8(cell_color_offset + 1);
-                const cell_b = view.getUint8(cell_color_offset + 2);
-                const cell_a = view.getUint8(cell_color_offset + 3) / 255.0;
-                const cell_tint = 65536*cell_r + 256*cell_g + cell_b;
-                const cell = {
-                    id: view.getUint16(cell_offset),
-                    x: view.getUint16(cell_offset + 2),
-                    y: view.getUint16(cell_offset + 4),
-                    tile_id: view.getUint16(cell_offset + 6),
-                    tint: cell_tint,
-                    alpha: cell_a,
-                    layer: view.getUint8(cell_offset + 12)
-                };
+                const cell_id = view.getUint16(offset);
+                offset += 2;
+                const bitmask = view.getUint8(offset);
+                offset += 1;
+                const cell = {id: cell_id}
+                if (bitmask & mapBits.x) {
+                    cell.x = view.getUint16(offset);
+                    offset += 2;
+                }
+                if (bitmask & mapBits.y) {
+                    cell.y = view.getUint16(offset);
+                    offset += 2;
+                }
+                if (bitmask & mapBits.tile_id) {
+                    cell.tile_id = view.getUint16(offset);
+                    offset += 2;
+                }
+                if (bitmask & mapBits.tint) {
+                    const cell_r = view.getUint8(offset);
+                    offset += 1;
+                    const cell_g = view.getUint8(offset);
+                    offset += 1;
+                    const cell_b = view.getUint8(offset);
+                    offset += 1;
+                    cell.tint = 65536*cell_r + 256*cell_g + cell_b;
+                }
+                if (bitmask & mapBits.alpha) {
+                    cell.alpha = view.getUint8(offset) / 255.0;
+                    offset += 1;
+                }
+                if (bitmask & mapBits.layer) {
+                    cell.layer = view.getUint8(offset);
+                    offset += 1;
+                }
+                if (bitmask & mapBits.delete) {
+                    cell.delete = true;
+                }
+
                 if (cells[cell.id] === undefined) {
                     makeSprite(cell);
                 } else {
@@ -195,18 +219,118 @@
             }
         }
 
-        function setAllSpritesInvisible() {
-            Object.keys(cells).forEach(function(key) {
-                cells[key].visible = false;
-            })
+        function handleChooseFromList(data) {
+            const string = new TextDecoder().decode(data);
+            const parsed = JSON.parse(string);
+            let index = 0;
+            const div = document.createElement('div');
+            parsed.items.forEach(function(line) {
+                const choiceSpan = document.createElement('span');
+                choiceSpan.classList.add('choice');
+                choiceSpan.textContent = line[0] + ": ";
+                div.appendChild(choiceSpan);
+                const newSpan = document.createElement('span');
+                color = '#' + line[2].toString(16).padStart(6, '0');
+                newSpan.classList.add('choice');
+                newSpan.setAttribute('style', 'color: ' + color + ';');
+                newSpan.textContent = line[1];
+                div.appendChild(newSpan);
+                div.appendChild(document.createElement('br'));
+                index++;
+            });
+            getChoiceFromListModal(div.innerHTML, parsed);
+        }
+
+        function getChoiceFromListModal(html, parsed) {
+            const modal = document.getElementById('gameModal');
+
+            // When the user clicks anywhere outside of the modal, close it
+            const closeModal = function() {
+                modal.style.display = "none";
+                window.removeEventListener('click', onModalClick)
+                document.removeEventListener("keypress", onKeyPress);
+                document.addEventListener("keypress", defaultKeyHandler);
+            };
+
+            const openModal = function() {
+                const modal_header = document.getElementById('gameModalHeader');
+                const modal_inner_content = document.getElementById('gameModalInnerContent');
+                modal.style.display = "block";
+                modal_header.innerText = parsed.prompt;
+                modal_inner_content.innerHTML = html;
+                modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
+                window.addEventListener('click', onModalClick);
+                document.removeEventListener("keypress", defaultKeyHandler);
+                document.addEventListener("keypress", onKeyPress);
+            };
+
+            const onModalClick = function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+
+            const onKeyPress = function(event) {
+                keyHandler(event, function (event) {
+                    if (event.code === 'Escape') {
+                        closeModal();
+                    } else {
+                        const modifiers = getKeyModifiers(event);
+                        let code = getKeyLetter(event);
+                        if (!event.shiftKey) {
+                            code = code.toLowerCase();
+                        }
+                        for (let i = 0; i < parsed.items.length; i++) {
+                            const line = parsed.items[i];
+                            if (line[0] === code) {
+                                sendChoiceToServer(event);
+                                closeModal()
+                                break;
+                            }
+                        }
+                    }
+                })
+            };
+
+            if (modal.style.display === "block") {
+                closeModal();
+            } else {
+                openModal();
+            }
+        }
+
+        function writeToLog(msg) {
+            const logDiv = document.getElementById('gameLog');
+            const newSpan = document.createElement('span');
+            newSpan.classList.add('logline');
+            newSpan.textContent = msg;
+            logDiv.appendChild(newSpan);
+            logDiv.appendChild(document.createElement('br'));
+            logDiv.scrollTop = logDiv.scrollHeight;
         }
 
         function updateSprite(cell) {
             const sprite = cells[cell.id];
-            sprite.x = tile_width * cell.x;
-            sprite.y = tile_height * cell.y;
-            sprite.tint = cell.tint;
-            sprite.alpha = cell.alpha;
+            if (cell.delete) {
+                cells[cell.id] = undefined;
+                sprite.visible = false;
+                sprite.parent.removeChild(sprite);
+                return;
+            }
+
+            if (cell.x !== undefined) {
+                sprite.x = tile_width * cell.x;
+            }
+            if (cell.y !== undefined) {
+                sprite.y = tile_height * cell.y;
+            }
+            if (cell.tint !== undefined) {
+                sprite.tint = cell.tint;
+            }
+            if (cell.alpha !== undefined) {
+                sprite.alpha = cell.alpha;
+            }
+            // Sprites don't change layers so we don't check cell.layer
 
             const cameraRect = new PIXI.Rectangle();
             cameraRect.x = camera.pivot.x - app.screen.width / 2;
@@ -215,8 +339,7 @@
             cameraRect.height = app.screen.height;
 
             sprite.visible = (
-                (cell.tile_id > 0) &&
-                (cell.alpha > 0) &&
+                (sprite.alpha > 0) &&
                 (sprite.x > (cameraRect.left - 3*tile_width)) &&
                 (sprite.y > (cameraRect.top - 3*tile_height)) &&
                 (sprite.x < (cameraRect.right + 3*tile_width)) &&
@@ -261,37 +384,73 @@
             cells[cell.id] = sprite;
         }
 
+        function keyHandler(event, callback) {
+            let pausingKeyPress = false;
+            let pausingKeyPressTimer = null;
+            if (event.defaultPrevented) {
+                return;
+            }
+
+            if (pausingKeyPress) {
+                return;
+            }
+
+            if (pausingKeyPressTimer === null) {
+                pausingKeyPressTimer = setTimeout(function () {
+                    pausingKeyPress = false;
+                    clearTimeout(pausingKeyPressTimer);
+                    pausingKeyPressTimer = null;
+                }, 110);
+                pausingKeyPress = true;
+            }
+
+            callback(event);
+        }
+
+        function getKeyModifiers(event) {
+            let modifiers = 0;
+            if (event.shiftKey) {
+                modifiers |= keys_data.Modifiers.Shift;
+            }
+            if (event.ctrlKey) {
+                modifiers |= keys_data.Modifiers.Ctrl;
+            }
+            if (event.altKey) {
+                modifiers |= keys_data.Modifiers.Alt;
+            }
+            return modifiers;
+        }
+
+        function getKeyLetter(event) {
+            return event.code.replace(/^Key/, "").replace(/^Digit/, "");
+        }
+
+        function getKeyCodeForServer(event) {
+            const key = getKeyLetter(event);
+            let code = 0;
+            if (key.length === 1) {
+                code = key.charCodeAt(0);
+            } else {
+                code = keys_data.Keys[event.code] || 0;
+            }
+            return code;
+        }
+
+        function defaultKeyHandler(event) {
+            keyHandler(event, function(event) {
+                if (!keyHandled(event)) {
+                    sendInputToServer(event);
+                }
+            })
+        }
+
         function setupWebsockets(config) {
             const host = config.server.host;
             const port = config.server.port;
-            let pausingKeyPress = false;
-            let pausingKeyPressTimer = null;
             ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
             ws.binaryType = 'arraybuffer';
 
-            document.addEventListener("keypress", function (event) {
-                if (event.defaultPrevented) {
-                    return;
-                }
-
-                if (pausingKeyPress) {
-                    return;
-                }
-
-                if (pausingKeyPressTimer === null) {
-                    pausingKeyPressTimer = setTimeout(function () {
-                        pausingKeyPress = false;
-                        clearTimeout(pausingKeyPressTimer);
-                        pausingKeyPressTimer = null;
-                    }, 110);
-                    pausingKeyPress = true;
-                }
-
-                if (!keyHandled(event)) {
-                    sendInputToServer(event)
-
-                }
-            });
+            document.addEventListener("keypress", defaultKeyHandler);
 
             ws.onmessage = function (evt) {
                 handleBinaryData(evt.data)
@@ -313,23 +472,8 @@
         }
 
         function sendInputToServer(event) {
-            let modifiers = 0;
-            if (event.shiftKey) {
-                modifiers |= keys_data.Modifiers.Shift;
-            }
-            if (event.ctrlKey) {
-                modifiers |= keys_data.Modifiers.Ctrl;
-            }
-            if (event.altKey) {
-                modifiers |= keys_data.Modifiers.Alt;
-            }
-            const key = event.code.replace(/^Key/, "").replace(/^Digit/, "");
-            let code = 0;
-            if (key.length === 1) {
-                code = key.charCodeAt(0);
-            } else {
-                code = keys_data.Keys[event.code] || 0;
-            }
+            const modifiers = getKeyModifiers(event);
+            const code = getKeyCodeForServer(event);
             let buffer = new ArrayBuffer(8);
             const view = new DataView(buffer);
             // byte 0: socket event type
@@ -348,28 +492,57 @@
             ws.send(data);
         }
 
+        function sendChoiceToServer(event) {
+            const modifiers = getKeyModifiers(event);
+            const code = getKeyCodeForServer(event);
+            let buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+            // byte 0: socket event type
+            // byte 1: modifier keys
+            // byte 2: key/button code
+            view.setUint8(0, socket_events.ToServer.ChoiceFromList);
+            view.setUint8(1, modifiers);
+            view.setUint8(2, code);
+            const data = new Uint8Array(buffer);
+            ws.send(data);
+        }
+
         function toggleGameLogModal() {
-            const modal = document.getElementById('gameLogModal');
+            const modal = document.getElementById('gameModal');
 
             // When the user clicks anywhere outside of the modal, close it
             const closeModal = function() {
                 modal.style.display = "none";
-                window.removeEventListener('click', onModalClick)
+                window.removeEventListener('click', onModalClick);
+                document.removeEventListener("keypress", onKeyPress);
+                document.addEventListener("keypress", defaultKeyHandler);
             };
 
             const openModal = function() {
-                const modal_game_log = document.getElementById('gameLogModalContent');
+                const modal_header = document.getElementById('gameModalHeader');
+                const modal_inner_content = document.getElementById('gameModalInnerContent');
                 const game_log = document.getElementById('gameLog');
                 modal.style.display = "block";
-                modal_game_log.innerHTML = game_log.innerHTML;
-                modal_game_log.scrollTop = modal_game_log.scrollHeight;
+                modal_header.innerText = 'Game Log:';
+                modal_inner_content.innerHTML = game_log.innerHTML;
+                modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
                 window.addEventListener('click', onModalClick);
+                document.removeEventListener("keypress", defaultKeyHandler);
+                document.addEventListener("keypress", onKeyPress);
             };
 
             const onModalClick = function(event) {
                 if (event.target === modal) {
                     closeModal();
                 }
+            };
+
+            const onKeyPress = function(event) {
+                keyHandler(event, function (event) {
+                    if ((event.code === 'Escape') || (event.ctrlKey && event.code === 'KeyP')) {
+                        closeModal();
+                    }
+                })
             };
 
             if (modal.style.display === "block") {

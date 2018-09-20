@@ -1,25 +1,20 @@
 """Start the game."""
 import argparse
-import json
 import logging
-from pathlib import Path
 
 from game.core.local import run_local
 from game.core.server import run_server
-
-CONFIG_FILE = Path('data') / Path('config.json')
+from gamedata.config import CONFIG_FILE
 
 logging.basicConfig(level=logging.ERROR)
 
 
 def run_game(args: argparse.Namespace) -> None:
     """Run the game."""
-    with open(args.config) as f:
-        config = json.load(f)
     if args.local:
-        run_local(config)
+        run_local()
     else:
-        run_server(config)
+        run_server()
 
 
 def parse_command_line() -> argparse.Namespace:

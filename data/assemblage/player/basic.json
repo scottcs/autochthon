@@ -1,9 +1,8 @@
 {
   "BasicPlayer": {
     "Components": {
-      "action.Actor": {},
-      "attack.AttackCostModifier": {
-        "factor": -0.1
+      "action.Actor": {
+        "base_initiative": 10
       },
       "attack.AttackHitModifier": {
         "factor": 0.2
@@ -26,14 +25,18 @@
       "descriptive.Name": {
         "first": "Player"
       },
-      "player.PlayerControlled": {},
+      "player.Player": {},
       "movement.Position": {},
       "render.Renderable": {
         "tile_id": "avatar_A",
         "tint": "Palette.yellow",
         "layer": "RenderLayer.player"
       },
-      "status.Solid": {}
+      "container.Container": {
+        "name": "your backpack",
+        "max_slots": 62,
+        "equip_type": "EquipType.any"
+      }
     }
   }
 }

@@ -1,23 +1,16 @@
 """Action components."""
-from typing import Union
-
-from game.utils.time import GameTime
-from gamedata.base_engine_values import MOMENTS_PER_TURN
+from dataclasses import dataclass
 
 
+@dataclass
 class Actor:
-    """Actor components use time units of energy to take actions."""
+    """Actor components use initiative values to take actions (lower is faster)."""
 
-    def __init__(
-        self,
-        initial_units: Union[GameTime, int] = 0,
-        rate: Union[GameTime, int] = MOMENTS_PER_TURN,
-    ) -> None:
-        self.time_units: GameTime = GameTime(initial_units)
-        self.rate: GameTime = GameTime(rate)
+    base_initiative: int
 
-    def __str__(self) -> str:
-        return (
-            f"{self.time_units} ({self.time_units.last_time}/{self.time_units.last_change}) "
-            f"(+{self.rate}/turn)"
-        )
+    def __post_init__(self) -> None:
+        self.initiative: int = self.base_initiative
+
+
+class GUTMyTurn:
+    """Current Actor's turn."""

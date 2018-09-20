@@ -4,6 +4,7 @@ import inspect
 from typing import Dict, Callable, Any, NamedTuple, Union, Optional
 
 from game.utils.random import parse, RNGCache
+from gamedata.palette import MessagePalette
 
 EventType = Dict
 EventHandler = Callable[[EventType], Any]
@@ -27,11 +28,10 @@ class RenderLayer(Enum):
 class Priority(IntEnum):
     """Processor priorities."""
 
+    gamelog = auto()
     render = auto()
     psychopomps = auto()
-    gamelog = auto()
     attributes = auto()
-    movement = auto()
     damage_resolution = auto()
     defense = auto()
     attack_hit = auto()
@@ -40,7 +40,10 @@ class Priority(IntEnum):
     attack_dodge = auto()
     attack_miss = auto()
     targeting = auto()
+    movement = auto()
     ai = auto()
+    container = auto()
+    turn = auto()
     time = auto()
     player_bump = auto()
     player_input = auto()
@@ -53,6 +56,7 @@ class ProcessGroup(Enum):
     player = auto()
     time = auto()
     render = auto()
+    gamelog = auto()
 
 
 class GameState(Enum):
@@ -72,6 +76,30 @@ class AttackType(Enum):
 
     melee = auto()
     projectile = auto()
+
+
+class EquipType(Enum):
+    """Equipment types -- where an item was intended to be worn/held."""
+
+    none = auto()
+    main_hand = auto()
+    off_hand = auto()
+    two_hand = auto()
+    foot = auto()
+    legs = auto()
+    tail = auto()
+    torso = auto()
+    body = auto()
+    arm = auto()
+    wrist = auto()
+    hand = auto()
+    finger = auto()
+    neck = auto()
+    back = auto()
+    face = auto()
+    head = auto()
+    implant = auto()
+    any = auto()
 
 
 Number = Union[int, float]
@@ -115,15 +143,7 @@ class LogLine(NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: int = 0xffffff
-
-
-class ComponentSchema(NamedTuple):
-    """A schema for a component."""
-
-    type: Any
-    args: tuple
-    kwargs: dict
+    color: int = MessagePalette.default
 
 
 def get_union_types(union_type: Any) -> tuple:

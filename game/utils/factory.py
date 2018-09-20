@@ -1,5 +1,6 @@
 """Factory utilities."""
 import logging
+import pydoc
 from typing import Any, Optional, MutableSequence, Mapping, MutableMapping
 
 from game.component.movement import Position
@@ -32,18 +33,18 @@ def convert_datum(value: Any) -> Any:
         from gamedata.palette import Palette
 
         result = getattr(Palette, attr)
-    elif class_type == "RenderLayer":
-        from game.types import RenderLayer
-
-        result = getattr(RenderLayer, attr)
     else:
-        # allow exception to be raised here if it doesn't exist
-        result = getattr(globals()[class_type], attr)
+        imported = pydoc.locate(f"game.types.{class_type}")
+        if imported:
+            result = getattr(imported, attr)
+        else:
+            # allow exception to be raised here if it doesn't exist
+            result = getattr(globals()[class_type], attr)
     return result
 
 
 def get_component_class(class_substring: str) -> Any:
-    """Get a component class from a substring like `attack.AttackCostModifier`."""
+    """Get a component class from a substring like `attack.AttackHitModifier`."""
     component_group, component_class = class_substring.split(".")
     mod_name = f"game.component.{component_group}"
     _tmp = __import__(mod_name, globals=globals(), locals=locals(), fromlist=[component_class])
@@ -151,8 +152,12 @@ class PlayerFactory(BaseEntityFactory):
             templates.insert(0, "BasicPlayer")
         ent = self._make_entity(templates)
         self._world.players.add(ent)
-        # TODO: should placement be elsewhere?
-        self.place_entity(ent, self._rng.choice(self._world.map.spawns_player()))
+        loc: Optional[Point] = self._world.map.find_player_spawn()
+        if loc is None:
+            raise FactoryException(f"Could not place player entity: {ent}")
+        else:
+            self.place_entity(ent, loc)
+            self._world.map.contains_player[loc.y, loc.x] = True
         return ent
 
 
@@ -171,22 +176,13 @@ class EnemyFactory(BaseEntityFactory):
         if "BasicEnemy" not in templates:
             templates.insert(0, "BasicEnemy")
         ent = self._make_entity(templates)
-        # TODO: should placement be elsewhere?
-        self.place_entity(ent, self._rng.choice(self._world.map.spawns_enemy()))
-        return ent
-
-    def place_entity(self, ent: Entity, at: Point) -> None:
-        """Place an enemy on the map where no other entities are."""
-        if not self._world.map:
-            raise FactoryException("There is no map!")
-        tries = 10000
-        while tries and self._world.get_entity_at_position(at.x, at.y):
-            tries -= 1
-            at = self._rng.choice(self._world.map.spawns_enemy())
-        if tries > 0:
-            super().place_entity(ent, at)
-        else:
+        loc: Optional[Point] = self._world.map.find_enemy_spawn()
+        if loc is None:
             raise FactoryException(f"Could not place enemy entity: {ent}")
+        else:
+            self.place_entity(ent, loc)
+            self._world.map.contains_enemy[loc.y, loc.x] = True
+        return ent
 
 
 class ItemFactory(BaseEntityFactory):
@@ -204,6 +200,10 @@ class ItemFactory(BaseEntityFactory):
         if "BasicItem" not in templates:
             templates.insert(0, "BasicItem")
         ent = self._make_entity(templates)
-        # TODO: should placement be elsewhere?
-        self.place_entity(ent, self._rng.choice(self._world.map.spawns_item()))
+        loc: Optional[Point] = self._world.map.find_item_spawn()
+        if loc is None:
+            raise FactoryException(f"Could not place item entity: {ent}")
+        else:
+            self.place_entity(ent, loc)
+            self._world.map.contains_item[loc.y, loc.x] = True
         return ent

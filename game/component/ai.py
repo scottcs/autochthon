@@ -7,3 +7,7 @@ class AISimpleMind:
 
 class AIDummy:
     """AI that just stands there."""
+
+
+class Enemy:
+    """An enemy."""

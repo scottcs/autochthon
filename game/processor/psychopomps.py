@@ -5,7 +5,7 @@ from typing import Any
 import esper
 
 from game.component.descriptive import Name
-from game.component.status import Dead
+from game.component.status import GUTDead
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -16,7 +16,7 @@ class Psychopomps(esper.Processor):
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process dead entities."""
-        for ent, _ in self.world.get_component(Dead):
+        for ent, _ in self.world.get_component(GUTDead):
             name = f"Entity {ent}"
             if self.world.has_component(ent, Name):
                 name = f"{self.world.component_for_entity(ent, Name).generic} (Entity {ent})"

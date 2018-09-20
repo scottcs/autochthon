@@ -8,13 +8,20 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-from game.events import InputEvent, UpdateMapRenderEvent, RefreshMapEvent, GameLogEvent
+from game.events import (
+    InputEvent,
+    UpdateMapRenderEvent,
+    RequestRenderEvent,
+    GameLogEvent,
+    ChooseFromListEvent,
+    ChoiceFromListEvent,
+)
 from game.core.main import Game
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
+from gamedata.config import CONFIG
 
 WEBSOCKET_EVENTS_JSON = Path("data") / Path("websocketevents.json")
-DESIRED_FPS = 30
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
@@ -35,7 +42,7 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
     def __init__(self, config: Optional[dict] = None) -> None:
         if GameCallback.game is None:
             GameCallback.game = Game(WebRenderProcessor(), config=config)
-        super().__init__(self.process_events, 1000 / DESIRED_FPS)
+        super().__init__(self.process_events, 1)
 
     @staticmethod
     def get_game_state() -> GameState:
@@ -63,6 +70,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
             self.socket_events = json.load(f)
         if len(self.connections) == 0:
             # TODO: need some way to determine which connection is the player, even after refresh
+            ChooseFromListEvent.handle(self._on_choose_from_list)
             GameLogEvent.handle(self._on_game_log)
             UpdateMapRenderEvent.handle(self._on_update_map_render)
         self.game_callback: GameCallback = GameCallback(config=config)
@@ -92,6 +100,13 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         ba.extend(log_string.encode("utf-8"))
         self.write_all(ba)
 
+    def _on_choose_from_list(self, event: EventType) -> None:
+        log_string = json.dumps(event)
+        ba = bytearray()
+        ba.append(self.socket_events["FromServer"]["ChooseFromList"])
+        ba.extend(log_string.encode("utf-8"))
+        self.write_all(ba)
+
     def write_all(self, ba: bytearray) -> None:
         """Write bytes to all connections."""
         for client in self.connections:
@@ -100,9 +115,9 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
     def on_message(self, message: Union[str, bytes]) -> None:
         """Called when a message is received over the connection."""
         if isinstance(message, bytes):
-            # ---- refresh event
             if message[0] == self.socket_events["ToServer"]["RefreshGraphics"]:
-                RefreshMapEvent.fire()
+                # ---- refresh event
+                RequestRenderEvent.fire()
             elif message[0] == self.socket_events["ToServer"]["GameInput"]:
                 # ---- input event
                 # byte 1: input event flags
@@ -120,6 +135,11 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
                         "state": self.game_callback.get_game_state(),
                     }
                 )
+            elif message[0] == self.socket_events["ToServer"]["ChoiceFromList"]:
+                # ---- choice from list event
+                # byte 1: modifiers
+                # byte 2: key/button code
+                ChoiceFromListEvent.fire({"modifiers": message[1], "code": message[2]})
             else:
                 log.error(f"Unprocessed message type: {message[0]}")
 
@@ -128,6 +148,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         self.connections.remove(self)
         UpdateMapRenderEvent.unhandle(self._on_update_map_render)
         GameLogEvent.unhandle(self._on_game_log)
+        ChooseFromListEvent.unhandle(self._on_choose_from_list)
 
     def get_compression_options(self) -> Optional[dict]:
         """Override default class to turn on compression.
@@ -154,11 +175,11 @@ def make_app(config: Mapping) -> tornado.web.Application:
     )
 
 
-def run_server(config: Mapping) -> None:
+def run_server() -> None:
     """Run the game as a websockets server."""
-    port: int = config["server"]["port"]
-    host: str = config["server"]["host"]
-    app: tornado.web.Application = make_app(config)
+    port: int = CONFIG["server"]["port"]
+    host: str = CONFIG["server"]["host"]
+    app: tornado.web.Application = make_app(CONFIG)
     app.listen(port, address=host)
     log.info(f"Listening on {host}:{port}...")
     tornado.ioloop.IOLoop.current().start()

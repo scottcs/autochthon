@@ -1,14 +1,21 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
-from typing import Any, Optional, Set, Callable, Tuple
+import logging
+from typing import Any, Optional, Set, Callable, Tuple, Generator
 
 import esper
 
-from game.component.action import Actor
-from game.component.status import Dead
-from game.component.player import PlayerControlled
+from game.component.action import GUTMyTurn
+from game.component.ai import Enemy
+from game.component.container import Item, GUTContainerTransfer
+from game.component.status import GUTDead
+from game.component.player import Player
 from game.component.movement import Position
 from game.core.map import Map
-from game.types import ProcessGroup, Entity, ComponentSchema
+from game.events import RenderEntitiesEvent
+from game.types import ProcessGroup, Entity
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 class World(esper.World):
@@ -37,6 +44,7 @@ class World(esper.World):
         group = group or ProcessGroup.default
         self._processor_groups.setdefault(group, [])
         self._processor_groups[group].append(processor_instance)
+        self._processor_groups[group].sort(key=lambda p: p.priority, reverse=True)
 
     def remove_processor(self, processor_type: esper.Processor) -> None:
         """Remove a processor."""
@@ -52,23 +60,85 @@ class World(esper.World):
         for processor in self._processor_groups[group]:
             processor.process(*args, **kwargs)
 
-    def any_actors_can_act(self) -> bool:
-        """Return true if any actors can act."""
-        for ent, actor in self.get_component(Actor):
-            if not self.has_component(ent, Dead):
-                if actor.time_units >= 0:
-                    return True
-        return False
+    def actor_takes_turn(self, ent: Entity, *remove_components: Any) -> None:
+        """Clean up after an actor takes a turn."""
+        try:
+            self.remove_component(ent, GUTMyTurn)
+        except KeyError:
+            pass
+        for component in remove_components:
+            try:
+                self.remove_component(ent, component)
+            except KeyError:
+                pass
+
+    def kill_entity(self, ent: Entity) -> None:
+        """Kill an entity."""
+        try:
+            self.remove_component(ent, GUTMyTurn)
+        except KeyError:
+            pass
+        self.add_component(ent, GUTDead())
+        RenderEntitiesEvent.fire({"entities": [ent]})
+
+    def pickup_item(self, ent: Entity) -> Optional[Entity]:
+        """Pick up an item at an entity's location and return its id."""
+        at = self.component_for_entity(ent, Position)
+        item_ent = self.get_item_at_position(at.x, at.y)
+        if item_ent:
+            self.add_component(item_ent, GUTContainerTransfer(ent))
+            RenderEntitiesEvent.fire({"entities": [item_ent]})
+            return item_ent
+        return None
+
+    def drop_item(self, ent: Entity, item_ent: Entity) -> bool:
+        """Drop an item onto the map where the entity is."""
+        at = self.component_for_entity(ent, Position)
+        current_item_ent = self.get_item_at_position(at.x, at.y)
+        if current_item_ent:
+            return False
+        self.add_component(item_ent, GUTContainerTransfer())
+        RenderEntitiesEvent.fire({"entities": [item_ent]})
+        return True
+
+    def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:
+        """Get an enemy entity at the given position."""
+        if self.map and self.map.contains_enemy[y, x]:
+            enemy = self.get_entity_at_position(x, y, Enemy)
+            if enemy:
+                return enemy
+            else:
+                log.error("Map and components out of sync for enemy location!")
+        return None
+
+    def get_item_at_position(self, x: int, y: int) -> Optional[Entity]:
+        """Get an item entity at the given position."""
+        if self.map and self.map.contains_item[y, x]:
+            item = self.get_entity_at_position(x, y, Item)
+            if item:
+                return item
+            else:
+                log.error("Map and components out of sync for item location!")
+        return None
 
     def get_entity_at_position(
         self, x: int, y: int, *required_components: Any
     ) -> Optional[Entity]:
-        """Return any entity at the given position, with the optional required components."""
+        """Get a single entity at the given position (the first found)."""
         for ent, components in self.get_components(Position, *required_components):
             other_pos = components[0]
             if other_pos.x == x and other_pos.y == y:
                 return ent
         return None
+
+    def entities_at_position(
+        self, x: int, y: int, *required_components: Any
+    ) -> Generator[Entity, None, None]:
+        """Yield any entities at the given position, with the optional required components."""
+        for ent, components in self.get_components(Position, *required_components):
+            other_pos = components[0]
+            if other_pos.x == x and other_pos.y == y:
+                yield ent
 
     def _get_component(self, component_type: Any) -> Any:
         """Get an iterator for Entity, Component pairs.
@@ -79,7 +149,7 @@ class World(esper.World):
         entity_db = self._entities
         players = set()
 
-        for entity in self._components.get(PlayerControlled, []):
+        for entity in self._components.get(Player, []):
             players.add(entity)
             try:
                 yield entity, entity_db[entity][component_type]
@@ -101,7 +171,7 @@ class World(esper.World):
         comp_db = self._components
         players = set()
 
-        for entity in self._components.get(PlayerControlled, []):
+        for entity in self._components.get(Player, []):
             players.add(entity)
             try:
                 yield entity, [entity_db[entity][ct] for ct in component_types]
@@ -155,13 +225,3 @@ class World(esper.World):
             comp = component_type(*args, **kwargs)
             self.add_component(entity, comp)
             return comp
-
-    def assemble_entity(self, schema: Tuple[ComponentSchema], *variations: Callable) -> Entity:
-        """Assemble an entity from a schema and a list of optional variation functions."""
-        components = []
-        for component_type, args, kwargs in schema:
-            components.append(component_type(*args, **kwargs))
-        entity: Entity = self.create_entity(*components)
-        for variation in variations:
-            variation(self, entity)
-        return entity

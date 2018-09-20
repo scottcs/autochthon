@@ -1,25 +1,21 @@
 """Descriptive components."""
-from typing import Optional, List
+from dataclasses import dataclass, InitVar
+from typing import Optional, MutableSequence
 
 
+@dataclass
 class Name:
     """Name component."""
 
-    def __init__(
-        self,
-        first: str,
-        last: Optional[str] = None,
-        titles: Optional[List[str]] = None,
-        nickname: Optional[str] = None,
-        proper: bool = False,
-        plural: Optional[str] = None,
-    ) -> None:
-        self.first: str = first
-        self.nickname: Optional[str] = nickname
-        self.last: Optional[str] = last
-        self.titles: Optional[List[str]] = titles
-        self.proper: bool = proper
-        self._plural: Optional[str] = plural
+    first: str
+    last: Optional[str] = None
+    titles: Optional[MutableSequence[str]] = None
+    nickname: Optional[str] = None
+    proper: bool = False
+    plural_str: InitVar[Optional[str]] = None
+
+    def __post_init__(self, plural_str: Optional[str]) -> None:
+        self._plural = plural_str
 
     @property
     def specific(self) -> str:
@@ -55,3 +51,25 @@ class Name:
                 name += ":"
             name = f'{name} {", ".join(self.titles)}'
         return name
+
+
+# Ideas for making fatter components:
+# Name is not a component, but a type similar to the above class.
+# Same with Description.
+# Any stats relevant to the Item (or Species) should be stored on the component.
+# TODO: look for code that always lumps the same components together and consider making them fat
+#
+# class Item:
+#     """An item."""
+#
+#     def __init__(self, name: Name, description: Description, weight: int=0, rarity:
+#     Rarity=Rarity.common) -> None:
+#         pass
+#
+# class Species:
+#     """A species."""
+#
+#     def __init__(
+#         self, name: Name, description: Description, rarity: Rarity=Rarity.common
+#     ) -> None:
+#         pass

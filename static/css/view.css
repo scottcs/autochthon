@@ -25,6 +25,12 @@ div#gameLog {
 }
 
 .logline {
+    color: #aaa;
+    font-family: monospace;
+}
+
+span.choice {
+    color: #aaa;
     font-family: monospace;
 }
 
@@ -52,3 +58,13 @@ div#gameLog {
     height: 70vh;
     overflow-y: auto;
 }
+
+/* Modal header. */
+.modal-header {
+    color: #fff;
+    font-weight: bold;
+    font-family: monospace;
+    font-variant: small-caps;
+    font-size: larger;
+}
+

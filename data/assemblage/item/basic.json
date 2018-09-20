@@ -9,7 +9,9 @@
         "tint": "Palette.white",
         "layer": "RenderLayer.item"
       },
-      "movement.Position": {}
+      "movement.Position": {},
+      "container.Containable": {},
+      "container.Item": {}
     }
   }
 }
