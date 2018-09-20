@@ -30,9 +30,8 @@ class TurnProcessor(esper.Processor):
             try:
                 next_ent = self.queue.pop()
             except IndexError:
-                pass
-            else:
-                self._give_turn(next_ent)
+                return
+        self._give_turn(next_ent)
 
     def _reduce_initiatives(self) -> None:
         for ent, actor in self.world.get_component(Actor):
