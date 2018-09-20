@@ -110,6 +110,8 @@ class PlayerInputProcessor(esper.Processor):
             self._command_pickup()
         elif key == "d":
             self._command_drop()
+        elif key == "i":
+            self._command_inventory()
         else:
             handled = False
         return handled
@@ -158,4 +160,36 @@ class PlayerInputProcessor(esper.Processor):
                     if not self.world.drop_item(ent, item_ent):
                         cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                         cmd_log.add("You can't drop that!")
+                    break
+
+    def _command_inventory(self) -> None:
+        for ent, _ in self.world.get_component(Player):
+            items_carried = []
+            for item_ent, components in self.world.get_components(GUTContained, Name):
+                contained, name = components
+                if contained.by_ent == ent:
+                    items_carried.append((contained.label, name.generic, ItemPalette.rare))
+            if items_carried:
+                ChoiceFromListEvent.handle(self._on_inventory_choice)
+                ChooseFromListEvent.fire(
+                    {"prompt": "Describe what?", "items": sorted(items_carried)}
+                )
+            else:
+                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log.add("You aren't carrying anything!")
+
+    def _on_inventory_choice(self, event: EventType) -> None:
+        modifiers: dict = self._unpack_modifiers(event["modifiers"])
+        key: str = self._get_key(event["code"])
+        ChoiceFromListEvent.unhandle(self._on_inventory_choice)
+        if modifiers["shift"]:
+            key = key.upper()
+        for ent, _ in self.world.get_component(Player):
+            for item_ent, components in self.world.get_components(GUTContained, Name):
+                contained, name = components
+                if contained.by_ent == ent and contained.label == key:
+                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                    cmd_log.add("It's ")
+                    cmd_log.append(name.generic, ItemPalette.epic)
+                    cmd_log.append(".")
                     break
