@@ -38,6 +38,10 @@
         let layer_effect;
         let app;
         let mapBits;
+        let modalKeyHandler;
+        let modalClickHandler;
+        let subModalKeyHandler;
+        let subModalClickHandler;
 
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -130,6 +134,54 @@
 
         }
 
+        const closeModal = function() {
+            const modal = document.getElementById('gameModal');
+            modal.style.display = 'none';
+            window.removeEventListener('click', modalClickHandler)
+            document.removeEventListener('keypress', modalKeyHandler);
+            document.addEventListener('keypress', defaultKeyHandler);
+        };
+
+        const closeSubModal = function() {
+            const subModal = document.getElementById('gameSubModal');
+            subModal.style.display = 'none';
+            window.removeEventListener('click', subModalClickHandler)
+            document.removeEventListener('keypress', subModalKeyHandler);
+            window.addEventListener('click', modalClickHandler);
+            document.addEventListener('keypress', modalKeyHandler);
+        };
+
+        const openModal = function(header, content, footer) {
+            const modal = document.getElementById('gameModal');
+            const modal_header = document.getElementById('gameModalHeader');
+            const modal_inner_content = document.getElementById('gameModalInnerContent');
+            const modal_footer = document.getElementById('gameModalFooter');
+            modal.style.display = "block";
+            modal_header.innerText = header;
+            modal_inner_content.innerHTML = content;
+            modal_footer.innerText = footer;
+            modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
+            window.addEventListener('click', modalClickHandler);
+            document.removeEventListener("keypress", defaultKeyHandler);
+            document.addEventListener("keypress", modalKeyHandler);
+        };
+
+        const openSubModal = function(header, content, footer) {
+            const subModal = document.getElementById('gameSubModal');
+            const sub_modal_header = document.getElementById('gameSubModalHeader');
+            const sub_modal_inner_content = document.getElementById('gameSubModalInnerContent');
+            const sub_modal_footer = document.getElementById('gameSubModalFooter');
+            subModal.style.display = "block";
+            sub_modal_header.innerText = header;
+            sub_modal_inner_content.innerHTML = content;
+            sub_modal_footer.innerText = footer;
+            sub_modal_inner_content.scrollTop = sub_modal_inner_content.scrollHeight;
+            window.removeEventListener('click', modalClickHandler);
+            window.addEventListener('click', subModalClickHandler);
+            document.removeEventListener("keypress", modalKeyHandler);
+            document.addEventListener("keypress", subModalKeyHandler);
+        };
+
         function handleBinaryData(data) {
             const headerByte = new Uint8Array(data)[0];
             const actualData = data.slice(1, data.length);
@@ -142,6 +194,15 @@
                     break;
                 case socket_events.FromServer.ChooseFromList:
                     handleChooseFromList(actualData);
+                    break;
+                case socket_events.FromServer.ChoiceAccepted:
+                    handleChoiceAccepted(actualData);
+                    break;
+                case socket_events.FromServer.ChoiceUnaccepted:
+                    handleChoiceUnaccepted(actualData);
+                    break;
+                case socket_events.FromServer.Describe:
+                    handleDescribe(actualData);
                     break;
                 default:
                     console.error('Got unknown event from server.', headerByte);
@@ -252,35 +313,12 @@
         }
 
         function getChoiceFromListModal(html, parsed) {
-            const modal = document.getElementById('gameModal');
-
-            // When the user clicks anywhere outside of the modal, close it
-            const closeModal = function() {
-                modal.style.display = "none";
-                window.removeEventListener('click', onModalClick)
-                document.removeEventListener("keypress", onKeyPress);
-                document.addEventListener("keypress", defaultKeyHandler);
+            modalClickHandler = function(event) {
+                // TODO: handle clicking on items?
+                closeModal();
             };
 
-            const openModal = function() {
-                const modal_header = document.getElementById('gameModalHeader');
-                const modal_inner_content = document.getElementById('gameModalInnerContent');
-                modal.style.display = "block";
-                modal_header.innerText = parsed.prompt;
-                modal_inner_content.innerHTML = html;
-                modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
-                window.addEventListener('click', onModalClick);
-                document.removeEventListener("keypress", defaultKeyHandler);
-                document.addEventListener("keypress", onKeyPress);
-            };
-
-            const onModalClick = function(event) {
-                if (event.target === modal) {
-                    closeModal();
-                }
-            };
-
-            const onKeyPress = function(event) {
+            modalKeyHandler = function(event) {
                 keyHandler(event, function (event) {
                     if (event.code === 'Escape') {
                         closeModal();
@@ -301,11 +339,26 @@
                 })
             };
 
-            if (modal.style.display === "block") {
-                closeModal();
-            } else {
-                openModal();
-            }
+            header = "";
+            footer = "";
+            if (parsed.header !== undefined) {header = parsed.header;}
+            if (parsed.footer !== undefined) {footer = parsed.footer;}
+            openModal(header, html, footer);
+        }
+
+        function handleChoiceAccepted(data) {
+            console.log('Choice accepted');
+            console.log(data);
+        }
+
+        function handleChoiceUnaccepted(data) {
+            console.log('Choice unaccepted');
+            console.log(data);
+        }
+
+        function handleDescribe(data) {
+            console.log('Describe');
+            console.log(data);
         }
 
         function writeToLog(msg) {
@@ -358,6 +411,10 @@
 
         function makeSprite(cell) {
             const tile = tile_info[cell.tile_id];
+            if (tile === undefined) {
+                console.error('tile is undefined for ', cell)
+                return;
+            }
             const tex = PIXI.loader.resources[tile.tileset].textures[tile.tiles[0]];
             const sprite = new PIXI.Sprite(tex);
             sprite.x = tile_width * cell.x;
@@ -517,36 +574,12 @@
         }
 
         function toggleGameLogModal() {
-            const modal = document.getElementById('gameModal');
-
-            // When the user clicks anywhere outside of the modal, close it
-            const closeModal = function() {
-                modal.style.display = "none";
-                window.removeEventListener('click', onModalClick);
-                document.removeEventListener("keypress", onKeyPress);
-                document.addEventListener("keypress", defaultKeyHandler);
+            modalClickHandler = function(event) {
+                // TODO: handle clicking on items?
+                closeModal();
             };
 
-            const openModal = function() {
-                const modal_header = document.getElementById('gameModalHeader');
-                const modal_inner_content = document.getElementById('gameModalInnerContent');
-                const game_log = document.getElementById('gameLog');
-                modal.style.display = "block";
-                modal_header.innerText = 'Game Log:';
-                modal_inner_content.innerHTML = game_log.innerHTML;
-                modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
-                window.addEventListener('click', onModalClick);
-                document.removeEventListener("keypress", defaultKeyHandler);
-                document.addEventListener("keypress", onKeyPress);
-            };
-
-            const onModalClick = function(event) {
-                if (event.target === modal) {
-                    closeModal();
-                }
-            };
-
-            const onKeyPress = function(event) {
+            modalKeyHandler = function(event) {
                 keyHandler(event, function (event) {
                     if ((event.code === 'Escape') || (event.ctrlKey && event.code === 'KeyP')) {
                         closeModal();
@@ -554,11 +587,8 @@
                 })
             };
 
-            if (modal.style.display === "block") {
-                closeModal();
-            } else {
-                openModal();
-            }
+            const game_log = document.getElementById('gameLog');
+            openModal("Game Log:", game_log.innerHTML, "");
         }
 
         function requestRefresh() {

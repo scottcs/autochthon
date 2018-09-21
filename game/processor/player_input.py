@@ -145,7 +145,7 @@ class PlayerInputProcessor(esper.Processor):
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_drop_choice)
                 ChooseFromListEvent.fire(
-                    {"prompt": "Drop what?", "items": sorted(items_carried), "multiple": True}
+                    {"header": "Drop what?", "items": sorted(items_carried), "multiple": True}
                 )
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
@@ -187,7 +187,7 @@ class PlayerInputProcessor(esper.Processor):
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_inventory_choice)
                 ChooseFromListEvent.fire(
-                    {"prompt": "Describe what?", "items": sorted(items_carried)}
+                    {"header": "Describe what?", "items": sorted(items_carried)}
                 )
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
@@ -223,7 +223,7 @@ class PlayerInputProcessor(esper.Processor):
             if equippable_items:
                 ChoiceFromListEvent.handle(self._on_equip_choice)
                 ChooseFromListEvent.fire(
-                    {"prompt": "Equip what?", "items": sorted(equippable_items)}
+                    {"header": "Equip what?", "items": sorted(equippable_items)}
                 )
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
