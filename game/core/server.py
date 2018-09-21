@@ -15,6 +15,8 @@ from game.events import (
     GameLogEvent,
     ChooseFromListEvent,
     ChoiceFromListEvent,
+    ChoiceAcceptedEvent,
+    ChoiceDeclinedEvent,
 )
 from game.core.main import Game
 from game.processor.render import WebRenderProcessor
@@ -70,6 +72,8 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
             self.socket_events = json.load(f)
         if len(self.connections) == 0:
             # TODO: need some way to determine which connection is the player, even after refresh
+            ChoiceAcceptedEvent.handle(self._on_choice_accepted)
+            ChoiceDeclinedEvent.handle(self._on_choice_declined)
             ChooseFromListEvent.handle(self._on_choose_from_list)
             GameLogEvent.handle(self._on_game_log)
             UpdateMapRenderEvent.handle(self._on_update_map_render)
@@ -95,14 +99,24 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
 
     def _on_game_log(self, event: EventType) -> None:
         log_string = json.dumps(event)
-        ba = bytearray()
+        ba: bytearray = bytearray()
         ba.append(self.socket_events["FromServer"]["GameLog"])
         ba.extend(log_string.encode("utf-8"))
         self.write_all(ba)
 
+    def _on_choice_accepted(self, _event: EventType) -> None:
+        ba: bytearray = bytearray()
+        ba.append(self.socket_events["FromServer"]["ChoiceAccepted"])
+        self.write_all(ba)
+
+    def _on_choice_declined(self, _event: EventType) -> None:
+        ba: bytearray = bytearray()
+        ba.append(self.socket_events["FromServer"]["ChoiceDeclined"])
+        self.write_all(ba)
+
     def _on_choose_from_list(self, event: EventType) -> None:
         log_string = json.dumps(event)
-        ba = bytearray()
+        ba: bytearray = bytearray()
         ba.append(self.socket_events["FromServer"]["ChooseFromList"])
         ba.extend(log_string.encode("utf-8"))
         self.write_all(ba)

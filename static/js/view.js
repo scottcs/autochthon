@@ -198,8 +198,8 @@
                 case socket_events.FromServer.ChoiceAccepted:
                     handleChoiceAccepted(actualData);
                     break;
-                case socket_events.FromServer.ChoiceUnaccepted:
-                    handleChoiceUnaccepted(actualData);
+                case socket_events.FromServer.ChoiceDeclined:
+                    handleChoiceDeclined(actualData);
                     break;
                 case socket_events.FromServer.Describe:
                     handleDescribe(actualData);
@@ -349,10 +349,11 @@
         function handleChoiceAccepted(data) {
             console.log('Choice accepted');
             console.log(data);
+            closeModal();
         }
 
-        function handleChoiceUnaccepted(data) {
-            console.log('Choice unaccepted');
+        function handleChoiceDeclined(data) {
+            console.log('Choice declined');
             console.log(data);
         }
 

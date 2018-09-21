@@ -11,7 +11,7 @@ from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
 from game.component.player import GUTPlayerBump, Player
-from game.events import InputEvent, ChooseFromListEvent, ChoiceFromListEvent
+from game.events import InputEvent, ChooseFromListEvent, ChoiceFromListEvent, ChoiceAcceptedEvent
 from game.types import EventType, GameState, EquipType
 from game.utils.geometry import Point
 from gamedata.palette import ItemPalette, MessagePalette
@@ -161,7 +161,9 @@ class PlayerInputProcessor(esper.Processor):
             for item_ent, components in self.world.get_components(GUTContained, Name):
                 contained, name = components
                 if contained.by_ent == ent and contained.label == key:
-                    if not self.world.drop_item(ent, item_ent):
+                    if self.world.drop_item(ent, item_ent):
+                        ChoiceAcceptedEvent.fire()
+                    else:
                         cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                         cmd_log.add("You can't drop that!")
                     break
@@ -207,6 +209,7 @@ class PlayerInputProcessor(esper.Processor):
                     cmd_log.add("It's ")
                     cmd_log.append(name.generic, ItemPalette.epic)
                     cmd_log.append(".")
+                    ChoiceAcceptedEvent.fire()
                     break
 
     def _command_equip(self) -> None:
@@ -260,6 +263,7 @@ class PlayerInputProcessor(esper.Processor):
                     cmd_log.add("You equip ")
                     cmd_log.append(want_to_equip[1].generic, ItemPalette.epic)
                     cmd_log.append(f" in your {equipment_slot['name']} slot.")
+                    ChoiceAcceptedEvent.fire()
                 else:
                     # TODO: unequip/equip
                     cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)

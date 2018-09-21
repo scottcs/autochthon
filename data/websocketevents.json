@@ -9,7 +9,7 @@
     "UpdateMap": 1,
     "ChooseFromList": 2,
     "ChoiceAccepted": 3,
-    "ChoiceUnaccepted": 4,
+    "ChoiceDeclined": 4,
     "Describe": 5
   }
 }

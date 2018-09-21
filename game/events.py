@@ -58,6 +58,8 @@ class Event:
 
 ChoiceFromListEvent = Event("ChoiceFromListEvent")
 ChooseFromListEvent = Event("ChooseFromListEvent")
+ChoiceAcceptedEvent = Event("ChooseFromListEvent")
+ChoiceDeclinedEvent = Event("ChooseFromListEvent")
 GameLogEvent: Event = Event("GameLogEvent")
 GameOverEvent: Event = Event("GameOverEvent")
 InputEvent: Event = Event("InputEvent")
