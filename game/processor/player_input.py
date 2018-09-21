@@ -18,7 +18,7 @@ from gamedata.palette import ItemPalette, MessagePalette
 
 KEYS_JSON = Path("data") / Path("keys.json")
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 
 class PlayerInputProcessor(esper.Processor):
@@ -237,7 +237,10 @@ class PlayerInputProcessor(esper.Processor):
                 equip_count = 0
                 for item_ent, components in self.world.get_components(GUTContained, Containable):
                     contained, containable = components
-                    if containable.equipped and containable.equip_type == want_to_equip[1]:
+                    if (
+                        containable.equipped
+                        and containable.equip_type == want_to_equip[0].equip_type
+                    ):
                         equip_count += 1
                 equipment_slot = equipment.slots[want_to_equip[0].equip_type]
                 if equipment_slot["max"] > equip_count:
@@ -247,6 +250,7 @@ class PlayerInputProcessor(esper.Processor):
                     cmd_log.append(want_to_equip[1].generic, ItemPalette.epic)
                     cmd_log.append(f" in your {equipment_slot['name']} slot.")
                 else:
+                    # TODO: unequip/equip
                     cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                     cmd_log.add(
                         f"You can't equip any more items in your {equipment_slot['name']} slot."
