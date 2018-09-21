@@ -235,6 +235,16 @@
                 newSpan.setAttribute('style', 'color: ' + color + ';');
                 newSpan.textContent = line[1];
                 div.appendChild(newSpan);
+                if (line.length > 3) {
+                    const extraSpan = document.createElement('span');
+                    extraSpan.classList.add('choice');
+                    if (line.length > 4) {
+                        color = '#' + line[4].toString(16).padStart(6, '0');
+                        extraSpan.setAttribute('style', 'color: ' + color + ';');
+                    }
+                    extraSpan.textContent = ' ' + line[3];
+                    div.appendChild(extraSpan);
+                }
                 div.appendChild(document.createElement('br'));
                 index++;
             });
@@ -284,7 +294,6 @@
                             const line = parsed.items[i];
                             if (line[0] === code) {
                                 sendChoiceToServer(event);
-                                closeModal()
                                 break;
                             }
                         }

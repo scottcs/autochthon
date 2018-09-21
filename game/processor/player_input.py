@@ -169,10 +169,21 @@ class PlayerInputProcessor(esper.Processor):
     def _command_inventory(self) -> None:
         for ent, _ in self.world.get_component(Player):
             items_carried = []
-            for item_ent, components in self.world.get_components(GUTContained, Name):
-                contained, name = components
+            for item_ent, components in self.world.get_components(GUTContained, Name, Containable):
+                contained, name, containable = components
                 if contained.by_ent == ent:
-                    items_carried.append((contained.label, name.generic, ItemPalette.rare))
+                    if containable.equipped:
+                        items_carried.append(
+                            (
+                                contained.label,
+                                name.generic,
+                                ItemPalette.rare,
+                                "(equipped)",
+                                MessagePalette.positive,
+                            )
+                        )
+                    else:
+                        items_carried.append((contained.label, name.generic, ItemPalette.rare))
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_inventory_choice)
                 ChooseFromListEvent.fire(

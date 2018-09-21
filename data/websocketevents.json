@@ -7,6 +7,9 @@
   "FromServer": {
     "GameLog": 0,
     "UpdateMap": 1,
-    "ChooseFromList": 2
+    "ChooseFromList": 2,
+    "ChoiceAccepted": 3,
+    "ChoiceUnaccepted": 4,
+    "Describe": 5
   }
 }
