@@ -17,7 +17,7 @@ from gamedata.palette import Palette
 
 MAP_BITS = CONFIG["map_bits"]
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 
 class WebRenderProcessor(esper.Processor):
@@ -27,6 +27,7 @@ class WebRenderProcessor(esper.Processor):
         super().__init__()
         self.cache: Dict[str, Any] = {"player_x": -1, "player_y": -1, "cells": {}}
         self.render_map: bool = True
+        self.render_full_map: bool = True
         self.render_entities: set = set()
         RenderEntitiesEvent.handle(self._on_render_entities)
         RenderMapEvent.handle(self._on_render_map)
@@ -42,8 +43,9 @@ class WebRenderProcessor(esper.Processor):
                 continue
             self.render_entities.add((renderable.layer.value, ent))
 
-    def _on_render_map(self, _event: EventType) -> None:
+    def _on_render_map(self, event: EventType) -> None:
         self.render_map = True
+        self.render_full_map = event.get("full", False)
 
     def process(self, *args: Any, **kwargs: Any) -> None:
         """Process all renderables."""
@@ -113,7 +115,9 @@ class WebRenderProcessor(esper.Processor):
 
     def _append_map_bytes(self, b_cells: bytearray, player_x: int, player_y: int, fov: int) -> int:
         data_append_length = 0
-        if player_x != self.cache["player_x"] or player_y != self.cache["player_y"]:
+        if self.render_full_map or (
+            player_x != self.cache["player_x"] or player_y != self.cache["player_y"]
+        ):
             self.world.map.compute_fov(
                 player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
             )
@@ -148,7 +152,7 @@ class WebRenderProcessor(esper.Processor):
                 layer = RenderLayer.wall.value
 
             cell_cache = self.cache["cells"].get(cell_id, None)
-            if cell_cache is None:
+            if self.render_full_map or cell_cache is None:
                 bitmask = (
                     MAP_BITS["x"]
                     | MAP_BITS["y"]
@@ -202,6 +206,7 @@ class WebRenderProcessor(esper.Processor):
                 if bitmask & MAP_BITS["layer"]:
                     b_cells.extend(self.cache["cells"][cell_id]["layer"].to_bytes(1, "big"))
                 data_append_length += 1
+        self.render_full_map = False
         return data_append_length
 
     def _add_fov_entities_to_render(self) -> None:

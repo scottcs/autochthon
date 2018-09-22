@@ -170,8 +170,8 @@ class Game:
         self.got_player_input = True
 
     @staticmethod
-    def _on_refresh_map(_event: EventType) -> None:
-        RenderMapEvent.fire()
+    def _on_refresh_map(event: EventType) -> None:
+        RenderMapEvent.fire(event)
         RenderEntitiesEvent.fire({"entities": [], "all": True})
 
     def _on_game_log(self, event: EventType) -> None:

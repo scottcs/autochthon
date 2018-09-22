@@ -1,21 +1,21 @@
 (function () {
     window.onload = function() {
-        const img_dir = 'static/img/';
-        const tileset_dir = img_dir + 'oryx_ur/';
-        const tileset_avatar = tileset_dir + 'Avatar.json';
-        const tileset_avatar_equipment = tileset_dir + 'Avatar_Equipment.json';
-        const tileset_fx_blood = tileset_dir + 'FX_Blood.json';
-        const tileset_fx_general = tileset_dir + 'FX_General.json';
-        const tileset_fx_projectiles = tileset_dir + 'FX_Projectiles.json';
-        const tileset_items = tileset_dir + 'Items.json';
-        const tileset_monsters = tileset_dir + 'Monsters.json';
-        const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.json';
-        const tileset_terrain = tileset_dir + 'Terrain.json';
-        const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.json';
-        const tile_id_table = tileset_dir + 'tile_ids.json';
-        const config_json = 'data/config.json';
-        const keys_json = 'data/keys.json';
-        const socket_events_json = 'data/websocketevents.json';
+        const img_dir = "static/img/";
+        const tileset_dir = img_dir + "oryx_ur/";
+        const tileset_avatar = tileset_dir + "Avatar.json";
+        const tileset_avatar_equipment = tileset_dir + "Avatar_Equipment.json";
+        const tileset_fx_blood = tileset_dir + "FX_Blood.json";
+        const tileset_fx_general = tileset_dir + "FX_General.json";
+        const tileset_fx_projectiles = tileset_dir + "FX_Projectiles.json";
+        const tileset_items = tileset_dir + "Items.json";
+        const tileset_monsters = tileset_dir + "Monsters.json";
+        const tileset_monsters_scifi = tileset_dir + "Monsters_Scifi.json";
+        const tileset_terrain = tileset_dir + "Terrain.json";
+        const tileset_terrain_objects = tileset_dir + "Terrain_Objects.json";
+        const tile_id_table = tileset_dir + "tile_ids.json";
+        const config_json = "data/config.json";
+        const keys_json = "data/keys.json";
+        const socket_events_json = "data/websocketevents.json";
         const main_width_scale = 0.7;
         const main_height_scale = 0.88;
         let keys_data;
@@ -85,7 +85,7 @@
             world_width = map_tile_width * tile_width;
             world_height = map_tile_height * tile_height;
 
-            const renderDiv = document.getElementById('render');
+            const renderDiv = document.getElementById("render");
 
             app = new PIXI.Application({
                 width: window.innerWidth * main_width_scale,
@@ -114,11 +114,11 @@
             // camera.scale.set(2);
 
             renderDiv.appendChild(app.view);
-            window.addEventListener('resize', resize);
+            window.addEventListener("resize", resize);
 
             setupWebsockets(config);
             app.ticker.add(delta => gameLoop(delta));
-            console.log('Done loading.');
+            console.log("Done loading.");
             resize();
         }
 
@@ -135,49 +135,61 @@
         }
 
         const closeModal = function() {
-            const modal = document.getElementById('gameModal');
-            modal.style.display = 'none';
-            window.removeEventListener('click', modalClickHandler)
-            document.removeEventListener('keypress', modalKeyHandler);
-            document.addEventListener('keypress', defaultKeyHandler);
+            const modal = document.getElementById("gameModal");
+            const modalContent = document.getElementById("gameModalContent");
+            modal.classList.remove("open");
+            modalContent.classList.remove("open");
+            window.removeEventListener("click", modalClickHandler)
+            document.removeEventListener("keypress", modalKeyHandler);
+            document.addEventListener("keypress", defaultKeyHandler);
         };
 
         const closeSubModal = function() {
-            const subModal = document.getElementById('gameSubModal');
-            subModal.style.display = 'none';
-            window.removeEventListener('click', subModalClickHandler)
-            document.removeEventListener('keypress', subModalKeyHandler);
-            window.addEventListener('click', modalClickHandler);
-            document.addEventListener('keypress', modalKeyHandler);
+            const subModal = document.getElementById("gameSubModal");
+            const subModalContent = document.getElementById("gameSubModalContent");
+            subModal.classList.remove("open");
+            subModalContent.classList.remove("open");
+            window.removeEventListener("click", subModalClickHandler)
+            document.removeEventListener("keypress", subModalKeyHandler);
+            window.addEventListener("click", modalClickHandler);
+            document.addEventListener("keypress", modalKeyHandler);
         };
 
         const openModal = function(header, content, footer) {
-            const modal = document.getElementById('gameModal');
-            const modal_header = document.getElementById('gameModalHeader');
-            const modal_inner_content = document.getElementById('gameModalInnerContent');
-            const modal_footer = document.getElementById('gameModalFooter');
-            modal.style.display = "block";
-            modal_header.innerText = header;
-            modal_inner_content.innerHTML = content;
-            modal_footer.innerText = footer;
-            modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
-            window.addEventListener('click', modalClickHandler);
+            const modal = document.getElementById("gameModal");
+            const modalContent = document.getElementById("gameModalContent");
+            const modalHeader = document.getElementById("gameModalHeader");
+            const modalBody = document.getElementById("gameModalBody");
+            const modalFooter = document.getElementById("gameModalFooter");
+            const modalStatus = document.getElementById("gameModalStatus");
+            modal.classList.add("open");
+            modalContent.classList.add("open");
+            modalHeader.innerText = header;
+            modalBody.innerHTML = content;
+            modalFooter.innerText = footer;
+            modalStatus.innerText = "";
+            modalBody.scrollTop = modalBody.scrollHeight;
+            window.addEventListener("click", modalClickHandler);
             document.removeEventListener("keypress", defaultKeyHandler);
             document.addEventListener("keypress", modalKeyHandler);
         };
 
         const openSubModal = function(header, content, footer) {
-            const subModal = document.getElementById('gameSubModal');
-            const sub_modal_header = document.getElementById('gameSubModalHeader');
-            const sub_modal_inner_content = document.getElementById('gameSubModalInnerContent');
-            const sub_modal_footer = document.getElementById('gameSubModalFooter');
-            subModal.style.display = "block";
-            sub_modal_header.innerText = header;
-            sub_modal_inner_content.innerHTML = content;
-            sub_modal_footer.innerText = footer;
-            sub_modal_inner_content.scrollTop = sub_modal_inner_content.scrollHeight;
-            window.removeEventListener('click', modalClickHandler);
-            window.addEventListener('click', subModalClickHandler);
+            const subModal = document.getElementById("gameSubModal");
+            const subModalContent = document.getElementById("gameSubModalContent");
+            const subModalHeader = document.getElementById("gameSubModalHeader");
+            const subModalBody = document.getElementById("gameSubModalBody");
+            const subModalFooter = document.getElementById("gameSubModalFooter");
+            const subModalStatus = document.getElementById("gameSubModalStatus");
+            subModal.classList.add("open");
+            subModalContent.classList.add("open");
+            subModalHeader.innerText = header;
+            subModalBody.innerHTML = content;
+            subModalFooter.innerText = footer;
+            subModalStatus.innerText = "";
+            subModalBody.scrollTop = subModalBody.scrollHeight;
+            window.removeEventListener("click", modalClickHandler);
+            window.addEventListener("click", subModalClickHandler);
             document.removeEventListener("keypress", modalKeyHandler);
             document.addEventListener("keypress", subModalKeyHandler);
         };
@@ -205,23 +217,23 @@
                     handleDescribe(actualData);
                     break;
                 default:
-                    console.error('Got unknown event from server.', headerByte);
+                    console.error("Got unknown event from server.", headerByte);
             }
         }
 
         function handleGameLog(data) {
             const string = new TextDecoder().decode(data);
             const parsed = JSON.parse(string);
-            const logDiv = document.getElementById('gameLog');
+            const logDiv = document.getElementById("gameLog");
             parsed.lines.forEach(function(line) {
-                const newSpan = document.createElement('span');
-                color = '#' + line[1].toString(16).padStart(6, '0');
-                newSpan.classList.add('logline');
-                newSpan.setAttribute('style', 'color: ' + color + ';');
+                const newSpan = document.createElement("span");
+                color = "#" + line[1].toString(16).padStart(6, "0");
+                newSpan.classList.add("logline");
+                newSpan.setAttribute("style", "color: " + color + ";");
                 newSpan.textContent = line[0];
                 logDiv.appendChild(newSpan);
             });
-            logDiv.appendChild(document.createElement('br'));
+            logDiv.appendChild(document.createElement("br"));
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -284,29 +296,29 @@
             const string = new TextDecoder().decode(data);
             const parsed = JSON.parse(string);
             let index = 0;
-            const div = document.createElement('div');
+            const div = document.createElement("div");
             parsed.items.forEach(function(line) {
-                const choiceSpan = document.createElement('span');
-                choiceSpan.classList.add('choice');
+                const choiceSpan = document.createElement("span");
+                choiceSpan.classList.add("choice");
                 choiceSpan.textContent = line[0] + ": ";
                 div.appendChild(choiceSpan);
-                const newSpan = document.createElement('span');
-                color = '#' + line[2].toString(16).padStart(6, '0');
-                newSpan.classList.add('choice');
-                newSpan.setAttribute('style', 'color: ' + color + ';');
+                const newSpan = document.createElement("span");
+                color = "#" + line[2].toString(16).padStart(6, "0");
+                newSpan.classList.add("choice");
+                newSpan.setAttribute("style", "color: " + color + ";");
                 newSpan.textContent = line[1];
                 div.appendChild(newSpan);
                 if (line.length > 3) {
-                    const extraSpan = document.createElement('span');
-                    extraSpan.classList.add('choice');
+                    const extraSpan = document.createElement("span");
+                    extraSpan.classList.add("choice");
                     if (line.length > 4) {
-                        color = '#' + line[4].toString(16).padStart(6, '0');
-                        extraSpan.setAttribute('style', 'color: ' + color + ';');
+                        color = "#" + line[4].toString(16).padStart(6, "0");
+                        extraSpan.setAttribute("style", "color: " + color + ";");
                     }
-                    extraSpan.textContent = ' ' + line[3];
+                    extraSpan.textContent = " " + line[3];
                     div.appendChild(extraSpan);
                 }
-                div.appendChild(document.createElement('br'));
+                div.appendChild(document.createElement("br"));
                 index++;
             });
             getChoiceFromListModal(div.innerHTML, parsed);
@@ -320,7 +332,7 @@
 
             modalKeyHandler = function(event) {
                 keyHandler(event, function (event) {
-                    if (event.code === 'Escape') {
+                    if (event.code === "Escape") {
                         closeModal();
                     } else {
                         const modifiers = getKeyModifiers(event);
@@ -347,28 +359,35 @@
         }
 
         function handleChoiceAccepted(data) {
-            console.log('Choice accepted');
-            console.log(data);
             closeModal();
         }
 
         function handleChoiceDeclined(data) {
-            console.log('Choice declined');
-            console.log(data);
+            const string = new TextDecoder().decode(data);
+            const parsed = JSON.parse(string);
+            console.log(parsed);
+            if (parsed.status !== undefined) {
+                const status = document.getElementById("gameModalStatus");
+                status.innerText = parsed.status;
+            }
+            if (parsed.substatus !== undefined) {
+                const status = document.getElementById("gameSubModalStatus");
+                status.innerText = parsed.substatus;
+            }
         }
 
         function handleDescribe(data) {
-            console.log('Describe');
+            console.log("Describe");
             console.log(data);
         }
 
         function writeToLog(msg) {
-            const logDiv = document.getElementById('gameLog');
-            const newSpan = document.createElement('span');
-            newSpan.classList.add('logline');
+            const logDiv = document.getElementById("gameLog");
+            const newSpan = document.createElement("span");
+            newSpan.classList.add("logline");
             newSpan.textContent = msg;
             logDiv.appendChild(newSpan);
-            logDiv.appendChild(document.createElement('br'));
+            logDiv.appendChild(document.createElement("br"));
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -411,9 +430,10 @@
         }
 
         function makeSprite(cell) {
+            if (cell.delete) {return;}
             const tile = tile_info[cell.tile_id];
             if (tile === undefined) {
-                console.error('tile is undefined for ', cell)
+                console.error("tile is undefined for ", cell)
                 return;
             }
             const tex = PIXI.loader.resources[tile.tileset].textures[tile.tiles[0]];
@@ -422,7 +442,7 @@
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
             sprite.alpha = cell.alpha;
-            // We'll assume sprites won't change layers
+            // We"ll assume sprites won't change layers
             switch (cell.layer) {
                 case 2:
                     layer_floor.addChild(sprite);
@@ -515,7 +535,7 @@
             const host = config.server.host;
             const port = config.server.port;
             ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
-            ws.binaryType = 'arraybuffer';
+            ws.binaryType = "arraybuffer";
 
             document.addEventListener("keypress", defaultKeyHandler);
 
@@ -524,13 +544,13 @@
             };
 
             ws.onopen = function(evt) {
-                requestRefresh();
+                requestRefresh(true);
             };
         }
 
         function keyHandled(event) {
             // Handle keypress locally first, possibly
-            if (event.ctrlKey && event.code === 'KeyP') {
+            if (event.ctrlKey && event.code === "KeyP") {
                 toggleGameLogModal();
                 return true;
             }
@@ -582,20 +602,21 @@
 
             modalKeyHandler = function(event) {
                 keyHandler(event, function (event) {
-                    if ((event.code === 'Escape') || (event.ctrlKey && event.code === 'KeyP')) {
+                    if ((event.code === "Escape") || (event.ctrlKey && event.code === "KeyP")) {
                         closeModal();
                     }
                 })
             };
 
-            const game_log = document.getElementById('gameLog');
+            const game_log = document.getElementById("gameLog");
             openModal("Game Log:", game_log.innerHTML, "");
         }
 
-        function requestRefresh() {
+        function requestRefresh(full=false) {
             if (ws.readyState === 1) {
-                let refresh = new Uint8Array(1);
+                let refresh = new Uint8Array(2);
                 refresh[0] = socket_events.ToServer.RefreshGraphics;
+                refresh[1] = full ? 1 : 0;
                 ws.send(refresh);
             }
         }

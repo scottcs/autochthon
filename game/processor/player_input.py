@@ -11,7 +11,13 @@ from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
 from game.component.player import GUTPlayerBump, Player
-from game.events import InputEvent, ChooseFromListEvent, ChoiceFromListEvent, ChoiceAcceptedEvent
+from game.events import (
+    InputEvent,
+    ChooseFromListEvent,
+    ChoiceFromListEvent,
+    ChoiceAcceptedEvent,
+    ChoiceDeclinedEvent,
+)
 from game.types import EventType, GameState, EquipType
 from game.utils.geometry import Point
 from gamedata.palette import ItemPalette, MessagePalette
@@ -115,7 +121,8 @@ class PlayerInputProcessor(esper.Processor):
         elif key == "e":
             self._command_equip()
         elif key == "r":
-            self._command_unequip()
+            pass
+            # self._command_unequip()
         else:
             handled = False
         return handled
@@ -166,6 +173,7 @@ class PlayerInputProcessor(esper.Processor):
                     else:
                         cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                         cmd_log.add("You can't drop that!")
+                        ChoiceDeclinedEvent.fire({"status": "You can't drop that!"})
                     break
 
     def _command_inventory(self) -> None:
@@ -269,6 +277,14 @@ class PlayerInputProcessor(esper.Processor):
                     cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                     cmd_log.add(
                         f"You can't equip any more items in your {equipment_slot['name']} slot."
+                    )
+                    ChoiceDeclinedEvent.fire(
+                        {
+                            "status": (
+                                f"You can't equip any more items in your "
+                                f"{equipment_slot['name']} slot."
+                            )
+                        }
                     )
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)

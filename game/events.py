@@ -24,6 +24,7 @@ class Event:
     def handle(self, handler: EventHandler) -> Event:
         """Register a handler."""
         self.handlers[handler] = True
+        # print(f"{self} added handler")
         return self
 
     def unhandle(self, handler: EventHandler) -> Event:
@@ -35,22 +36,24 @@ class Event:
         while self._to_unhandle:
             handler = self._to_unhandle.pop()
             try:
+                # print(f"{self} removed handler")
                 del self.handlers[handler]
             except KeyError:
                 raise ValueError("Handler is not handling this event, so cannot unhandle it.")
 
     def fire(self, event: Optional[EventType] = None) -> None:
         """Fire the event."""
+        self._remove_handlers()
+        # print(f"{self} fire event: {event}")
         for handler in self.handlers.keys():
             handler(event or {})
-        self._remove_handlers()
 
     def num_handlers(self) -> int:
         """Get the number of handlers."""
         return len(self.handlers)
 
     def __repr__(self) -> str:
-        return f"<{self.name}>"
+        return f"<{self.name} ({len(self.handlers.keys())})>"
 
     __call__ = fire
     __len__ = num_handlers

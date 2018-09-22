@@ -87,12 +87,15 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
 
     @staticmethod
     def _get_byte_array_from_event(event: EventType) -> bytearray:
+        log.debug(f"get byte array from event event: {event}")
         ba: bytearray = event.pop("bytearray", None)
         if not isinstance(ba, bytearray):
+            log.debug(f"ba {type(ba)}: {ba}")
             raise TypeError("Only bytearray is supported over the websocket.")
         return ba
 
     def _on_update_map_render(self, event: EventType) -> None:
+        log.debug(f"update map render handler event: {event}")
         ba: bytearray = self._get_byte_array_from_event(event)
         ba.insert(0, self.socket_events["FromServer"]["UpdateMap"])
         self.write_all(ba)
@@ -109,16 +112,18 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         ba.append(self.socket_events["FromServer"]["ChoiceAccepted"])
         self.write_all(ba)
 
-    def _on_choice_declined(self, _event: EventType) -> None:
+    def _on_choice_declined(self, event: EventType) -> None:
+        msg = json.dumps(event)
         ba: bytearray = bytearray()
         ba.append(self.socket_events["FromServer"]["ChoiceDeclined"])
+        ba.extend(msg.encode("utf-8"))
         self.write_all(ba)
 
     def _on_choose_from_list(self, event: EventType) -> None:
-        log_string = json.dumps(event)
+        msg = json.dumps(event)
         ba: bytearray = bytearray()
         ba.append(self.socket_events["FromServer"]["ChooseFromList"])
-        ba.extend(log_string.encode("utf-8"))
+        ba.extend(msg.encode("utf-8"))
         self.write_all(ba)
 
     def write_all(self, ba: bytearray) -> None:
@@ -131,7 +136,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         if isinstance(message, bytes):
             if message[0] == self.socket_events["ToServer"]["RefreshGraphics"]:
                 # ---- refresh event
-                RequestRenderEvent.fire()
+                RequestRenderEvent.fire({"full": bool(message[1])})
             elif message[0] == self.socket_events["ToServer"]["GameInput"]:
                 # ---- input event
                 # byte 1: input event flags
@@ -159,10 +164,13 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
 
     def on_close(self) -> None:
         """Called when closing a connection."""
+        log.debug("Closing connection.")
         self.connections.remove(self)
         UpdateMapRenderEvent.unhandle(self._on_update_map_render)
         GameLogEvent.unhandle(self._on_game_log)
         ChooseFromListEvent.unhandle(self._on_choose_from_list)
+        ChoiceDeclinedEvent.unhandle(self._on_choice_declined)
+        ChoiceAcceptedEvent.unhandle(self._on_choice_accepted)
 
     def get_compression_options(self) -> Optional[dict]:
         """Override default class to turn on compression.
