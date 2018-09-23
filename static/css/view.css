@@ -35,8 +35,21 @@ div#gameLog {
 }
 
 span.choice {
-    color: #aaa;
     font-family: monospace;
+}
+
+span.choice-header {
+    color: #ccc;
+    font-family: monospace;
+    font-variant: small-caps;
+}
+
+span.disabled {
+    color: #909090;
+}
+
+span.selected {
+    background-color: #676767;
 }
 
 .modal, .sub-modal {

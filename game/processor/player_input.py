@@ -18,7 +18,7 @@ from game.events import (
     ChoiceAcceptedEvent,
     ChoiceDeclinedEvent,
 )
-from game.types import EventType, GameState, EquipType
+from game.types import EventType, GameState, EquipType, Entity
 from game.utils.geometry import Point
 from gamedata.palette import ItemPalette, MessagePalette
 
@@ -120,12 +120,31 @@ class PlayerInputProcessor(esper.Processor):
             self._command_inventory()
         elif key == "e":
             self._command_equip()
-        elif key == "r":
-            pass
-            # self._command_unequip()
         else:
             handled = False
         return handled
+
+    def _get_items_carried(self, ent: Entity) -> dict:
+        items_carried = {"equipped": [], "unequipped": []}
+        for item_ent, components in self.world.get_components(GUTContained, Name, Containable):
+            contained, name, containable = components
+            if contained.by_ent == ent:
+                if containable.equipped:
+                    item_list = items_carried["equipped"]
+                else:
+                    item_list = items_carried["unequipped"]
+                item_list.append(
+                    (containable.equip_type.name, contained.label, name.generic, ItemPalette.rare)
+                )
+        if items_carried["equipped"]:
+            items_carried["equipped"].sort()
+        else:
+            del items_carried["equipped"]
+        if items_carried["unequipped"]:
+            items_carried["unequipped"].sort()
+        else:
+            del items_carried["unequipped"]
+        return items_carried
 
     def _command_pickup(self) -> None:
         for ent, _ in self.world.get_component(Player):
@@ -144,15 +163,11 @@ class PlayerInputProcessor(esper.Processor):
                     "There is already an item on the ground here!", MessagePalette.negative
                 )
                 return
-            items_carried = []
-            for item_ent, components in self.world.get_components(GUTContained, Name):
-                contained, name = components
-                if contained.by_ent == ent:
-                    items_carried.append((contained.label, name.generic, ItemPalette.rare))
+            items_carried = self._get_items_carried(ent)
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_drop_choice)
                 ChooseFromListEvent.fire(
-                    {"header": "Drop what?", "items": sorted(items_carried), "multiple": True}
+                    {"header": "Drop what?", "items": items_carried, "multiple": True}
                 )
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
@@ -178,27 +193,10 @@ class PlayerInputProcessor(esper.Processor):
 
     def _command_inventory(self) -> None:
         for ent, _ in self.world.get_component(Player):
-            items_carried = []
-            for item_ent, components in self.world.get_components(GUTContained, Name, Containable):
-                contained, name, containable = components
-                if contained.by_ent == ent:
-                    if containable.equipped:
-                        items_carried.append(
-                            (
-                                contained.label,
-                                name.generic,
-                                ItemPalette.rare,
-                                "(equipped)",
-                                MessagePalette.positive,
-                            )
-                        )
-                    else:
-                        items_carried.append((contained.label, name.generic, ItemPalette.rare))
+            items_carried = self._get_items_carried(ent)
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_inventory_choice)
-                ChooseFromListEvent.fire(
-                    {"header": "Describe what?", "items": sorted(items_carried)}
-                )
+                ChooseFromListEvent.fire({"header": "Describe what?", "items": items_carried})
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You aren't carrying anything!")
@@ -222,20 +220,11 @@ class PlayerInputProcessor(esper.Processor):
 
     def _command_equip(self) -> None:
         for ent, _ in self.world.get_component(Player):
-            equippable_items = []
-            for item_ent, components in self.world.get_components(GUTContained, Name, Containable):
-                contained, name, containable = components
-                if (
-                    contained.by_ent == ent
-                    and not containable.equipped
-                    and containable.equip_type != EquipType.none
-                ):
-                    equippable_items.append((contained.label, name.generic, ItemPalette.rare))
-            if equippable_items:
+            items_carried = self._get_items_carried(ent)
+            if items_carried:
                 ChoiceFromListEvent.handle(self._on_equip_choice)
-                ChooseFromListEvent.fire(
-                    {"header": "Equip what?", "items": sorted(equippable_items)}
-                )
+                ChooseFromListEvent.fire({"header": "Equip what?", "items": items_carried,
+                                          "disable": [EquipType.none.name]})
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You have nothing to eqiup!")

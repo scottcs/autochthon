@@ -18,6 +18,7 @@
         const socket_events_json = "data/websocketevents.json";
         const main_width_scale = 0.7;
         const main_height_scale = 0.88;
+        const defaultColorInt = 11184810;  // #aaaaaa
         let keys_data;
         let socket_events;
         let ws;
@@ -38,10 +39,13 @@
         let layer_effect;
         let app;
         let mapBits;
+        let parsedChoices;
         let modalKeyHandler;
         let modalClickHandler;
         let subModalKeyHandler;
         let subModalClickHandler;
+        let isModalOpen = false;
+        let isSubModalOpen = false;
 
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -135,27 +139,27 @@
         }
 
         const closeModal = function() {
+            isModalOpen = false;
             const modal = document.getElementById("gameModal");
             const modalContent = document.getElementById("gameModalContent");
             modal.classList.remove("open");
             modalContent.classList.remove("open");
             window.removeEventListener("click", modalClickHandler)
             document.removeEventListener("keypress", modalKeyHandler);
-            document.addEventListener("keypress", defaultKeyHandler);
         };
 
         const closeSubModal = function() {
+            isSubModalOpen = false;
             const subModal = document.getElementById("gameSubModal");
             const subModalContent = document.getElementById("gameSubModalContent");
             subModal.classList.remove("open");
             subModalContent.classList.remove("open");
             window.removeEventListener("click", subModalClickHandler)
             document.removeEventListener("keypress", subModalKeyHandler);
-            window.addEventListener("click", modalClickHandler);
-            document.addEventListener("keypress", modalKeyHandler);
         };
 
         const openModal = function(header, content, footer) {
+            isModalOpen = true;
             const modal = document.getElementById("gameModal");
             const modalContent = document.getElementById("gameModalContent");
             const modalHeader = document.getElementById("gameModalHeader");
@@ -170,11 +174,11 @@
             modalStatus.innerText = "";
             modalBody.scrollTop = modalBody.scrollHeight;
             window.addEventListener("click", modalClickHandler);
-            document.removeEventListener("keypress", defaultKeyHandler);
             document.addEventListener("keypress", modalKeyHandler);
         };
 
         const openSubModal = function(header, content, footer) {
+            isSubModalOpen = true;
             const subModal = document.getElementById("gameSubModal");
             const subModalContent = document.getElementById("gameSubModalContent");
             const subModalHeader = document.getElementById("gameSubModalHeader");
@@ -223,9 +227,9 @@
 
         function handleGameLog(data) {
             const string = new TextDecoder().decode(data);
-            const parsed = JSON.parse(string);
+            parsedChoices = JSON.parse(string);
             const logDiv = document.getElementById("gameLog");
-            parsed.lines.forEach(function(line) {
+            parsedChoices.lines.forEach(function(line) {
                 const newSpan = document.createElement("span");
                 color = "#" + line[1].toString(16).padStart(6, "0");
                 newSpan.classList.add("logline");
@@ -294,67 +298,109 @@
 
         function handleChooseFromList(data) {
             const string = new TextDecoder().decode(data);
-            const parsed = JSON.parse(string);
-            let index = 0;
+            parsedChoices = JSON.parse(string);
             const div = document.createElement("div");
-            parsed.items.forEach(function(line) {
-                const choiceSpan = document.createElement("span");
-                choiceSpan.classList.add("choice");
-                choiceSpan.textContent = line[0] + ": ";
-                div.appendChild(choiceSpan);
-                const newSpan = document.createElement("span");
-                color = "#" + line[2].toString(16).padStart(6, "0");
-                newSpan.classList.add("choice");
-                newSpan.setAttribute("style", "color: " + color + ";");
-                newSpan.textContent = line[1];
-                div.appendChild(newSpan);
-                if (line.length > 3) {
-                    const extraSpan = document.createElement("span");
-                    extraSpan.classList.add("choice");
-                    if (line.length > 4) {
-                        color = "#" + line[4].toString(16).padStart(6, "0");
-                        extraSpan.setAttribute("style", "color: " + color + ";");
-                    }
-                    extraSpan.textContent = " " + line[3];
-                    div.appendChild(extraSpan);
-                }
-                div.appendChild(document.createElement("br"));
-                index++;
-            });
-            getChoiceFromListModal(div.innerHTML, parsed);
+            const disable = parsedChoices.disable === undefined ? [] : parsedChoices.disable;
+            const select = parsedChoices.select === undefined ? [] : parsedChoices.select;
+            console.log(parsedChoices);
+            if (parsedChoices.items.eqiupped !== undefined) {
+                makeInventoryList(div, parsedChoices.items.equipped, "Equipped:", disable, select);
+            }
+            if (parsedChoices.items.unequipped !== undefined) {
+                makeInventoryList(div, parsedChoices.items.unequipped, "Unequipped:", disable, select);
+            }
+            openChoiceFromListModal(div.innerHTML);
         }
 
-        function getChoiceFromListModal(html, parsed) {
-            modalClickHandler = function(event) {
-                // TODO: handle clicking on items?
-                closeModal();
-            };
+        function makeInventoryList(div, items, header, disabled, selected) {
+            headerSpan = document.createElement("span");
+            headerSpan.classList.add("choice-header");
+            headerSpan.textContent = header;
+            div.appendChild(headerSpan);
+            div.appendChild(document.createElement("br"));
+            items.forEach(function(line) {
+                const isDisabled = disabled.includes[line[0]];
+                const isSelected = selected.includes[line[1]];
+                const outerSpan = document.createElement("span");
+                if (isSelected) {
+                    outerSpan.classList.add("selected");
+                }
+                outerSpan.appendChild(makeColoredSpan(
+                    line[1] + ": ", "choice", defaultColorInt, isDisabled
+                ));
+                outerSpan.appendChild(makeColoredSpan(line[2], "choice", line[3], isDisabled));
+                if (line.length > 4) {
+                    if (line.length <= 5) {
+                        line.push(defaultColorInt);
+                    }
+                    outerSpan.appendChild(makeColoredSpan(line[4], "choice", line[5], isDisabled));
+                }
+                div.appendChild(outerSpan);
+                div.appendChild(document.createElement("br"));
+            });
+        }
 
-            modalKeyHandler = function(event) {
-                keyHandler(event, function (event) {
-                    if (event.code === "Escape") {
-                        closeModal();
-                    } else {
-                        const modifiers = getKeyModifiers(event);
-                        let code = getKeyLetter(event);
-                        if (!event.shiftKey) {
-                            code = code.toLowerCase();
-                        }
-                        for (let i = 0; i < parsed.items.length; i++) {
-                            const line = parsed.items[i];
-                            if (line[0] === code) {
-                                sendChoiceToServer(event);
+        function makeColoredSpan(text, withClass, colorInt, isDisabled) {
+            const newSpan = document.createElement("span");
+            newSpan.classList.add(withClass);
+            if (isDisabled) {
+                newSpan.classList.add("disabled");
+            } else {
+                color = "#" + colorInt.toString(16).padStart(6, "0");
+                newSpan.setAttribute("style", "color: " + color + ";");
+            }
+            newSpan.textContent = text;
+            return newSpan;
+        }
+
+        function choiceListModalKeyHandler(event) {
+            keyHandler(event, function (event) {
+                if (event.code === "Escape") {
+                    closeModal();
+                } else {
+                    const modifiers = getKeyModifiers(event);
+                    let code = getKeyLetter(event);
+                    if (!event.shiftKey) {
+                        code = code.toLowerCase();
+                    }
+                    let found = false;
+                    if (parsedChoices.items.equipped !== undefined) {
+                        console.log('checking equipped');
+                        for (let i = 0; i < parsedChoices.items.equipped.length; i++) {
+                            const line = parsedChoices.items.equipped[i];
+                            if (line[1] === code) {
+                                found = true;
                                 break;
                             }
                         }
                     }
-                })
-            };
+                    if (!found && (parsedChoices.items.unequipped !== undefined)) {
+                        console.log('checking unequipped');
+                        for (let i = 0; i < parsedChoices.items.unequipped.length; i++) {
+                            const line = parsedChoices.items.unequipped[i];
+                            if (line[1] === code) {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    console.log(found);
+                    if (found) {sendChoiceToServer(event);}
+                }
+            })
+        }
 
+        function choiceListModalClickHandler(event) {
+            // TODO: handle clicking on items?
+        }
+
+        function openChoiceFromListModal(html) {
+            modalClickHandler = choiceListModalClickHandler;
+            modalKeyHandler = choiceListModalKeyHandler;
             header = "";
             footer = "";
-            if (parsed.header !== undefined) {header = parsed.header;}
-            if (parsed.footer !== undefined) {footer = parsed.footer;}
+            if (parsedChoices.header !== undefined) {header = parsedChoices.header;}
+            if (parsedChoices.footer !== undefined) {footer = parsedChoices.footer;}
             openModal(header, html, footer);
         }
 
@@ -364,15 +410,14 @@
 
         function handleChoiceDeclined(data) {
             const string = new TextDecoder().decode(data);
-            const parsed = JSON.parse(string);
-            console.log(parsed);
-            if (parsed.status !== undefined) {
+            parsedChoices = JSON.parse(string);
+            if (parsedChoices.status !== undefined) {
                 const status = document.getElementById("gameModalStatus");
-                status.innerText = parsed.status;
+                status.innerText = parsedChoices.status;
             }
-            if (parsed.substatus !== undefined) {
+            if (parsedChoices.substatus !== undefined) {
                 const status = document.getElementById("gameSubModalStatus");
-                status.innerText = parsed.substatus;
+                status.innerText = parsedChoices.substatus;
             }
         }
 
@@ -549,9 +594,10 @@
         }
 
         function keyHandled(event) {
+            if (isModalOpen || isSubModalOpen) {return true;}
             // Handle keypress locally first, possibly
             if (event.ctrlKey && event.code === "KeyP") {
-                toggleGameLogModal();
+                openGameLogModal();
                 return true;
             }
 
@@ -594,20 +640,21 @@
             ws.send(data);
         }
 
-        function toggleGameLogModal() {
-            modalClickHandler = function(event) {
-                // TODO: handle clicking on items?
-                closeModal();
-            };
+        function gameLogModalKeyHandler(event) {
+            keyHandler(event, function (event) {
+                if ((event.code === "Escape") || (event.ctrlKey && event.code === "KeyP")) {
+                    closeModal();
+                }
+            });
+        }
 
-            modalKeyHandler = function(event) {
-                keyHandler(event, function (event) {
-                    if ((event.code === "Escape") || (event.ctrlKey && event.code === "KeyP")) {
-                        closeModal();
-                    }
-                })
-            };
+        function gameLogModalClickHandler(event) {
+            // TODO: handle clicking on items?
+        }
 
+        function openGameLogModal() {
+            modalClickHandler = gameLogModalClickHandler;
+            modalKeyHandler = gameLogModalKeyHandler;
             const game_log = document.getElementById("gameLog");
             openModal("Game Log:", game_log.innerHTML, "");
         }
