@@ -127,7 +127,7 @@ class PlayerInputProcessor(esper.Processor):
         return handled
 
     def _get_items_carried(self, ent: Entity) -> dict:
-        items_carried = {"equipped": [], "unequipped": []}
+        items_carried: dict = {"equipped": [], "unequipped": []}
         for item_ent, components in self.world.get_components(GUTContained, Name, Containable):
             contained, name, containable = components
             if contained.by_ent == ent:

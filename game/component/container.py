@@ -101,7 +101,7 @@ class Equipment:
         melee_max: int = 1,
         ranged_name: str = "ranged",
         ranged_max: int = 1,
-    ):
+    ) -> None:
         self.slots = {
             EquipType.head: {"name": head_name, "max": head_max},
             EquipType.face: {"name": face_name, "max": face_max},
