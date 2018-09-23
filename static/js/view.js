@@ -144,8 +144,6 @@
             const modalContent = document.getElementById("gameModalContent");
             modal.classList.remove("open");
             modalContent.classList.remove("open");
-            window.removeEventListener("click", modalClickHandler)
-            document.removeEventListener("keypress", modalKeyHandler);
         };
 
         const closeSubModal = function() {
@@ -154,8 +152,6 @@
             const subModalContent = document.getElementById("gameSubModalContent");
             subModal.classList.remove("open");
             subModalContent.classList.remove("open");
-            window.removeEventListener("click", subModalClickHandler)
-            document.removeEventListener("keypress", subModalKeyHandler);
         };
 
         const openModal = function(header, content, footer) {
@@ -173,8 +169,6 @@
             modalFooter.innerText = footer;
             modalStatus.innerText = "";
             modalBody.scrollTop = modalBody.scrollHeight;
-            window.addEventListener("click", modalClickHandler);
-            document.addEventListener("keypress", modalKeyHandler);
         };
 
         const openSubModal = function(header, content, footer) {
@@ -192,10 +186,6 @@
             subModalFooter.innerText = footer;
             subModalStatus.innerText = "";
             subModalBody.scrollTop = subModalBody.scrollHeight;
-            window.removeEventListener("click", modalClickHandler);
-            window.addEventListener("click", subModalClickHandler);
-            document.removeEventListener("keypress", modalKeyHandler);
-            document.addEventListener("keypress", subModalKeyHandler);
         };
 
         function handleBinaryData(data) {
@@ -227,9 +217,9 @@
 
         function handleGameLog(data) {
             const string = new TextDecoder().decode(data);
-            parsedChoices = JSON.parse(string);
+            const parsed = JSON.parse(string);
             const logDiv = document.getElementById("gameLog");
-            parsedChoices.lines.forEach(function(line) {
+            parsed.lines.forEach(function(line) {
                 const newSpan = document.createElement("span");
                 color = "#" + line[1].toString(16).padStart(6, "0");
                 newSpan.classList.add("logline");
@@ -302,8 +292,7 @@
             const div = document.createElement("div");
             const disable = parsedChoices.disable === undefined ? [] : parsedChoices.disable;
             const select = parsedChoices.select === undefined ? [] : parsedChoices.select;
-            console.log(parsedChoices);
-            if (parsedChoices.items.eqiupped !== undefined) {
+            if (parsedChoices.items.equipped !== undefined) {
                 makeInventoryList(div, parsedChoices.items.equipped, "Equipped:", disable, select);
             }
             if (parsedChoices.items.unequipped !== undefined) {
@@ -354,40 +343,37 @@
         }
 
         function choiceListModalKeyHandler(event) {
-            keyHandler(event, function (event) {
-                if (event.code === "Escape") {
-                    closeModal();
-                } else {
-                    const modifiers = getKeyModifiers(event);
-                    let code = getKeyLetter(event);
-                    if (!event.shiftKey) {
-                        code = code.toLowerCase();
-                    }
-                    let found = false;
-                    if (parsedChoices.items.equipped !== undefined) {
-                        console.log('checking equipped');
-                        for (let i = 0; i < parsedChoices.items.equipped.length; i++) {
-                            const line = parsedChoices.items.equipped[i];
-                            if (line[1] === code) {
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!found && (parsedChoices.items.unequipped !== undefined)) {
-                        console.log('checking unequipped');
-                        for (let i = 0; i < parsedChoices.items.unequipped.length; i++) {
-                            const line = parsedChoices.items.unequipped[i];
-                            if (line[1] === code) {
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                    console.log(found);
-                    if (found) {sendChoiceToServer(event);}
+            if (event.code === "Escape") {
+                closeModal();
+            } else {
+                const modifiers = getKeyModifiers(event);
+                let code = getKeyLetter(event);
+                if (!event.shiftKey) {
+                    code = code.toLowerCase();
                 }
-            })
+                let found = false;
+                if (parsedChoices.items.equipped !== undefined) {
+                    for (let i = 0; i < parsedChoices.items.equipped.length; i++) {
+                        const line = parsedChoices.items.equipped[i];
+                        if (line[1] === code) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found && (parsedChoices.items.unequipped !== undefined)) {
+                    for (let i = 0; i < parsedChoices.items.unequipped.length; i++) {
+                        const line = parsedChoices.items.unequipped[i];
+                        if (line[1] === code) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found) {
+                    sendChoiceToServer(event);
+                }
+            }
         }
 
         function choiceListModalClickHandler(event) {
@@ -410,14 +396,14 @@
 
         function handleChoiceDeclined(data) {
             const string = new TextDecoder().decode(data);
-            parsedChoices = JSON.parse(string);
-            if (parsedChoices.status !== undefined) {
+            const parsed = JSON.parse(string);
+            if (parsed.status !== undefined) {
                 const status = document.getElementById("gameModalStatus");
-                status.innerText = parsedChoices.status;
+                status.innerText = parsed.status;
             }
-            if (parsedChoices.substatus !== undefined) {
+            if (parsed.substatus !== undefined) {
                 const status = document.getElementById("gameSubModalStatus");
-                status.innerText = parsedChoices.substatus;
+                status.innerText = parsed.substatus;
             }
         }
 
@@ -594,13 +580,19 @@
         }
 
         function keyHandled(event) {
-            if (isModalOpen || isSubModalOpen) {return true;}
-            // Handle keypress locally first, possibly
-            if (event.ctrlKey && event.code === "KeyP") {
-                openGameLogModal();
+            if (isSubModalOpen && subModalKeyHandler !== undefined) {
+                subModalKeyHandler(event);
                 return true;
+            } else if (isModalOpen && modalKeyHandler !== undefined) {
+                modalKeyHandler(event);
+                return true;
+            } else {
+                // Handle keypress locally first, possibly
+                if (event.ctrlKey && event.code === "KeyP") {
+                    openGameLogModal();
+                    return true;
+                }
             }
-
             return false;
         }
 
@@ -641,11 +633,9 @@
         }
 
         function gameLogModalKeyHandler(event) {
-            keyHandler(event, function (event) {
-                if ((event.code === "Escape") || (event.ctrlKey && event.code === "KeyP")) {
-                    closeModal();
-                }
-            });
+            if ((event.code === "Escape") || (event.ctrlKey && event.code === "KeyP")) {
+                closeModal();
+            }
         }
 
         function gameLogModalClickHandler(event) {

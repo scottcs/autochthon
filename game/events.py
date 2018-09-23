@@ -47,6 +47,7 @@ class Event:
         # print(f"{self} fire event: {event}")
         for handler in self.handlers.keys():
             handler(event or {})
+        self._remove_handlers()
 
     def num_handlers(self) -> int:
         """Get the number of handlers."""
