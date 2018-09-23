@@ -1,6 +1,6 @@
 """Container components."""
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional, Sequence
 
 from game.types import Entity, EquipType
@@ -21,9 +21,11 @@ class Containable:
 
     equip_type: EquipType = EquipType.none
     stackable: bool = False
+    count: int = field(init=False)
+    equipped: bool = field(init=False)
 
     def __post_init__(self) -> None:
-        self.count: int = 1
+        self.count = 1
         self.equipped = False
 
 

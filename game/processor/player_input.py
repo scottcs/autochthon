@@ -223,8 +223,13 @@ class PlayerInputProcessor(esper.Processor):
             items_carried = self._get_items_carried(ent)
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_equip_choice)
-                ChooseFromListEvent.fire({"header": "Equip what?", "items": items_carried,
-                                          "disable": [EquipType.none.name]})
+                ChooseFromListEvent.fire(
+                    {
+                        "header": "Equip what?",
+                        "items": items_carried,
+                        "disable": [EquipType.none.name],
+                    }
+                )
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You have nothing to eqiup!")
@@ -254,27 +259,27 @@ class PlayerInputProcessor(esper.Processor):
                     ):
                         equip_count += 1
                 equipment_slot = equipment.slots[want_to_equip[0].equip_type]
-                if equipment_slot["max"] > equip_count:
-                    want_to_equip[0].equipped = True
+                name = equipment_slot["name"]
+                if want_to_equip[0].equipped:
+                    want_to_equip[0].equipped = False
                     cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-                    cmd_log.add("You equip ")
+                    cmd_log.add("You unequip ")
                     cmd_log.append(want_to_equip[1].generic, ItemPalette.epic)
-                    cmd_log.append(f" in your {equipment_slot['name']} slot.")
+                    cmd_log.append(f" from your {name} slot.")
                     ChoiceAcceptedEvent.fire()
                 else:
-                    # TODO: unequip/equip
-                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-                    cmd_log.add(
-                        f"You can't equip any more items in your {equipment_slot['name']} slot."
-                    )
-                    ChoiceDeclinedEvent.fire(
-                        {
-                            "status": (
-                                f"You can't equip any more items in your "
-                                f"{equipment_slot['name']} slot."
-                            )
-                        }
-                    )
+                    if equipment_slot["max"] > equip_count:
+                        want_to_equip[0].equipped = True
+                        cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                        cmd_log.add("You equip ")
+                        cmd_log.append(want_to_equip[1].generic, ItemPalette.epic)
+                        cmd_log.append(f" in your {name} slot.")
+                        ChoiceAcceptedEvent.fire()
+                    else:
+                        msg = f"You can't equip any more items in your {name} slot."
+                        cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                        cmd_log.add(msg)
+                        ChoiceDeclinedEvent.fire({"status": msg})
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You can't find the item you want to equip.")
