@@ -17,6 +17,8 @@ from game.events import (
     ChoiceFromListEvent,
     ChoiceAcceptedEvent,
     ChoiceDeclinedEvent,
+    MenuClosedEvent,
+    SubMenuClosedEvent,
 )
 from game.types import EventType, GameState, EquipType, Entity
 from game.utils.geometry import Point
@@ -166,6 +168,7 @@ class PlayerInputProcessor(esper.Processor):
             items_carried = self._get_items_carried(ent)
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_drop_choice)
+                MenuClosedEvent.handle(self._on_drop_menu_closed)
                 ChooseFromListEvent.fire(
                     {"header": "Drop what?", "items": items_carried, "multiple": True}
                 )
@@ -176,7 +179,6 @@ class PlayerInputProcessor(esper.Processor):
     def _on_drop_choice(self, event: EventType) -> None:
         modifiers: dict = self._unpack_modifiers(event["modifiers"])
         key: str = self._get_key(event["code"])
-        ChoiceFromListEvent.unhandle(self._on_drop_choice)
         if modifiers["shift"]:
             key = key.upper()
         for ent, _ in self.world.get_component(Player):
@@ -191,11 +193,16 @@ class PlayerInputProcessor(esper.Processor):
                         ChoiceDeclinedEvent.fire({"status": "You can't drop that!"})
                     break
 
+    def _on_drop_menu_closed(self, _event: EventType) -> None:
+        ChoiceFromListEvent.unhandle(self._on_drop_choice)
+        MenuClosedEvent.unhandle(self._on_drop_menu_closed)
+
     def _command_inventory(self) -> None:
         for ent, _ in self.world.get_component(Player):
             items_carried = self._get_items_carried(ent)
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_inventory_choice)
+                MenuClosedEvent.handle(self._on_inventory_menu_closed)
                 ChooseFromListEvent.fire({"header": "Describe what?", "items": items_carried})
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
@@ -204,7 +211,6 @@ class PlayerInputProcessor(esper.Processor):
     def _on_inventory_choice(self, event: EventType) -> None:
         modifiers: dict = self._unpack_modifiers(event["modifiers"])
         key: str = self._get_key(event["code"])
-        ChoiceFromListEvent.unhandle(self._on_inventory_choice)
         if modifiers["shift"]:
             key = key.upper()
         for ent, _ in self.world.get_component(Player):
@@ -218,11 +224,16 @@ class PlayerInputProcessor(esper.Processor):
                     ChoiceAcceptedEvent.fire()
                     break
 
+    def _on_inventory_menu_closed(self, _event: EventType) -> None:
+        ChoiceFromListEvent.unhandle(self._on_inventory_choice)
+        MenuClosedEvent.unhandle(self._on_inventory_menu_closed)
+
     def _command_equip(self) -> None:
         for ent, _ in self.world.get_component(Player):
             items_carried = self._get_items_carried(ent)
             if items_carried:
                 ChoiceFromListEvent.handle(self._on_equip_choice)
+                MenuClosedEvent.handle(self._on_equip_menu_closed)
                 ChooseFromListEvent.fire(
                     {
                         "header": "Equip what?",
@@ -237,7 +248,6 @@ class PlayerInputProcessor(esper.Processor):
     def _on_equip_choice(self, event: EventType) -> None:
         modifiers: dict = self._unpack_modifiers(event["modifiers"])
         key: str = self._get_key(event["code"])
-        ChoiceFromListEvent.unhandle(self._on_equip_choice)
         if modifiers["shift"]:
             key = key.upper()
         for ent, _ in self.world.get_component(Player):
@@ -283,3 +293,7 @@ class PlayerInputProcessor(esper.Processor):
             else:
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You can't find the item you want to equip.")
+
+    def _on_equip_menu_closed(self, _event: EventType) -> None:
+        ChoiceFromListEvent.unhandle(self._on_equip_choice)
+        MenuClosedEvent.unhandle(self._on_equip_menu_closed)

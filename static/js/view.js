@@ -144,6 +144,7 @@
             const modalContent = document.getElementById("gameModalContent");
             modal.classList.remove("open");
             modalContent.classList.remove("open");
+            notifyModalClosed();
         };
 
         const closeSubModal = function() {
@@ -152,6 +153,7 @@
             const subModalContent = document.getElementById("gameSubModalContent");
             subModal.classList.remove("open");
             subModalContent.classList.remove("open");
+            notifySubModalClosed();
         };
 
         const openModal = function(header, content, footer) {
@@ -391,7 +393,8 @@
         }
 
         function handleChoiceAccepted(data) {
-            closeModal();
+            // TODO: redraw choice list
+            // closeModal();
         }
 
         function handleChoiceDeclined(data) {
@@ -655,6 +658,22 @@
                 refresh[0] = socket_events.ToServer.RefreshGraphics;
                 refresh[1] = full ? 1 : 0;
                 ws.send(refresh);
+            }
+        }
+
+        function notifyModalClosed() {
+            if (ws.readyState === 1) {
+                let msg = new Uint8Array(1);
+                msg[0] = socket_events.ToServer.ModalWasClosed;
+                ws.send(msg);
+            }
+        }
+
+        function notifySubModalClosed() {
+            if (ws.readyState === 1) {
+                let msg = new Uint8Array(1);
+                msg[0] = socket_events.ToServer.SubModalWasClosed;
+                ws.send(msg);
             }
         }
     };

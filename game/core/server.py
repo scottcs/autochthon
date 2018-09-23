@@ -17,6 +17,8 @@ from game.events import (
     ChoiceFromListEvent,
     ChoiceAcceptedEvent,
     ChoiceDeclinedEvent,
+    MenuClosedEvent,
+    SubMenuClosedEvent,
 )
 from game.core.main import Game
 from game.processor.render import WebRenderProcessor
@@ -135,10 +137,9 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         """Called when a message is received over the connection."""
         if isinstance(message, bytes):
             if message[0] == self.socket_events["ToServer"]["RefreshGraphics"]:
-                # ---- refresh event
+                # byte 1: full refresh (boolean)
                 RequestRenderEvent.fire({"full": bool(message[1])})
             elif message[0] == self.socket_events["ToServer"]["GameInput"]:
-                # ---- input event
                 # byte 1: input event flags
                 # byte 2: modifiers
                 # byte 3: key/button code
@@ -155,10 +156,13 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
                     }
                 )
             elif message[0] == self.socket_events["ToServer"]["ChoiceFromList"]:
-                # ---- choice from list event
                 # byte 1: modifiers
                 # byte 2: key/button code
                 ChoiceFromListEvent.fire({"modifiers": message[1], "code": message[2]})
+            elif message[0] == self.socket_events["ToServer"]["ModalWasClosed"]:
+                MenuClosedEvent.fire()
+            elif message[0] == self.socket_events["ToServer"]["SubModalWasClosed"]:
+                SubMenuClosedEvent.fire()
             else:
                 log.error(f"Unprocessed message type: {message[0]}")
 

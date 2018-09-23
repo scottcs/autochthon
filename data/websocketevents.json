@@ -2,7 +2,9 @@
   "ToServer": {
     "RefreshGraphics": 0,
     "GameInput": 1,
-    "ChoiceFromList": 2
+    "ChoiceFromList": 2,
+    "ModalWasClosed": 3,
+    "SubModalWasClosed": 4
   },
   "FromServer": {
     "GameLog": 0,
