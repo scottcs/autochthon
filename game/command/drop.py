@@ -24,7 +24,8 @@ log.setLevel(logging.DEBUG)
 class DropCommand(BaseCommand):
     """Drop an item."""
 
-    def _command(self) -> None:
+    def run(self) -> None:
+        """Run the command."""
         for ent, _ in self.world.get_component(Player):
             pos = self.world.component_for_entity(ent, Position)
             item = self.world.get_item_at_position(pos.x, pos.y)

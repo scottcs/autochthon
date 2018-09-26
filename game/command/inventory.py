@@ -17,7 +17,8 @@ from gamedata.palette import ItemPalette
 class InventoryCommand(BaseCommand):
     """Inventory command."""
 
-    def _command(self) -> None:
+    def run(self) -> None:
+        """Run the command."""
         for ent, _ in self.world.get_component(Player):
             items_carried = self._get_items_carried(ent)
             if items_carried:

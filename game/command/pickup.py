@@ -7,7 +7,8 @@ from .base import BaseCommand
 class PickupCommand(BaseCommand):
     """Pickup command."""
 
-    def _command(self) -> None:
+    def run(self) -> None:
+        """Run the command."""
         for ent, _ in self.world.get_component(Player):
             item = self.world.pickup_item(ent)
             if not item:

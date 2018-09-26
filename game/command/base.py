@@ -27,12 +27,6 @@ class BaseCommand:
 
     def run(self) -> None:
         """Run the command."""
-        self._command()
-
-    def _command(self) -> None:
-        raise NotImplementedError("Must implement in child class.")
-
-    def _on_choice(self, event: EventType) -> None:
         raise NotImplementedError("Must implement in child class.")
 
     def _get_items_carried(self, ent: Entity) -> dict:
@@ -64,6 +58,10 @@ class BaseCommand:
         if modifiers["shift"]:
             key = key.upper()
         return InputKey(key, modifiers)
+
+    def _on_choice(self, event: EventType) -> None:
+        # Implement in child class if needed.
+        pass
 
     def _on_menu_closed(self, _event: EventType) -> None:
         ChoiceFromListEvent.unhandle(self._on_choice)
