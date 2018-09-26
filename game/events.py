@@ -20,26 +20,33 @@ class Event:
         self.name = name
         self.handlers: Dict[EventHandler, bool] = dict()
         self._to_unhandle: List[EventHandler] = []
+        self._to_handle: List[EventHandler] = []
 
     def handle(self, handler: EventHandler) -> Event:
         """Register a handler."""
         self.handlers[handler] = True
+        self._to_handle.append(handler)
         # print(f"{self} added handler")
         return self
 
     def unhandle(self, handler: EventHandler) -> Event:
         """Unregister a handler."""
         self._to_unhandle.append(handler)
+        # print(f"{self} unhandle")
         return self
 
     def _remove_handlers(self) -> None:
         while self._to_unhandle:
             handler = self._to_unhandle.pop()
+            if handler in self._to_handle:
+                # it's been added at some point after we wanted to remove it, so don't remove it
+                continue
             try:
                 # print(f"{self} removed handler")
                 del self.handlers[handler]
             except KeyError:
                 raise ValueError("Handler is not handling this event, so cannot unhandle it.")
+        self._to_handle.clear()
 
     def fire(self, event: Optional[EventType] = None) -> None:
         """Fire the event."""
