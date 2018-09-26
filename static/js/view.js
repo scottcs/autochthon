@@ -393,8 +393,7 @@
         }
 
         function handleChoiceAccepted(data) {
-            // TODO: redraw choice list
-            // closeModal();
+            closeModal();
         }
 
         function handleChoiceDeclined(data) {
