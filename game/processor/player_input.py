@@ -236,7 +236,7 @@ class PlayerInputProcessor(esper.Processor):
                 MenuClosedEvent.handle(self._on_equip_menu_closed)
                 ChooseFromListEvent.fire(
                     {
-                        "header": "Equip what?",
+                        "header": "Equip/Unequip what?",
                         "items": items_carried,
                         "disable": [EquipType.none.name],
                     }
