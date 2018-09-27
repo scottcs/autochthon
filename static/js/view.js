@@ -411,7 +411,12 @@
 
         function handleDescribe(data) {
             console.log("Describe");
-            console.log(data);
+            const string = new TextDecoder().decode(data);
+            const parsed = JSON.parse(string);
+            console.log(parsed);
+            const div = document.createElement("div");
+            div.appendChild(makeColoredSpan(parsed.msg, "description", defaultColorInt, false));
+            openDescriptionSubModal(parsed.name, div.innerHTML, parsed.choices);
         }
 
         function writeToLog(msg) {
@@ -649,6 +654,22 @@
             modalKeyHandler = gameLogModalKeyHandler;
             const game_log = document.getElementById("gameLog");
             openModal("Game Log:", game_log.innerHTML, "");
+        }
+
+        function descriptionSubModalKeyHandler(event) {
+            if (event.code === "Escape") {
+                closeModal();
+            }
+        }
+
+        function descriptionSubModalClickHandler(event) {
+            // TODO: handle clicking on items?
+        }
+
+        function openDescriptionSubModal(header, html, footer) {
+            modalClickHandler = descriptionSubModalClickHandler;
+            modalKeyHandler = descriptionSubModalKeyHandler;
+            openSubModal(header, html, footer);
         }
 
         function requestRefresh(full=false) {

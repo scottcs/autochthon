@@ -6,9 +6,12 @@ from game.component.player import Player
 from game.component.gamelog import GUTCommandLog
 from game.events import (
     ChoiceAcceptedEvent,
+    ChoiceDeclinedEvent,
     ChoiceFromListEvent,
     ChooseFromListEvent,
+    DescribeEvent,
     MenuClosedEvent,
+    SubMenuClosedEvent,
 )
 from game.types import EventType
 from gamedata.palette import ItemPalette
@@ -32,12 +35,34 @@ class InventoryCommand(BaseCommand):
     def _on_choice(self, event: EventType) -> None:
         input_key = self._keys_from_event(event)
         for ent, _ in self.world.get_component(Player):
-            for item_ent, components in self.world.get_components(GUTContained, Name):
-                contained, name = components
-                if contained.by_ent == ent and contained.label == input_key.key:
-                    cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-                    cmd_log.add("It's ")
-                    cmd_log.append(name.generic, ItemPalette.epic)
-                    cmd_log.append(".")
+            if self.submenu:
+                print(f"Submenu chose {input_key}")
+                if input_key.key == "d":
+                    print("drop")
                     ChoiceAcceptedEvent.fire()
-                    break
+                elif input_key.key == "e":
+                    print("equip/unequip")
+                    ChoiceAcceptedEvent.fire()
+                else:
+                    ChoiceDeclinedEvent.fire()
+            else:
+                for item_ent, components in self.world.get_components(GUTContained, Name):
+                    contained, name = components
+                    if contained.by_ent == ent and contained.label == input_key.key:
+                        cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                        cmd_log.add("It's ")
+                        cmd_log.append(name.generic, ItemPalette.epic)
+                        cmd_log.append(".")
+                        DescribeEvent.fire({
+                            "name": (name.generic, ItemPalette.epic),
+                            "msg": cmd_log.lines,
+                            "choices": "d) Drop  e) Equip/Unequip",
+                        })
+                        self.submenu = True
+                        SubMenuClosedEvent.handle(self._on_submenu_closed)
+                        break
+
+    def _on_submenu_closed(self, _event: EventType) -> None:
+        print('submenu closed')
+        self.submenu = False
+        SubMenuClosedEvent.unhandle(self._on_submenu_closed)

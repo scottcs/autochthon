@@ -9,16 +9,17 @@ import tornado.web
 import tornado.websocket
 
 from game.events import (
-    InputEvent,
-    UpdateMapRenderEvent,
-    RequestRenderEvent,
-    GameLogEvent,
-    ChooseFromListEvent,
-    ChoiceFromListEvent,
     ChoiceAcceptedEvent,
     ChoiceDeclinedEvent,
+    ChoiceFromListEvent,
+    ChooseFromListEvent,
+    DescribeEvent,
+    GameLogEvent,
+    InputEvent,
     MenuClosedEvent,
+    RequestRenderEvent,
     SubMenuClosedEvent,
+    UpdateMapRenderEvent,
 )
 from game.core.main import Game
 from game.processor.render import WebRenderProcessor
@@ -77,6 +78,7 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
             ChoiceAcceptedEvent.handle(self._on_choice_accepted)
             ChoiceDeclinedEvent.handle(self._on_choice_declined)
             ChooseFromListEvent.handle(self._on_choose_from_list)
+            DescribeEvent.handle(self._on_describe)
             GameLogEvent.handle(self._on_game_log)
             UpdateMapRenderEvent.handle(self._on_update_map_render)
         self.game_callback: GameCallback = GameCallback(config=config)
@@ -125,6 +127,13 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         msg = json.dumps(event)
         ba: bytearray = bytearray()
         ba.append(self.socket_events["FromServer"]["ChooseFromList"])
+        ba.extend(msg.encode("utf-8"))
+        self.write_all(ba)
+
+    def _on_describe(self, event: EventType) -> None:
+        msg = json.dumps(event)
+        ba: bytearray = bytearray()
+        ba.append(self.socket_events["FromServer"]["Describe"])
         ba.extend(msg.encode("utf-8"))
         self.write_all(ba)
 

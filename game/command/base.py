@@ -24,6 +24,7 @@ class BaseCommand:
 
     def __init__(self, world: World) -> None:
         self.world: World = world
+        self.submenu = False
 
     def run(self) -> None:
         """Run the command."""

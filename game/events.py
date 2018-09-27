@@ -67,10 +67,11 @@ class Event:
     __len__ = num_handlers
 
 
-ChoiceFromListEvent = Event("ChoiceFromListEvent")
-ChooseFromListEvent = Event("ChooseFromListEvent")
-ChoiceAcceptedEvent = Event("ChooseFromListEvent")
-ChoiceDeclinedEvent = Event("ChooseFromListEvent")
+ChoiceFromListEvent: Event = Event("ChoiceFromListEvent")
+ChooseFromListEvent: Event = Event("ChooseFromListEvent")
+ChoiceAcceptedEvent: Event = Event("ChooseFromListEvent")
+ChoiceDeclinedEvent: Event = Event("ChooseFromListEvent")
+DescribeEvent: Event = Event("DescribeEvent")
 GameLogEvent: Event = Event("GameLogEvent")
 GameOverEvent: Event = Event("GameOverEvent")
 InputEvent: Event = Event("InputEvent")
