@@ -393,6 +393,7 @@
         }
 
         function handleChoiceAccepted(data) {
+            if (isSubModalOpen) {closeSubModal();}
             closeModal();
         }
 
@@ -410,10 +411,8 @@
         }
 
         function handleDescribe(data) {
-            console.log("Describe");
             const string = new TextDecoder().decode(data);
             const parsed = JSON.parse(string);
-            console.log(parsed);
             const div = document.createElement("div");
             div.appendChild(makeColoredSpan(parsed.msg, "description", defaultColorInt, false));
             openDescriptionSubModal(parsed.name, div.innerHTML, parsed.choices);
@@ -658,7 +657,9 @@
 
         function descriptionSubModalKeyHandler(event) {
             if (event.code === "Escape") {
-                closeModal();
+                closeSubModal();
+            } else {
+                sendChoiceToServer(event);
             }
         }
 
@@ -667,8 +668,8 @@
         }
 
         function openDescriptionSubModal(header, html, footer) {
-            modalClickHandler = descriptionSubModalClickHandler;
-            modalKeyHandler = descriptionSubModalKeyHandler;
+            subModalClickHandler = descriptionSubModalClickHandler;
+            subModalKeyHandler = descriptionSubModalKeyHandler;
             openSubModal(header, html, footer);
         }
 
