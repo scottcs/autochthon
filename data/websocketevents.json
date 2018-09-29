@@ -2,11 +2,16 @@
   "ToServer": {
     "RefreshGraphics": 0,
     "GameInput": 1,
-    "ChoiceFromList": 2
+    "ChoiceFromList": 2,
+    "ModalWasClosed": 3,
+    "SubModalWasClosed": 4
   },
   "FromServer": {
     "GameLog": 0,
     "UpdateMap": 1,
-    "ChooseFromList": 2
+    "ChooseFromList": 2,
+    "ChoiceAccepted": 3,
+    "ChoiceDeclined": 4,
+    "Describe": 5
   }
 }

@@ -108,7 +108,8 @@ class ContainerProcessor(esper.Processor):
                         # TODO: colorize the item by rarity?
                         cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
                         cmd_log.append(f" is put into {container_name}.")
-        RenderEntitiesEvent.fire({"entities": entities_to_render})
+        if entities_to_render:
+            RenderEntitiesEvent.fire({"entities": entities_to_render})
 
     def _get_next_free_slot(self, ent: Entity, container: Container) -> Optional[int]:
         seen_slots = set()

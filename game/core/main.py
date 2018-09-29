@@ -161,17 +161,17 @@ class Game:
         enemy_factory.make(["OrcBrute"])
         enemy_factory.make(["Firefly"])
         enemy_factory.make(["SebastianBenini"])
-        for _ in range(200):
+        for _ in range(100):
             item_factory.make(["Katana"])
-        item_factory.make(["Mace"])
-        item_factory.make(["PlateArmor"])
+            item_factory.make(["Mace"])
+            item_factory.make(["PlateArmor"])
 
     def _on_input(self, _event: EventType) -> None:
         self.got_player_input = True
 
     @staticmethod
-    def _on_refresh_map(_event: EventType) -> None:
-        RenderMapEvent.fire()
+    def _on_refresh_map(event: EventType) -> None:
+        RenderMapEvent.fire(event)
         RenderEntitiesEvent.fire({"entities": [], "all": True})
 
     def _on_game_log(self, event: EventType) -> None:

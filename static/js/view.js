@@ -1,23 +1,24 @@
 (function () {
     window.onload = function() {
-        const img_dir = 'static/img/';
-        const tileset_dir = img_dir + 'oryx_ur/';
-        const tileset_avatar = tileset_dir + 'Avatar.json';
-        const tileset_avatar_equipment = tileset_dir + 'Avatar_Equipment.json';
-        const tileset_fx_blood = tileset_dir + 'FX_Blood.json';
-        const tileset_fx_general = tileset_dir + 'FX_General.json';
-        const tileset_fx_projectiles = tileset_dir + 'FX_Projectiles.json';
-        const tileset_items = tileset_dir + 'Items.json';
-        const tileset_monsters = tileset_dir + 'Monsters.json';
-        const tileset_monsters_scifi = tileset_dir + 'Monsters_Scifi.json';
-        const tileset_terrain = tileset_dir + 'Terrain.json';
-        const tileset_terrain_objects = tileset_dir + 'Terrain_Objects.json';
-        const tile_id_table = tileset_dir + 'tile_ids.json';
-        const config_json = 'data/config.json';
-        const keys_json = 'data/keys.json';
-        const socket_events_json = 'data/websocketevents.json';
+        const img_dir = "static/img/";
+        const tileset_dir = img_dir + "oryx_ur/";
+        const tileset_avatar = tileset_dir + "Avatar.json";
+        const tileset_avatar_equipment = tileset_dir + "Avatar_Equipment.json";
+        const tileset_fx_blood = tileset_dir + "FX_Blood.json";
+        const tileset_fx_general = tileset_dir + "FX_General.json";
+        const tileset_fx_projectiles = tileset_dir + "FX_Projectiles.json";
+        const tileset_items = tileset_dir + "Items.json";
+        const tileset_monsters = tileset_dir + "Monsters.json";
+        const tileset_monsters_scifi = tileset_dir + "Monsters_Scifi.json";
+        const tileset_terrain = tileset_dir + "Terrain.json";
+        const tileset_terrain_objects = tileset_dir + "Terrain_Objects.json";
+        const tile_id_table = tileset_dir + "tile_ids.json";
+        const config_json = "data/config.json";
+        const keys_json = "data/keys.json";
+        const socket_events_json = "data/websocketevents.json";
         const main_width_scale = 0.7;
         const main_height_scale = 0.88;
+        const defaultColorInt = 11184810;  // #aaaaaa
         let keys_data;
         let socket_events;
         let ws;
@@ -38,6 +39,13 @@
         let layer_effect;
         let app;
         let mapBits;
+        let parsedChoices;
+        let modalKeyHandler;
+        let modalClickHandler;
+        let subModalKeyHandler;
+        let subModalClickHandler;
+        let isModalOpen = false;
+        let isSubModalOpen = false;
 
         PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -81,7 +89,7 @@
             world_width = map_tile_width * tile_width;
             world_height = map_tile_height * tile_height;
 
-            const renderDiv = document.getElementById('render');
+            const renderDiv = document.getElementById("render");
 
             app = new PIXI.Application({
                 width: window.innerWidth * main_width_scale,
@@ -110,11 +118,11 @@
             // camera.scale.set(2);
 
             renderDiv.appendChild(app.view);
-            window.addEventListener('resize', resize);
+            window.addEventListener("resize", resize);
 
             setupWebsockets(config);
             app.ticker.add(delta => gameLoop(delta));
-            console.log('Done loading.');
+            console.log("Done loading.");
             resize();
         }
 
@@ -130,6 +138,58 @@
 
         }
 
+        const closeModal = function() {
+            isModalOpen = false;
+            const modal = document.getElementById("gameModal");
+            const modalContent = document.getElementById("gameModalContent");
+            modal.classList.remove("open");
+            modalContent.classList.remove("open");
+            notifyModalClosed();
+        };
+
+        const closeSubModal = function() {
+            isSubModalOpen = false;
+            const subModal = document.getElementById("gameSubModal");
+            const subModalContent = document.getElementById("gameSubModalContent");
+            subModal.classList.remove("open");
+            subModalContent.classList.remove("open");
+            notifySubModalClosed();
+        };
+
+        const openModal = function(header, content, footer) {
+            isModalOpen = true;
+            const modal = document.getElementById("gameModal");
+            const modalContent = document.getElementById("gameModalContent");
+            const modalHeader = document.getElementById("gameModalHeader");
+            const modalBody = document.getElementById("gameModalBody");
+            const modalFooter = document.getElementById("gameModalFooter");
+            const modalStatus = document.getElementById("gameModalStatus");
+            modal.classList.add("open");
+            modalContent.classList.add("open");
+            modalHeader.innerHTML = header;
+            modalBody.innerHTML = content;
+            modalFooter.innerHTML = footer;
+            modalStatus.innerHTML = "";
+            modalBody.scrollTop = modalBody.scrollHeight;
+        };
+
+        const openSubModal = function(header, content, footer) {
+            isSubModalOpen = true;
+            const subModal = document.getElementById("gameSubModal");
+            const subModalContent = document.getElementById("gameSubModalContent");
+            const subModalHeader = document.getElementById("gameSubModalHeader");
+            const subModalBody = document.getElementById("gameSubModalBody");
+            const subModalFooter = document.getElementById("gameSubModalFooter");
+            const subModalStatus = document.getElementById("gameSubModalStatus");
+            subModal.classList.add("open");
+            subModalContent.classList.add("open");
+            subModalHeader.innerHTML = header;
+            subModalBody.innerHTML = content;
+            subModalFooter.innerHTML = footer;
+            subModalStatus.innerHTML = "";
+            subModalBody.scrollTop = subModalBody.scrollHeight;
+        };
+
         function handleBinaryData(data) {
             const headerByte = new Uint8Array(data)[0];
             const actualData = data.slice(1, data.length);
@@ -143,24 +203,29 @@
                 case socket_events.FromServer.ChooseFromList:
                     handleChooseFromList(actualData);
                     break;
+                case socket_events.FromServer.ChoiceAccepted:
+                    handleChoiceAccepted(actualData);
+                    break;
+                case socket_events.FromServer.ChoiceDeclined:
+                    handleChoiceDeclined(actualData);
+                    break;
+                case socket_events.FromServer.Describe:
+                    handleDescribe(actualData);
+                    break;
                 default:
-                    console.error('Got unknown event from server.', headerByte);
+                    console.error("Got unknown event from server.", headerByte);
             }
         }
 
         function handleGameLog(data) {
             const string = new TextDecoder().decode(data);
             const parsed = JSON.parse(string);
-            const logDiv = document.getElementById('gameLog');
+            const logDiv = document.getElementById("gameLog");
             parsed.lines.forEach(function(line) {
-                const newSpan = document.createElement('span');
-                color = '#' + line[1].toString(16).padStart(6, '0');
-                newSpan.classList.add('logline');
-                newSpan.setAttribute('style', 'color: ' + color + ';');
-                newSpan.textContent = line[0];
+                const newSpan = makeColoredSpan(line[0], "logline", line[1], false);
                 logDiv.appendChild(newSpan);
             });
-            logDiv.appendChild(document.createElement('br'));
+            logDiv.appendChild(document.createElement("br"));
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -221,92 +286,155 @@
 
         function handleChooseFromList(data) {
             const string = new TextDecoder().decode(data);
-            const parsed = JSON.parse(string);
-            let index = 0;
-            const div = document.createElement('div');
-            parsed.items.forEach(function(line) {
-                const choiceSpan = document.createElement('span');
-                choiceSpan.classList.add('choice');
-                choiceSpan.textContent = line[0] + ": ";
-                div.appendChild(choiceSpan);
-                const newSpan = document.createElement('span');
-                color = '#' + line[2].toString(16).padStart(6, '0');
-                newSpan.classList.add('choice');
-                newSpan.setAttribute('style', 'color: ' + color + ';');
-                newSpan.textContent = line[1];
-                div.appendChild(newSpan);
-                div.appendChild(document.createElement('br'));
-                index++;
-            });
-            getChoiceFromListModal(div.innerHTML, parsed);
+            parsedChoices = JSON.parse(string);
+            const div = document.createElement("div");
+            const disable = parsedChoices.disable === undefined ? [] : parsedChoices.disable;
+            const select = parsedChoices.select === undefined ? [] : parsedChoices.select;
+            if (parsedChoices.items.equipped !== undefined) {
+                makeInventoryList(
+                    div, parsedChoices.items.equipped, "Equipped:", disable, select, true
+                );
+            }
+            if (parsedChoices.items.unequipped !== undefined) {
+                makeInventoryList(
+                    div, parsedChoices.items.unequipped, "Unequipped:", disable, select
+                );
+            }
+            openChoiceFromListModal(div.innerHTML);
         }
 
-        function getChoiceFromListModal(html, parsed) {
-            const modal = document.getElementById('gameModal');
-
-            // When the user clicks anywhere outside of the modal, close it
-            const closeModal = function() {
-                modal.style.display = "none";
-                window.removeEventListener('click', onModalClick)
-                document.removeEventListener("keypress", onKeyPress);
-                document.addEventListener("keypress", defaultKeyHandler);
-            };
-
-            const openModal = function() {
-                const modal_header = document.getElementById('gameModalHeader');
-                const modal_inner_content = document.getElementById('gameModalInnerContent');
-                modal.style.display = "block";
-                modal_header.innerText = parsed.prompt;
-                modal_inner_content.innerHTML = html;
-                modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
-                window.addEventListener('click', onModalClick);
-                document.removeEventListener("keypress", defaultKeyHandler);
-                document.addEventListener("keypress", onKeyPress);
-            };
-
-            const onModalClick = function(event) {
-                if (event.target === modal) {
-                    closeModal();
+        function makeInventoryList(div, items, header, disabled, selected, equipped=false) {
+            headerSpan = document.createElement("span");
+            headerSpan.classList.add("choice-header");
+            headerSpan.textContent = header;
+            div.appendChild(headerSpan);
+            div.appendChild(document.createElement("br"));
+            items.forEach(function(line) {
+                const isDisabled = disabled.includes[line[0]];
+                const isSelected = selected.includes[line[1]];
+                const outerSpan = document.createElement("span");
+                if (isSelected) {
+                    outerSpan.classList.add("selected");
                 }
-            };
-
-            const onKeyPress = function(event) {
-                keyHandler(event, function (event) {
-                    if (event.code === 'Escape') {
-                        closeModal();
-                    } else {
-                        const modifiers = getKeyModifiers(event);
-                        let code = getKeyLetter(event);
-                        if (!event.shiftKey) {
-                            code = code.toLowerCase();
-                        }
-                        for (let i = 0; i < parsed.items.length; i++) {
-                            const line = parsed.items[i];
-                            if (line[0] === code) {
-                                sendChoiceToServer(event);
-                                closeModal()
-                                break;
-                            }
-                        }
+                outerSpan.appendChild(
+                    makeColoredSpan(line[1] + ": ", "choice", defaultColorInt, isDisabled)
+                );
+                outerSpan.appendChild(makeColoredSpan(line[2], "choice", line[3], isDisabled));
+                if (line.length > 4) {
+                    if (line.length <= 5) {
+                        line.push(defaultColorInt);
                     }
-                })
-            };
+                    outerSpan.appendChild(makeColoredSpan(line[4], "choice", line[5], isDisabled));
+                }
+                if (equipped) {
+                    outerSpan.appendChild(
+                        makeColoredSpan(" <" + line[0] + ">", "equipped", null, isDisabled)
+                    );
+                }
+                div.appendChild(outerSpan);
+                div.appendChild(document.createElement("br"));
+            });
+        }
 
-            if (modal.style.display === "block") {
+        function makeColoredSpan(text, withClass, colorInt, isDisabled) {
+            const newSpan = document.createElement("span");
+            newSpan.classList.add(withClass);
+            if (isDisabled) {
+                newSpan.classList.add("disabled");
+            } else if (colorInt !== null) {
+                console.log(colorInt);
+                color = "#" + colorInt.toString(16).padStart(6, "0");
+                newSpan.setAttribute("style", "color: " + color + ";");
+            }
+            newSpan.textContent = text;
+            return newSpan;
+        }
+
+        function choiceListModalKeyHandler(event) {
+            if (event.code === "Escape") {
                 closeModal();
             } else {
-                openModal();
+                const modifiers = getKeyModifiers(event);
+                let code = getKeyLetter(event);
+                if (!event.shiftKey) {
+                    code = code.toLowerCase();
+                }
+                let found = false;
+                if (parsedChoices.items.equipped !== undefined) {
+                    for (let i = 0; i < parsedChoices.items.equipped.length; i++) {
+                        const line = parsedChoices.items.equipped[i];
+                        if (line[1] === code) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found && (parsedChoices.items.unequipped !== undefined)) {
+                    for (let i = 0; i < parsedChoices.items.unequipped.length; i++) {
+                        const line = parsedChoices.items.unequipped[i];
+                        if (line[1] === code) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found) {
+                    sendChoiceToServer(event);
+                }
             }
         }
 
-        function writeToLog(msg) {
-            const logDiv = document.getElementById('gameLog');
-            const newSpan = document.createElement('span');
-            newSpan.classList.add('logline');
-            newSpan.textContent = msg;
-            logDiv.appendChild(newSpan);
-            logDiv.appendChild(document.createElement('br'));
-            logDiv.scrollTop = logDiv.scrollHeight;
+        function choiceListModalClickHandler(event) {
+            // TODO: handle clicking on items?
+        }
+
+        function openChoiceFromListModal(content) {
+            modalClickHandler = choiceListModalClickHandler;
+            modalKeyHandler = choiceListModalKeyHandler;
+            header = "";
+            footer = "";
+            if (parsedChoices.header !== undefined) {header = parsedChoices.header;}
+            if (parsedChoices.footer !== undefined) {footer = parsedChoices.footer;}
+            openModal(header, content, footer);
+        }
+
+        function handleChoiceAccepted(data) {
+            if (isSubModalOpen) {closeSubModal();}
+            closeModal();
+        }
+
+        function handleChoiceDeclined(data) {
+            const string = new TextDecoder().decode(data);
+            const parsed = JSON.parse(string);
+            if (parsed.status !== undefined) {
+                const status = document.getElementById("gameModalStatus");
+                status.innerText = parsed.status;
+            }
+            if (parsed.substatus !== undefined) {
+                const status = document.getElementById("gameSubModalStatus");
+                status.innerText = parsed.substatus;
+            }
+        }
+
+        function handleDescribe(data) {
+            const string = new TextDecoder().decode(data);
+            const parsed = JSON.parse(string);
+            const headerDiv = document.createElement("div");
+            const contentDiv = document.createElement("div");
+            const footerDiv = document.createElement("div");
+            headerDiv.appendChild(
+                makeColoredSpan(parsed.name[0], "description-header", parsed.name[1], false)
+            );
+            parsed.msg.forEach(function(line) {
+                const newSpan = makeColoredSpan(line[0], "description", line[1], false);
+                contentDiv.appendChild(newSpan);
+            });
+            footerDiv.appendChild(
+                makeColoredSpan(parsed.choices, "description-footer", defaultColorInt, false)
+            );
+            openDescriptionSubModal(
+                headerDiv.innerHTML, contentDiv.innerHTML, footerDiv.innerHTML
+            );
         }
 
         function updateSprite(cell) {
@@ -348,14 +476,19 @@
         }
 
         function makeSprite(cell) {
+            if (cell.delete) {return;}
             const tile = tile_info[cell.tile_id];
+            if (tile === undefined) {
+                console.error("tile is undefined for ", cell)
+                return;
+            }
             const tex = PIXI.loader.resources[tile.tileset].textures[tile.tiles[0]];
             const sprite = new PIXI.Sprite(tex);
             sprite.x = tile_width * cell.x;
             sprite.y = tile_height * cell.y;
             sprite.tint = cell.tint;
             sprite.alpha = cell.alpha;
-            // We'll assume sprites won't change layers
+            // We"ll assume sprites won't change layers
             switch (cell.layer) {
                 case 2:
                     layer_floor.addChild(sprite);
@@ -448,7 +581,7 @@
             const host = config.server.host;
             const port = config.server.port;
             ws = new WebSocket("ws://" + host + ":" + port + "/websocket");
-            ws.binaryType = 'arraybuffer';
+            ws.binaryType = "arraybuffer";
 
             document.addEventListener("keypress", defaultKeyHandler);
 
@@ -457,17 +590,24 @@
             };
 
             ws.onopen = function(evt) {
-                requestRefresh();
+                requestRefresh(true);
             };
         }
 
         function keyHandled(event) {
-            // Handle keypress locally first, possibly
-            if (event.ctrlKey && event.code === 'KeyP') {
-                toggleGameLogModal();
+            if (isSubModalOpen && subModalKeyHandler !== undefined) {
+                subModalKeyHandler(event);
                 return true;
+            } else if (isModalOpen && modalKeyHandler !== undefined) {
+                modalKeyHandler(event);
+                return true;
+            } else {
+                // Handle keypress locally first, possibly
+                if (event.ctrlKey && event.code === "KeyP") {
+                    openGameLogModal();
+                    return true;
+                }
             }
-
             return false;
         }
 
@@ -507,56 +647,63 @@
             ws.send(data);
         }
 
-        function toggleGameLogModal() {
-            const modal = document.getElementById('gameModal');
-
-            // When the user clicks anywhere outside of the modal, close it
-            const closeModal = function() {
-                modal.style.display = "none";
-                window.removeEventListener('click', onModalClick);
-                document.removeEventListener("keypress", onKeyPress);
-                document.addEventListener("keypress", defaultKeyHandler);
-            };
-
-            const openModal = function() {
-                const modal_header = document.getElementById('gameModalHeader');
-                const modal_inner_content = document.getElementById('gameModalInnerContent');
-                const game_log = document.getElementById('gameLog');
-                modal.style.display = "block";
-                modal_header.innerText = 'Game Log:';
-                modal_inner_content.innerHTML = game_log.innerHTML;
-                modal_inner_content.scrollTop = modal_inner_content.scrollHeight;
-                window.addEventListener('click', onModalClick);
-                document.removeEventListener("keypress", defaultKeyHandler);
-                document.addEventListener("keypress", onKeyPress);
-            };
-
-            const onModalClick = function(event) {
-                if (event.target === modal) {
-                    closeModal();
-                }
-            };
-
-            const onKeyPress = function(event) {
-                keyHandler(event, function (event) {
-                    if ((event.code === 'Escape') || (event.ctrlKey && event.code === 'KeyP')) {
-                        closeModal();
-                    }
-                })
-            };
-
-            if (modal.style.display === "block") {
+        function gameLogModalKeyHandler(event) {
+            if ((event.code === "Escape") || (event.ctrlKey && event.code === "KeyP")) {
                 closeModal();
-            } else {
-                openModal();
             }
         }
 
-        function requestRefresh() {
+        function gameLogModalClickHandler(event) {
+            // TODO: handle clicking on items?
+        }
+
+        function openGameLogModal() {
+            modalClickHandler = gameLogModalClickHandler;
+            modalKeyHandler = gameLogModalKeyHandler;
+            const game_log = document.getElementById("gameLog");
+            openModal("Game Log:", game_log.innerHTML, "");
+        }
+
+        function descriptionSubModalKeyHandler(event) {
+            if (event.code === "Escape") {
+                closeSubModal();
+            } else {
+                sendChoiceToServer(event);
+            }
+        }
+
+        function descriptionSubModalClickHandler(event) {
+            // TODO: handle clicking on items?
+        }
+
+        function openDescriptionSubModal(header, content, footer) {
+            subModalClickHandler = descriptionSubModalClickHandler;
+            subModalKeyHandler = descriptionSubModalKeyHandler;
+            openSubModal(header, content, footer);
+        }
+
+        function requestRefresh(full=false) {
             if (ws.readyState === 1) {
-                let refresh = new Uint8Array(1);
+                let refresh = new Uint8Array(2);
                 refresh[0] = socket_events.ToServer.RefreshGraphics;
+                refresh[1] = full ? 1 : 0;
                 ws.send(refresh);
+            }
+        }
+
+        function notifyModalClosed() {
+            if (ws.readyState === 1) {
+                let msg = new Uint8Array(1);
+                msg[0] = socket_events.ToServer.ModalWasClosed;
+                ws.send(msg);
+            }
+        }
+
+        function notifySubModalClosed() {
+            if (ws.readyState === 1) {
+                let msg = new Uint8Array(1);
+                msg[0] = socket_events.ToServer.SubModalWasClosed;
+                ws.send(msg);
             }
         }
     };
