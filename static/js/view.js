@@ -342,6 +342,7 @@
             if (isDisabled) {
                 newSpan.classList.add("disabled");
             } else if (colorInt !== null) {
+                console.log(colorInt);
                 color = "#" + colorInt.toString(16).padStart(6, "0");
                 newSpan.setAttribute("style", "color: " + color + ";");
             }

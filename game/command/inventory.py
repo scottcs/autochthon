@@ -57,13 +57,11 @@ class InventoryCommand(BaseCommand):
                     contained, name = components
                     if contained.by_ent == ent and contained.label == input_key.key:
                         self.selected = event
-                        cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-                        cmd_log.add("It's ")
-                        cmd_log.append(name.generic, ItemPalette.epic)
-                        cmd_log.append(".")
                         DescribeEvent.fire({
                             "name": (name.generic, ItemPalette.epic),
-                            "msg": cmd_log.lines,
+                            "msg": [
+                                ("It's ", None), (name.generic, ItemPalette.epic), (".", None)
+                            ],
                             "choices": "d) Drop  e) Equip/Unequip",
                         })
                         self.submenu = True

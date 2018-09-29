@@ -57,6 +57,21 @@ span.equipped {
     font-family: monospace;
 }
 
+span.description {
+    color: #aaa;
+    font-family: monospace;
+}
+
+span.description-header {
+    color: #aaa;
+    font-family: monospace;
+}
+
+span.description-footer {
+    color: #aaa;
+    font-family: monospace;
+}
+
 .modal, .sub-modal {
     display: none;
     position: fixed;
