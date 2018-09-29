@@ -60,10 +60,11 @@ class BaseCommand:
             key = key.upper()
         return InputKey(key, modifiers)
 
-    def _on_choice(self, event: EventType) -> None:
+    def on_choice(self, event: EventType) -> None:
+        """Callback for ChoiceFromListEvent."""
         # Implement in child class if needed.
         pass
 
     def _on_menu_closed(self, _event: EventType) -> None:
-        ChoiceFromListEvent.unhandle(self._on_choice)
+        ChoiceFromListEvent.unhandle(self.on_choice)
         MenuClosedEvent.unhandle(self._on_menu_closed)

@@ -37,7 +37,7 @@ class DropCommand(BaseCommand):
                 return
             items_carried = self._get_items_carried(ent)
             if items_carried:
-                ChoiceFromListEvent.handle(self._on_choice)
+                ChoiceFromListEvent.handle(self.on_choice)
                 MenuClosedEvent.handle(self._on_menu_closed)
                 ChooseFromListEvent.fire(
                     {"header": "Drop what?", "items": items_carried, "multiple": True}
@@ -46,7 +46,8 @@ class DropCommand(BaseCommand):
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You have nothing to drop!")
 
-    def _on_choice(self, event: EventType) -> None:
+    def on_choice(self, event: EventType) -> None:
+        """Callback for ChoiceFromListEvent."""
         input_key = self._keys_from_event(event)
         for ent, _ in self.world.get_component(Player):
             for item_ent, components in self.world.get_components(GUTContained, Name):
@@ -56,6 +57,8 @@ class DropCommand(BaseCommand):
                         ChoiceAcceptedEvent.fire()
                     else:
                         cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
-                        cmd_log.add("You can't drop that!")
+                        cmd_log.add(
+                            "There is already an item on the ground here!", MessagePalette.negative
+                        )
                         ChoiceDeclinedEvent.fire({"status": "You can't drop that!"})
                     break

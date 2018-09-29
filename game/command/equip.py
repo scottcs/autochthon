@@ -23,7 +23,7 @@ class EquipCommand(BaseCommand):
         for ent, _ in self.world.get_component(Player):
             items_carried = self._get_items_carried(ent)
             if items_carried:
-                ChoiceFromListEvent.handle(self._on_choice)
+                ChoiceFromListEvent.handle(self.on_choice)
                 MenuClosedEvent.handle(self._on_menu_closed)
                 ChooseFromListEvent.fire(
                     {
@@ -36,7 +36,8 @@ class EquipCommand(BaseCommand):
                 cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
                 cmd_log.add("You have nothing to eqiup!")
 
-    def _on_choice(self, event: EventType) -> None:
+    def on_choice(self, event: EventType) -> None:
+        """Callback for ChoiceFromListEvent."""
         input_key = self._keys_from_event(event)
         for ent, _ in self.world.get_component(Player):
             equipment = self.world.component_for_entity(ent, Equipment)
