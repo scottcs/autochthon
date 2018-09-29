@@ -51,7 +51,7 @@ class InventoryCommand(BaseCommand):
                     EquipCommand(self.world).on_choice(self.selected)
                     ChoiceAcceptedEvent.fire()
                 else:
-                    ChoiceDeclinedEvent.fire({"status": "Do what?"})
+                    ChoiceDeclinedEvent.fire({"substatus": "Do what?"})
             else:
                 for item_ent, components in self.world.get_components(GUTContained, Name):
                     contained, name = components
