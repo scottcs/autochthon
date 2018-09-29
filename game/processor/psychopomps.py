@@ -22,5 +22,6 @@ class Psychopomps(esper.Processor):
             if self.world.has_component(ent, Name):
                 name = f"{self.world.component_for_entity(ent, Name).generic} (Entity {ent})"
             log.debug(f"Escorting {name} to the afterlife.")
-            self.world.remove_component(ent, GUTMyTurn)
+            if self.world.has_component(ent, GUTMyTurn):
+                self.world.remove_component(ent, GUTMyTurn)
             self.world.delete_entity(ent)
