@@ -291,15 +291,19 @@
             const disable = parsedChoices.disable === undefined ? [] : parsedChoices.disable;
             const select = parsedChoices.select === undefined ? [] : parsedChoices.select;
             if (parsedChoices.items.equipped !== undefined) {
-                makeInventoryList(div, parsedChoices.items.equipped, "Equipped:", disable, select);
+                makeInventoryList(
+                    div, parsedChoices.items.equipped, "Equipped:", disable, select, true
+                );
             }
             if (parsedChoices.items.unequipped !== undefined) {
-                makeInventoryList(div, parsedChoices.items.unequipped, "Unequipped:", disable, select);
+                makeInventoryList(
+                    div, parsedChoices.items.unequipped, "Unequipped:", disable, select
+                );
             }
             openChoiceFromListModal(div.innerHTML);
         }
 
-        function makeInventoryList(div, items, header, disabled, selected) {
+        function makeInventoryList(div, items, header, disabled, selected, equipped=false) {
             headerSpan = document.createElement("span");
             headerSpan.classList.add("choice-header");
             headerSpan.textContent = header;
@@ -312,15 +316,20 @@
                 if (isSelected) {
                     outerSpan.classList.add("selected");
                 }
-                outerSpan.appendChild(makeColoredSpan(
-                    line[1] + ": ", "choice", defaultColorInt, isDisabled
-                ));
+                outerSpan.appendChild(
+                    makeColoredSpan(line[1] + ": ", "choice", defaultColorInt, isDisabled)
+                );
                 outerSpan.appendChild(makeColoredSpan(line[2], "choice", line[3], isDisabled));
                 if (line.length > 4) {
                     if (line.length <= 5) {
                         line.push(defaultColorInt);
                     }
                     outerSpan.appendChild(makeColoredSpan(line[4], "choice", line[5], isDisabled));
+                }
+                if (equipped) {
+                    outerSpan.appendChild(
+                        makeColoredSpan(" <" + line[0] + ">", "equipped", null, isDisabled)
+                    );
                 }
                 div.appendChild(outerSpan);
                 div.appendChild(document.createElement("br"));
@@ -332,7 +341,7 @@
             newSpan.classList.add(withClass);
             if (isDisabled) {
                 newSpan.classList.add("disabled");
-            } else {
+            } else if (colorInt !== null) {
                 color = "#" + colorInt.toString(16).padStart(6, "0");
                 newSpan.setAttribute("style", "color: " + color + ";");
             }

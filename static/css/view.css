@@ -52,6 +52,11 @@ span.selected {
     background-color: #676767;
 }
 
+span.equipped {
+    color: #13aa63;
+    font-family: monospace;
+}
+
 .modal, .sub-modal {
     display: none;
     position: fixed;
