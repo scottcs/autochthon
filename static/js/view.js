@@ -166,10 +166,10 @@
             const modalStatus = document.getElementById("gameModalStatus");
             modal.classList.add("open");
             modalContent.classList.add("open");
-            modalHeader.innerText = header;
+            modalHeader.innerHTML = header;
             modalBody.innerHTML = content;
-            modalFooter.innerText = footer;
-            modalStatus.innerText = "";
+            modalFooter.innerHTML = footer;
+            modalStatus.innerHTML = "";
             modalBody.scrollTop = modalBody.scrollHeight;
         };
 
@@ -183,10 +183,10 @@
             const subModalStatus = document.getElementById("gameSubModalStatus");
             subModal.classList.add("open");
             subModalContent.classList.add("open");
-            subModalHeader.innerText = header;
+            subModalHeader.innerHTML = header;
             subModalBody.innerHTML = content;
-            subModalFooter.innerText = footer;
-            subModalStatus.innerText = "";
+            subModalFooter.innerHTML = footer;
+            subModalStatus.innerHTML = "";
             subModalBody.scrollTop = subModalBody.scrollHeight;
         };
 
@@ -222,11 +222,7 @@
             const parsed = JSON.parse(string);
             const logDiv = document.getElementById("gameLog");
             parsed.lines.forEach(function(line) {
-                const newSpan = document.createElement("span");
-                color = "#" + line[1].toString(16).padStart(6, "0");
-                newSpan.classList.add("logline");
-                newSpan.setAttribute("style", "color: " + color + ";");
-                newSpan.textContent = line[0];
+                const newSpan = makeColoredSpan(line[0], "logline", line[1], false);
                 logDiv.appendChild(newSpan);
             });
             logDiv.appendChild(document.createElement("br"));
@@ -382,14 +378,14 @@
             // TODO: handle clicking on items?
         }
 
-        function openChoiceFromListModal(html) {
+        function openChoiceFromListModal(content) {
             modalClickHandler = choiceListModalClickHandler;
             modalKeyHandler = choiceListModalKeyHandler;
             header = "";
             footer = "";
             if (parsedChoices.header !== undefined) {header = parsedChoices.header;}
             if (parsedChoices.footer !== undefined) {footer = parsedChoices.footer;}
-            openModal(header, html, footer);
+            openModal(header, content, footer);
         }
 
         function handleChoiceAccepted(data) {
@@ -413,19 +409,22 @@
         function handleDescribe(data) {
             const string = new TextDecoder().decode(data);
             const parsed = JSON.parse(string);
-            const div = document.createElement("div");
-            div.appendChild(makeColoredSpan(parsed.msg, "description", defaultColorInt, false));
-            openDescriptionSubModal(parsed.name, div.innerHTML, parsed.choices);
-        }
-
-        function writeToLog(msg) {
-            const logDiv = document.getElementById("gameLog");
-            const newSpan = document.createElement("span");
-            newSpan.classList.add("logline");
-            newSpan.textContent = msg;
-            logDiv.appendChild(newSpan);
-            logDiv.appendChild(document.createElement("br"));
-            logDiv.scrollTop = logDiv.scrollHeight;
+            const headerDiv = document.createElement("div");
+            const contentDiv = document.createElement("div");
+            const footerDiv = document.createElement("div");
+            headerDiv.appendChild(
+                makeColoredSpan(parsed.name[0], "description-header", parsed.name[1], false)
+            );
+            parsed.msg.forEach(function(line) {
+                const newSpan = makeColoredSpan(line[0], "description", line[1], false);
+                contentDiv.appendChild(newSpan);
+            });
+            footerDiv.appendChild(
+                makeColoredSpan(parsed.choices, "description-footer", defaultColorInt, false)
+            );
+            openDescriptionSubModal(
+                headerDiv.innerHTML, contentDiv.innerHTML, footerDiv.innerHTML
+            );
         }
 
         function updateSprite(cell) {
@@ -667,10 +666,10 @@
             // TODO: handle clicking on items?
         }
 
-        function openDescriptionSubModal(header, html, footer) {
+        function openDescriptionSubModal(header, content, footer) {
             subModalClickHandler = descriptionSubModalClickHandler;
             subModalKeyHandler = descriptionSubModalKeyHandler;
-            openSubModal(header, html, footer);
+            openSubModal(header, content, footer);
         }
 
         function requestRefresh(full=false) {
