@@ -1,5 +1,18 @@
 # Autochthon
 
+## NOTE:
+
+The game code is currently broken!
+
+I was using a modified esper.py which I accidentally deleted when
+upgrading the python virtual environment.
+
+Why I didn't make the changes in this git repo, I don't know. Big mistake.
+
+To get this working again, I'll need to recreate the modifications I had
+made to esper.World (and possibly other classes as well.), which I have
+by now forgotten.
+
 ### Setup
 
 Create a virtual environment using Python 3.7+, and run:
@@ -17,7 +30,7 @@ python start.py
 ```
 
 
-To run in a local window:
+To run in a local window (not yet implemented):
 
 `python start.py --local`
 
@@ -53,6 +66,22 @@ Run `tools.make_tile_ids`:
 
 ```
 python -m tools.make_tile_ids static/img/oryx_ur
+```
+
+### Running the Assemblage Editor
+
+Run `tools.assemblage_edit`:
+
+```
+python -m tools.assemblage_edit
+```
+
+### Running the Map Visualizer
+
+Run `tools.map_visualizer`:
+
+```
+python -m tools.map_visualizer
 ```
 
 ### Copying mypy typeshed files to your virtualenv:
