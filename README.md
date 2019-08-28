@@ -15,24 +15,45 @@ by now forgotten.
 
 ### Setup
 
-Create a virtual environment using Python 3.7+, and run:
+If not already installed, install Python 3.7+, with pyenv:
 
 ```
-pip install -r requirements.txt
+pyenv install 3.7.4
+```
+
+Create a virtual environment with pyenv-virtualenv:
+
+```
+pyenv virtualenv 3.7.4 autochthon
+```
+
+Change into the autochthon project directory and set it as the local virtualenv:
+
+```
+cd autochthon
+pyenv local autochthon 3.7.4
+```
+
+Install dependencies using poetry:
+
+```
+poetry install
 ```
 
 ## Running
 
+Note: _Any of the below commands can be run in a poetry subshell using `poetry shell`, removing the need to preface each command with `poetry run`._
+
 To run as a web server using the host and port defined in `data/config.json`:
 
 ```
-python start.py
+poetry run python start.py
 ```
 
 
 To run in a local window (not yet implemented):
 
-`python start.py --local`
+`poetry run python start.py --local`
 
 ## Development
 
@@ -42,13 +63,13 @@ When creating a new branch, update to the next patch
 or minor or major version but without updating git tags:
 
 ```
-bumpversion --no-tag patch
+poetry run bumpversion --no-tag patch
 ```
 
 After merging your branch into master. Bump the version for release:
 
 ```
-bumpversion release
+poetry run bumpversion release
 ```
 
 ### Creating Tile Atlases
@@ -57,7 +78,7 @@ Run `tools.build_atlas` as in this example:
 
 ```
 tile=Avatar_Equipment
-python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/img/oryx_ur/$tile.txt static/img/oryx_ur/$tile.json
+poetry run python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/img/oryx_ur/$tile.txt static/img/oryx_ur/$tile.json
 ```
 
 ### Building the tile index
@@ -65,7 +86,7 @@ python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/img/oryx_ur/$ti
 Run `tools.make_tile_ids`:
 
 ```
-python -m tools.make_tile_ids static/img/oryx_ur
+poetry run python -m tools.make_tile_ids static/img/oryx_ur
 ```
 
 ### Running the Assemblage Editor
@@ -73,7 +94,7 @@ python -m tools.make_tile_ids static/img/oryx_ur
 Run `tools.assemblage_edit`:
 
 ```
-python -m tools.assemblage_edit
+poetry run python -m tools.assemblage_edit
 ```
 
 ### Running the Map Visualizer
@@ -81,7 +102,7 @@ python -m tools.assemblage_edit
 Run `tools.map_visualizer`:
 
 ```
-python -m tools.map_visualizer
+poetry run python -m tools.map_visualizer
 ```
 
 ### Copying mypy typeshed files to your virtualenv:
@@ -93,5 +114,5 @@ cp -rf typeshed/* ~/.venv/autochthon/lib/mypy/typeshed/third_party/3
 ### Running mypy:
 
 ```
-mypy --strict -p game
+poetry run mypy --strict -p game
 ```
