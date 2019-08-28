@@ -113,17 +113,11 @@ class WebRenderProcessor(esper.Processor):
         UpdateMapRenderEvent.fire({"bytearray": b_cells})
 
     def _append_map_bytes(self, b_cells: bytearray, player_x: int, player_y: int, fov: int) -> int:
-        data_append_length = 0
-        if self.render_full_map or (
-            player_x != self.cache["player_x"] or player_y != self.cache["player_y"]
-        ):
-            self.world.map.compute_fov(
-                player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
-            )
-            self._add_fov_entities_to_render()
+        self._render_map_if_needed(fov, player_x, player_y)
         self.cache["player_x"] = player_x
         self.cache["player_y"] = player_y
 
+        data_append_length = 0
         for y, x in self.world.map:
             alpha = 0x00
             if self.world.map.explored[y, x]:
@@ -190,23 +184,35 @@ class WebRenderProcessor(esper.Processor):
                     cell_cache["layer"] = layer
 
             if bitmask > 0:
-                b_cells.extend(cell_id.to_bytes(2, "big"))
-                b_cells.extend(bitmask.to_bytes(1, "big"))
-                if bitmask & MAP_BITS["x"]:
-                    b_cells.extend(self.cache["cells"][cell_id]["x"].to_bytes(2, "big"))
-                if bitmask & MAP_BITS["y"]:
-                    b_cells.extend(self.cache["cells"][cell_id]["y"].to_bytes(2, "big"))
-                if bitmask & MAP_BITS["tile_id"]:
-                    b_cells.extend(self.cache["cells"][cell_id]["tile_id"].to_bytes(2, "big"))
-                if bitmask & MAP_BITS["tint"]:
-                    b_cells.extend(self.cache["cells"][cell_id]["tint"].to_bytes(3, "big"))
-                if bitmask & MAP_BITS["alpha"]:
-                    b_cells.extend(self.cache["cells"][cell_id]["alpha"].to_bytes(1, "big"))
-                if bitmask & MAP_BITS["layer"]:
-                    b_cells.extend(self.cache["cells"][cell_id]["layer"].to_bytes(1, "big"))
+                self._append_map_data(b_cells, bitmask, cell_id)
                 data_append_length += 1
         self.render_full_map = False
         return data_append_length
+
+    def _append_map_data(self, b_cells, bitmask, cell_id):
+        b_cells.extend(cell_id.to_bytes(2, "big"))
+        b_cells.extend(bitmask.to_bytes(1, "big"))
+        if bitmask & MAP_BITS["x"]:
+            b_cells.extend(self.cache["cells"][cell_id]["x"].to_bytes(2, "big"))
+        if bitmask & MAP_BITS["y"]:
+            b_cells.extend(self.cache["cells"][cell_id]["y"].to_bytes(2, "big"))
+        if bitmask & MAP_BITS["tile_id"]:
+            b_cells.extend(self.cache["cells"][cell_id]["tile_id"].to_bytes(2, "big"))
+        if bitmask & MAP_BITS["tint"]:
+            b_cells.extend(self.cache["cells"][cell_id]["tint"].to_bytes(3, "big"))
+        if bitmask & MAP_BITS["alpha"]:
+            b_cells.extend(self.cache["cells"][cell_id]["alpha"].to_bytes(1, "big"))
+        if bitmask & MAP_BITS["layer"]:
+            b_cells.extend(self.cache["cells"][cell_id]["layer"].to_bytes(1, "big"))
+
+    def _render_map_if_needed(self, fov, player_x, player_y):
+        if self.render_full_map or (
+                player_x != self.cache["player_x"] or player_y != self.cache["player_y"]
+        ):
+            self.world.map.compute_fov(
+                player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
+            )
+            self._add_fov_entities_to_render()
 
     def _add_fov_entities_to_render(self) -> None:
         for ent, renderable in self.world.get_component(Renderable):
