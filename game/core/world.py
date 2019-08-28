@@ -1,6 +1,6 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
 import logging
-from typing import Any, Callable, Generator, Optional, Set, Tuple
+from typing import Any, Generator, Optional, Set
 
 import esper
 
