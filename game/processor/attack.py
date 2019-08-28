@@ -86,7 +86,6 @@ class AttackDefenseProcessor(esper.Processor):
         immunity_component_class: Any,
         base_chance: Number,
     ) -> None:
-        super().__init__()
         self.verb: Verb = verb
         self.modifier_component_class: Any = modifier_component_class
         self.immunity_component_class: Any = immunity_component_class

@@ -14,7 +14,6 @@ class AIProcessor(esper.Processor):
     """Artificial Intelligence processor."""
 
     def __init__(self) -> None:
-        super().__init__()
         self._rng = RNGCache.get("AIProcessor")
 
     def process(self, *args: Any, **kwargs: Any) -> None:

@@ -24,7 +24,6 @@ class WebRenderProcessor(esper.Processor):
     """Game render processor for web socket."""
 
     def __init__(self) -> None:
-        super().__init__()
         self.cache: Dict[str, Any] = {"player_x": -1, "player_y": -1, "cells": {}}
         self.render_map: bool = True
         self.render_full_map: bool = True
@@ -290,7 +289,6 @@ class TCODRenderProcessor(esper.Processor):
     """Game render processor for local TCOD console."""
 
     def __init__(self, _title: str, width: int = 80, height: int = 40) -> None:
-        super().__init__()
         # Someday, implement this?
         log.error(f"Someday maybe this will be a {width}x{height} console.")
 

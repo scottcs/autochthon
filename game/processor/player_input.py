@@ -22,7 +22,6 @@ class PlayerInputProcessor(esper.Processor):
     """Process user input and issue events."""
 
     def __init__(self) -> None:
-        super().__init__()
         self.input_queue: list = []
         InputEvent.handle(self._on_input)
 
