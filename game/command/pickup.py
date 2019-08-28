@@ -1,6 +1,7 @@
 """Pickup command."""
-from game.component.player import Player
 from game.component.gamelog import GUTCommandLog
+from game.component.player import Player
+
 from .base import BaseCommand
 
 

@@ -4,8 +4,8 @@ from typing import Any
 import esper
 
 from game.component.action import Actor, GUTMyTurn
-from game.component.ai import AISimpleMind, AIDummy
-from game.component.movement import GUTMoving, Position, GUTWaiting
+from game.component.ai import AIDummy, AISimpleMind
+from game.component.movement import GUTMoving, GUTWaiting, Position
 from game.types import Entity
 from game.utils.random import RNGCache
 

@@ -1,5 +1,6 @@
 """Damage components."""
 from dataclasses import dataclass
+
 from game.component.base import BaseModifierComponent
 from game.types import Number
 

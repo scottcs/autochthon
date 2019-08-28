@@ -7,17 +7,17 @@ from game.component.attribute import GUTChangeHP
 from game.component.base import accumulate_modifiers
 from game.component.damage import (
     GUTTakeDamageBludgeoning,
-    ModifierTakeDamageBludgeoning,
     ImmuneDamageBludgeoning,
+    ModifierTakeDamageBludgeoning,
 )
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCombatLog
 from game.utils.language import msg
 from gamedata.messages.combat import (
     MsgDamageImmune,
+    MsgDamageNormal,
     MsgDamageResist,
     MsgDamageVulnerable,
-    MsgDamageNormal,
 )
 
 

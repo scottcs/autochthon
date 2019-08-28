@@ -1,7 +1,6 @@
 """Combat related messages."""
 from gamedata.palette import MessagePalette
 
-
 MsgAttack = (
     ("You attack {1} with {2}!", MessagePalette.default),
     ("{0} attacks you with {2}!", MessagePalette.negative),

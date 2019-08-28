@@ -5,8 +5,9 @@
 import collections
 import typing
 from collections import namedtuple
-from tornado.util import ObjectDict
 from typing import Any, Optional
+
+from tornado.util import ObjectDict
 
 class _SSLError(Exception): ...
 

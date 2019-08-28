@@ -1,13 +1,10 @@
 """Base player command."""
-from typing import NamedTuple, Dict
+from typing import Dict, NamedTuple
 
-from game.component.container import GUTContained, Containable
+from game.component.container import Containable, GUTContained
 from game.component.descriptive import Name
 from game.core.world import World
-from game.events import (
-    ChoiceFromListEvent,
-    MenuClosedEvent,
-)
+from game.events import ChoiceFromListEvent, MenuClosedEvent
 from game.types import Entity, EventType
 from game.utils.input import get_key, unpack_modifiers
 from gamedata.palette import ItemPalette
@@ -15,6 +12,7 @@ from gamedata.palette import ItemPalette
 
 class InputKey(NamedTuple):
     """Key and modifiers from an input event."""
+
     key: str
     modifiers: Dict[str, bool]
 

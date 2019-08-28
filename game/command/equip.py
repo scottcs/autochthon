@@ -1,9 +1,8 @@
 """Equip/Unequip command."""
-from .base import BaseCommand
-from game.component.container import Equipment, GUTContained, Containable
+from game.component.container import Containable, Equipment, GUTContained
 from game.component.descriptive import Name
-from game.component.player import Player
 from game.component.gamelog import GUTCommandLog
+from game.component.player import Player
 from game.events import (
     ChoiceAcceptedEvent,
     ChoiceDeclinedEvent,
@@ -11,8 +10,10 @@ from game.events import (
     ChooseFromListEvent,
     MenuClosedEvent,
 )
-from game.types import EventType, EquipType
+from game.types import EquipType, EventType
 from gamedata.palette import ItemPalette
+
+from .base import BaseCommand
 
 
 class EquipCommand(BaseCommand):
@@ -53,8 +54,8 @@ class EquipCommand(BaseCommand):
                 for item_ent, components in self.world.get_components(GUTContained, Containable):
                     contained, containable = components
                     if (
-                            containable.equipped
-                            and containable.equip_type == want_to_equip[0].equip_type
+                        containable.equipped
+                        and containable.equip_type == want_to_equip[0].equip_type
                     ):
                         equip_count += 1
                 equipment_slot = equipment.slots[want_to_equip[0].equip_type]

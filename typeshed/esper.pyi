@@ -1,5 +1,5 @@
 # Stubs for esper (Python 3.7)
-from typing import Any, Tuple, Generator
+from typing import Any, Generator, Tuple
 
 class Processor:
     world: Any = ...

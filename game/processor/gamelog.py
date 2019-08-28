@@ -3,7 +3,7 @@ from typing import Any
 
 import esper
 
-from game.component.gamelog import GUTCombatLog, GUTStatusLog, GUTCommandLog, GUTDescriptionLog
+from game.component.gamelog import GUTCombatLog, GUTCommandLog, GUTDescriptionLog, GUTStatusLog
 from game.events import GameLogEvent
 
 

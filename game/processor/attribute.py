@@ -4,7 +4,7 @@ from typing import Any
 import esper
 
 from game.component.ai import Enemy
-from game.component.attribute import GUTChangeHP, HP
+from game.component.attribute import HP, GUTChangeHP
 from game.component.descriptive import Name
 from game.component.gamelog import GUTStatusLog
 from game.component.movement import Position

@@ -1,7 +1,7 @@
 """Common dialogs."""
 from typing import Optional
 
-from PySide2.QtWidgets import QWidget, QMessageBox
+from PySide2.QtWidgets import QMessageBox, QWidget
 
 
 def msg_error(msg: str, parent: Optional[QWidget] = None) -> None:

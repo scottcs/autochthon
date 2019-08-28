@@ -1,38 +1,38 @@
 """Assemblage editor."""
-from copy import deepcopy
 import json
-from pathlib import Path
 import re
 import sys
-from typing import Optional, List, Sequence, Mapping, MutableMapping
+from copy import deepcopy
+from pathlib import Path
+from typing import List, Mapping, MutableMapping, Optional, Sequence
 
 from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QImage, QPainter, QColor
+from PySide2.QtGui import QColor, QImage, QPainter
 from PySide2.QtWidgets import (
     QAbstractItemView,
     QDialog,
     QDialogButtonBox,
-    QScrollArea,
     QFileDialog,
     QHBoxLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
     QMessageBox,
+    QScrollArea,
     QSpacerItem,
     QVBoxLayout,
     QWidget,
 )
 
-from game.utils.factory import get_component_class, convert_datum
+from game.utils.factory import convert_datum, get_component_class
 from game.utils.render import TileCache
 from tools.widgets import (
-    msg_error,
-    ToolApp,
-    ToolMutableComboBox,
-    ToolLineEdit,
-    ToolPushButton,
     ComponentPanel,
+    ToolApp,
+    ToolLineEdit,
+    ToolMutableComboBox,
+    ToolPushButton,
+    msg_error,
 )
 
 DATA_DIR = Path("data/assemblage")

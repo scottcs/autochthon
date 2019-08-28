@@ -1,21 +1,22 @@
 """Drop item."""
 import logging
 
-from .base import BaseCommand
 from game.component.container import GUTContained
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
 from game.component.player import Player
 from game.events import (
-    ChooseFromListEvent,
-    ChoiceFromListEvent,
     ChoiceAcceptedEvent,
     ChoiceDeclinedEvent,
+    ChoiceFromListEvent,
+    ChooseFromListEvent,
     MenuClosedEvent,
 )
 from game.types import EventType
 from gamedata.palette import MessagePalette
+
+from .base import BaseCommand
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)

@@ -4,16 +4,16 @@ from typing import Any
 import esper
 
 from game.component.action import Actor, GUTMyTurn
-from game.component.attack import GUTCurrentTarget, AttackHitModifier
+from game.component.attack import AttackHitModifier, GUTCurrentTarget
 from game.component.base import accumulate_modifiers
 from game.component.damage import GUTTakeDamageBludgeoning, ModifierInflictDamageBludgeoning
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCombatLog
-from game.types import Entity, AttackType, Number
+from game.types import AttackType, Entity, Number
 from game.utils.language import Verb, msg
 from game.utils.random import RNGCache
 from gamedata.base_engine_values import HIT_CHANCE
-from gamedata.messages.combat import MsgAttack, MsgMiss, MsgAttackImmune, MsgDefend
+from gamedata.messages.combat import MsgAttack, MsgAttackImmune, MsgDefend, MsgMiss
 
 
 class AttackTargetingProcessor(esper.Processor):

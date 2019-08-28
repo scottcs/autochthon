@@ -2,12 +2,13 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional, Any, Union, Mapping
+from typing import Any, Mapping, Optional, Union
 
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
+from game.core.main import Game
 from game.events import (
     ChoiceAcceptedEvent,
     ChoiceDeclinedEvent,
@@ -21,7 +22,6 @@ from game.events import (
     SubMenuClosedEvent,
     UpdateMapRenderEvent,
 )
-from game.core.main import Game
 from game.processor.render import WebRenderProcessor
 from game.types import EventType, GameState
 from gamedata.config import CONFIG

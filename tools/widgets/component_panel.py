@@ -1,12 +1,13 @@
 """Widget to represent an editable component."""
 from enum import Enum
-from typing import Optional, Any, Mapping
+from typing import Any, Mapping, Optional
 
 from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QSpacerItem
+from PySide2.QtWidgets import QSpacerItem, QVBoxLayout, QWidget
 
 from game.types import parameter_types
 from game.utils.render import TileCache
+
 from .checkbox import ToolCheckBox
 from .combobox import ToolComboBox, ToolMutableComboBox
 from .lineedit import ToolLineEdit

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from math import floor
 from typing import Optional, Union
 
-from game.types import Number, Modifier
+from game.types import Modifier, Number
 
 
 class BaseModifierComponent:

@@ -1,14 +1,15 @@
 """Game map."""
 from __future__ import annotations
+
 from enum import Enum, auto
-from typing import List, Optional, Tuple, Mapping, Any
+from typing import Any, List, Mapping, Optional, Tuple
 
 import numpy as np
 import tcod.map
 
-from game.utils.geometry import Rect, Point
-from game.utils.render import TileCache
+from game.utils.geometry import Point, Rect
 from game.utils.random import RNGCache
+from game.utils.render import TileCache
 from gamedata.palette import Palette
 
 LOOP_TRIES = 10000

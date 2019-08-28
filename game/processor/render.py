@@ -10,8 +10,8 @@ from game.component.movement import Position
 from game.component.player import Player
 from game.component.render import Renderable
 from game.component.status import GUTDead
-from game.events import UpdateMapRenderEvent, RenderEntitiesEvent, RenderMapEvent
-from game.types import RenderLayer, EventType
+from game.events import RenderEntitiesEvent, RenderMapEvent, UpdateMapRenderEvent
+from game.types import EventType, RenderLayer
 from gamedata.config import CONFIG
 from gamedata.palette import Palette
 
@@ -130,7 +130,7 @@ class WebRenderProcessor(esper.Processor):
                 alpha = 0x60
             if self.world.map.fov[y, x]:
                 self.world.map.explored[y, x] = True
-                alpha = 0xff
+                alpha = 0xFF
             if alpha == 0:
                 continue
 
@@ -241,7 +241,7 @@ class WebRenderProcessor(esper.Processor):
 
             # if we can see it now, draw it and update seen pos
             if can_see_now:
-                alpha = 0xff
+                alpha = 0xFF
                 renderable.last_seen_y = position.y
                 renderable.last_seen_x = position.x
             # else if we can see where it last was, forget where we've seen it and don't draw it

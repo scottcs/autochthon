@@ -1,37 +1,37 @@
 """Main game class."""
 import logging
+import time
 from pathlib import Path
 from typing import Optional
-import time
 
 import esper
 
 from game import VERSION
 from game.component.action import GUTMyTurn
 from game.component.attack import (
-    AttackDodgeModifier,
-    ImmuneToDodge,
     AttackBlockModifier,
-    ImmuneToBlock,
     AttackDeflectModifier,
+    AttackDodgeModifier,
+    ImmuneToBlock,
     ImmuneToDeflect,
-)
-from game.utils.dataloader import DataLoader
-from game.events import (
-    GameOverEvent,
-    RequestRenderEvent,
-    RenderEntitiesEvent,
-    RenderMapEvent,
-    GameLogEvent,
-    InputEvent,
+    ImmuneToDodge,
 )
 from game.core.map import ClassicMap
+from game.core.world import World
+from game.events import (
+    GameLogEvent,
+    GameOverEvent,
+    InputEvent,
+    RenderEntitiesEvent,
+    RenderMapEvent,
+    RequestRenderEvent,
+)
 from game.processor.ai import AIProcessor
 from game.processor.attack import (
-    AttackHitProcessor,
-    AttackTargetingProcessor,
-    AttackMissProcessor,
     AttackDefenseProcessor,
+    AttackHitProcessor,
+    AttackMissProcessor,
+    AttackTargetingProcessor,
 )
 from game.processor.attribute import HPProcessor
 from game.processor.container import ContainerProcessor
@@ -43,11 +43,11 @@ from game.processor.player_input import PlayerInputProcessor
 from game.processor.psychopomps import Psychopomps
 from game.processor.time import TurnProcessor
 from game.types import EventType, GameState, Priority, ProcessGroup
-from game.utils.factory import PlayerFactory, EnemyFactory, ItemFactory
+from game.utils.dataloader import DataLoader
+from game.utils.factory import EnemyFactory, ItemFactory, PlayerFactory
 from game.utils.language import Verb
 from game.utils.random import RNGCache
-from game.core.world import World
-from gamedata.base_engine_values import DODGE_CHANCE, BLOCK_CHANCE, DEFLECT_CHANCE
+from gamedata.base_engine_values import BLOCK_CHANCE, DEFLECT_CHANCE, DODGE_CHANCE
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)

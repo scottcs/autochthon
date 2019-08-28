@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from game.component.base import BaseModifierComponent, BaseTemporaryComponent
-from game.types import Entity, AttackType
+from game.types import AttackType, Entity
 
 
 @dataclass

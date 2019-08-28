@@ -1,6 +1,6 @@
 """Language related utilities."""
 from dataclasses import dataclass
-from typing import Tuple, Any, AbstractSet, Iterable
+from typing import AbstractSet, Any, Iterable, Tuple
 
 from game.types import Entity
 

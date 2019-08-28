@@ -1,6 +1,6 @@
 """Descriptive components."""
-from dataclasses import dataclass, InitVar
-from typing import Optional, MutableSequence
+from dataclasses import InitVar, dataclass
+from typing import MutableSequence, Optional
 
 
 @dataclass
