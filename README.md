@@ -40,6 +40,12 @@ Install dependencies using poetry:
 poetry install
 ```
 
+Install git pre-commit hooks:
+
+```
+poetry run pre-commit install
+```
+
 ## Running
 
 Note: _Any of the below commands can be run in a poetry subshell using `poetry shell`, removing the need to preface each command with `poetry run`._
@@ -106,6 +112,7 @@ poetry run python -m tools.map_visualizer
 ```
 
 ### Copying mypy typeshed files to your virtualenv:
+TODO: remove this section? May no longer be needed
 
 ```
 cp -rf typeshed/* ~/.venv/autochthon/lib/mypy/typeshed/third_party/3
@@ -114,5 +121,5 @@ cp -rf typeshed/* ~/.venv/autochthon/lib/mypy/typeshed/third_party/3
 ### Running mypy:
 
 ```
-poetry run mypy --strict -p game
+poetry run mypy
 ```
