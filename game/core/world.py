@@ -1,18 +1,18 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
 import logging
-from typing import Any, Optional, Set, Callable, Tuple, Generator
+from typing import Any, Generator, Optional, Set
 
 import esper
 
 from game.component.action import GUTMyTurn
 from game.component.ai import Enemy
-from game.component.container import Item, GUTContainerTransfer
-from game.component.status import GUTDead
-from game.component.player import Player
+from game.component.container import GUTContainerTransfer, Item
 from game.component.movement import Position
+from game.component.player import Player
+from game.component.status import GUTDead
 from game.core.map import Map
 from game.events import RenderEntitiesEvent
-from game.types import ProcessGroup, Entity
+from game.types import Entity, ProcessGroup
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)

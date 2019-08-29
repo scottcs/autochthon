@@ -4,12 +4,12 @@ from typing import Any, Optional
 
 import esper
 
-from game.component.container import Container, Containable, GUTContained, GUTContainerTransfer
+from game.component.container import Containable, Container, GUTContained, GUTContainerTransfer
 from game.component.descriptive import Name
 from game.component.gamelog import GUTCommandLog
 from game.component.movement import Position
 from game.events import RenderEntitiesEvent
-from game.types import EquipType, Entity
+from game.types import Entity, EquipType
 from gamedata.palette import ItemPalette
 
 log = logging.getLogger(__name__)

@@ -1,15 +1,15 @@
 """ComboBox widgets."""
-from typing import Optional, Sequence, Any
+from typing import Any, Optional, Sequence
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtWidgets import (
     QComboBox,
-    QWidget,
-    QLabel,
     QHBoxLayout,
-    QSpacerItem,
     QInputDialog,
+    QLabel,
     QMessageBox,
+    QSpacerItem,
+    QWidget,
 )
 
 from .pushbutton import ToolPushButton

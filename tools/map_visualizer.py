@@ -6,10 +6,10 @@ TODO: render path analysis and loops analysis
 
 """
 import json
-from pathlib import Path
 import pydoc
 import sys
-from typing import Optional, Any, Tuple, Mapping, MutableMapping
+from pathlib import Path
+from typing import Any, Mapping, MutableMapping, Optional, Tuple
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb
@@ -17,21 +17,21 @@ from PySide2.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
     QLabel,
+    QScrollArea,
     QSpacerItem,
     QVBoxLayout,
     QWidget,
-    QScrollArea,
 )
 
 from game.core.map import ClassicMap, Map
 from game.utils.random import RNGCache
 from tools.widgets import (
-    msg_error,
     ToolApp,
+    ToolCheckBox,
     ToolComboBox,
     ToolLineEdit,
     ToolPushButton,
-    ToolCheckBox,
+    msg_error,
 )
 
 CONFIG_FILE = Path("data") / Path("config.json")

@@ -14,7 +14,6 @@ class TurnProcessor(esper.Processor):
     queue: List[Entity] = []
 
     def __init__(self) -> None:
-        super().__init__()
         self._rng = RNGCache.get("TurnProcessor")
 
     def process(self, *args: Any, **kwargs: Any) -> None:

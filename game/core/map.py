@@ -1,14 +1,15 @@
 """Game map."""
 from __future__ import annotations
+
 from enum import Enum, auto
-from typing import List, Optional, Tuple, Mapping, Any
+from typing import Any, List, Mapping, Optional, Tuple
 
 import numpy as np
 import tcod.map
 
-from game.utils.geometry import Rect, Point
-from game.utils.render import TileCache
+from game.utils.geometry import Point, Rect
 from game.utils.random import RNGCache
+from game.utils.render import TileCache
 from gamedata.palette import Palette
 
 LOOP_TRIES = 10000
@@ -215,8 +216,8 @@ class Map(tcod.map.Map):
             raise RuntimeError(f"Unknown tile type: {tile_type}")
 
     def __iter__(self) -> Map:
-        self._iter_y: int = -1
-        self._iter_x: int = 0
+        self._iter_y = -1
+        self._iter_x = 0
         return self
 
     def __next__(self) -> Tuple[int, int]:

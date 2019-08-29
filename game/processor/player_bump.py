@@ -5,8 +5,8 @@ import esper
 
 from game.component.attack import GUTCurrentTarget
 from game.component.attribute import HP
-from game.component.player import GUTPlayerBump
 from game.component.movement import GUTMoving, GUTWaiting, Position
+from game.component.player import GUTPlayerBump
 from game.types import AttackType, Entity
 
 

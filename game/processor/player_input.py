@@ -6,13 +6,13 @@ import esper
 
 from game.command.drop import DropCommand
 from game.command.equip import EquipCommand
-from game.command.pickup import PickupCommand
 from game.command.inventory import InventoryCommand
+from game.command.pickup import PickupCommand
 from game.component.player import GUTPlayerBump, Player
 from game.events import InputEvent
 from game.types import EventType, GameState
 from game.utils.geometry import Point
-from game.utils.input import events, unpack_modifiers, get_key
+from game.utils.input import events, get_key, unpack_modifiers
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -22,7 +22,6 @@ class PlayerInputProcessor(esper.Processor):
     """Process user input and issue events."""
 
     def __init__(self) -> None:
-        super().__init__()
         self.input_queue: list = []
         InputEvent.handle(self._on_input)
 

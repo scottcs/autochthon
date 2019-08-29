@@ -1,6 +1,7 @@
 """Game Events."""
 from __future__ import annotations
-from typing import Dict, Optional, List
+
+from typing import Dict, List, Optional
 
 from game.types import EventHandler, EventType
 

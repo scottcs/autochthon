@@ -2,7 +2,7 @@
 import argparse
 import json
 import pathlib
-from typing import List, Dict
+from typing import Dict, List
 
 
 def parse_args() -> argparse.Namespace:

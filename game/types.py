@@ -1,12 +1,12 @@
 """Typing for the game module."""
-from enum import Enum, auto, IntEnum
 import inspect
-from typing import Dict, Callable, Any, NamedTuple, Union, Optional
+from enum import Enum, IntEnum, auto
+from typing import Any, Callable, Dict, NamedTuple, Optional, Union
 
-from game.utils.random import parse, RNGCache
+from game.utils.random import RNGCache, parse
 from gamedata.palette import MessagePalette
 
-EventType = Dict
+EventType = Dict[Any, Any]
 EventHandler = Callable[[EventType], Any]
 
 Entity = int

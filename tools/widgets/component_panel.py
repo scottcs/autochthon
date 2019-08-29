@@ -1,12 +1,13 @@
 """Widget to represent an editable component."""
 from enum import Enum
-from typing import Optional, Any, Mapping
+from typing import Any, Mapping, Optional
 
 from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QSpacerItem
+from PySide2.QtWidgets import QSpacerItem, QVBoxLayout, QWidget
 
 from game.types import parameter_types
 from game.utils.render import TileCache
+
 from .checkbox import ToolCheckBox
 from .combobox import ToolComboBox, ToolMutableComboBox
 from .lineedit import ToolLineEdit
@@ -63,60 +64,18 @@ class ComponentPanel(QWidget):
                 is_list = list in params["types"]
 
             if bool in params["types"]:
-                checked = self._data.get(name, params.get("default", False))
-                widget = ToolCheckBox(name, checked=checked)
-                widget.state_changed.connect(self._on_changes)
-                self._check_widgets.append(widget)
+                self._add_check_widget(name, params)
             elif is_enum:
-                widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
-                widget.enum_type = params["types"][0]
-                widget.add_items(list(widget.enum_type.__members__.keys()))
-                if "default" in params:
-                    which = str(params["default"]).split(".")[-1]
-                    widget.set_via_text(which)
-                if name in self._data:
-                    which = self._data[name].split(".")[-1]
-                    widget.set_via_text(which)
-                widget.selection_changed.connect(self._on_changes)
-                self._combo_widgets.append(widget)
+                self._add_combo_widget(name, params)
             elif name == "tile_id":
                 # special case for tile ids
-                widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
-                widget.enum_type = "tile_id"
-                widget.add_items(sorted(list(TileCache.iter_names())))
-                if name in self._data:
-                    widget.set_via_text(self._data[name])
-                widget.selection_changed.connect(self._on_changes)
-                self._combo_widgets.append(widget)
+                self._add_tile_id_combo_widget(name)
             elif is_list:
                 # special case for lists
-                widget = ToolMutableComboBox(
-                    name, min_label_width=MIN_LABEL_WIDTH, hide_duplicate_button=True
-                )
-                widget.enum_type = "list"
-                if name in self._data:
-                    widget.add_items(self._data[name])
-                widget.selection_changed.connect(self._on_changes)
-                self._combo_widgets.append(widget)
+                self._add_list_combo_widget(name)
             else:
-                required = False
-                try:
-                    default = params["default"]
-                    if default is None:
-                        default = ""
-                    else:
-                        default = str(default)
-                except KeyError:
-                    default = None
-                    required = True
+                self._add_edit_widget(name, params)
 
-                widget = ToolLineEdit(
-                    name, required=required, default_text=default, min_label_width=MIN_LABEL_WIDTH
-                )
-                if name in self._data:
-                    widget.set_text(str(self._data[name]))
-                widget.editing_finished.connect(self._on_changes)
-                self._edit_widgets.append(widget)
         for widget in self._edit_widgets:
             layout.addWidget(widget)
         if len(self._edit_widgets) > 0:
@@ -130,6 +89,63 @@ class ComponentPanel(QWidget):
 
         layout.addStretch()
         self.setLayout(layout)
+
+    def _add_edit_widget(self, name, params):
+        required = False
+        try:
+            default = params["default"]
+            if default is None:
+                default = ""
+            else:
+                default = str(default)
+        except KeyError:
+            default = None
+            required = True
+        widget = ToolLineEdit(
+            name, required=required, default_text=default, min_label_width=MIN_LABEL_WIDTH
+        )
+        if name in self._data:
+            widget.set_text(str(self._data[name]))
+        widget.editing_finished.connect(self._on_changes)
+        self._edit_widgets.append(widget)
+
+    def _add_list_combo_widget(self, name):
+        widget = ToolMutableComboBox(
+            name, min_label_width=MIN_LABEL_WIDTH, hide_duplicate_button=True
+        )
+        widget.enum_type = "list"
+        if name in self._data:
+            widget.add_items(self._data[name])
+        widget.selection_changed.connect(self._on_changes)
+        self._combo_widgets.append(widget)
+
+    def _add_tile_id_combo_widget(self, name):
+        widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
+        widget.enum_type = "tile_id"
+        widget.add_items(sorted(list(TileCache.iter_names())))
+        if name in self._data:
+            widget.set_via_text(self._data[name])
+        widget.selection_changed.connect(self._on_changes)
+        self._combo_widgets.append(widget)
+
+    def _add_combo_widget(self, name, params):
+        widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
+        widget.enum_type = params["types"][0]
+        widget.add_items(list(widget.enum_type.__members__.keys()))
+        if "default" in params:
+            which = str(params["default"]).split(".")[-1]
+            widget.set_via_text(which)
+        if name in self._data:
+            which = self._data[name].split(".")[-1]
+            widget.set_via_text(which)
+        widget.selection_changed.connect(self._on_changes)
+        self._combo_widgets.append(widget)
+
+    def _add_check_widget(self, name, params):
+        checked = self._data.get(name, params.get("default", False))
+        widget = ToolCheckBox(name, checked=checked)
+        widget.state_changed.connect(self._on_changes)
+        self._check_widgets.append(widget)
 
     def _on_changes(self) -> None:
         self.parameters_changed.emit()

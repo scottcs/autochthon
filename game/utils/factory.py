@@ -1,15 +1,15 @@
 """Factory utilities."""
 import logging
 import pydoc
-from typing import Any, Optional, MutableSequence, Mapping, MutableMapping
+from typing import Any, Mapping, MutableMapping, MutableSequence, Optional
 
 from game.component.movement import Position
-from game.utils.dataloader import DataLoader
-from game.types import Entity
-from game.utils.geometry import Point
-from game.utils.random import parse, RNGCache, GameRNG
-from game.utils.render import TileCache
 from game.core.world import World
+from game.types import Entity
+from game.utils.dataloader import DataLoader
+from game.utils.geometry import Point
+from game.utils.random import GameRNG, RNGCache, parse
+from game.utils.render import TileCache
 
 ON_CREATE = "=="
 

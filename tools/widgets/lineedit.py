@@ -1,9 +1,9 @@
 """Custom QLineEdit widget."""
-from typing import Optional, Any
+from typing import Any, Optional
 
 from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QIntValidator
-from PySide2.QtWidgets import QWidget, QLineEdit, QLabel, QHBoxLayout, QSpacerItem
+from PySide2.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QWidget
 
 
 class ToolLineEdit(QWidget):

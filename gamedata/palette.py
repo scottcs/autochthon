@@ -6,14 +6,14 @@ class Palette(IntEnum):
     """Color palette."""
 
     black = 0x000000
-    white = 0xffffff
-    red = 0xff0000
-    green = 0x00ff00
-    blue = 0x0000ff
-    yellow = 0xffff00
-    purple = 0xff00ff
-    cyan = 0x00ffff
-    orange = 0xffa500
+    white = 0xFFFFFF
+    red = 0xFF0000
+    green = 0x00FF00
+    blue = 0x0000FF
+    yellow = 0xFFFF00
+    purple = 0xFF00FF
+    cyan = 0x00FFFF
+    orange = 0xFFA500
     brown = 0x654321
     dark_grey = 0x333333
 
@@ -21,35 +21,35 @@ class Palette(IntEnum):
 class DangerPalette(IntEnum):
     """Danger level colors."""
 
-    deadly = 0xff6699
-    dangerous = 0xff6666
-    threatening = 0xffff66
-    fair = 0xaaaaaa
-    weak = 0x66ffff
+    deadly = 0xFF6699
+    dangerous = 0xFF6666
+    threatening = 0xFFFF66
+    fair = 0xAAAAAA
+    weak = 0x66FFFF
     helpless = 0x666666
 
 
 class MessagePalette(IntEnum):
     """Message colors."""
 
-    danger = 0xff6666
-    warning = 0xffff66
+    danger = 0xFF6666
+    warning = 0xFFFF66
     side_note = 0x666666
-    default = 0xaaaaaa
-    very_negative = 0xff6699
+    default = 0xAAAAAA
+    very_negative = 0xFF6699
     negative = 0x654321
     positive = 0x669966
-    very_positive = 0x66ff66
-    holy_crap = 0xff66ff
+    very_positive = 0x66FF66
+    holy_crap = 0xFF66FF
 
 
 class ItemPalette(IntEnum):
     """Colors for item descriptions."""
 
     trash = 0x666666
-    common = 0xaaaaaa
-    uncommon = 0x66ff66
-    rare = 0x9999ff
-    epic = 0xcc66ff
-    legendary = 0xffa500
-    artifact = 0xff9999
+    common = 0xAAAAAA
+    uncommon = 0x66FF66
+    rare = 0x9999FF
+    epic = 0xCC66FF
+    legendary = 0xFFA500
+    artifact = 0xFF9999

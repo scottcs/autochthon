@@ -1,11 +1,12 @@
 """Functions for randomness."""
 from __future__ import annotations
+
 import hashlib
 import logging
-from pathlib import Path
 import random
 import re
-from typing import Callable, Optional, Sequence, Dict, Union, List, TypeVar, NamedTuple
+from pathlib import Path
+from typing import Callable, Dict, List, NamedTuple, Optional, Sequence, TypeVar, Union
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -28,11 +29,11 @@ T = TypeVar("T")
 
 
 def _uint32(n: int) -> int:
-    return n & 0xffffffff
+    return n & 0xFFFFFFFF
 
 
 def _uint64(n: int) -> int:
-    return n & 0xffffffffffffffff
+    return n & 0xFFFFFFFFFFFFFFFF
 
 
 class PCG32Generator:
@@ -67,7 +68,7 @@ class PCG32Generator:
 
     def _advance(self) -> int:
         old_state = self.state
-        self.state = _uint64(old_state * 6364136223846793005 + self.inc)
+        self.state = _uint64(old_state * 6_364_136_223_846_793_005 + self.inc)
         xor_shifted = _uint32(((old_state >> 18) ^ old_state) >> 27)
         rot = _uint32(old_state >> 59)
         return _uint32((xor_shifted >> rot) | (xor_shifted << ((-rot) & 31)))

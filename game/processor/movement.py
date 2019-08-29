@@ -6,10 +6,10 @@ import esper
 from game.component.action import Actor, GUTMyTurn
 from game.component.ai import Enemy
 from game.component.descriptive import Name
-from game.component.player import Player
 from game.component.gamelog import GUTDescriptionLog
-from game.component.status import GUTDead
 from game.component.movement import GUTMoving, GUTWaiting, Position
+from game.component.player import Player
+from game.component.status import GUTDead
 from game.events import RenderEntitiesEvent, RenderMapEvent
 from gamedata.palette import ItemPalette
 

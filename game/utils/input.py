@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 from typing import Dict
 
-
 KEYS_JSON = Path("data") / Path("keys.json")
 
 with open(KEYS_JSON) as f:
