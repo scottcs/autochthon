@@ -111,13 +111,6 @@ Run `tools.map_visualizer`:
 poetry run python -m tools.map_visualizer
 ```
 
-### Copying mypy typeshed files to your virtualenv:
-TODO: remove this section? May no longer be needed
-
-```
-cp -rf typeshed/* ~/.venv/autochthon/lib/mypy/typeshed/third_party/3
-```
-
 ### Running mypy:
 
 ```
