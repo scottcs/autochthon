@@ -76,5 +76,4 @@ class InventoryCommand(BaseCommand):
     def _on_submenu_closed(self, _event: EventType) -> None:
         self.submenu = False
         self.selected = {}
-
         SubMenuClosedEvent.unhandle(self._on_submenu_closed)
