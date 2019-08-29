@@ -1,9 +1,9 @@
 """Loaded tile ids."""
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict
 
 TILE_IDS_FILE = Path("static/img/oryx_ur/tile_ids.json")
 
 with TILE_IDS_FILE.open() as tile_ids_file_handle:
-    TILE_IDS: Dict[str, dict] = json.load(tile_ids_file_handle)
+    TILE_IDS: Dict[str, Dict[Any, Any]] = json.load(tile_ids_file_handle)

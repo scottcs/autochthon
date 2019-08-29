@@ -207,7 +207,7 @@ class WebRenderProcessor(esper.Processor):
 
     def _render_map_if_needed(self, fov, player_x, player_y):
         if self.render_full_map or (
-                player_x != self.cache["player_x"] or player_y != self.cache["player_y"]
+            player_x != self.cache["player_x"] or player_y != self.cache["player_y"]
         ):
             self.world.map.compute_fov(
                 player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
