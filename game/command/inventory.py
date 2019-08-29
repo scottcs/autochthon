@@ -26,7 +26,7 @@ class InventoryCommand(BaseCommand):
 
     def __init__(self, world: World) -> None:
         super().__init__(world)
-        self.selected = None
+        self.selected: EventType = {}
 
     def run(self) -> None:
         """Run the command."""
@@ -75,5 +75,5 @@ class InventoryCommand(BaseCommand):
 
     def _on_submenu_closed(self, _event: EventType) -> None:
         self.submenu = False
-        self.selected = None
+        self.selected = {}
         SubMenuClosedEvent.unhandle(self._on_submenu_closed)

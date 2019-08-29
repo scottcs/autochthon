@@ -216,8 +216,8 @@ class Map(tcod.map.Map):
             raise RuntimeError(f"Unknown tile type: {tile_type}")
 
     def __iter__(self) -> Map:
-        self._iter_y: int = -1
-        self._iter_x: int = 0
+        self._iter_y = -1
+        self._iter_x = 0
         return self
 
     def __next__(self) -> Tuple[int, int]:
