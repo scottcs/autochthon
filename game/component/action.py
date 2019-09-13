@@ -1,8 +1,8 @@
 """Action components."""
-from dataclasses import dataclass
+import dataclasses
 
 
-@dataclass
+@dataclasses.dataclass
 class Actor:
     """Actor components use initiative values to take actions (lower is faster)."""
 

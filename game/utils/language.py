@@ -1,11 +1,11 @@
 """Language related utilities."""
-from dataclasses import dataclass
-from typing import AbstractSet, Any, Iterable, Tuple
+import dataclasses
+import typing
 
-from game.types import Entity
+import game.types
 
 
-@dataclass
+@dataclasses.dataclass
 class Verb:
     """Represent a verb and it's tenses.
 
@@ -17,8 +17,11 @@ class Verb:
 
 
 def msg(
-    players: AbstractSet[Entity], entities: Iterable[Entity], messages: tuple, *args: Any
-) -> Tuple[str, int]:
+    players: typing.AbstractSet[game.types.Entity],
+    entities: typing.Iterable[game.types.Entity],
+    messages: tuple,
+    *args: typing.Any
+) -> typing.Tuple[str, int]:
     """Determine the message based on which entity, if any, is the player."""
     for i, ent in enumerate(entities):
         if ent in players:

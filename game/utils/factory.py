@@ -1,15 +1,15 @@
 """Factory utilities."""
 import logging
 import pydoc
-from typing import Any, Mapping, MutableMapping, MutableSequence, Optional
+import typing
 
-from game.component.movement import Position
-from game.core.world import World
-from game.types import Entity
-from game.utils.dataloader import DataLoader
-from game.utils.geometry import Point
-from game.utils.random import GameRNG, RNGCache, parse
-from game.utils.render import TileCache
+import game.component.movement
+import game.core.world
+import game.types
+import game.utils.dataloader
+import game.utils.geometry
+import game.utils.random
+import game.utils.render
 
 ON_CREATE = "=="
 
@@ -21,7 +21,7 @@ class FactoryException(Exception):
     """Factory exceptions."""
 
 
-def convert_datum(value: Any) -> Any:
+def convert_datum(value: typing.Any) -> typing.Any:
     """Convert a data value to a global class.attribute value, if possible."""
     try:
         class_type, attr = value.split(".")
@@ -43,7 +43,7 @@ def convert_datum(value: Any) -> Any:
     return result
 
 
-def get_component_class(class_substring: str) -> Any:
+def get_component_class(class_substring: str) -> typing.Any:
     """Get a component class from a substring like `attack.AttackHitModifier`."""
     component_group, component_class = class_substring.split(".")
     mod_name = f"game.component.{component_group}"
@@ -51,7 +51,7 @@ def get_component_class(class_substring: str) -> Any:
     return getattr(_tmp, component_class)
 
 
-def validate_kwargs(kwargs: MutableMapping) -> None:
+def validate_kwargs(kwargs: typing.MutableMapping) -> None:
     """Validate keyword arguments for components."""
     for key, value in kwargs.items():
         if value is None:
@@ -60,7 +60,7 @@ def validate_kwargs(kwargs: MutableMapping) -> None:
             try:
                 value = int(value)
             except ValueError:
-                id_ = TileCache.id_from_name(value)
+                id_ = game.utils.render.TileCache.id_from_name(value)
                 if id_ is None:
                     raise ValueError(f"Cannot find tile id for {value}")
                 value = int(id_)
@@ -70,23 +70,25 @@ def validate_kwargs(kwargs: MutableMapping) -> None:
 class BaseEntityFactory:
     """Entity Factory."""
 
-    def __init__(self, loader: DataLoader, world: World) -> None:
-        self._loader: DataLoader = loader
-        self._world: World = world
-        self._rng: Optional[GameRNG] = None
-        self._data_key: Optional[str] = None
+    def __init__(
+        self, loader: game.utils.dataloader.DataLoader, world: game.core.world.World
+    ) -> None:
+        self._loader: game.utils.dataloader.DataLoader = loader
+        self._world: game.core.world.World = world
+        self._rng: typing.Optional[game.utils.random.GameRNG] = None
+        self._data_key: typing.Optional[str] = None
 
-    def make(self, templates: MutableSequence[str]) -> Entity:
+    def make(self, templates: typing.MutableSequence[str]) -> game.types.Entity:
         """Make an entity."""
         raise NotImplementedError("Must implement in child class.")
 
-    def place_entity(self, ent: Entity, at: Point) -> None:
+    def place_entity(self, ent: game.types.Entity, at: game.utils.geometry.Point) -> None:
         """Place an entity at the given position in the world."""
-        pos = self._world.component_for_entity(ent, Position)
+        pos = self._world.component_for_entity(ent, game.component.movement.Position)
         pos.x = at.x
         pos.y = at.y
 
-    def _make_entity(self, templates: MutableSequence[str]) -> Entity:
+    def _make_entity(self, templates: typing.MutableSequence[str]) -> game.types.Entity:
         """Make a new entity."""
         components = []
         for template in templates:
@@ -116,7 +118,7 @@ class BaseEntityFactory:
                     raise FactoryException(f"Error in {self._data_key}.{template}: {exc}")
         return self._world.create_entity(*components)
 
-    def _convert_data(self, data: Mapping) -> dict:
+    def _convert_data(self, data: typing.Mapping) -> dict:
         """Convert data to globals."""
         new_data = {}
         for key, value in data.items():
@@ -128,7 +130,9 @@ class BaseEntityFactory:
                 try:
                     if value.startswith(ON_CREATE):
                         if self._rng:
-                            converted_func = parse(value[len(ON_CREATE) :], self._rng)
+                            converted_func = game.utils.random.parse(
+                                value[len(ON_CREATE) :], self._rng
+                            )
                             if converted_func is not None:
                                 new_data[key] = converted_func()
                 except AttributeError:
@@ -139,12 +143,14 @@ class BaseEntityFactory:
 class PlayerFactory(BaseEntityFactory):
     """Factory for creating Player entities."""
 
-    def __init__(self, loader: DataLoader, world: World) -> None:
+    def __init__(
+        self, loader: game.utils.dataloader.DataLoader, world: game.core.world.World
+    ) -> None:
         super().__init__(loader, world)
-        self._rng: GameRNG = RNGCache.get("PlayerFactory")
+        self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("PlayerFactory")
         self._data_key: str = "assemblage.player"
 
-    def make(self, templates: MutableSequence[str]) -> Entity:
+    def make(self, templates: typing.MutableSequence[str]) -> game.types.Entity:
         """Make a player entity."""
         if not self._world.map:
             raise FactoryException("There is no map!")
@@ -152,7 +158,7 @@ class PlayerFactory(BaseEntityFactory):
             templates.insert(0, "BasicPlayer")
         ent = self._make_entity(templates)
         self._world.players.add(ent)
-        loc: Optional[Point] = self._world.map.find_player_spawn()
+        loc: typing.Optional[game.utils.geometry.Point] = self._world.map.find_player_spawn()
         if loc is None:
             raise FactoryException(f"Could not place player entity: {ent}")
         else:
@@ -164,19 +170,21 @@ class PlayerFactory(BaseEntityFactory):
 class EnemyFactory(BaseEntityFactory):
     """Factory for creating Enemy entities."""
 
-    def __init__(self, loader: DataLoader, world: World) -> None:
+    def __init__(
+        self, loader: game.utils.dataloader.DataLoader, world: game.core.world.World
+    ) -> None:
         super().__init__(loader, world)
-        self._rng: GameRNG = RNGCache.get("EnemyFactory")
+        self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("EnemyFactory")
         self._data_key: str = "assemblage.enemy"
 
-    def make(self, templates: MutableSequence[str]) -> Entity:
+    def make(self, templates: typing.MutableSequence[str]) -> game.types.Entity:
         """Make a player entity."""
         if not self._world.map:
             raise FactoryException("There is no map!")
         if "BasicEnemy" not in templates:
             templates.insert(0, "BasicEnemy")
         ent = self._make_entity(templates)
-        loc: Optional[Point] = self._world.map.find_enemy_spawn()
+        loc: typing.Optional[game.utils.geometry.Point] = self._world.map.find_enemy_spawn()
         if loc is None:
             raise FactoryException(f"Could not place enemy entity: {ent}")
         else:
@@ -188,19 +196,21 @@ class EnemyFactory(BaseEntityFactory):
 class ItemFactory(BaseEntityFactory):
     """Factory for creating Item entities."""
 
-    def __init__(self, loader: DataLoader, world: World) -> None:
+    def __init__(
+        self, loader: game.utils.dataloader.DataLoader, world: game.core.world.World
+    ) -> None:
         super().__init__(loader, world)
-        self._rng: GameRNG = RNGCache.get("ItemFactory")
+        self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("ItemFactory")
         self._data_key: str = "assemblage.item"
 
-    def make(self, templates: MutableSequence[str]) -> Entity:
+    def make(self, templates: typing.MutableSequence[str]) -> game.types.Entity:
         """Make a player entity."""
         if not self._world.map:
             raise FactoryException("There is no map!")
         if "BasicItem" not in templates:
             templates.insert(0, "BasicItem")
         ent = self._make_entity(templates)
-        loc: Optional[Point] = self._world.map.find_item_spawn()
+        loc: typing.Optional[game.utils.geometry.Point] = self._world.map.find_item_spawn()
         if loc is None:
             raise FactoryException(f"Could not place item entity: {ent}")
         else:

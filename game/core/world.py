@@ -1,18 +1,18 @@
 """ECS world, based on esper's World, but keeps track of the Player and prioritizes it."""
 import logging
-from typing import Any, Generator, Optional, Set
+import typing
 
 import esper
 
-from game.component.action import GUTMyTurn
-from game.component.ai import Enemy
-from game.component.container import GUTContainerTransfer, Item
-from game.component.movement import Position
-from game.component.player import Player
-from game.component.status import GUTDead
-from game.core.map import Map
-from game.events import RenderEntitiesEvent
-from game.types import Entity, ProcessGroup
+import game.component.action
+import game.component.ai
+import game.component.container
+import game.component.movement
+import game.component.player
+import game.component.status
+import game.core.map
+import game.events
+import game.types
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -24,14 +24,14 @@ class World(esper.World):
     def __init__(self, timed: bool = False) -> None:
         super().__init__(timed)
         self._processor_groups: dict = {}
-        self.map: Optional[Map] = None
-        self.players: Set[Entity] = set()
+        self.map: typing.Optional[game.core.map.Map] = None
+        self.players: typing.Set[game.types.Entity] = set()
 
     def add_processor(
         self,
         processor_instance: esper.Processor,
         priority: int = 0,
-        group: Optional[ProcessGroup] = None,
+        group: typing.Optional[game.types.ProcessGroup] = None,
     ) -> None:
         """Add a Processor instance to the World.
 
@@ -41,7 +41,7 @@ class World(esper.World):
         :param group: Process group to add processor to.
         """
         super().add_processor(processor_instance, priority=priority)
-        group = group or ProcessGroup.default
+        group = group or game.types.ProcessGroup.default
         self._processor_groups.setdefault(group, [])
         self._processor_groups[group].append(processor_instance)
         self._processor_groups[group].sort(key=lambda p: p.priority, reverse=True)
@@ -54,16 +54,18 @@ class World(esper.World):
                     group.remove(processor)
         super().remove_processor(processor_type)
 
-    def process_group(self, group: ProcessGroup, *args: Any, **kwargs: Any) -> None:
+    def process_group(
+        self, group: game.types.ProcessGroup, *args: typing.Any, **kwargs: typing.Any
+    ) -> None:
         """Process a group of processors."""
         self._clear_dead_entities()
         for processor in self._processor_groups[group]:
             processor.process(*args, **kwargs)
 
-    def actor_takes_turn(self, ent: Entity, *remove_components: Any) -> None:
+    def actor_takes_turn(self, ent: game.types.Entity, *remove_components: typing.Any) -> None:
         """Clean up after an actor takes a turn."""
         try:
-            self.remove_component(ent, GUTMyTurn)
+            self.remove_component(ent, game.component.action.GUTMyTurn)
         except KeyError:
             pass
         for component in remove_components:
@@ -72,49 +74,49 @@ class World(esper.World):
             except KeyError:
                 pass
 
-    def kill_entity(self, ent: Entity) -> None:
+    def kill_entity(self, ent: game.types.Entity) -> None:
         """Kill an entity."""
         try:
-            self.remove_component(ent, GUTMyTurn)
+            self.remove_component(ent, game.component.action.GUTMyTurn)
         except KeyError:
             pass
-        self.add_component(ent, GUTDead())
-        RenderEntitiesEvent.fire({"entities": [ent]})
+        self.add_component(ent, game.component.status.GUTDead())
+        game.events.RenderEntitiesEvent.fire({"entities": [ent]})
 
-    def pickup_item(self, ent: Entity) -> Optional[Entity]:
+    def pickup_item(self, ent: game.types.Entity) -> typing.Optional[game.types.Entity]:
         """Pick up an item at an entity's location and return its id."""
-        at = self.component_for_entity(ent, Position)
+        at = self.component_for_entity(ent, game.component.movement.Position)
         item_ent = self.get_item_at_position(at.x, at.y)
         if item_ent:
-            self.add_component(item_ent, GUTContainerTransfer(ent))
-            RenderEntitiesEvent.fire({"entities": [item_ent]})
+            self.add_component(item_ent, game.component.container.GUTContainerTransfer(ent))
+            game.events.RenderEntitiesEvent.fire({"entities": [item_ent]})
             return item_ent
         return None
 
-    def drop_item(self, ent: Entity, item_ent: Entity) -> bool:
+    def drop_item(self, ent: game.types.Entity, item_ent: game.types.Entity) -> bool:
         """Drop an item onto the map where the entity is."""
-        at = self.component_for_entity(ent, Position)
+        at = self.component_for_entity(ent, game.component.movement.Position)
         current_item_ent = self.get_item_at_position(at.x, at.y)
         if current_item_ent:
             return False
-        self.add_component(item_ent, GUTContainerTransfer())
-        RenderEntitiesEvent.fire({"entities": [item_ent]})
+        self.add_component(item_ent, game.component.container.GUTContainerTransfer())
+        game.events.RenderEntitiesEvent.fire({"entities": [item_ent]})
         return True
 
-    def get_enemy_at_position(self, x: int, y: int) -> Optional[Entity]:
+    def get_enemy_at_position(self, x: int, y: int) -> typing.Optional[game.types.Entity]:
         """Get an enemy entity at the given position."""
         if self.map and self.map.contains_enemy[y, x]:
-            enemy = self.get_entity_at_position(x, y, Enemy)
+            enemy = self.get_entity_at_position(x, y, game.component.ai.Enemy)
             if enemy:
                 return enemy
             else:
                 log.error("Map and components out of sync for enemy location!")
         return None
 
-    def get_item_at_position(self, x: int, y: int) -> Optional[Entity]:
+    def get_item_at_position(self, x: int, y: int) -> typing.Optional[game.types.Entity]:
         """Get an item entity at the given position."""
         if self.map and self.map.contains_item[y, x]:
-            item = self.get_entity_at_position(x, y, Item)
+            item = self.get_entity_at_position(x, y, game.component.container.Item)
             if item:
                 return item
             else:
@@ -122,25 +124,29 @@ class World(esper.World):
         return None
 
     def get_entity_at_position(
-        self, x: int, y: int, *required_components: Any
-    ) -> Optional[Entity]:
+        self, x: int, y: int, *required_components: typing.Any
+    ) -> typing.Optional[game.types.Entity]:
         """Get a single entity at the given position (the first found)."""
-        for ent, components in self.get_components(Position, *required_components):
+        for ent, components in self.get_components(
+            game.component.movement.Position, *required_components
+        ):
             other_pos = components[0]
             if other_pos.x == x and other_pos.y == y:
                 return ent
         return None
 
     def entities_at_position(
-        self, x: int, y: int, *required_components: Any
-    ) -> Generator[Entity, None, None]:
+        self, x: int, y: int, *required_components: typing.Any
+    ) -> typing.Generator[game.types.Entity, None, None]:
         """Yield any entities at the given position, with the optional required components."""
-        for ent, components in self.get_components(Position, *required_components):
+        for ent, components in self.get_components(
+            game.component.movement.Position, *required_components
+        ):
             other_pos = components[0]
             if other_pos.x == x and other_pos.y == y:
                 yield ent
 
-    def _get_component(self, component_type: Any) -> Any:
+    def _get_component(self, component_type: typing.Any) -> typing.Any:
         """Get an iterator for Entity, Component pairs.
 
         :param component_type: The Component type to retrieve.
@@ -149,7 +155,7 @@ class World(esper.World):
         entity_db = self._entities
         players = set()
 
-        for entity in self._components.get(Player, []):
+        for entity in self._components.get(game.component.player.Player, []):
             players.add(entity)
             try:
                 yield entity, entity_db[entity][component_type]
@@ -159,7 +165,7 @@ class World(esper.World):
             if entity not in players:
                 yield entity, entity_db[entity][component_type]
 
-    def _get_components(self, *component_types: Any) -> Any:
+    def _get_components(self, *component_types: typing.Any) -> typing.Any:
         """Get an iterator for Entity and multiple Component sets.
 
         :param component_types: Two or more Component types.
@@ -171,7 +177,7 @@ class World(esper.World):
         comp_db = self._components
         players = set()
 
-        for entity in self._components.get(Player, []):
+        for entity in self._components.get(game.component.player.Player, []):
             players.add(entity)
             try:
                 yield entity, [entity_db[entity][ct] for ct in component_types]
@@ -184,7 +190,7 @@ class World(esper.World):
         except KeyError:
             pass
 
-    def try_component(self, entity: Entity, component_type: Any) -> Any:
+    def try_component(self, entity: game.types.Entity, component_type: typing.Any) -> typing.Any:
         """Try to get a single component type for an Entity.
 
           This method will return the requested Component if it exists, but
@@ -198,7 +204,9 @@ class World(esper.World):
         if component_type in self._entities[entity]:
             yield self._entities[entity][component_type]
 
-    def optional_component_for_entity(self, entity: Entity, component_type: Any) -> Optional[Any]:
+    def optional_component_for_entity(
+        self, entity: game.types.Entity, component_type: typing.Any
+    ) -> typing.Optional[typing.Any]:
         """Retrieve a Component instance for a specific Entity.
 
         Retrieve a Component instance for a specific Entity. In some cases,
@@ -216,8 +224,12 @@ class World(esper.World):
             return None
 
     def get_or_add_component(
-        self, entity: Entity, component_type: Any, *args: Any, **kwargs: Any
-    ) -> Any:
+        self,
+        entity: game.types.Entity,
+        component_type: typing.Any,
+        *args: typing.Any,
+        **kwargs: typing.Any,
+    ) -> typing.Any:
         """Get a component for the given entity if it exists, or else create a new one."""
         try:
             return self.component_for_entity(entity, component_type)

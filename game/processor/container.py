@@ -1,16 +1,16 @@
 """Container processor."""
 import logging
-from typing import Any, Optional
+import typing
 
 import esper
 
-from game.component.container import Containable, Container, GUTContained, GUTContainerTransfer
-from game.component.descriptive import Name
-from game.component.gamelog import GUTCommandLog
-from game.component.movement import Position
-from game.events import RenderEntitiesEvent
-from game.types import Entity, EquipType
-from gamedata.palette import ItemPalette
+import game.component.container
+import game.component.descriptive
+import game.component.gamelog
+import game.component.movement
+import game.events
+import game.types
+import gamedata.palette
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -19,7 +19,7 @@ log.setLevel(logging.DEBUG)
 class ContainerProcessor(esper.Processor):
     """Process containers."""
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process container components."""
         entities_to_render: list = []
 
@@ -29,18 +29,28 @@ class ContainerProcessor(esper.Processor):
 
         # process all container transfers
         for containable_ent, components in self.world.get_components(
-            GUTContainerTransfer, Containable, Name
+            game.component.container.GUTContainerTransfer,
+            game.component.container.Containable,
+            game.component.descriptive.Name,
         ):
             transfer, containable, name = components
-            self.world.remove_component(containable_ent, GUTContainerTransfer)
-            cmd_log = self.world.get_or_add_component(containable_ent, GUTCommandLog)
-            contained = self.world.optional_component_for_entity(containable_ent, GUTContained)
+            self.world.remove_component(
+                containable_ent, game.component.container.GUTContainerTransfer
+            )
+            cmd_log = self.world.get_or_add_component(
+                containable_ent, game.component.gamelog.GUTCommandLog
+            )
+            contained = self.world.optional_component_for_entity(
+                containable_ent, game.component.container.GUTContained
+            )
 
             if transfer.to_ent is None:
                 container = None
                 free_slot = None
             else:
-                container = self.world.component_for_entity(transfer.to_ent, Container)
+                container = self.world.component_for_entity(
+                    transfer.to_ent, game.component.container.Container
+                )
                 free_slot = self._get_next_free_slot(transfer.to_ent, container)
                 if free_slot is None:
                     cmd_log.add(f"{container.name} is full.")
@@ -51,15 +61,17 @@ class ContainerProcessor(esper.Processor):
 
             # remove from wherever it is
             if contained:
-                self.world.remove_component(containable_ent, GUTContained)
+                self.world.remove_component(containable_ent, game.component.container.GUTContained)
             else:
-                position = self.world.optional_component_for_entity(containable_ent, Position)
+                position = self.world.optional_component_for_entity(
+                    containable_ent, game.component.movement.Position
+                )
                 container_ent_name = self.world.optional_component_for_entity(
-                    transfer.to_ent, Name
+                    transfer.to_ent, game.component.descriptive.Name
                 )
                 if position:
                     # it's on the ground, so something is picking it up
-                    self.world.remove_component(containable_ent, Position)
+                    self.world.remove_component(containable_ent, game.component.movement.Position)
                     self.world.map.contains_item[position.y, position.x] = False
                     if container_ent_name:
                         if transfer.to_ent in self.world.players:
@@ -67,7 +79,7 @@ class ContainerProcessor(esper.Processor):
                         else:
                             cmd_log.add(f"{container_ent_name.generic} picks up ")
                         # TODO: colorize the item by rarity?
-                        cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
+                        cmd_log.append(f"{name.generic}", color=gamedata.palette.ItemPalette.epic)
                         cmd_log.append(f".")
                         log.debug(f"Picked up {containable_ent}")
                     entities_to_render.append(containable_ent)
@@ -77,12 +89,16 @@ class ContainerProcessor(esper.Processor):
 
             # put it somewhere
             if transfer.to_ent is None:
-                position = self.world.optional_component_for_entity(contained.by_ent, Position)
+                position = self.world.optional_component_for_entity(
+                    contained.by_ent, game.component.movement.Position
+                )
                 contained_ent_name = self.world.optional_component_for_entity(
-                    contained.by_ent, Name
+                    contained.by_ent, game.component.descriptive.Name
                 )
                 if position:
-                    self.world.add_component(containable_ent, Position(position.x, position.y))
+                    self.world.add_component(
+                        containable_ent, game.component.movement.Position(position.x, position.y)
+                    )
                     self.world.map.contains_item[position.y, position.x] = True
                     if contained_ent_name:
                         if contained.by_ent in self.world.players:
@@ -90,7 +106,7 @@ class ContainerProcessor(esper.Processor):
                         else:
                             cmd_log.add(f"{contained_ent_name.generic} drops ")
                         # TODO: colorize the item by rarity?
-                        cmd_log.append(f"{name.generic}", color=ItemPalette.epic)
+                        cmd_log.append(f"{name.generic}", color=gamedata.palette.ItemPalette.epic)
                         cmd_log.append(".")
                     entities_to_render.append(containable_ent)
                 else:
@@ -102,19 +118,27 @@ class ContainerProcessor(esper.Processor):
                     log.error(f"{container_name} should not be full!")
                 else:
                     self.world.add_component(
-                        containable_ent, GUTContained(transfer.to_ent, Container, free_slot)
+                        containable_ent,
+                        game.component.container.GUTContained(
+                            transfer.to_ent, game.component.container.Container, free_slot
+                        ),
                     )
                     if contained:
                         # TODO: colorize the item by rarity?
-                        cmd_log.add(f"{name.generic}", color=ItemPalette.epic)
+                        cmd_log.add(f"{name.generic}", color=gamedata.palette.ItemPalette.epic)
                         cmd_log.append(f" is put into {container_name}.")
         if entities_to_render:
-            RenderEntitiesEvent.fire({"entities": entities_to_render})
+            game.events.RenderEntitiesEvent.fire({"entities": entities_to_render})
 
-    def _get_next_free_slot(self, ent: Entity, container: Container) -> Optional[int]:
+    def _get_next_free_slot(
+        self, ent: game.types.Entity, container: game.component.container.Container
+    ) -> typing.Optional[int]:
         seen_slots = set()
-        for _, other_contained in self.world.get_component(GUTContained):
-            if other_contained.by_ent == ent and other_contained.component_class == Container:
+        for _, other_contained in self.world.get_component(game.component.container.GUTContained):
+            if (
+                other_contained.by_ent == ent
+                and other_contained.component_class == game.component.container.Container
+            ):
                 seen_slots.add(other_contained.slot)
         if len(seen_slots) < container.max_slots:
             for slot in range(container.max_slots):
@@ -123,9 +147,12 @@ class ContainerProcessor(esper.Processor):
         return None
 
     @staticmethod
-    def _container_can_take(container: Container, containable: Containable) -> bool:
-        return container.equip_type != EquipType.none and (
-            container.equip_type == EquipType.any
+    def _container_can_take(
+        container: game.component.container.Container,
+        containable: game.component.container.Containable,
+    ) -> bool:
+        return container.equip_type != game.types.EquipType.none and (
+            container.equip_type == game.types.EquipType.any
             or container.equip_type == containable.equip_type
-            or containable.equip_type == EquipType.any
+            or containable.equip_type == game.types.EquipType.any
         )

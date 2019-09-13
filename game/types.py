@@ -1,126 +1,128 @@
 """Typing for the game module."""
+import enum
 import inspect
-from enum import Enum, IntEnum, auto
-from typing import Any, Callable, Dict, NamedTuple, Optional, Union
+import typing
 
-from game.utils.random import RNGCache, parse
-from gamedata.palette import MessagePalette
+import game.utils.random
+import gamedata.palette
 
-EventType = Dict[Any, Any]
-EventHandler = Callable[[EventType], Any]
+EventType = typing.Dict[typing.Any, typing.Any]
+EventHandler = typing.Callable[[EventType], typing.Any]
 
 Entity = int
 
 
-class RenderLayer(Enum):
+class RenderLayer(enum.Enum):
     """Render layers, from bottom to top."""
 
-    background = auto()
-    floor = auto()
-    item = auto()
-    wall = auto()
-    icon = auto()
-    enemy = auto()
-    player = auto()
-    effect = auto()
+    background = enum.auto()
+    floor = enum.auto()
+    item = enum.auto()
+    wall = enum.auto()
+    icon = enum.auto()
+    enemy = enum.auto()
+    player = enum.auto()
+    effect = enum.auto()
 
 
-class Priority(IntEnum):
+class Priority(enum.IntEnum):
     """Processor priorities."""
 
-    gamelog = auto()
-    render = auto()
-    psychopomps = auto()
-    attributes = auto()
-    damage_resolution = auto()
-    defense = auto()
-    attack_hit = auto()
-    attack_deflect = auto()
-    attack_block = auto()
-    attack_dodge = auto()
-    attack_miss = auto()
-    targeting = auto()
-    movement = auto()
-    ai = auto()
-    container = auto()
-    turn = auto()
-    time = auto()
-    player_bump = auto()
-    player_input = auto()
+    gamelog = enum.auto()
+    render = enum.auto()
+    psychopomps = enum.auto()
+    attributes = enum.auto()
+    damage_resolution = enum.auto()
+    defense = enum.auto()
+    attack_hit = enum.auto()
+    attack_deflect = enum.auto()
+    attack_block = enum.auto()
+    attack_dodge = enum.auto()
+    attack_miss = enum.auto()
+    targeting = enum.auto()
+    movement = enum.auto()
+    ai = enum.auto()
+    container = enum.auto()
+    turn = enum.auto()
+    time = enum.auto()
+    player_bump = enum.auto()
+    player_input = enum.auto()
 
 
-class ProcessGroup(Enum):
+class ProcessGroup(enum.Enum):
     """Groups of processors."""
 
-    default = auto()
-    player = auto()
-    time = auto()
-    render = auto()
-    gamelog = auto()
+    default = enum.auto()
+    player = enum.auto()
+    time = enum.auto()
+    render = enum.auto()
+    gamelog = enum.auto()
 
 
-class GameState(Enum):
+class GameState(enum.Enum):
     """Game states."""
 
-    unknown = auto()
-    loading = auto()
-    main_menu = auto()
-    creating = auto()
-    playing = auto()
-    in_game_menu = auto()
-    shutdown = auto()
+    unknown = enum.auto()
+    loading = enum.auto()
+    main_menu = enum.auto()
+    creating = enum.auto()
+    playing = enum.auto()
+    in_game_menu = enum.auto()
+    shutdown = enum.auto()
 
 
-class AttackType(Enum):
+class AttackType(enum.Enum):
     """Attack types."""
 
-    melee = auto()
-    projectile = auto()
+    melee = enum.auto()
+    projectile = enum.auto()
 
 
-class EquipType(Enum):
+class EquipType(enum.Enum):
     """Equipment types -- where an item was intended to be worn/held."""
 
-    none = auto()
-    head = auto()
-    face = auto()
-    neck = auto()
-    shoulder = auto()
-    back = auto()
-    torso = auto()
-    waist = auto()
-    tail = auto()
-    wrist = auto()
-    hand = auto()
-    finger = auto()
-    leg = auto()
-    foot = auto()
-    implant = auto()
-    shield = auto()
-    melee = auto()
-    ranged = auto()
-    any = auto()
+    none = enum.auto()
+    head = enum.auto()
+    face = enum.auto()
+    neck = enum.auto()
+    shoulder = enum.auto()
+    back = enum.auto()
+    torso = enum.auto()
+    waist = enum.auto()
+    tail = enum.auto()
+    wrist = enum.auto()
+    hand = enum.auto()
+    finger = enum.auto()
+    leg = enum.auto()
+    foot = enum.auto()
+    implant = enum.auto()
+    shield = enum.auto()
+    melee = enum.auto()
+    ranged = enum.auto()
+    any = enum.auto()
 
 
-Number = Union[int, float]
+Number = typing.Union[int, float]
 
 
 class Modifier:
     """Modifier set."""
 
-    def __init__(self, addend: Union[Number, str] = 0, factor: Union[Number, str] = 0) -> None:
+    def __init__(
+        self, addend: typing.Union[Number, str] = 0, factor: typing.Union[Number, str] = 0
+    ) -> None:
         self._addend: Number = 0
         self._factor: Number = 0
-        self._addend_func: Optional[Callable[[], Number]] = None
-        self._factor_func: Optional[Callable[[], Number]] = None
+        self._addend_func: typing.Optional[typing.Callable[[], Number]] = None
+        self._factor_func: typing.Optional[typing.Callable[[], Number]] = None
         # TODO: I'm not convinced this is the best way to do this. RNG per entity instead? How?
-        rng = RNGCache.get("ModifierClass")
+        rng = game.utils.random.RNGCache.get("ModifierClass")
         if isinstance(addend, str):
-            self._addend_func = parse(addend, rng)
+            self._addend_func = game.utils.random.parse(addend, rng)
         else:
             self._addend = addend
         if isinstance(factor, str):
-            self._factor_func = parse(factor, rng)
+            self._factor_func = game.utils.random.parse(factor, rng)
         else:
             self._factor = factor
 
@@ -139,17 +141,17 @@ class Modifier:
         return self._factor
 
 
-class LogLine(NamedTuple):
+class LogLine(typing.NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: int = MessagePalette.default
+    color: int = gamedata.palette.MessagePalette.default
 
 
-def get_union_types(union_type: Any) -> tuple:
+def get_union_types(union_type: typing.Any) -> tuple:
     """Get a tuple of the types of a union."""
     try:
-        if union_type.__origin__ is Union:
+        if union_type.__origin__ is typing.Union:
             return tuple(union_type.__args__)
     except (AttributeError, TypeError):
         pass
@@ -157,12 +159,12 @@ def get_union_types(union_type: Any) -> tuple:
     return (union_type,)
 
 
-def is_in_union(arg: Any, union_type: Union) -> bool:
+def is_in_union(arg: typing.Any, union_type: typing.Union) -> bool:
     """Return true if the given argument is included in the union type."""
     return isinstance(arg, get_union_types(union_type))
 
 
-def parameter_types(func: Callable) -> dict:
+def parameter_types(func: typing.Callable) -> dict:
     """Get a dict of parameter names and allowed types from a function."""
     result = {}
     sig = inspect.signature(func)

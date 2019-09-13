@@ -1,11 +1,11 @@
 """Geometry utility classes."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
+import dataclasses
+import typing
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class Point:
     """Represents a point."""
 
@@ -27,7 +27,7 @@ class Rect:
     def __repr__(self) -> str:
         return f"Rect<{self.p1}, {self.p2}>"
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: typing.Any) -> bool:
         try:
             return bool(self.p1 == other.p1 and self.p2 == other.p2)
         except AttributeError:

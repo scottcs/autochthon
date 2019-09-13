@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import pathlib
 import random
 import re
-from pathlib import Path
-from typing import Callable, Dict, List, NamedTuple, Optional, Sequence, TypeVar, Union
+import typing
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -14,8 +14,10 @@ log.setLevel(logging.DEBUG)
 WEIGHTED_DEF = re.compile(r"(?<=^weighted\(\()([^)]+)\), \(([^)]+)\)\)")
 STEP_DEF = re.compile(r"(?<=^step\()([^)]+)\)")
 DIE_DEF = re.compile(r"(\d+d\d+)([+-]\d+)?")
-WORDS_FILE = Path("/usr/share/dict/words")  # TODO: replace with one in this repo with game terms?
-T = TypeVar("T")
+WORDS_FILE = pathlib.Path(
+    "/usr/share/dict/words"
+)  # TODO: replace with one in this repo with game terms?
+T = typing.TypeVar("T")
 
 
 ######################################################################
@@ -122,7 +124,7 @@ class GameRNG:
         self.name = name
         self._rng = rng
 
-    def rand(self, lower: Optional[int] = None, upper: Optional[int] = None) -> int:
+    def rand(self, lower: typing.Optional[int] = None, upper: typing.Optional[int] = None) -> int:
         """Return a random integer in range [lower, upper], including both endpoints."""
         if upper is None:
             if lower is None:
@@ -142,7 +144,7 @@ class GameRNG:
         """Return whether not a percentage roll succeeds."""
         return self._rng.get_next_uint(precision) < (percent * precision)
 
-    def choice(self, options: Sequence[T]) -> T:
+    def choice(self, options: typing.Sequence[T]) -> T:
         """Return a random choice amongst the options."""
         return options[self.rand(len(options) - 1)]
 
@@ -154,13 +156,13 @@ class GameRNG:
 class RNGCache:
     """Random number generator cache."""
 
-    seed: Optional[str] = None
-    _rng: Optional[PCG32Generator] = None
-    _cache: Dict[str, GameRNG] = {}
-    _collision_check: Dict[int, str] = {}
+    seed: typing.Optional[str] = None
+    _rng: typing.Optional[PCG32Generator] = None
+    _cache: typing.Dict[str, GameRNG] = {}
+    _collision_check: typing.Dict[int, str] = {}
 
     @classmethod
-    def init(cls, seed: Optional[str] = None) -> None:
+    def init(cls, seed: typing.Optional[str] = None) -> None:
         """Initialize the cache."""
         cls._cache = {}
         if not seed:
@@ -170,7 +172,7 @@ class RNGCache:
         cls._rng = PCG32Generator(cls.string_hash(cls.seed), 0)
 
     @classmethod
-    def get(cls, stream: Optional[str] = None) -> GameRNG:
+    def get(cls, stream: typing.Optional[str] = None) -> GameRNG:
         """Get a sub-rng."""
         if cls._rng is None or cls.seed is None:
             raise RuntimeError("Attempt to get RNG from uninitialized cache")
@@ -208,10 +210,10 @@ class RNGCache:
         return result
 
 
-def _parse_weighted(rng: GameRNG, items_str: str, weights_str: str) -> Callable:
-    items: List[str] = [i.strip(" '\"") for i in items_str.split(",")]
-    weights: List[int] = [int(w.strip()) for w in weights_str.split(",")]
-    choices: List[str] = []
+def _parse_weighted(rng: GameRNG, items_str: str, weights_str: str) -> typing.Callable:
+    items: typing.List[str] = [i.strip(" '\"") for i in items_str.split(",")]
+    weights: typing.List[int] = [int(w.strip()) for w in weights_str.split(",")]
+    choices: typing.List[str] = []
     for i, item in enumerate(items):
         choices.extend([item for _ in range(weights[i])])
 
@@ -221,36 +223,36 @@ def _parse_weighted(rng: GameRNG, items_str: str, weights_str: str) -> Callable:
     return _closure
 
 
-class _MinMaxStep(NamedTuple):
-    min: Union[int, float]
-    max: Union[int, float]
-    step: Union[int, float]
+class _MinMaxStep(typing.NamedTuple):
+    min: typing.Union[int, float]
+    max: typing.Union[int, float]
+    step: typing.Union[int, float]
 
 
-def _parse_step(rng: GameRNG, expr: str) -> Callable:
+def _parse_step(rng: GameRNG, expr: str) -> typing.Callable:
     try:
         s: _MinMaxStep = _MinMaxStep(*[int(e.strip()) for e in expr.split(",")])
     except ValueError:
         s = _MinMaxStep(*[float(e.strip()) for e in expr.split(",")])
     x = s.min
-    choices: List[Union[int, float]] = []
+    choices: typing.List[typing.Union[int, float]] = []
     while x < s.max:
         choices.append(x)
         x += s.step
     choices.append(s.max)
 
-    def _closure() -> Union[int, float]:
+    def _closure() -> typing.Union[int, float]:
         return rng.choice(choices)
 
     return _closure
 
 
-class _Die(NamedTuple):
+class _Die(typing.NamedTuple):
     amt: int
     sides: int
 
 
-def _parse_die(rng: GameRNG, expr: str, addend: Optional[str] = None) -> Callable:
+def _parse_die(rng: GameRNG, expr: str, addend: typing.Optional[str] = None) -> typing.Callable:
     _addend: int = 0
     if addend is not None:
         _addend = int(addend.strip())
@@ -265,7 +267,7 @@ def _parse_die(rng: GameRNG, expr: str, addend: Optional[str] = None) -> Callabl
     return _closure
 
 
-def parse(text: str, rng: GameRNG) -> Optional[Callable]:
+def parse(text: str, rng: GameRNG) -> typing.Optional[typing.Callable]:
     """Parse a string and return a function to provide the requested randomness.
 
     Looks for:

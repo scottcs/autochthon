@@ -1,21 +1,21 @@
 """Render processors."""
 import logging
-from typing import Any, Dict
+import typing
 
 import esper
 import tcod
 
-from game.component.container import GUTContained
-from game.component.movement import Position
-from game.component.player import Player
-from game.component.render import Renderable
-from game.component.status import GUTDead
-from game.events import RenderEntitiesEvent, RenderMapEvent, UpdateMapRenderEvent
-from game.types import EventType, RenderLayer
-from gamedata.config import CONFIG
-from gamedata.palette import Palette
+import game.component.container
+import game.component.movement
+import game.component.player
+import game.component.render
+import game.component.status
+import game.events
+import game.types
+import gamedata.config
+import gamedata.palette
 
-MAP_BITS = CONFIG["map_bits"]
+MAP_BITS = gamedata.config.CONFIG["map_bits"]
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
@@ -24,29 +24,33 @@ class WebRenderProcessor(esper.Processor):
     """Game render processor for web socket."""
 
     def __init__(self) -> None:
-        self.cache: Dict[str, Any] = {"player_x": -1, "player_y": -1, "cells": {}}
+        self.cache: typing.Dict[str, typing.Any] = {"player_x": -1, "player_y": -1, "cells": {}}
         self.render_map: bool = True
         self.render_full_map: bool = True
         self.render_entities: set = set()
-        RenderEntitiesEvent.handle(self._on_render_entities)
-        RenderMapEvent.handle(self._on_render_map)
+        game.events.RenderEntitiesEvent.handle(self._on_render_entities)
+        game.events.RenderMapEvent.handle(self._on_render_map)
 
-    def _on_render_entities(self, event: EventType) -> None:
+    def _on_render_entities(self, event: game.types.EventType) -> None:
         entities_to_render = event["entities"]
         if event.get("all", False):
-            entities_to_render.extend([ent for ent, _ in self.world.get_components(Renderable)])
+            entities_to_render.extend(
+                [ent for ent, _ in self.world.get_components(game.component.render.Renderable)]
+            )
         for ent in entities_to_render:
-            renderable = self.world.optional_component_for_entity(ent, Renderable)
+            renderable = self.world.optional_component_for_entity(
+                ent, game.component.render.Renderable
+            )
             if renderable is None:
                 log.warning(f"Attempt to render non-renderable entity {ent}")
                 continue
             self.render_entities.add((renderable.layer.value, ent))
 
-    def _on_render_map(self, event: EventType) -> None:
+    def _on_render_map(self, event: game.types.EventType) -> None:
         self.render_map = True
         self.render_full_map = event.get("full", False)
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
         if not (self.render_map or self.render_entities):
             return
@@ -58,7 +62,11 @@ class WebRenderProcessor(esper.Processor):
         fov: int = 1
 
         # PLAYER POSITION
-        for ent, components in self.world.get_components(Player, Renderable, Position):
+        for ent, components in self.world.get_components(
+            game.component.player.Player,
+            game.component.render.Renderable,
+            game.component.movement.Position,
+        ):
             position = components[-1]
             player_x = position.x
             player_y = position.y
@@ -110,7 +118,7 @@ class WebRenderProcessor(esper.Processor):
         #     each cell = 3 bytes + (1-11 bytes) = 4-14 bytes, but usually 4-5 bytes
         # AND we only send a cell if something has changed.
         ##########################################
-        UpdateMapRenderEvent.fire({"bytearray": b_cells})
+        game.events.UpdateMapRenderEvent.fire({"bytearray": b_cells})
 
     def _append_map_bytes(self, b_cells: bytearray, player_x: int, player_y: int, fov: int) -> int:
         self._render_map_if_needed(fov, player_x, player_y)
@@ -133,16 +141,16 @@ class WebRenderProcessor(esper.Processor):
             # WARNING: this will override any entities with ID >= 10000!
             #          also limits map size to about 235x235
             cell_id = 10000 + y + self.world.map.width * x
-            layer = RenderLayer.floor.value
+            layer = game.types.RenderLayer.floor.value
 
             if self.world.map.spawnable_player[y, x]:
                 # TODO: move this to map
                 tile_id = 229
-                color = Palette.cyan
+                color = gamedata.palette.Palette.cyan
 
             if not self.world.map.walkable[y, x]:
                 # TODO: other layers (debris, decoration)
-                layer = RenderLayer.wall.value
+                layer = game.types.RenderLayer.wall.value
 
             cell_cache = self.cache["cells"].get(cell_id, None)
             if self.render_full_map or cell_cache is None:
@@ -215,8 +223,10 @@ class WebRenderProcessor(esper.Processor):
             self._add_fov_entities_to_render()
 
     def _add_fov_entities_to_render(self) -> None:
-        for ent, renderable in self.world.get_component(Renderable):
-            position = self.world.optional_component_for_entity(ent, Position)
+        for ent, renderable in self.world.get_component(game.component.render.Renderable):
+            position = self.world.optional_component_for_entity(
+                ent, game.component.movement.Position
+            )
             if position is not None:
                 if self.world.map.fov[position.y, position.x]:
                     # we can see it now
@@ -228,10 +238,12 @@ class WebRenderProcessor(esper.Processor):
     def _append_entity_bytes(self, b_cells: bytearray) -> int:
         data_append_length = 0
         for _, ent in sorted(self.render_entities):
-            renderable = self.world.component_for_entity(ent, Renderable)
-            position = self.world.optional_component_for_entity(ent, Position)
-            is_dead = self.world.has_component(ent, GUTDead)
-            is_contained = self.world.has_component(ent, GUTContained)
+            renderable = self.world.component_for_entity(ent, game.component.render.Renderable)
+            position = self.world.optional_component_for_entity(
+                ent, game.component.movement.Position
+            )
+            is_dead = self.world.has_component(ent, game.component.status.GUTDead)
+            is_contained = self.world.has_component(ent, game.component.container.GUTContained)
             pos_x = pos_y = None
             can_see_now = can_see_prev = seen = False
 
@@ -298,6 +310,6 @@ class TCODRenderProcessor(esper.Processor):
         # Someday, implement this?
         log.error(f"Someday maybe this will be a {width}x{height} console.")
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
         pass

@@ -1,41 +1,47 @@
 """Attack processors."""
-from typing import Any
+import typing
 
 import esper
 
-from game.component.action import Actor, GUTMyTurn
-from game.component.attack import AttackHitModifier, GUTCurrentTarget
-from game.component.base import accumulate_modifiers
-from game.component.damage import GUTTakeDamageBludgeoning, ModifierInflictDamageBludgeoning
-from game.component.descriptive import Name
-from game.component.gamelog import GUTCombatLog
-from game.types import AttackType, Entity, Number
-from game.utils.language import Verb, msg
-from game.utils.random import RNGCache
-from gamedata.base_engine_values import HIT_CHANCE
-from gamedata.messages.combat import MsgAttack, MsgAttackImmune, MsgDefend, MsgMiss
+import game.component.action
+import game.component.attack
+import game.component.base
+import game.component.damage
+import game.component.descriptive
+import game.component.gamelog
+import game.types
+import game.utils.language
+import game.utils.random
+import gamedata.base_engine_values
+import gamedata.messages.combat
 
 
 class AttackTargetingProcessor(esper.Processor):
     """Attack targeting processor."""
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process AttackTargeting components."""
-        for ent, components in self.world.get_components(Actor, GUTCurrentTarget, GUTMyTurn):
+        for ent, components in self.world.get_components(
+            game.component.action.Actor,
+            game.component.attack.GUTCurrentTarget,
+            game.component.action.GUTMyTurn,
+        ):
             actor, target = components[:2]
             if not self.still_can_target(ent, target):
-                self.world.actor_takes_turn(ent, GUTCurrentTarget)
+                self.world.actor_takes_turn(ent, game.component.attack.GUTCurrentTarget)
                 continue
-            combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
-            aggressor_name = self.world.get_or_add_component(ent, Name, f"Entity {ent}")
+            combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombatLog)
+            aggressor_name = self.world.get_or_add_component(
+                ent, game.component.descriptive.Name, f"Entity {ent}"
+            )
             defender_name = self.world.get_or_add_component(
-                target.entity, Name, f"Entity {target.entity}"
+                target.entity, game.component.descriptive.Name, f"Entity {target.entity}"
             )
             combat_log.add(
-                *msg(
+                *game.utils.language.msg(
                     self.world.players,
                     (ent, target.entity),
-                    MsgAttack,
+                    gamedata.messages.combat.MsgAttack,
                     aggressor_name.specific,
                     defender_name.specific,
                     target.attack,
@@ -44,9 +50,11 @@ class AttackTargetingProcessor(esper.Processor):
             self.world.add_component(ent, combat_log)
             self.world.actor_takes_turn(ent)
 
-    def still_can_target(self, _ent: Entity, target: GUTCurrentTarget) -> bool:
+    def still_can_target(
+        self, _ent: game.types.Entity, target: game.component.attack.GUTCurrentTarget
+    ) -> bool:
         """Determine if target is still valid."""
-        if target.attack == AttackType.melee:
+        if target.attack == game.types.AttackType.melee:
             for existing in self.world.entities_at_position(target.x, target.y):
                 if existing == target.entity:
                     return True
@@ -56,24 +64,33 @@ class AttackTargetingProcessor(esper.Processor):
 class AttackMissProcessor(esper.Processor):
     """Process whether attack missed."""
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process whether attack missed."""
-        rng = RNGCache.get("AttackProcessor")
-        for ent, target in self.world.get_component(GUTCurrentTarget):
-            if target.attack == AttackType.melee:
+        rng = game.utils.random.RNGCache.get("AttackProcessor")
+        for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
+            if target.attack == game.types.AttackType.melee:
                 mods = []
-                for mod in self.world.try_component(ent, AttackHitModifier):
+                for mod in self.world.try_component(ent, game.component.attack.AttackHitModifier):
                     mods.append(mod)
                 # TODO: Gather other modifiers
-                modifier = accumulate_modifiers(*mods)
-                chance = HIT_CHANCE + modifier.factor
-                combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
+                modifier = game.component.base.accumulate_modifiers(*mods)
+                chance = gamedata.base_engine_values.HIT_CHANCE + modifier.factor
+                combat_log = self.world.get_or_add_component(
+                    ent, game.component.gamelog.GUTCombatLog
+                )
                 if not rng.percent(chance):
-                    name = self.world.get_or_add_component(ent, Name, f"Entity {ent}")
-                    combat_log.add(
-                        *msg(self.world.players, (ent, target.entity), MsgMiss, name.specific)
+                    name = self.world.get_or_add_component(
+                        ent, game.component.descriptive.Name, f"Entity {ent}"
                     )
-                    self.world.remove_component(ent, GUTCurrentTarget)
+                    combat_log.add(
+                        *game.utils.language.msg(
+                            self.world.players,
+                            (ent, target.entity),
+                            gamedata.messages.combat.MsgMiss,
+                            name.specific,
+                        )
+                    )
+                    self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)
 
 
 class AttackDefenseProcessor(esper.Processor):
@@ -81,84 +98,98 @@ class AttackDefenseProcessor(esper.Processor):
 
     def __init__(
         self,
-        verb: Verb,
-        modifier_component_class: Any,
-        immunity_component_class: Any,
-        base_chance: Number,
+        verb: game.utils.language.Verb,
+        modifier_component_class: typing.Any,
+        immunity_component_class: typing.Any,
+        base_chance: game.types.Number,
     ) -> None:
-        self.verb: Verb = verb
-        self.modifier_component_class: Any = modifier_component_class
-        self.immunity_component_class: Any = immunity_component_class
-        self.base_chance: Number = base_chance
+        self.verb: game.utils.language.Verb = verb
+        self.modifier_component_class: typing.Any = modifier_component_class
+        self.immunity_component_class: typing.Any = immunity_component_class
+        self.base_chance: game.types.Number = base_chance
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process whether an attack was defended."""
-        rng = RNGCache.get("AttackProcessor")
-        for ent, target in self.world.get_component(GUTCurrentTarget):
+        rng = game.utils.random.RNGCache.get("AttackProcessor")
+        for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
             if self.world.has_component(ent, self.immunity_component_class):
                 # This attack cannot be thwarted by this defense
                 immune = self.world.component_for_entity(ent, self.immunity_component_class)
                 if immune.temporary:
                     self.world.remove_component(ent, self.immunity_component_class)
-                name = self.world.get_or_add_component(ent, Name, f"Entity {ent}")
-                combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
+                name = self.world.get_or_add_component(
+                    ent, game.component.descriptive.Name, f"Entity {ent}"
+                )
+                combat_log = self.world.get_or_add_component(
+                    ent, game.component.gamelog.GUTCombatLog
+                )
                 combat_log.add(
-                    *msg(
+                    *game.utils.language.msg(
                         self.world.players,
                         (ent, target.entity),
-                        MsgAttackImmune,
+                        gamedata.messages.combat.MsgAttackImmune,
                         name.specific,
                         self.verb.past,
                     )
                 )
                 continue
-            if target.attack == AttackType.melee:
+            if target.attack == game.types.AttackType.melee:
                 mods = []
                 for mod in self.world.try_component(target.entity, self.modifier_component_class):
                     mods.append(mod)
                 # TODO: Gather other modifiers
-                modifier = accumulate_modifiers(*mods)
+                modifier = game.component.base.accumulate_modifiers(*mods)
                 chance = self.base_chance + modifier.factor
                 if chance > 0:
                     if not rng.percent(chance):
-                        combat_log = self.world.get_or_add_component(ent, GUTCombatLog)
+                        combat_log = self.world.get_or_add_component(
+                            ent, game.component.gamelog.GUTCombatLog
+                        )
                         name = self.world.get_or_add_component(
-                            target.entity, Name, f"Entity {target.entity}"
+                            target.entity,
+                            game.component.descriptive.Name,
+                            f"Entity {target.entity}",
                         )
                         combat_log.add(
-                            *msg(
+                            *game.utils.language.msg(
                                 self.world.players,
                                 (target.entity, ent),
-                                MsgDefend,
+                                gamedata.messages.combat.MsgDefend,
                                 name.specific,
                                 self.verb.present,
                             )
                         )
                         # TODO: Add success comp for other processors (DeflectSuccess -> Disarm)
-                        self.world.remove_component(ent, GUTCurrentTarget)
+                        self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)
 
 
 class AttackHitProcessor(esper.Processor):
     """Attack happened, nothing stopped it, so generate AttackHit."""
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process AttackHappening."""
-        for ent, target in self.world.get_component(GUTCurrentTarget):
-            if target.attack == AttackType.melee:
+        for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
+            if target.attack == game.types.AttackType.melee:
                 self.generate_melee_damage(ent, target)
             # TODO: generate effects here too (knockback, electric arc, etc)
-            self.world.remove_component(ent, GUTCurrentTarget)
+            self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)
 
-    def generate_melee_damage(self, ent: Entity, target: GUTCurrentTarget) -> None:
+    def generate_melee_damage(
+        self, ent: game.types.Entity, target: game.component.attack.GUTCurrentTarget
+    ) -> None:
         """Generate DoDamage components on attacker."""
         mods = []
         # TODO: check equipment
         # TODO: check attributes
         # TODO: check race
         # TODO: etc
-        for mod in self.world.try_component(ent, ModifierInflictDamageBludgeoning):
+        for mod in self.world.try_component(
+            ent, game.component.damage.ModifierInflictDamageBludgeoning
+        ):
             mods.append(mod)
-        modifier = accumulate_modifiers(*mods)
+        modifier = game.component.base.accumulate_modifiers(*mods)
         damage = modifier.addend * (1 + modifier.factor)
         if damage > 0:
-            self.world.add_component(target.entity, GUTTakeDamageBludgeoning(damage))
+            self.world.add_component(
+                target.entity, game.component.damage.GUTTakeDamageBludgeoning(damage)
+            )

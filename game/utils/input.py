@@ -1,9 +1,9 @@
 """Input utilities."""
 import json
-from pathlib import Path
-from typing import Dict
+import pathlib
+import typing
 
-KEYS_JSON = Path("data") / Path("keys.json")
+KEYS_JSON = pathlib.Path("data") / pathlib.Path("keys.json")
 
 with open(KEYS_JSON) as f:
     keys_data: dict = json.load(f)
@@ -13,7 +13,7 @@ with open(KEYS_JSON) as f:
     events: dict = keys_data["Events"]
 
 
-def unpack_modifiers(mods: int) -> Dict[str, bool]:
+def unpack_modifiers(mods: int) -> typing.Dict[str, bool]:
     """Unpack key modifiers from a keyboard event."""
     return {
         "shift": mods & modifiers["Shift"] != 0,

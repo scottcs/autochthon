@@ -1,36 +1,40 @@
 """Base player command."""
-from typing import Dict, NamedTuple
+import typing
 
-from game.component.container import Containable, GUTContained
-from game.component.descriptive import Name
-from game.core.world import World
-from game.events import ChoiceFromListEvent, MenuClosedEvent
-from game.types import Entity, EventType
-from game.utils.input import get_key, unpack_modifiers
-from gamedata.palette import ItemPalette
+import game.component.container
+import game.component.descriptive
+import game.core.world
+import game.events
+import game.types
+import game.utils.input
+import gamedata.palette
 
 
-class InputKey(NamedTuple):
+class InputKey(typing.NamedTuple):
     """Key and modifiers from an input event."""
 
     key: str
-    modifiers: Dict[str, bool]
+    modifiers: typing.Dict[str, bool]
 
 
 class BaseCommand:
     """Base player command."""
 
-    def __init__(self, world: World) -> None:
-        self.world: World = world
+    def __init__(self, world: game.core.world.World) -> None:
+        self.world: game.core.world.World = world
         self.submenu = False
 
     def run(self) -> None:
         """Run the command."""
         raise NotImplementedError("Must implement in child class.")
 
-    def _get_items_carried(self, ent: Entity) -> dict:
+    def _get_items_carried(self, ent: game.types.Entity) -> dict:
         items_carried: dict = {"equipped": [], "unequipped": []}
-        for item_ent, components in self.world.get_components(GUTContained, Name, Containable):
+        for item_ent, components in self.world.get_components(
+            game.component.container.GUTContained,
+            game.component.descriptive.Name,
+            game.component.container.Containable,
+        ):
             contained, name, containable = components
             if contained.by_ent == ent:
                 if containable.equipped:
@@ -38,7 +42,12 @@ class BaseCommand:
                 else:
                     item_list = items_carried["unequipped"]
                 item_list.append(
-                    (containable.equip_type.name, contained.label, name.generic, ItemPalette.rare)
+                    (
+                        containable.equip_type.name,
+                        contained.label,
+                        name.generic,
+                        gamedata.palette.ItemPalette.rare,
+                    )
                 )
         if items_carried["equipped"]:
             items_carried["equipped"].sort()
@@ -51,18 +60,18 @@ class BaseCommand:
         return items_carried
 
     @staticmethod
-    def _keys_from_event(event: EventType) -> InputKey:
-        key: str = get_key(event["code"])
-        modifiers: Dict[str, bool] = unpack_modifiers(event["modifiers"])
+    def _keys_from_event(event: game.types.EventType) -> InputKey:
+        key: str = game.utils.input.get_key(event["code"])
+        modifiers: typing.Dict[str, bool] = game.utils.input.unpack_modifiers(event["modifiers"])
         if modifiers["shift"]:
             key = key.upper()
         return InputKey(key, modifiers)
 
-    def on_choice(self, event: EventType) -> None:
+    def on_choice(self, event: game.types.EventType) -> None:
         """Callback for ChoiceFromListEvent."""
         # Implement in child class if needed.
         pass
 
-    def _on_menu_closed(self, _event: EventType) -> None:
-        ChoiceFromListEvent.unhandle(self.on_choice)
-        MenuClosedEvent.unhandle(self._on_menu_closed)
+    def _on_menu_closed(self, _event: game.types.EventType) -> None:
+        game.events.ChoiceFromListEvent.unhandle(self.on_choice)
+        game.events.MenuClosedEvent.unhandle(self._on_menu_closed)

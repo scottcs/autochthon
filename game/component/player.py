@@ -1,8 +1,8 @@
 """Player components."""
-from dataclasses import dataclass
+import dataclasses
 
 
-@dataclass
+@dataclasses.dataclass
 class GUTPlayerBump:
     """Player wants to do something that passes time, maybe in a direction."""
 
@@ -10,7 +10,7 @@ class GUTPlayerBump:
     dy: int = 0
 
 
-@dataclass
+@dataclasses.dataclass
 class Player:
     """Player component."""
 

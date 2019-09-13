@@ -1,20 +1,25 @@
 """Game Log processing."""
-from typing import Any
+import typing
 
 import esper
 
-from game.component.gamelog import GUTCombatLog, GUTCommandLog, GUTDescriptionLog, GUTStatusLog
-from game.events import GameLogEvent
+import game.component.gamelog
+import game.events
 
 
 class GameLogProcessor(esper.Processor):
     """Process the game log."""
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process the game log."""
-        for component_class in (GUTCommandLog, GUTCombatLog, GUTStatusLog, GUTDescriptionLog):
+        for component_class in (
+            game.component.gamelog.GUTCommandLog,
+            game.component.gamelog.GUTCombatLog,
+            game.component.gamelog.GUTStatusLog,
+            game.component.gamelog.GUTDescriptionLog,
+        ):
             for ent, log in self.world.get_component(component_class):
                 if not log.lines:
                     continue
-                GameLogEvent.fire({"lines": log.lines})
+                game.events.GameLogEvent.fire({"lines": log.lines})
                 self.world.remove_component(ent, component_class)

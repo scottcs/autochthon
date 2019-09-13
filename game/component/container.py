@@ -1,43 +1,45 @@
 """Container components."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Optional, Sequence
+import dataclasses
+import typing
 
-from game.types import Entity, EquipType
+import game.types
 
 
-@dataclass
+@dataclasses.dataclass
 class Container:
     """This entity can contain Containable entities."""
 
     name: str
     max_slots: int = 0
-    equip_type: EquipType = EquipType.any
+    equip_type: game.types.EquipType = game.types.EquipType.any
 
 
-@dataclass
+@dataclasses.dataclass
 class Containable:
     """This entity can be contained by a Container entity."""
 
-    equip_type: EquipType = EquipType.none
+    equip_type: game.types.EquipType = game.types.EquipType.none
     stackable: bool = False
-    count: int = field(init=False)
-    equipped: bool = field(init=False)
+    count: int = dataclasses.field(init=False)
+    equipped: bool = dataclasses.field(init=False)
 
     def __post_init__(self) -> None:
         self.count = 1
         self.equipped = False
 
 
-@dataclass
+@dataclasses.dataclass
 class GUTContained:
     """This entity is contained by another entity."""
 
-    by_ent: Entity
-    component_class: Any
+    by_ent: game.types.Entity
+    component_class: typing.Any
     slot: int
-    slot_labels: Sequence[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    slot_labels: typing.Sequence[
+        str
+    ] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
     @property
     def label(self) -> str:
@@ -49,14 +51,14 @@ class GUTContained:
         return self.slot_labels.index(label)
 
 
-@dataclass
+@dataclasses.dataclass
 class GUTContainerTransfer:
     """Remove or insert a Containable entity out of or into a Container.
 
     If to_ent is None, assume it's to the floor
     """
 
-    to_ent: Optional[Entity] = None
+    to_ent: typing.Optional[game.types.Entity] = None
 
 
 class Item:
@@ -104,21 +106,21 @@ class Equipment:
         ranged_max: int = 1,
     ) -> None:
         self.slots = {
-            EquipType.head: {"name": head_name, "max": head_max},
-            EquipType.face: {"name": face_name, "max": face_max},
-            EquipType.neck: {"name": neck_name, "max": neck_max},
-            EquipType.shoulder: {"name": shoulder_name, "max": shoulder_max},
-            EquipType.back: {"name": back_name, "max": back_max},
-            EquipType.torso: {"name": torso_name, "max": torso_max},
-            EquipType.waist: {"name": waist_name, "max": waist_max},
-            EquipType.tail: {"name": tail_name, "max": tail_max},
-            EquipType.wrist: {"name": wrist_name, "max": wrist_max},
-            EquipType.hand: {"name": hand_name, "max": hand_max},
-            EquipType.finger: {"name": finger_name, "max": finger_max},
-            EquipType.leg: {"name": leg_name, "max": leg_max},
-            EquipType.foot: {"name": foot_name, "max": foot_max},
-            EquipType.implant: {"name": implant_name, "max": implant_max},
-            EquipType.shield: {"name": shield_name, "max": shield_max},
-            EquipType.melee: {"name": melee_name, "max": melee_max},
-            EquipType.ranged: {"name": ranged_name, "max": ranged_max},
+            game.types.EquipType.head: {"name": head_name, "max": head_max},
+            game.types.EquipType.face: {"name": face_name, "max": face_max},
+            game.types.EquipType.neck: {"name": neck_name, "max": neck_max},
+            game.types.EquipType.shoulder: {"name": shoulder_name, "max": shoulder_max},
+            game.types.EquipType.back: {"name": back_name, "max": back_max},
+            game.types.EquipType.torso: {"name": torso_name, "max": torso_max},
+            game.types.EquipType.waist: {"name": waist_name, "max": waist_max},
+            game.types.EquipType.tail: {"name": tail_name, "max": tail_max},
+            game.types.EquipType.wrist: {"name": wrist_name, "max": wrist_max},
+            game.types.EquipType.hand: {"name": hand_name, "max": hand_max},
+            game.types.EquipType.finger: {"name": finger_name, "max": finger_max},
+            game.types.EquipType.leg: {"name": leg_name, "max": leg_max},
+            game.types.EquipType.foot: {"name": foot_name, "max": foot_max},
+            game.types.EquipType.implant: {"name": implant_name, "max": implant_max},
+            game.types.EquipType.shield: {"name": shield_name, "max": shield_max},
+            game.types.EquipType.melee: {"name": melee_name, "max": melee_max},
+            game.types.EquipType.ranged: {"name": ranged_name, "max": ranged_max},
         }
