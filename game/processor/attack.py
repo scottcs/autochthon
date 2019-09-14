@@ -16,7 +16,7 @@ import gamedata.base_engine_values
 import gamedata.messages.combat
 
 
-class AttackTargetingProcessor(esper.Processor):
+class AttackTargeting(esper.Processor):
     """Attack targeting processor."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -61,7 +61,7 @@ class AttackTargetingProcessor(esper.Processor):
         return False
 
 
-class AttackMissProcessor(esper.Processor):
+class AttackMiss(esper.Processor):
     """Process whether attack missed."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -93,7 +93,7 @@ class AttackMissProcessor(esper.Processor):
                     self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)
 
 
-class AttackDefenseProcessor(esper.Processor):
+class AttackDefense(esper.Processor):
     """Process whether attack was defended."""
 
     def __init__(
@@ -163,7 +163,7 @@ class AttackDefenseProcessor(esper.Processor):
                         self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)
 
 
-class AttackHitProcessor(esper.Processor):
+class AttackHit(esper.Processor):
     """Attack happened, nothing stopped it, so generate AttackHit."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

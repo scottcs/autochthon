@@ -86,19 +86,19 @@ class Game:
         loader = game.utils.dataloader.DataLoader()
         loader.load_all_json()
 
-        dodge_processor = game.processor.attack.AttackDefenseProcessor(
+        dodge_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("dodges", "dodged"),
             game.component.attack.AttackDodgeModifier,
             game.component.attack.ImmuneToDodge,
             gamedata.base_engine_values.DODGE_CHANCE,
         )
-        block_processor = game.processor.attack.AttackDefenseProcessor(
+        block_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("blocks", "blocked"),
             game.component.attack.AttackBlockModifier,
             game.component.attack.ImmuneToBlock,
             gamedata.base_engine_values.BLOCK_CHANCE,
         )
-        deflect_processor = game.processor.attack.AttackDefenseProcessor(
+        deflect_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("deflects", "deflected"),
             game.component.attack.AttackDeflectModifier,
             game.component.attack.ImmuneToDeflect,
@@ -106,50 +106,49 @@ class Game:
         )
 
         self.world.add_processor(
-            game.processor.player_input.PlayerInputProcessor(),
+            game.processor.player_input.PlayerInput(),
             priority=game.types.Priority.player_input,
             group=game.types.ProcessGroup.player,
         )
         self.world.add_processor(
-            game.processor.player_bump.PlayerBumpProcessor(),
+            game.processor.player_bump.PlayerBump(),
             priority=game.types.Priority.player_bump,
             group=game.types.ProcessGroup.player,
         )
         self.world.add_processor(
-            game.processor.time.TurnProcessor(),
+            game.processor.time.Turn(),
             priority=game.types.Priority.turn,
             group=game.types.ProcessGroup.time,
         )
         self.world.add_processor(
-            game.processor.container.ContainerProcessor(), priority=game.types.Priority.container
+            game.processor.container.Container(), priority=game.types.Priority.container
         )
-        self.world.add_processor(game.processor.ai.AIProcessor(), priority=game.types.Priority.ai)
+        self.world.add_processor(game.processor.ai.AI(), priority=game.types.Priority.ai)
         self.world.add_processor(
-            game.processor.movement.MovementProcessor(), priority=game.types.Priority.movement
-        )
-        self.world.add_processor(
-            game.processor.attack.AttackTargetingProcessor(),
-            priority=game.types.Priority.targeting,
+            game.processor.movement.Movement(), priority=game.types.Priority.movement
         )
         self.world.add_processor(
-            game.processor.attack.AttackMissProcessor(), priority=game.types.Priority.attack_miss
+            game.processor.attack.AttackTargeting(), priority=game.types.Priority.targeting
+        )
+        self.world.add_processor(
+            game.processor.attack.AttackMiss(), priority=game.types.Priority.attack_miss
         )
         self.world.add_processor(dodge_processor, priority=game.types.Priority.attack_dodge)
         self.world.add_processor(block_processor, priority=game.types.Priority.attack_block)
         self.world.add_processor(deflect_processor, priority=game.types.Priority.attack_deflect)
         self.world.add_processor(
-            game.processor.attack.AttackHitProcessor(), priority=game.types.Priority.attack_hit
+            game.processor.attack.AttackHit(), priority=game.types.Priority.attack_hit
         )
         self.world.add_processor(
-            game.processor.damage.DamageBludgeoningMitigationProcessor(),
+            game.processor.damage.DamageBludgeoningMitigation(),
             priority=game.types.Priority.defense,
         )
         self.world.add_processor(
-            game.processor.damage.DamageBludgeoningProcessor(),
+            game.processor.damage.DamageBludgeoning(),
             priority=game.types.Priority.damage_resolution,
         )
         self.world.add_processor(
-            game.processor.attribute.HPProcessor(), priority=game.types.Priority.attributes
+            game.processor.attribute.HP(), priority=game.types.Priority.attributes
         )
         self.world.add_processor(
             game.processor.psychopomps.Psychopomps(),
@@ -162,7 +161,7 @@ class Game:
             group=game.types.ProcessGroup.render,
         )
         self.world.add_processor(
-            game.processor.gamelog.GameLogProcessor(),
+            game.processor.gamelog.GameLog(),
             priority=game.types.Priority.gamelog,
             group=game.types.ProcessGroup.gamelog,
         )

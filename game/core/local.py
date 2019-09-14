@@ -8,7 +8,7 @@ import gamedata.config
 def run_local() -> None:
     """Run the game locally."""
     local_game = game.core.main.Game(
-        game.processor.render.TCODRenderProcessor(
+        game.processor.render.TCODRender(
             gamedata.config.CONFIG["title"],
             width=gamedata.config.CONFIG["local"]["width"],
             height=gamedata.config.CONFIG["local"]["height"],

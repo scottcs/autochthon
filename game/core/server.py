@@ -35,7 +35,7 @@ class GameCallback(tornado.ioloop.PeriodicCallback):
     def __init__(self, config: typing.Optional[dict] = None) -> None:
         if GameCallback.game_object is None:
             GameCallback.game_object = game.core.main.Game(
-                game.processor.render.WebRenderProcessor(), config=config
+                game.processor.render.WebRender(), config=config
             )
         super().__init__(self.process_events, 1)
 

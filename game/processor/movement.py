@@ -14,7 +14,7 @@ import game.events
 import gamedata.palette
 
 
-class MovementProcessor(esper.Processor):
+class Movement(esper.Processor):
     """Movement processor."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

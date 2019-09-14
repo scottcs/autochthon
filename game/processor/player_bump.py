@@ -10,7 +10,7 @@ import game.component.player
 import game.types
 
 
-class PlayerBumpProcessor(esper.Processor):
+class PlayerBump(esper.Processor):
     """Player bump processor.
 
     Determine what player action was meant.

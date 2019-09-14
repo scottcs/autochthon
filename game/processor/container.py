@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class ContainerProcessor(esper.Processor):
+class Container(esper.Processor):
     """Process containers."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

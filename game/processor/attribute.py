@@ -13,7 +13,7 @@ import game.utils.language
 import gamedata.messages.status
 
 
-class HPProcessor(esper.Processor):
+class HP(esper.Processor):
     """HP Processor."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

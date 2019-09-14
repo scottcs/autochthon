@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class PlayerInputProcessor(esper.Processor):
+class PlayerInput(esper.Processor):
     """Process user input and issue events."""
 
     def __init__(self) -> None:

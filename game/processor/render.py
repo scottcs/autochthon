@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class WebRenderProcessor(esper.Processor):
+class WebRender(esper.Processor):
     """Game render processor for web socket."""
 
     def __init__(self) -> None:
@@ -303,7 +303,7 @@ class WebRenderProcessor(esper.Processor):
         return data_append_length
 
 
-class TCODRenderProcessor(esper.Processor):
+class TCODRender(esper.Processor):
     """Game render processor for local TCOD console."""
 
     def __init__(self, _title: str, width: int = 80, height: int = 40) -> None:

@@ -8,7 +8,7 @@ import game.types
 import game.utils.random
 
 
-class TurnProcessor(esper.Processor):
+class Turn(esper.Processor):
     """Turn processor."""
 
     queue: typing.List[game.types.Entity] = []

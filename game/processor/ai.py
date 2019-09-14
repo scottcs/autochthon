@@ -10,7 +10,7 @@ import game.types
 import game.utils.random
 
 
-class AIProcessor(esper.Processor):
+class AI(esper.Processor):
     """Artificial Intelligence processor."""
 
     def __init__(self) -> None:

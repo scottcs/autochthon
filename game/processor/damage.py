@@ -12,7 +12,7 @@ import game.utils.language
 import gamedata.messages.combat
 
 
-class DamageBludgeoningMitigationProcessor(esper.Processor):
+class DamageBludgeoningMitigation(esper.Processor):
     """Processor for mitigating Bludgeoning damage."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -91,7 +91,7 @@ class DamageBludgeoningMitigationProcessor(esper.Processor):
                     )
 
 
-class DamageBludgeoningProcessor(esper.Processor):
+class DamageBludgeoning(esper.Processor):
     """Processor for applying Bludgeoning damage."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

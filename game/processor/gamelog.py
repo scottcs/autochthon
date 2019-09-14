@@ -7,7 +7,7 @@ import game.component.gamelog
 import game.events
 
 
-class GameLogProcessor(esper.Processor):
+class GameLog(esper.Processor):
     """Process the game log."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
