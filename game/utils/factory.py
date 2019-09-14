@@ -140,7 +140,7 @@ class BaseEntityFactory:
         return new_data
 
 
-class PlayerFactory(BaseEntityFactory):
+class Player(BaseEntityFactory):
     """Factory for creating Player entities."""
 
     def __init__(
@@ -167,7 +167,7 @@ class PlayerFactory(BaseEntityFactory):
         return ent
 
 
-class EnemyFactory(BaseEntityFactory):
+class Enemy(BaseEntityFactory):
     """Factory for creating Enemy entities."""
 
     def __init__(
@@ -193,7 +193,7 @@ class EnemyFactory(BaseEntityFactory):
         return ent
 
 
-class ItemFactory(BaseEntityFactory):
+class Item(BaseEntityFactory):
     """Factory for creating Item entities."""
 
     def __init__(

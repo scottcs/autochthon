@@ -173,9 +173,9 @@ class Game:
         current_map.create()
         self.world.map = current_map
 
-        player_factory = game.utils.factory.PlayerFactory(loader, self.world)
-        enemy_factory = game.utils.factory.EnemyFactory(loader, self.world)
-        item_factory = game.utils.factory.ItemFactory(loader, self.world)
+        player_factory = game.utils.factory.Player(loader, self.world)
+        enemy_factory = game.utils.factory.Enemy(loader, self.world)
+        item_factory = game.utils.factory.Item(loader, self.world)
         player = player_factory.make(["Orc"])
         self.world.add_component(player, game.component.action.GUTMyTurn())
         for _ in range(200):
