@@ -151,8 +151,8 @@ class ContainerProcessor(esper.Processor):
         container: game.component.container.Container,
         containable: game.component.container.Containable,
     ) -> bool:
-        return container.equip_type != game.types.EquipType.none and (
-            container.equip_type == game.types.EquipType.any
+        return container.equip_type != game.types.Equip.none and (
+            container.equip_type == game.types.Equip.any
             or container.equip_type == containable.equip_type
-            or containable.equip_type == game.types.EquipType.any
+            or containable.equip_type == game.types.Equip.any
         )

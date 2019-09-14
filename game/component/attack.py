@@ -12,7 +12,7 @@ class GUTCurrentTarget:
 
     x: int
     y: int
-    attack: game.types.AttackType
+    attack: game.types.Attack
     entity: typing.Optional[game.types.Entity] = None
 
 

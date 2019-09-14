@@ -71,14 +71,14 @@ class GameState(enum.Enum):
     shutdown = enum.auto()
 
 
-class AttackType(enum.Enum):
+class Attack(enum.Enum):
     """Attack types."""
 
     melee = enum.auto()
     projectile = enum.auto()
 
 
-class EquipType(enum.Enum):
+class Equip(enum.Enum):
     """Equipment types -- where an item was intended to be worn/held."""
 
     none = enum.auto()

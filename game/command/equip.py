@@ -23,7 +23,7 @@ class EquipCommand(game.command.base.BaseCommand):
                     {
                         "header": "Equip/Unequip what?",
                         "items": items_carried,
-                        "disable": [game.types.EquipType.none.name],
+                        "disable": [game.types.Equip.none.name],
                     }
                 )
             else:
@@ -45,7 +45,7 @@ class EquipCommand(game.command.base.BaseCommand):
             ):
                 contained, name, containable = components
                 if contained.by_ent == ent and contained.label == input_key.key:
-                    if containable.equip_type != game.types.EquipType.none and equipment:
+                    if containable.equip_type != game.types.Equip.none and equipment:
                         want_to_equip = (containable, name)
                         break
             if want_to_equip:

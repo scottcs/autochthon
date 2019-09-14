@@ -13,14 +13,14 @@ class Container:
 
     name: str
     max_slots: int = 0
-    equip_type: game.types.EquipType = game.types.EquipType.any
+    equip_type: game.types.Equip = game.types.Equip.any
 
 
 @dataclasses.dataclass
 class Containable:
     """This entity can be contained by a Container entity."""
 
-    equip_type: game.types.EquipType = game.types.EquipType.none
+    equip_type: game.types.Equip = game.types.Equip.none
     stackable: bool = False
     count: int = dataclasses.field(init=False)
     equipped: bool = dataclasses.field(init=False)
@@ -106,21 +106,21 @@ class Equipment:
         ranged_max: int = 1,
     ) -> None:
         self.slots = {
-            game.types.EquipType.head: {"name": head_name, "max": head_max},
-            game.types.EquipType.face: {"name": face_name, "max": face_max},
-            game.types.EquipType.neck: {"name": neck_name, "max": neck_max},
-            game.types.EquipType.shoulder: {"name": shoulder_name, "max": shoulder_max},
-            game.types.EquipType.back: {"name": back_name, "max": back_max},
-            game.types.EquipType.torso: {"name": torso_name, "max": torso_max},
-            game.types.EquipType.waist: {"name": waist_name, "max": waist_max},
-            game.types.EquipType.tail: {"name": tail_name, "max": tail_max},
-            game.types.EquipType.wrist: {"name": wrist_name, "max": wrist_max},
-            game.types.EquipType.hand: {"name": hand_name, "max": hand_max},
-            game.types.EquipType.finger: {"name": finger_name, "max": finger_max},
-            game.types.EquipType.leg: {"name": leg_name, "max": leg_max},
-            game.types.EquipType.foot: {"name": foot_name, "max": foot_max},
-            game.types.EquipType.implant: {"name": implant_name, "max": implant_max},
-            game.types.EquipType.shield: {"name": shield_name, "max": shield_max},
-            game.types.EquipType.melee: {"name": melee_name, "max": melee_max},
-            game.types.EquipType.ranged: {"name": ranged_name, "max": ranged_max},
+            game.types.Equip.head: {"name": head_name, "max": head_max},
+            game.types.Equip.face: {"name": face_name, "max": face_max},
+            game.types.Equip.neck: {"name": neck_name, "max": neck_max},
+            game.types.Equip.shoulder: {"name": shoulder_name, "max": shoulder_max},
+            game.types.Equip.back: {"name": back_name, "max": back_max},
+            game.types.Equip.torso: {"name": torso_name, "max": torso_max},
+            game.types.Equip.waist: {"name": waist_name, "max": waist_max},
+            game.types.Equip.tail: {"name": tail_name, "max": tail_max},
+            game.types.Equip.wrist: {"name": wrist_name, "max": wrist_max},
+            game.types.Equip.hand: {"name": hand_name, "max": hand_max},
+            game.types.Equip.finger: {"name": finger_name, "max": finger_max},
+            game.types.Equip.leg: {"name": leg_name, "max": leg_max},
+            game.types.Equip.foot: {"name": foot_name, "max": foot_max},
+            game.types.Equip.implant: {"name": implant_name, "max": implant_max},
+            game.types.Equip.shield: {"name": shield_name, "max": shield_max},
+            game.types.Equip.melee: {"name": melee_name, "max": melee_max},
+            game.types.Equip.ranged: {"name": ranged_name, "max": ranged_max},
         }

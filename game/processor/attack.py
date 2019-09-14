@@ -54,7 +54,7 @@ class AttackTargetingProcessor(esper.Processor):
         self, _ent: game.types.Entity, target: game.component.attack.GUTCurrentTarget
     ) -> bool:
         """Determine if target is still valid."""
-        if target.attack == game.types.AttackType.melee:
+        if target.attack == game.types.Attack.melee:
             for existing in self.world.entities_at_position(target.x, target.y):
                 if existing == target.entity:
                     return True
@@ -68,7 +68,7 @@ class AttackMissProcessor(esper.Processor):
         """Process whether attack missed."""
         rng = game.utils.random.RNGCache.get("AttackProcessor")
         for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
-            if target.attack == game.types.AttackType.melee:
+            if target.attack == game.types.Attack.melee:
                 mods = []
                 for mod in self.world.try_component(ent, game.component.attack.AttackHitModifier):
                     mods.append(mod)
@@ -133,7 +133,7 @@ class AttackDefenseProcessor(esper.Processor):
                     )
                 )
                 continue
-            if target.attack == game.types.AttackType.melee:
+            if target.attack == game.types.Attack.melee:
                 mods = []
                 for mod in self.world.try_component(target.entity, self.modifier_component_class):
                     mods.append(mod)
@@ -169,7 +169,7 @@ class AttackHitProcessor(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process AttackHappening."""
         for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
-            if target.attack == game.types.AttackType.melee:
+            if target.attack == game.types.Attack.melee:
                 self.generate_melee_damage(ent, target)
             # TODO: generate effects here too (knockback, electric arc, etc)
             self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)

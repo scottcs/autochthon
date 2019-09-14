@@ -53,7 +53,7 @@ class PlayerBumpProcessor(esper.Processor):
         )
         if other_hp and other_pos:
             target = game.component.attack.GUTCurrentTarget(
-                other_pos.x, other_pos.y, game.types.AttackType.melee, other
+                other_pos.x, other_pos.y, game.types.Attack.melee, other
             )
             self.world.add_component(ent, target)
 
