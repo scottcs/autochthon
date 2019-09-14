@@ -1,33 +1,33 @@
 """Custom QLineEdit widget."""
-from typing import Any, Optional
+import typing
 
-from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QIntValidator
-from PySide2.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QSpacerItem, QWidget
+import PySide2.QtCore
+import PySide2.QtGui
+import PySide2.QtWidgets
 
 
-class ToolLineEdit(QWidget):
+class ToolLineEdit(PySide2.QtWidgets.QWidget):
     """Custom Line Edit."""
 
-    editing_finished = Signal()
+    editing_finished = PySide2.QtCore.Signal()
 
     def __init__(
         self,
         label: str,
-        parent: Optional[QWidget] = None,
-        default_text: Optional[str] = None,
-        edit_width: Optional[int] = None,
-        min_label_width: Optional[int] = None,
+        parent: typing.Optional[PySide2.QtWidgets.QWidget] = None,
+        default_text: typing.Optional[str] = None,
+        edit_width: typing.Optional[int] = None,
+        min_label_width: typing.Optional[int] = None,
         required: bool = False,
     ) -> None:
         super().__init__(parent)
         self.name = label
-        self._label = QLabel(self.name)
+        self._label = PySide2.QtWidgets.QLabel(self.name)
         if min_label_width is not None:
             self._label.setMinimumWidth(min_label_width)
 
-        self._edit = QLineEdit()
-        self._edit.setAttribute(Qt.WA_MacShowFocusRect, False)  # macOS only
+        self._edit = PySide2.QtWidgets.QLineEdit()
+        self._edit.setAttribute(PySide2.QtCore.Qt.WA_MacShowFocusRect, False)  # macOS only
         if default_text:
             self._edit.setText(default_text)
         if edit_width:
@@ -36,13 +36,13 @@ class ToolLineEdit(QWidget):
             self._label.setProperty("status", "required")
             self._edit.setProperty("status", "required")
 
-        layout = QHBoxLayout()
+        layout = PySide2.QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
         layout.addWidget(self._label)
-        layout.addSpacerItem(QSpacerItem(4, 1))
-        layout.addWidget(self._edit, Qt.AlignLeft)
+        layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(4, 1))
+        layout.addWidget(self._edit, PySide2.QtCore.Qt.AlignLeft)
 
         self.setLayout(layout)
 
@@ -61,12 +61,12 @@ class ToolLineEdit(QWidget):
         self._edit.clearFocus()
 
     def set_int_validator(
-        self, min_val: Optional[int] = None, max_val: Optional[int] = None
+        self, min_val: typing.Optional[int] = None, max_val: typing.Optional[int] = None
     ) -> None:
         """Set an int validator on this edit widget."""
-        self._edit.setValidator(QIntValidator(min_val, max_val, self))
+        self._edit.setValidator(PySide2.QtGui.QIntValidator(min_val, max_val, self))
 
-    def set_custom_validator(self, validator: Any) -> None:
+    def set_custom_validator(self, validator: typing.Any) -> None:
         """Set a custom validator."""
         self._edit.setValidator(validator)
 

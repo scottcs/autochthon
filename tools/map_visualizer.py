@@ -6,54 +6,39 @@ TODO: render path analysis and loops analysis
 
 """
 import json
+import pathlib
 import pydoc
 import sys
-from pathlib import Path
-from typing import Any, Mapping, MutableMapping, Optional, Tuple
+import typing
 
-from PySide2.QtCore import Qt, Signal
-from PySide2.QtGui import QImage, QPainter, QPixmap, qRgb
-from PySide2.QtWidgets import (
-    QFileDialog,
-    QHBoxLayout,
-    QLabel,
-    QScrollArea,
-    QSpacerItem,
-    QVBoxLayout,
-    QWidget,
-)
+import PySide2.QtCore
+import PySide2.QtGui
+import PySide2.QtWidgets
 
-from game.core.map import ClassicMap, Map
-from game.utils.random import RNGCache
-from tools.widgets import (
-    ToolApp,
-    ToolCheckBox,
-    ToolComboBox,
-    ToolLineEdit,
-    ToolPushButton,
-    msg_error,
-)
+import game.core.map
+import game.utils.random
+import tools.widgets
 
-CONFIG_FILE = Path("data") / Path("config.json")
+CONFIG_FILE = pathlib.Path("data") / pathlib.Path("config.json")
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 MAP_LAYERS = {
-    "base": qRgb(65, 43, 21),
-    "transparent": qRgb(165, 100, 165),
-    "walkable": qRgb(100, 100, 100),
-    "spawnable_enemy": qRgb(165, 165, 165),
-    "spawnable_item": qRgb(100, 165, 100),
-    "spawnable_player": qRgb(165, 255, 255),
-    "alt_tile_1": qRgb(165, 100, 100),
-    "alt_tile_2": qRgb(195, 100, 100),
-    "alt_tile_3": qRgb(225, 100, 100),
+    "base": PySide2.QtGui.qRgb(65, 43, 21),
+    "transparent": PySide2.QtGui.qRgb(165, 100, 165),
+    "walkable": PySide2.QtGui.qRgb(100, 100, 100),
+    "spawnable_enemy": PySide2.QtGui.qRgb(165, 165, 165),
+    "spawnable_item": PySide2.QtGui.qRgb(100, 165, 100),
+    "spawnable_player": PySide2.QtGui.qRgb(165, 255, 255),
+    "alt_tile_1": PySide2.QtGui.qRgb(165, 100, 100),
+    "alt_tile_2": PySide2.QtGui.qRgb(195, 100, 100),
+    "alt_tile_3": PySide2.QtGui.qRgb(225, 100, 100),
 }
 
 # Rather than using `globals()`, add map algorithms to a table
 # TODO: Maybe we can define this in the map module and use it there too? Or in data files?
 ALGORITHMS = {
     "ClassicMap": {
-        "class": ClassicMap,
+        "class": game.core.map.ClassicMap,
         "opts": {
             "max_rooms": {"type": "int", "min": 0, "max": 1000, "default": 50},
             "room_min_size": {"type": "int", "min": 0, "max": 1000, "default": 5},
@@ -63,23 +48,23 @@ ALGORITHMS = {
 }
 
 
-class MapSizeWidget(QWidget):
+class MapSizeWidget(PySide2.QtWidgets.QWidget):
     """Map size."""
 
-    size_changed = Signal()
-    scale_changed = Signal()
+    size_changed = PySide2.QtCore.Signal()
+    scale_changed = PySide2.QtCore.Signal()
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        layout = QHBoxLayout()
+        layout = PySide2.QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.map_width = ToolLineEdit("Map Size:", default_text="100", edit_width=32)
+        self.map_width = tools.widgets.ToolLineEdit("Map Size:", default_text="100", edit_width=32)
         self.map_width.set_int_validator(10, 234)
-        self.map_height = ToolLineEdit("x", default_text="100", edit_width=32)
+        self.map_height = tools.widgets.ToolLineEdit("x", default_text="100", edit_width=32)
         self.map_height.set_int_validator(10, 234)
-        self.map_scale = ToolLineEdit("Scale:", default_text="6", edit_width=24)
+        self.map_scale = tools.widgets.ToolLineEdit("Scale:", default_text="6", edit_width=24)
         self.map_scale.set_int_validator(1, 20)
 
         layout.addWidget(self.map_width)
@@ -93,7 +78,7 @@ class MapSizeWidget(QWidget):
         self.map_height.editing_finished.connect(self._on_size_changed)
         self.map_scale.editing_finished.connect(self._on_scale_changed)
 
-    def get_size(self) -> Tuple[int, int]:
+    def get_size(self) -> typing.Tuple[int, int]:
         """Get the requested size of the map."""
         w = max(1, int(self.map_width.text()))
         h = max(1, int(self.map_height.text()))
@@ -110,31 +95,33 @@ class MapSizeWidget(QWidget):
         self.scale_changed.emit()
 
 
-class AlgorithmParametersWidget(QWidget):
+class AlgorithmParametersWidget(PySide2.QtWidgets.QWidget):
     """Map algorithm parameters."""
 
-    params_changed = Signal()
+    params_changed = PySide2.QtCore.Signal()
 
-    def __init__(self, algorithm: str, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self, algorithm: str, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None
+    ) -> None:
         super().__init__(parent)
         self.algorithm = algorithm
         self.line_edits = {}
 
-        layout = QVBoxLayout()
+        layout = PySide2.QtWidgets.QVBoxLayout()
         layout.setSpacing(4)
         layout.setMargin(0)
 
         row = 0
         for opt, data in ALGORITHMS[algorithm]["opts"].items():
             if data["type"] == "int":
-                self.line_edits[opt] = ToolLineEdit(
+                self.line_edits[opt] = tools.widgets.ToolLineEdit(
                     opt.capitalize() + ":", default_text=str(data["default"]), edit_width=50
                 )
                 self.line_edits[opt].set_int_validator(data["min"], data["max"])
                 self.line_edits[opt].editing_finished.connect(self._on_params_changed)
                 layout.addWidget(self.line_edits[opt])
             else:
-                msg_error(f'Option type {data["type"]} is not implemented!', self)
+                tools.widgets.msg_error(f'Option type {data["type"]} is not implemented!', self)
                 break
             row += 1
         layout.addStretch()
@@ -152,24 +139,24 @@ class AlgorithmParametersWidget(QWidget):
         self.params_changed.emit()
 
 
-class AlgorithmWidget(QWidget):
+class AlgorithmWidget(PySide2.QtWidgets.QWidget):
     """Map algorithm."""
 
-    algorithm_changed = Signal()
+    algorithm_changed = PySide2.QtCore.Signal()
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        self.layout = QVBoxLayout()
+        self.layout = PySide2.QtWidgets.QVBoxLayout()
         self.layout.setSpacing(0)
         self.layout.setMargin(0)
 
-        self.choice = ToolComboBox("Algorithm:")
+        self.choice = tools.widgets.ToolComboBox("Algorithm:")
         self.choice.add_items(list(ALGORITHMS.keys()))
 
         self.layout.addWidget(self.choice)
 
         self.params = AlgorithmParametersWidget(self.get_algorithm())
-        self.layout.addSpacerItem(QSpacerItem(1, 10))
+        self.layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(1, 10))
         self.layout.addWidget(self.params)
 
         self.setLayout(self.layout)
@@ -195,20 +182,20 @@ class AlgorithmWidget(QWidget):
         self.algorithm_changed.emit()
 
 
-class SeedWidget(QWidget):
+class SeedWidget(PySide2.QtWidgets.QWidget):
     """Map seed."""
 
-    seed_changed = Signal()
-    seed_reset = Signal()
+    seed_changed = PySide2.QtCore.Signal()
+    seed_reset = PySide2.QtCore.Signal()
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        layout = QVBoxLayout()
+        layout = PySide2.QtWidgets.QVBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
-        self.value = ToolLineEdit("Seed:", default_text="1")
-        self.reset_button = ToolPushButton("Reset")
+        self.value = tools.widgets.ToolLineEdit("Seed:", default_text="1")
+        self.reset_button = tools.widgets.ToolPushButton("Reset")
 
         layout.addWidget(self.value)
         layout.addWidget(self.reset_button)
@@ -229,16 +216,16 @@ class SeedWidget(QWidget):
         self.seed_reset.emit()
 
 
-class OptionsWidget(QWidget):
+class OptionsWidget(PySide2.QtWidgets.QWidget):
     """Map Visualizer options."""
 
-    options_changed = Signal(dict)
-    scale_changed = Signal(int)
-    seed_reset = Signal()
+    options_changed = PySide2.QtCore.Signal(dict)
+    scale_changed = PySide2.QtCore.Signal(int)
+    seed_reset = PySide2.QtCore.Signal()
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        layout = QVBoxLayout()
+        layout = PySide2.QtWidgets.QVBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(4)
         self.setMaximumWidth(250)
@@ -283,25 +270,25 @@ class OptionsWidget(QWidget):
         }
 
 
-class ButtonsWidget(QWidget):
+class ButtonsWidget(PySide2.QtWidgets.QWidget):
     """Map Visualizer bottom buttons."""
 
-    generate_map = Signal()
-    save_image = Signal()
+    generate_map = PySide2.QtCore.Signal()
+    save_image = PySide2.QtCore.Signal()
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        layout = QHBoxLayout()
+        layout = PySide2.QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
-        layout.setAlignment(Qt.AlignRight)
+        layout.setAlignment(PySide2.QtCore.Qt.AlignRight)
 
-        self.generate_button = ToolPushButton("Generate", allow_focus=True)
+        self.generate_button = tools.widgets.ToolPushButton("Generate", allow_focus=True)
         self.generate_button.setObjectName("largeButton")
-        self.save_image_button = ToolPushButton("Save Image")
+        self.save_image_button = tools.widgets.ToolPushButton("Save Image")
 
         layout.addStretch()
-        layout.addSpacerItem(QSpacerItem(80, 1))
+        layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(80, 1))
         layout.addWidget(self.generate_button)
         layout.addStretch()
         layout.addWidget(self.save_image_button)
@@ -317,25 +304,25 @@ class ButtonsWidget(QWidget):
         self.save_image.emit()
 
 
-class LayersWidget(QWidget):
+class LayersWidget(PySide2.QtWidgets.QWidget):
     """Map Visualizer layers widget."""
 
-    layer_state_changed = Signal(str, bool)
+    layer_state_changed = PySide2.QtCore.Signal(str, bool)
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        layout = QVBoxLayout()
+        layout = PySide2.QtWidgets.QVBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
         self.setFixedWidth(200)
 
-        layout.addWidget(QLabel("Layers:"))
-        layout.addSpacerItem(QSpacerItem(1, 10))
+        layout.addWidget(PySide2.QtWidgets.QLabel("Layers:"))
+        layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(1, 10))
         self.layers = []
         for layer in reversed(list(MAP_LAYERS.keys())):
             if layer == "base":
                 continue
-            item = ToolCheckBox(layer, checked=not layer.startswith("alt_"))
+            item = tools.widgets.ToolCheckBox(layer, checked=not layer.startswith("alt_"))
             self.layers.append(item)
             layout.addWidget(item)
             item.state_changed.connect(self._on_layer_state_changed)
@@ -347,27 +334,31 @@ class LayersWidget(QWidget):
         self.layer_state_changed.emit(name, checked)
 
 
-class ImageWidget(QWidget):
+class ImageWidget(PySide2.QtWidgets.QWidget):
     """Widget to display the map image."""
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         self.img = None
         self.pixmap = None
         self.layers = {n: not n.startswith("alt_") for n in MAP_LAYERS.keys()}
         self.show()
 
-    def draw_map(self, game_map: Map, scale_factor: int) -> None:
+    def draw_map(self, game_map: game.core.map.Map, scale_factor: int) -> None:
         """Draw the map to an image."""
-        img = QImage(game_map.width, game_map.height, QImage.Format_RGB32)
+        img = PySide2.QtGui.QImage(
+            game_map.width, game_map.height, PySide2.QtGui.QImage.Format_RGB32
+        )
 
         for y, x in game_map:
             color = self._get_cell_color(game_map, x, y)
             img.setPixel(x, y, color)
         self.img = img.scaled(
-            game_map.width * scale_factor, game_map.height * scale_factor, Qt.KeepAspectRatio
+            game_map.width * scale_factor,
+            game_map.height * scale_factor,
+            PySide2.QtCore.Qt.KeepAspectRatio,
         )
-        self.pixmap = QPixmap.fromImage(self.img)
+        self.pixmap = PySide2.QtGui.QPixmap.fromImage(self.img)
         self.setMinimumSize(self.pixmap.width(), self.pixmap.height())
         self.setMaximumSize(self.pixmap.width(), self.pixmap.height())
 
@@ -381,12 +372,12 @@ class ImageWidget(QWidget):
         if self.img:
             self.img.save(filename)
         else:
-            msg_error("No image to save!", self)
+            tools.widgets.msg_error("No image to save!", self)
 
-    def paintEvent(self, *args: Any, **kwargs: Any) -> None:
+    def paintEvent(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Override paint method; draw this widget."""
         if self.pixmap:
-            painter = QPainter(self)
+            painter = PySide2.QtGui.QPainter(self)
             painter.setViewport(0, 0, self.width(), self.height())
             painter.setWindow(0, 0, self.width(), self.height())
             painter.drawPixmap(0, 0, self.pixmap)
@@ -396,7 +387,7 @@ class ImageWidget(QWidget):
         """Set a particular layer to enabled or disabled."""
         self.layers[name] = enabled
 
-    def _get_cell_color(self, game_map: Map, x: int, y: int) -> qRgb:
+    def _get_cell_color(self, game_map: game.core.map.Map, x: int, y: int) -> PySide2.QtGui.qRgb:
         color = MAP_LAYERS["base"]
         # color gets replaced by each layer in order until the highest wins
         for layer_name, layer_color in MAP_LAYERS.items():
@@ -406,23 +397,23 @@ class ImageWidget(QWidget):
         return color
 
 
-class CentralWidget(QWidget):
+class CentralWidget(PySide2.QtWidgets.QWidget):
     """Map Visualizer central widget."""
 
-    options_changed = Signal(dict)
-    scale_changed = Signal(int)
-    seed_reset = Signal()
+    options_changed = PySide2.QtCore.Signal(dict)
+    scale_changed = PySide2.QtCore.Signal(int)
+    seed_reset = PySide2.QtCore.Signal()
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         self.game_map = None
         self.scale_factor = 1
-        layout = QHBoxLayout()
+        layout = PySide2.QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
         self.layers = LayersWidget()
-        self.scroll_area = QScrollArea()
+        self.scroll_area = PySide2.QtWidgets.QScrollArea()
         self.image_widget = ImageWidget()
         self.scroll_area.setWidget(self.image_widget)
         self.options = OptionsWidget()
@@ -438,7 +429,7 @@ class CentralWidget(QWidget):
         self.options.scale_changed.connect(self._on_scale_changed)
         self.options.seed_reset.connect(self._on_seed_reset)
 
-    def set_map(self, game_map: Map, scale_factor: int) -> None:
+    def set_map(self, game_map: game.core.map.Map, scale_factor: int) -> None:
         """Set our map."""
         self.game_map = game_map
         self.scale_factor = scale_factor
@@ -459,7 +450,7 @@ class CentralWidget(QWidget):
             self.image_widget.draw_map(self.game_map, self.scale_factor)
             self.image_widget.repaint()
 
-    def _on_options_changed(self, options: Mapping) -> None:
+    def _on_options_changed(self, options: typing.Mapping) -> None:
         self.options_changed.emit(options)
 
     def _on_scale_changed(self, scale: int) -> None:
@@ -469,19 +460,23 @@ class CentralWidget(QWidget):
         self.seed_reset.emit()
 
 
-class MapVisualizer(QWidget):
+class MapVisualizer(PySide2.QtWidgets.QWidget):
     """Map Visualizer parent widget."""
 
-    def __init__(self, map_config: Mapping, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self,
+        map_config: typing.MutableMapping,
+        parent: typing.Optional[PySide2.QtWidgets.QWidget] = None,
+    ) -> None:
         super().__init__(parent)
-        self.map_config: MutableMapping = map_config
+        self.map_config: typing.MutableMapping = map_config
         self.setWindowTitle("Map Visualizer")
         self.setMinimumSize(MIN_WIDTH, MIN_HEIGHT)
         self.game_map = None
 
-        RNGCache.init(self.map_config["parent_seed"])
+        game.utils.random.RNGCache.init(self.map_config["parent_seed"])
 
-        layout = QVBoxLayout()
+        layout = PySide2.QtWidgets.QVBoxLayout()
         layout.setSpacing(10)
         layout.setMargin(10)
 
@@ -505,7 +500,9 @@ class MapVisualizer(QWidget):
         try:
             map_class = ALGORITHMS[self.map_config["algorithm"]]["class"]
         except KeyError:
-            msg_error(f'No such map class: "{self.map_config.get("algorithm", "")}"', self)
+            tools.widgets.msg_error(
+                f'No such map class: "{self.map_config.get("algorithm", "")}"', self
+            )
             return
         self.game_map = map_class(
             self.map_config["max_tiles_w"],
@@ -517,12 +514,15 @@ class MapVisualizer(QWidget):
         self.central.set_map(self.game_map, self.map_config.get("gui_scale", 1))
 
     def _on_save_image(self) -> None:
-        filename = QFileDialog().getSaveFileName(
-            self, "Save Map As", str(Path("~/Downloads").expanduser()), "Image Files (*.png)"
+        filename = PySide2.QtWidgets.QFileDialog().getSaveFileName(
+            self,
+            "Save Map As",
+            str(pathlib.Path("~/Downloads").expanduser()),
+            "Image Files (*.png)",
         )[0]
         self.central.save_image(filename)
 
-    def _on_options_changed(self, opts: Mapping) -> None:
+    def _on_options_changed(self, opts: typing.Mapping) -> None:
         self.map_config["max_tiles_w"] = opts["width"]
         self.map_config["max_tiles_h"] = opts["height"]
         self.map_config["gui_scale"] = opts["scale"]
@@ -536,7 +536,7 @@ class MapVisualizer(QWidget):
             self.central.set_map(self.game_map, scale)
 
     def _on_seed_reset(self) -> None:
-        RNGCache.init(self.map_config["parent_seed"])
+        game.utils.random.RNGCache.init(self.map_config["parent_seed"])
         self._on_generate_map()
 
 
@@ -546,9 +546,9 @@ def main() -> int:
         parent_seed = sys.argv[1]
     except IndexError:
         parent_seed = "MapVisualizer"
-    app = ToolApp(sys.argv)
+    app = tools.widgets.ToolApp(sys.argv)
     with CONFIG_FILE.open() as f:
-        map_config = json.load(f)["map"]
+        map_config: typing.MutableMapping = json.load(f)["map"]
     map_config["parent_seed"] = parent_seed
     map_visualizer = MapVisualizer(map_config)
     map_visualizer.show()

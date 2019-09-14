@@ -1,12 +1,12 @@
 """Custom checkbox for tools."""
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QCheckBox
+import PySide2.QtCore
+import PySide2.QtWidgets
 
 
-class ToolCheckBox(QCheckBox):
+class ToolCheckBox(PySide2.QtWidgets.QCheckBox):
     """Custom checkbox widget."""
 
-    state_changed = Signal(str, bool)
+    state_changed = PySide2.QtCore.Signal(str, bool)
 
     def __init__(self, *args, checked=False, **kwargs) -> None:
         super().__init__(*args, **kwargs)

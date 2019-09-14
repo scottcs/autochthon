@@ -2,7 +2,7 @@
 import argparse
 import json
 import pathlib
-from typing import Dict, List
+import typing
 
 
 def parse_args() -> argparse.Namespace:
@@ -24,7 +24,7 @@ def get_key(string: str) -> str:
     return key
 
 
-def get_atlas_info(atlas_file: pathlib.Path) -> List[Dict]:
+def get_atlas_info(atlas_file: pathlib.Path) -> typing.List[typing.Dict]:
     """Parse a tile atlas."""
     tileset: str = atlas_file.with_suffix(".json").as_posix()
     atlas_data: list = []

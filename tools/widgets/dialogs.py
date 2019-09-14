@@ -1,9 +1,9 @@
 """Common dialogs."""
-from typing import Optional
+import typing
 
-from PySide2.QtWidgets import QMessageBox, QWidget
+import PySide2.QtWidgets
 
 
-def msg_error(msg: str, parent: Optional[QWidget] = None) -> None:
+def msg_error(msg: str, parent: typing.Optional[PySide2.QtWidgets.QWidget] = None) -> None:
     """Show an error message."""
-    QMessageBox().critical(parent, "Error!", msg)
+    PySide2.QtWidgets.QMessageBox().critical(parent, "Error!", msg)

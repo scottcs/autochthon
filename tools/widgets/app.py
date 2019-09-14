@@ -1,12 +1,12 @@
 """App widgets."""
-from pathlib import Path
+import pathlib
 
-from PySide2.QtWidgets import QApplication
+import PySide2.QtWidgets
 
-STYLESHEET = Path("static/css/dark_orange.qss")
+STYLESHEET = pathlib.Path("static/css/dark_orange.qss")
 
 
-class ToolApp(QApplication):
+class ToolApp(PySide2.QtWidgets.QApplication):
     """Custom QApplication."""
 
     def __init__(self, *args, **kwargs):
