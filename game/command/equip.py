@@ -9,7 +9,7 @@ import game.types
 import gamedata.palette
 
 
-class EquipCommand(game.command.base.BaseCommand):
+class Equip(game.command.base.BaseCommand):
     """Equip/Unequip command."""
 
     def run(self) -> None:

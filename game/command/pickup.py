@@ -4,7 +4,7 @@ import game.component.gamelog
 import game.component.player
 
 
-class PickupCommand(game.command.base.BaseCommand):
+class Pickup(game.command.base.BaseCommand):
     """Pickup command."""
 
     def run(self) -> None:

@@ -12,7 +12,7 @@ import game.types
 import gamedata.palette
 
 
-class InventoryCommand(game.command.base.BaseCommand):
+class Inventory(game.command.base.BaseCommand):
     """Inventory command."""
 
     def __init__(self, world: game.core.world.World) -> None:
@@ -41,10 +41,10 @@ class InventoryCommand(game.command.base.BaseCommand):
         for ent, _ in self.world.get_component(game.component.player.Player):
             if self.submenu:
                 if input_key.key == "d":
-                    game.command.drop.DropCommand(self.world).on_choice(self.selected)
+                    game.command.drop.Drop(self.world).on_choice(self.selected)
                     game.events.ChoiceAccepted.fire()
                 elif input_key.key == "e":
-                    game.command.equip.EquipCommand(self.world).on_choice(self.selected)
+                    game.command.equip.Equip(self.world).on_choice(self.selected)
                     game.events.ChoiceAccepted.fire()
                 else:
                     game.events.ChoiceDeclined.fire({"substatus": "Do what?"})

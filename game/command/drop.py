@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class DropCommand(game.command.base.BaseCommand):
+class Drop(game.command.base.BaseCommand):
     """Drop an item."""
 
     def run(self) -> None:

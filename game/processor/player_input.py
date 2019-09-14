@@ -88,13 +88,13 @@ class PlayerInput(esper.Processor):
     def _try_command(self, key: str) -> bool:
         handled = True
         if key == "comma":
-            game.command.pickup.PickupCommand(self.world).run()
+            game.command.pickup.Pickup(self.world).run()
         elif key == "d":
-            game.command.drop.DropCommand(self.world).run()
+            game.command.drop.Drop(self.world).run()
         elif key == "i":
-            game.command.inventory.InventoryCommand(self.world).run()
+            game.command.inventory.Inventory(self.world).run()
         elif key == "e":
-            game.command.equip.EquipCommand(self.world).run()
+            game.command.equip.Equip(self.world).run()
         else:
             handled = False
         return handled
