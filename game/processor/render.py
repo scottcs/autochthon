@@ -28,8 +28,8 @@ class WebRenderProcessor(esper.Processor):
         self.render_map: bool = True
         self.render_full_map: bool = True
         self.render_entities: set = set()
-        game.events.RenderEntitiesEvent.handle(self._on_render_entities)
-        game.events.RenderMapEvent.handle(self._on_render_map)
+        game.events.RenderEntities.handle(self._on_render_entities)
+        game.events.RenderMap.handle(self._on_render_map)
 
     def _on_render_entities(self, event: game.types.EventType) -> None:
         entities_to_render = event["entities"]
@@ -118,7 +118,7 @@ class WebRenderProcessor(esper.Processor):
         #     each cell = 3 bytes + (1-11 bytes) = 4-14 bytes, but usually 4-5 bytes
         # AND we only send a cell if something has changed.
         ##########################################
-        game.events.UpdateMapRenderEvent.fire({"bytearray": b_cells})
+        game.events.UpdateMapRender.fire({"bytearray": b_cells})
 
     def _append_map_bytes(self, b_cells: bytearray, player_x: int, player_y: int, fov: int) -> int:
         self._render_map_if_needed(fov, player_x, player_y)

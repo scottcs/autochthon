@@ -21,5 +21,5 @@ class GameLogProcessor(esper.Processor):
             for ent, log in self.world.get_component(component_class):
                 if not log.lines:
                     continue
-                game.events.GameLogEvent.fire({"lines": log.lines})
+                game.events.GameLog.fire({"lines": log.lines})
                 self.world.remove_component(ent, component_class)

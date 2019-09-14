@@ -24,9 +24,9 @@ class InventoryCommand(game.command.base.BaseCommand):
         for ent, _ in self.world.get_component(game.component.player.Player):
             items_carried = self._get_items_carried(ent)
             if items_carried:
-                game.events.ChoiceFromListEvent.handle(self.on_choice)
-                game.events.MenuClosedEvent.handle(self._on_menu_closed)
-                game.events.ChooseFromListEvent.fire(
+                game.events.ChoiceFromList.handle(self.on_choice)
+                game.events.MenuClosed.handle(self._on_menu_closed)
+                game.events.ChooseFromList.fire(
                     {"header": "Describe what?", "items": items_carried}
                 )
             else:
@@ -36,18 +36,18 @@ class InventoryCommand(game.command.base.BaseCommand):
                 cmd_log.add("You aren't carrying anything!")
 
     def on_choice(self, event: game.types.EventType) -> None:
-        """Callback for ChoiceFromListEvent."""
+        """Callback for ChoiceFromList event."""
         input_key = self._keys_from_event(event)
         for ent, _ in self.world.get_component(game.component.player.Player):
             if self.submenu:
                 if input_key.key == "d":
                     game.command.drop.DropCommand(self.world).on_choice(self.selected)
-                    game.events.ChoiceAcceptedEvent.fire()
+                    game.events.ChoiceAccepted.fire()
                 elif input_key.key == "e":
                     game.command.equip.EquipCommand(self.world).on_choice(self.selected)
-                    game.events.ChoiceAcceptedEvent.fire()
+                    game.events.ChoiceAccepted.fire()
                 else:
-                    game.events.ChoiceDeclinedEvent.fire({"substatus": "Do what?"})
+                    game.events.ChoiceDeclined.fire({"substatus": "Do what?"})
             else:
                 for item_ent, components in self.world.get_components(
                     game.component.container.GUTContained, game.component.descriptive.Name
@@ -55,7 +55,7 @@ class InventoryCommand(game.command.base.BaseCommand):
                     contained, name = components
                     if contained.by_ent == ent and contained.label == input_key.key:
                         self.selected = event
-                        game.events.DescribeEvent.fire(
+                        game.events.Describe.fire(
                             {
                                 "name": (name.generic, gamedata.palette.ItemPalette.epic),
                                 "msg": [
@@ -67,10 +67,10 @@ class InventoryCommand(game.command.base.BaseCommand):
                             }
                         )
                         self.submenu = True
-                        game.events.SubMenuClosedEvent.handle(self._on_submenu_closed)
+                        game.events.SubMenuClosed.handle(self._on_submenu_closed)
                         break
 
     def _on_submenu_closed(self, _event: game.types.EventType) -> None:
         self.submenu = False
         self.selected = {}
-        game.events.SubMenuClosedEvent.unhandle(self._on_submenu_closed)
+        game.events.SubMenuClosed.unhandle(self._on_submenu_closed)

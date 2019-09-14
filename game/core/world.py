@@ -81,7 +81,7 @@ class World(esper.World):
         except KeyError:
             pass
         self.add_component(ent, game.component.status.GUTDead())
-        game.events.RenderEntitiesEvent.fire({"entities": [ent]})
+        game.events.RenderEntities.fire({"entities": [ent]})
 
     def pickup_item(self, ent: game.types.Entity) -> typing.Optional[game.types.Entity]:
         """Pick up an item at an entity's location and return its id."""
@@ -89,7 +89,7 @@ class World(esper.World):
         item_ent = self.get_item_at_position(at.x, at.y)
         if item_ent:
             self.add_component(item_ent, game.component.container.GUTContainerTransfer(ent))
-            game.events.RenderEntitiesEvent.fire({"entities": [item_ent]})
+            game.events.RenderEntities.fire({"entities": [item_ent]})
             return item_ent
         return None
 
@@ -100,7 +100,7 @@ class World(esper.World):
         if current_item_ent:
             return False
         self.add_component(item_ent, game.component.container.GUTContainerTransfer())
-        game.events.RenderEntitiesEvent.fire({"entities": [item_ent]})
+        game.events.RenderEntities.fire({"entities": [item_ent]})
         return True
 
     def get_enemy_at_position(self, x: int, y: int) -> typing.Optional[game.types.Entity]:

@@ -17,9 +17,9 @@ class EquipCommand(game.command.base.BaseCommand):
         for ent, _ in self.world.get_component(game.component.player.Player):
             items_carried = self._get_items_carried(ent)
             if items_carried:
-                game.events.ChoiceFromListEvent.handle(self.on_choice)
-                game.events.MenuClosedEvent.handle(self._on_menu_closed)
-                game.events.ChooseFromListEvent.fire(
+                game.events.ChoiceFromList.handle(self.on_choice)
+                game.events.MenuClosed.handle(self._on_menu_closed)
+                game.events.ChooseFromList.fire(
                     {
                         "header": "Equip/Unequip what?",
                         "items": items_carried,
@@ -33,7 +33,7 @@ class EquipCommand(game.command.base.BaseCommand):
                 cmd_log.add("You have nothing to eqiup!")
 
     def on_choice(self, event: game.types.EventType) -> None:
-        """Callback for ChoiceFromListEvent."""
+        """Callback for ChoiceFromList event."""
         input_key = self._keys_from_event(event)
         for ent, _ in self.world.get_component(game.component.player.Player):
             equipment = self.world.component_for_entity(ent, game.component.container.Equipment)
@@ -69,7 +69,7 @@ class EquipCommand(game.command.base.BaseCommand):
                     cmd_log.add("You unequip ")
                     cmd_log.append(want_to_equip[1].generic, gamedata.palette.ItemPalette.epic)
                     cmd_log.append(f" from your {name} slot.")
-                    game.events.ChoiceAcceptedEvent.fire()
+                    game.events.ChoiceAccepted.fire()
                 else:
                     if equipment_slot["max"] > equip_count:
                         want_to_equip[0].equipped = True
@@ -79,14 +79,14 @@ class EquipCommand(game.command.base.BaseCommand):
                         cmd_log.add("You equip ")
                         cmd_log.append(want_to_equip[1].generic, gamedata.palette.ItemPalette.epic)
                         cmd_log.append(f" in your {name} slot.")
-                        game.events.ChoiceAcceptedEvent.fire()
+                        game.events.ChoiceAccepted.fire()
                     else:
                         msg = f"You can't equip any more items in your {name} slot."
                         cmd_log = self.world.get_or_add_component(
                             ent, game.component.gamelog.GUTCommandLog
                         )
                         cmd_log.add(msg)
-                        game.events.ChoiceDeclinedEvent.fire({"status": msg})
+                        game.events.ChoiceDeclined.fire({"status": msg})
             else:
                 cmd_log = self.world.get_or_add_component(
                     ent, game.component.gamelog.GUTCommandLog

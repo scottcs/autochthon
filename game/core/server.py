@@ -65,12 +65,12 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
             self.socket_events = json.load(f)
         if len(self.connections) == 0:
             # TODO: need some way to determine which connection is the player, even after refresh
-            game.events.ChoiceAcceptedEvent.handle(self._on_choice_accepted)
-            game.events.ChoiceDeclinedEvent.handle(self._on_choice_declined)
-            game.events.ChooseFromListEvent.handle(self._on_choose_from_list)
-            game.events.DescribeEvent.handle(self._on_describe)
-            game.events.GameLogEvent.handle(self._on_game_log)
-            game.events.UpdateMapRenderEvent.handle(self._on_update_map_render)
+            game.events.ChoiceAccepted.handle(self._on_choice_accepted)
+            game.events.ChoiceDeclined.handle(self._on_choice_declined)
+            game.events.ChooseFromList.handle(self._on_choose_from_list)
+            game.events.Describe.handle(self._on_describe)
+            game.events.GameLog.handle(self._on_game_log)
+            game.events.UpdateMapRender.handle(self._on_update_map_render)
         self.game_callback: GameCallback = GameCallback(config=config)
         self.game_callback.start()
 
@@ -137,14 +137,14 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         if isinstance(message, bytes):
             if message[0] == self.socket_events["ToServer"]["RefreshGraphics"]:
                 # byte 1: full refresh (boolean)
-                game.events.RequestRenderEvent.fire({"full": bool(message[1])})
+                game.events.RequestRender.fire({"full": bool(message[1])})
             elif message[0] == self.socket_events["ToServer"]["GameInput"]:
                 # byte 1: input event flags
                 # byte 2: modifiers
                 # byte 3: key/button code
                 # byte 4-5: x coordinate
                 # byte 6-7: y coordinate
-                game.events.InputEvent.fire(
+                game.events.Input.fire(
                     {
                         "event": message[1],
                         "modifiers": message[2],
@@ -157,11 +157,11 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
             elif message[0] == self.socket_events["ToServer"]["ChoiceFromList"]:
                 # byte 1: modifiers
                 # byte 2: key/button code
-                game.events.ChoiceFromListEvent.fire({"modifiers": message[1], "code": message[2]})
+                game.events.ChoiceFromList.fire({"modifiers": message[1], "code": message[2]})
             elif message[0] == self.socket_events["ToServer"]["ModalWasClosed"]:
-                game.events.MenuClosedEvent.fire()
+                game.events.MenuClosed.fire()
             elif message[0] == self.socket_events["ToServer"]["SubModalWasClosed"]:
-                game.events.SubMenuClosedEvent.fire()
+                game.events.SubMenuClosed.fire()
             else:
                 log.error(f"Unprocessed message type: {message[0]}")
 
@@ -169,11 +169,11 @@ class GameWebSocket(tornado.websocket.WebSocketHandler):
         """Called when closing a connection."""
         log.debug("Closing connection.")
         self.connections.remove(self)
-        game.events.UpdateMapRenderEvent.unhandle(self._on_update_map_render)
-        game.events.GameLogEvent.unhandle(self._on_game_log)
-        game.events.ChooseFromListEvent.unhandle(self._on_choose_from_list)
-        game.events.ChoiceDeclinedEvent.unhandle(self._on_choice_declined)
-        game.events.ChoiceAcceptedEvent.unhandle(self._on_choice_accepted)
+        game.events.UpdateMapRender.unhandle(self._on_update_map_render)
+        game.events.GameLog.unhandle(self._on_game_log)
+        game.events.ChooseFromList.unhandle(self._on_choose_from_list)
+        game.events.ChoiceDeclined.unhandle(self._on_choice_declined)
+        game.events.ChoiceAccepted.unhandle(self._on_choice_accepted)
 
     def get_compression_options(self) -> typing.Optional[dict]:
         """Override default class to turn on compression.

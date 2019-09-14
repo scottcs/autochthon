@@ -23,7 +23,7 @@ class PlayerInputProcessor(esper.Processor):
 
     def __init__(self) -> None:
         self.input_queue: list = []
-        game.events.InputEvent.handle(self._on_input)
+        game.events.Input.handle(self._on_input)
 
     def _on_input(self, event: game.types.EventType) -> None:
         modifiers: dict = game.utils.input.unpack_modifiers(event["modifiers"])

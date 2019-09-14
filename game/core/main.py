@@ -70,7 +70,7 @@ class Game:
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
         self.set_state_playing(render_processor)
-        game.events.InputEvent.handle(self._on_input)
+        game.events.Input.handle(self._on_input)
 
     def set_state_playing(
         self, render_processor: esper.Processor, seed: typing.Optional[str] = None
@@ -79,9 +79,9 @@ class Game:
         game.utils.random.RNGCache.init(seed)
         self.state = game.types.GameState.playing
 
-        game.events.GameLogEvent.handle(self._on_game_log)
-        game.events.GameOverEvent.handle(self._on_game_over)
-        game.events.RequestRenderEvent.handle(self._on_refresh_map)
+        game.events.GameLog.handle(self._on_game_log)
+        game.events.GameOver.handle(self._on_game_over)
+        game.events.RequestRender.handle(self._on_refresh_map)
 
         loader = game.utils.dataloader.DataLoader()
         loader.load_all_json()
@@ -196,8 +196,8 @@ class Game:
 
     @staticmethod
     def _on_refresh_map(event: game.types.EventType) -> None:
-        game.events.RenderMapEvent.fire(event)
-        game.events.RenderEntitiesEvent.fire({"entities": [], "all": True})
+        game.events.RenderMap.fire(event)
+        game.events.RenderEntities.fire({"entities": [], "all": True})
 
     def _on_game_log(self, event: game.types.EventType) -> None:
         for line in event["lines"]:

@@ -68,10 +68,10 @@ class BaseCommand:
         return InputKey(key, modifiers)
 
     def on_choice(self, event: game.types.EventType) -> None:
-        """Callback for ChoiceFromListEvent."""
+        """Callback for ChoiceFromList event."""
         # Implement in child class if needed.
         pass
 
     def _on_menu_closed(self, _event: game.types.EventType) -> None:
-        game.events.ChoiceFromListEvent.unhandle(self.on_choice)
-        game.events.MenuClosedEvent.unhandle(self._on_menu_closed)
+        game.events.ChoiceFromList.unhandle(self.on_choice)
+        game.events.MenuClosed.unhandle(self._on_menu_closed)

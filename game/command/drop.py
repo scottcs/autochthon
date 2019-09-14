@@ -34,9 +34,9 @@ class DropCommand(game.command.base.BaseCommand):
                 return
             items_carried = self._get_items_carried(ent)
             if items_carried:
-                game.events.ChoiceFromListEvent.handle(self.on_choice)
-                game.events.MenuClosedEvent.handle(self._on_menu_closed)
-                game.events.ChooseFromListEvent.fire(
+                game.events.ChoiceFromList.handle(self.on_choice)
+                game.events.MenuClosed.handle(self._on_menu_closed)
+                game.events.ChooseFromList.fire(
                     {"header": "Drop what?", "items": items_carried, "multiple": True}
                 )
             else:
@@ -46,7 +46,7 @@ class DropCommand(game.command.base.BaseCommand):
                 cmd_log.add("You have nothing to drop!")
 
     def on_choice(self, event: game.types.EventType) -> None:
-        """Callback for ChoiceFromListEvent."""
+        """Callback for ChoiceFromList event."""
         input_key = self._keys_from_event(event)
         for ent, _ in self.world.get_component(game.component.player.Player):
             for item_ent, components in self.world.get_components(
@@ -55,7 +55,7 @@ class DropCommand(game.command.base.BaseCommand):
                 contained, name = components
                 if contained.by_ent == ent and contained.label == input_key.key:
                     if self.world.drop_item(ent, item_ent):
-                        game.events.ChoiceAcceptedEvent.fire()
+                        game.events.ChoiceAccepted.fire()
                     else:
                         cmd_log = self.world.get_or_add_component(
                             ent, game.component.gamelog.GUTCommandLog
@@ -64,5 +64,5 @@ class DropCommand(game.command.base.BaseCommand):
                             "There is already an item on the ground here!",
                             gamedata.palette.MessagePalette.negative,
                         )
-                        game.events.ChoiceDeclinedEvent.fire({"status": "You can't drop that!"})
+                        game.events.ChoiceDeclined.fire({"status": "You can't drop that!"})
                     break
