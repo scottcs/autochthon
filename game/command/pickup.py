@@ -12,7 +12,5 @@ class Pickup(game.command.base.BaseCommand):
         for ent, _ in self.world.get_component(game.component.player.Player):
             item = self.world.pickup_item(ent)
             if not item:
-                cmd_log = self.world.get_or_add_component(
-                    ent, game.component.gamelog.GUTCommandLog
-                )
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add(f"There is nothing to pick up!")

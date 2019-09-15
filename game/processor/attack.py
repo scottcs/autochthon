@@ -30,7 +30,7 @@ class AttackTargeting(esper.Processor):
             if not self.still_can_target(ent, target):
                 self.world.actor_takes_turn(ent, game.component.attack.GUTCurrentTarget)
                 continue
-            combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombatLog)
+            combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
             aggressor_name = self.world.get_or_add_component(
                 ent, game.component.descriptive.Name, f"Entity {ent}"
             )
@@ -70,14 +70,12 @@ class AttackMiss(esper.Processor):
         for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
             if target.attack == game.types.Attack.melee:
                 mods = []
-                for mod in self.world.try_component(ent, game.component.attack.AttackHitModifier):
+                for mod in self.world.try_component(ent, game.component.attack.HitModifier):
                     mods.append(mod)
                 # TODO: Gather other modifiers
                 modifier = game.component.base.accumulate_modifiers(*mods)
                 chance = gamedata.base_engine_values.HIT_CHANCE + modifier.factor
-                combat_log = self.world.get_or_add_component(
-                    ent, game.component.gamelog.GUTCombatLog
-                )
+                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
                 if not rng.percent(chance):
                     name = self.world.get_or_add_component(
                         ent, game.component.descriptive.Name, f"Entity {ent}"
@@ -120,9 +118,7 @@ class AttackDefense(esper.Processor):
                 name = self.world.get_or_add_component(
                     ent, game.component.descriptive.Name, f"Entity {ent}"
                 )
-                combat_log = self.world.get_or_add_component(
-                    ent, game.component.gamelog.GUTCombatLog
-                )
+                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
                 combat_log.add(
                     *game.utils.language.msg(
                         self.world.players,
@@ -143,7 +139,7 @@ class AttackDefense(esper.Processor):
                 if chance > 0:
                     if not rng.percent(chance):
                         combat_log = self.world.get_or_add_component(
-                            ent, game.component.gamelog.GUTCombatLog
+                            ent, game.component.gamelog.GUTCombat
                         )
                         name = self.world.get_or_add_component(
                             target.entity,
@@ -183,13 +179,11 @@ class AttackHit(esper.Processor):
         # TODO: check attributes
         # TODO: check race
         # TODO: etc
-        for mod in self.world.try_component(
-            ent, game.component.damage.ModifierInflictDamageBludgeoning
-        ):
+        for mod in self.world.try_component(ent, game.component.damage.ModifierInflictBludgeoning):
             mods.append(mod)
         modifier = game.component.base.accumulate_modifiers(*mods)
         damage = modifier.addend * (1 + modifier.factor)
         if damage > 0:
             self.world.add_component(
-                target.entity, game.component.damage.GUTTakeDamageBludgeoning(damage)
+                target.entity, game.component.damage.GUTTakeBludgeoning(damage)
             )

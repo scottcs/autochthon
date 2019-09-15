@@ -16,11 +16,11 @@ class GUTCurrentTarget:
     entity: typing.Optional[game.types.Entity] = None
 
 
-class AttackHitModifier(game.component.base.BaseModifierComponent):
+class HitModifier(game.component.base.BaseModifierComponent):
     """Attack modifier for hit chance."""
 
 
-class AttackDodgeModifier(game.component.base.BaseModifierComponent):
+class DodgeModifier(game.component.base.BaseModifierComponent):
     """Attack modifier for dodge chance."""
 
 
@@ -29,7 +29,7 @@ class ImmuneToDodge(game.component.base.BaseTemporaryComponent):
     """Attack cannot be dodged."""
 
 
-class AttackBlockModifier(game.component.base.BaseModifierComponent):
+class BlockModifier(game.component.base.BaseModifierComponent):
     """Attack modifier for block chance."""
 
 
@@ -38,7 +38,7 @@ class ImmuneToBlock(game.component.base.BaseTemporaryComponent):
     """Attack cannot be blocked."""
 
 
-class AttackDeflectModifier(game.component.base.BaseModifierComponent):
+class DeflectModifier(game.component.base.BaseModifierComponent):
     """Attack modifier for chance to deflect incoming attack."""
 
 

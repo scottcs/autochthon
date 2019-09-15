@@ -30,9 +30,7 @@ class Inventory(game.command.base.BaseCommand):
                     {"header": "Describe what?", "items": items_carried}
                 )
             else:
-                cmd_log = self.world.get_or_add_component(
-                    ent, game.component.gamelog.GUTCommandLog
-                )
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add("You aren't carrying anything!")
 
     def on_choice(self, event: game.types.EventType) -> None:

@@ -35,7 +35,7 @@ class HP(esper.Processor):
                         self.world.map.contains_player[position.y, position.x] = False
                     elif self.world.optional_component_for_entity(ent, game.component.ai.Enemy):
                         self.world.map.contains_enemy[position.y, position.x] = False
-                log = self.world.get_or_add_component(ent, game.component.gamelog.GUTStatusLog)
+                log = self.world.get_or_add_component(ent, game.component.gamelog.GUTStatus)
                 log.add(
                     *game.utils.language.msg(
                         self.world.players,

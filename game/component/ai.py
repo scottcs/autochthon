@@ -1,11 +1,11 @@
 """AI components."""
 
 
-class AISimpleMind:
+class SimpleMind:
     """Simple AI mind."""
 
 
-class AIDummy:
+class DummyMind:
     """AI that just stands there."""
 
 

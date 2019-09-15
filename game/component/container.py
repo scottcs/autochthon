@@ -52,7 +52,7 @@ class GUTContained:
 
 
 @dataclasses.dataclass
-class GUTContainerTransfer:
+class GUTTransfer:
     """Remove or insert a Containable entity out of or into a Container.
 
     If to_ent is None, assume it's to the floor

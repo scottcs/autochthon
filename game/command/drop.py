@@ -24,9 +24,7 @@ class Drop(game.command.base.BaseCommand):
             pos = self.world.component_for_entity(ent, game.component.movement.Position)
             item = self.world.get_item_at_position(pos.x, pos.y)
             if item:
-                cmd_log = self.world.get_or_add_component(
-                    ent, game.component.gamelog.GUTCommandLog
-                )
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add(
                     "There is already an item on the ground here!",
                     gamedata.palette.MessagePalette.negative,
@@ -40,9 +38,7 @@ class Drop(game.command.base.BaseCommand):
                     {"header": "Drop what?", "items": items_carried, "multiple": True}
                 )
             else:
-                cmd_log = self.world.get_or_add_component(
-                    ent, game.component.gamelog.GUTCommandLog
-                )
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add("You have nothing to drop!")
 
     def on_choice(self, event: game.types.EventType) -> None:
@@ -58,7 +54,7 @@ class Drop(game.command.base.BaseCommand):
                         game.events.ChoiceAccepted.fire()
                     else:
                         cmd_log = self.world.get_or_add_component(
-                            ent, game.component.gamelog.GUTCommandLog
+                            ent, game.component.gamelog.GUTCommand
                         )
                         cmd_log.add(
                             "There is already an item on the ground here!",

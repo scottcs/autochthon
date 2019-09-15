@@ -29,16 +29,14 @@ class Container(esper.Processor):
 
         # process all container transfers
         for containable_ent, components in self.world.get_components(
-            game.component.container.GUTContainerTransfer,
+            game.component.container.GUTTransfer,
             game.component.container.Containable,
             game.component.descriptive.Name,
         ):
             transfer, containable, name = components
-            self.world.remove_component(
-                containable_ent, game.component.container.GUTContainerTransfer
-            )
+            self.world.remove_component(containable_ent, game.component.container.GUTTransfer)
             cmd_log = self.world.get_or_add_component(
-                containable_ent, game.component.gamelog.GUTCommandLog
+                containable_ent, game.component.gamelog.GUTCommand
             )
             contained = self.world.optional_component_for_entity(
                 containable_ent, game.component.container.GUTContained

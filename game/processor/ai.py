@@ -19,13 +19,15 @@ class AI(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process AI Components."""
         for ent, components in self.world.get_components(
-            game.component.action.Actor, game.component.ai.AIDummy, game.component.action.GUTMyTurn
+            game.component.action.Actor,
+            game.component.ai.DummyMind,
+            game.component.action.GUTMyTurn,
         ):
             self.world.add_component(ent, game.component.movement.GUTWaiting())
         for ent, components in self.world.get_components(
             game.component.movement.Position,
             game.component.action.Actor,
-            game.component.ai.AISimpleMind,
+            game.component.ai.SimpleMind,
             game.component.action.GUTMyTurn,
         ):
             position, actor = components[:2]

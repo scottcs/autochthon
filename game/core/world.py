@@ -88,7 +88,7 @@ class World(esper.World):
         at = self.component_for_entity(ent, game.component.movement.Position)
         item_ent = self.get_item_at_position(at.x, at.y)
         if item_ent:
-            self.add_component(item_ent, game.component.container.GUTContainerTransfer(ent))
+            self.add_component(item_ent, game.component.container.GUTTransfer(ent))
             game.events.RenderEntities.fire({"entities": [item_ent]})
             return item_ent
         return None
@@ -99,7 +99,7 @@ class World(esper.World):
         current_item_ent = self.get_item_at_position(at.x, at.y)
         if current_item_ent:
             return False
-        self.add_component(item_ent, game.component.container.GUTContainerTransfer())
+        self.add_component(item_ent, game.component.container.GUTTransfer())
         game.events.RenderEntities.fire({"entities": [item_ent]})
         return True
 

@@ -63,7 +63,7 @@ class Movement(esper.Processor):
                         )
                         if name:
                             desc_log = self.world.get_or_add_component(
-                                ent, game.component.gamelog.GUTDescriptionLog
+                                ent, game.component.gamelog.GUTDescription
                             )
                             desc_log.add(f"{name.generic}", gamedata.palette.ItemPalette.epic)
                             desc_log.append(" is here.")
