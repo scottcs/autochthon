@@ -1,5 +1,9 @@
 {
   "title": "Autochthon",
+  "org": "Precipitation Studios",
+  "player": {
+    "name": "UNKNOWN"
+  },
   "server": {
     "host": "127.0.0.1",
     "port": 19999,
@@ -18,8 +22,9 @@
     "max_tiles_w": 100,
     "max_tiles_h": 100
   },
-  "morgue": {
-    "directory": "/opt/autochthon/morgue"
+  "directories": {
+    "base": "autochthon",
+    "morgue": "morgue"
   },
   "map_bits": {
     "x": 1,

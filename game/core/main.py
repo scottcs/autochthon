@@ -4,6 +4,7 @@ import pathlib
 import time
 import typing
 
+import appdirs
 import esper
 
 import game
@@ -34,21 +35,8 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-def setup_morgue(base_dir: str, player: str) -> logging.Logger:
-    """Set up the morgue log."""
-    morgue_dir = pathlib.Path(base_dir) / pathlib.Path(player)
-    morgue_dir.mkdir(parents=True, exist_ok=True)
-    log_file = morgue_dir / pathlib.Path(f"{time.time()}.morgue")
-    handler = logging.FileHandler(str(log_file))
-    handler.setLevel(logging.INFO)
-    handler.setFormatter(logging.Formatter("%(message)s"))
-    morgue_log = logging.getLogger("morgue")
-    morgue_log.setLevel(logging.INFO)
-    for old_handler in morgue_log.handlers[:]:
-        log.removeHandler(old_handler)
-    morgue_log.addHandler(handler)
-    morgue_log.propagate = False
-    return morgue_log
+def _safe_dir(name: str) -> str:
+    return name.lower().replace(" ", "_")
 
 
 class Game:
@@ -58,11 +46,12 @@ class Game:
         self, render_processor: esper.Processor, config: typing.Optional[dict] = None
     ) -> None:
         self.config: dict = config or {}
+        self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
         self.game_over: bool = False
         self.got_player_input: bool = False
         self.world: game.core.world.World = game.core.world.World()
         self.state: game.types.GameState = game.types.GameState.unknown
-        self.morgue: logging.Logger = setup_morgue(self.config["morgue"]["directory"], "UNKNOWN")
+        self.morgue: logging.Logger = self._setup_morgue()
         version_string = f'* {self.config["title"]} version {game.VERSION}'
         log.info(version_string)
         self.morgue.info(version_string)
@@ -71,6 +60,27 @@ class Game:
         # TODO: allow player to set seed and pass it here
         self.set_state_playing(render_processor)
         game.events.Input.handle(self._on_input)
+
+    def _setup_morgue(self) -> logging.Logger:
+        """Set up the morgue log."""
+        morgue_dir = (
+            pathlib.Path(self.dirs.user_log_dir)
+            / pathlib.Path(self.config["directories"]["base"])
+            / pathlib.Path(self.config["directories"]["morgue"])
+            / pathlib.Path(self.config["player"]["name"])
+        )
+        morgue_dir.mkdir(parents=True, exist_ok=True)
+        log_file = morgue_dir / pathlib.Path(f"{time.time()}.morgue")
+        handler = logging.FileHandler(str(log_file))
+        handler.setLevel(logging.INFO)
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        morgue_log = logging.getLogger("morgue")
+        morgue_log.setLevel(logging.INFO)
+        for old_handler in morgue_log.handlers[:]:
+            log.removeHandler(old_handler)
+        morgue_log.addHandler(handler)
+        morgue_log.propagate = False
+        return morgue_log
 
     def set_state_playing(
         self, render_processor: esper.Processor, seed: typing.Optional[str] = None

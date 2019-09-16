@@ -12,7 +12,8 @@ def run_local() -> None:
             gamedata.config.CONFIG["title"],
             width=gamedata.config.CONFIG["local"]["width"],
             height=gamedata.config.CONFIG["local"]["height"],
-        )
+        ),
+        gamedata.config.CONFIG,
     )
     game_loop(local_game)
 
