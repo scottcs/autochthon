@@ -308,7 +308,19 @@ class TCODRender(esper.Processor):
 
     def __init__(self, _title: str, width: int = 80, height: int = 40) -> None:
         # Someday, implement this?
-        log.error(f"Someday maybe this will be a {width}x{height} console.")
+        log.error(f"Someday maybe this will be a TCOD {width}x{height} console.")
+
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+        """Process all renderables."""
+        pass
+
+
+class BearLibRender(esper.Processor):
+    """Game render processor for local BearLibTerminal console."""
+
+    def __init__(self, _title: str, width: int = 80, height: int = 40) -> None:
+        # Someday, implement this?
+        log.error(f"Someday maybe this will be a BearLib {width}x{height} console.")
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""

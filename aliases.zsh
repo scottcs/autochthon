@@ -1,3 +1,5 @@
+alias runw='poetry run python start.py'
+alias runl='poetry run python start.py --local'
 alias ae='poetry run python -m tools.assemblage_edit'
 alias mapv='poetry run python -m tools.map_visualizer'
 alias brelease='poetry run bumpversion release'
