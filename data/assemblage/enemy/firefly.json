@@ -1,7 +1,7 @@
 {
   "Firefly": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": "==1d6+1"
       },
@@ -13,19 +13,19 @@
         "tint": "Palette.cyan",
         "layer": "RenderLayer.enemy"
       },
-      "attack.AttackDodgeModifier": {
+      "attack.DodgeModifier": {
         "factor": 0.3
       },
-      "damage.ModifierTakeDamageElectric": {
+      "damage.ModifierTakeElectric": {
         "factor": 0.5
       },
-      "attack.AttackHitModifier": {
+      "attack.HitModifier": {
         "factor": 0.2
       },
-      "damage.ModifierInflictDamageElectric": {
+      "damage.ModifierInflictElectric": {
         "addend": "3d3"
       },
-      "damage.ModifierInflictDamagePiercing": {
+      "damage.ModifierInflictPiercing": {
         "addend": "2d3"
       }
     }

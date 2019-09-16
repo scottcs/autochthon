@@ -1,7 +1,7 @@
 {
   "Boar": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": 10
       },

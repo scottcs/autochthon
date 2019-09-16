@@ -1,7 +1,7 @@
 {
   "OrcBrute": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": "==5d3+30"
       },
@@ -18,7 +18,7 @@
   },
   "OrcClubber": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": "==5d3+30"
       },
@@ -35,7 +35,7 @@
   },
   "OrcPikeman": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": "==5d3+30"
       },
@@ -52,7 +52,7 @@
   },
   "OrcShaman": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": "==5d3+30"
       },

@@ -10,13 +10,13 @@
         "tint": "Palette.green",
         "layer": "RenderLayer.item"
       },
-      "attack.AttackHitModifier": {
+      "attack.HitModifier": {
         "factor": 0.05
       },
-      "damage.ModifierTakeDamageBludgeoning": {
+      "damage.ModifierTakeBludgeoning": {
         "factor": -0.5
       },
-      "damage.ImmuneDamageSlashing": {},
+      "damage.ImmuneSlashing": {},
       "container.Containable": {
         "equip_type": "EquipType.torso"
       }

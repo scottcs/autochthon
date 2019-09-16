@@ -1,7 +1,7 @@
 {
   "SebastianBenini": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": 150
       },
@@ -16,10 +16,10 @@
         "tint": "Palette.orange",
         "layer": "RenderLayer.enemy"
       },
-      "damage.ModifierInflictDamagePiercing": {
+      "damage.ModifierInflictPiercing": {
         "addend": "2d5+10"
       },
-      "damage.ModifierTakeDamageBludgeoning": {
+      "damage.ModifierTakeBludgeoning": {
         "factor": 5.0
       }
     }

@@ -1,7 +1,7 @@
 {
   "NagaArcher": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": "==3d6+10"
       },
