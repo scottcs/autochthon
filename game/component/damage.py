@@ -59,7 +59,7 @@ class ModifierTakeSlashing(game.component.base.BaseModifierComponent):
     """Slashing damage vulnerability/resistance."""
 
 
-class ImmuneDamage:
+class ImmuneSlashing:
     """Entity is immune to Slashing damage."""
 
 
