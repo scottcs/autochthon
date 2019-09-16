@@ -1,53 +1,57 @@
 """User input processing."""
 import logging
-from typing import Any, Mapping
+import typing
 
 import esper
 
-from game.command.drop import DropCommand
-from game.command.equip import EquipCommand
-from game.command.inventory import InventoryCommand
-from game.command.pickup import PickupCommand
-from game.component.player import GUTPlayerBump, Player
-from game.events import InputEvent
-from game.types import EventType, GameState
-from game.utils.geometry import Point
-from game.utils.input import events, get_key, unpack_modifiers
+import game.command.drop
+import game.command.equip
+import game.command.inventory
+import game.command.pickup
+import game.component.player
+import game.events
+import game.types
+import game.utils.geometry
+import game.utils.input
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class PlayerInputProcessor(esper.Processor):
+class PlayerInput(esper.Processor):
     """Process user input and issue events."""
 
     def __init__(self) -> None:
         self.input_queue: list = []
-        InputEvent.handle(self._on_input)
+        game.events.Input.handle(self._on_input)
 
-    def _on_input(self, event: EventType) -> None:
-        modifiers: dict = unpack_modifiers(event["modifiers"])
-        key: str = get_key(event["code"])
-        coords: Point = Point(event["x_coord"], event["y_coord"])
+    def _on_input(self, event: game.types.EventType) -> None:
+        modifiers: dict = game.utils.input.unpack_modifiers(event["modifiers"])
+        key: str = game.utils.input.get_key(event["code"])
+        coords: game.utils.geometry.Point = game.utils.geometry.Point(
+            event["x_coord"], event["y_coord"]
+        )
         self.input_queue.append(
             {
                 "event": event["event"],
-                "state": event.get("state", GameState.unknown),
+                "state": event.get("state", game.types.GameState.unknown),
                 "modifiers": modifiers,
                 "key": key,
                 "coords": coords,
             }
         )
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process the input queue."""
         while self.input_queue:
             event = self.input_queue.pop()
-            if event["event"] == events["KeyPress"]:
-                if event["state"] == GameState.playing:
+            if event["event"] == game.utils.input.events["KeyPress"]:
+                if event["state"] == game.types.GameState.playing:
                     self.handle_keypress_playing(event["modifiers"], event["key"], event["coords"])
 
-    def handle_keypress_playing(self, _modifiers: Mapping, key: str, _coords: Point) -> None:
+    def handle_keypress_playing(
+        self, _modifiers: typing.Mapping, key: str, _coords: game.utils.geometry.Point
+    ) -> None:
         """Handle input event in the PLAYING state."""
         handled = self._try_bump(key)
         if not handled:
@@ -77,20 +81,20 @@ class PlayerInputProcessor(esper.Processor):
         if not (dx or dy or wait):
             return False
 
-        for ent, _ in self.world.get_component(Player):
-            self.world.add_component(ent, GUTPlayerBump(dx, dy))
+        for ent, _ in self.world.get_component(game.component.player.Player):
+            self.world.add_component(ent, game.component.player.GUTPlayerBump(dx, dy))
         return True
 
     def _try_command(self, key: str) -> bool:
         handled = True
         if key == "comma":
-            PickupCommand(self.world).run()
+            game.command.pickup.Pickup(self.world).run()
         elif key == "d":
-            DropCommand(self.world).run()
+            game.command.drop.Drop(self.world).run()
         elif key == "i":
-            InventoryCommand(self.world).run()
+            game.command.inventory.Inventory(self.world).run()
         elif key == "e":
-            EquipCommand(self.world).run()
+            game.command.equip.Equip(self.world).run()
         else:
             handled = False
         return handled

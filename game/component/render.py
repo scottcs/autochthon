@@ -1,19 +1,19 @@
 """Render components."""
-from dataclasses import dataclass
-from typing import Optional
+import dataclasses
+import typing
 
-from game.types import RenderLayer
-from gamedata.palette import Palette
+import game.types
+import gamedata.palette
 
 
-@dataclass
+@dataclasses.dataclass
 class Renderable:
     """Renderable component."""
 
     tile_id: int
-    tint: Palette
-    layer: RenderLayer
+    tint: gamedata.palette.Palette
+    layer: game.types.RenderLayer
 
     def __post_init__(self) -> None:
-        self.last_seen_x: Optional[int] = None
-        self.last_seen_y: Optional[int] = None
+        self.last_seen_x: typing.Optional[int] = None
+        self.last_seen_y: typing.Optional[int] = None

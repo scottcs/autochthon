@@ -9,13 +9,13 @@
         "tint": "Palette.purple",
         "layer": "RenderLayer.item"
       },
-      "attack.AttackHitModifier": {
+      "attack.HitModifier": {
         "factor": 0.1
       },
-      "attack.AttackDeflectModifier": {
+      "attack.DeflectModifier": {
         "factor": 0.2
       },
-      "damage.ModifierInflictDamageSlashing": {
+      "damage.ModifierInflictSlashing": {
         "addend": "3d6"
       },
       "container.Containable": {

@@ -1,8 +1,8 @@
 """Status effect messages."""
-from gamedata.palette import MessagePalette
+import gamedata.palette
 
 MsgDeath = (
-    ("You die!", MessagePalette.danger),
-    ("{0} dies!", MessagePalette.positive),
-    ("{0} dies!", MessagePalette.default),
+    ("You die!", gamedata.palette.MessagePalette.danger),
+    ("{0} dies!", gamedata.palette.MessagePalette.positive),
+    ("{0} dies!", gamedata.palette.MessagePalette.default),
 )

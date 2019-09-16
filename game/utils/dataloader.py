@@ -1,20 +1,20 @@
 """Data loader."""
 import json
 import logging
-from pathlib import Path
-from typing import Optional, Union
+import pathlib
+import typing
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
-DEFAULT_PATH = Path("data")
+DEFAULT_PATH = pathlib.Path("data")
 
 
 class DataLoader:
     """Loads data."""
 
-    def __init__(self, data_path: Optional[Union[str, Path]] = None) -> None:
-        self.base_path = Path(data_path or DEFAULT_PATH)
+    def __init__(self, data_path: typing.Optional[typing.Union[str, pathlib.Path]] = None) -> None:
+        self.base_path = pathlib.Path(data_path or DEFAULT_PATH)
         self.data: dict = {}
 
     def load_all_json(self) -> None:

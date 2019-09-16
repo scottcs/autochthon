@@ -1,9 +1,9 @@
 """Game Events."""
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+import typing
 
-from game.types import EventHandler, EventType
+import game.types
 
 
 class Event:
@@ -19,18 +19,18 @@ class Event:
 
     def __init__(self, name: str) -> None:
         self.name = name
-        self.handlers: Dict[EventHandler, bool] = dict()
-        self._to_unhandle: List[EventHandler] = []
-        self._to_handle: List[EventHandler] = []
+        self.handlers: typing.Dict[game.types.EventHandler, bool] = dict()
+        self._to_unhandle: typing.List[game.types.EventHandler] = []
+        self._to_handle: typing.List[game.types.EventHandler] = []
 
-    def handle(self, handler: EventHandler) -> Event:
+    def handle(self, handler: game.types.EventHandler) -> Event:
         """Register a handler."""
         self.handlers[handler] = True
         self._to_handle.append(handler)
         # print(f"{self} added handler")
         return self
 
-    def unhandle(self, handler: EventHandler) -> Event:
+    def unhandle(self, handler: game.types.EventHandler) -> Event:
         """Unregister a handler."""
         self._to_unhandle.append(handler)
         # print(f"{self} unhandle")
@@ -49,7 +49,7 @@ class Event:
                 raise ValueError("Handler is not handling this event, so cannot unhandle it.")
         self._to_handle.clear()
 
-    def fire(self, event: Optional[EventType] = None) -> None:
+    def fire(self, event: typing.Optional[game.types.EventType] = None) -> None:
         """Fire the event."""
         self._remove_handlers()
         # print(f"{self} fire event: {event}")
@@ -68,17 +68,17 @@ class Event:
     __len__ = num_handlers
 
 
-ChoiceFromListEvent: Event = Event("ChoiceFromListEvent")
-ChooseFromListEvent: Event = Event("ChooseFromListEvent")
-ChoiceAcceptedEvent: Event = Event("ChooseFromListEvent")
-ChoiceDeclinedEvent: Event = Event("ChooseFromListEvent")
-DescribeEvent: Event = Event("DescribeEvent")
-GameLogEvent: Event = Event("GameLogEvent")
-GameOverEvent: Event = Event("GameOverEvent")
-InputEvent: Event = Event("InputEvent")
-MenuClosedEvent: Event = Event("MenuClosedEvent")
-SubMenuClosedEvent: Event = Event("SubMenuClosedEvent")
-RenderEntitiesEvent: Event = Event("RenderEntitiesEvent")
-RenderMapEvent: Event = Event("RenderMapEvent")
-RequestRenderEvent: Event = Event("RequestRenderEvent")
-UpdateMapRenderEvent: Event = Event("UpdateMapRenderEvent")
+ChoiceFromList: Event = Event("ChoiceFromList")
+ChooseFromList: Event = Event("ChooseFromList")
+ChoiceAccepted: Event = Event("ChoiceAccepted")
+ChoiceDeclined: Event = Event("ChoiceDeclined")
+Describe: Event = Event("Describe")
+GameLog: Event = Event("GameLog")
+GameOver: Event = Event("GameOver")
+Input: Event = Event("Input")
+MenuClosed: Event = Event("MenuClosed")
+SubMenuClosed: Event = Event("SubMenuClosed")
+RenderEntities: Event = Event("RenderEntities")
+RenderMap: Event = Event("RenderMap")
+RequestRender: Event = Event("RequestRender")
+UpdateMapRender: Event = Event("UpdateMapRender")

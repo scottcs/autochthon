@@ -1,21 +1,23 @@
 """Game log components."""
-from typing import Optional
+import typing
 
-from game.types import LogLine
-from gamedata.palette import MessagePalette
+import game.types
+import gamedata.palette
 
 
 class BaseLog:
     """Component for the game log."""
 
     def __init__(
-        self, initial_line: Optional[str] = None, initial_color: int = MessagePalette.default
+        self,
+        initial_line: typing.Optional[str] = None,
+        initial_color: int = gamedata.palette.MessagePalette.default,
     ) -> None:
         self.lines: list = []
         if initial_line is not None:
             self.add(initial_line, color=initial_color)
 
-    def add(self, message: str, color: int = MessagePalette.default) -> None:
+    def add(self, message: str, color: int = gamedata.palette.MessagePalette.default) -> None:
         """Add a new line to the log."""
         # capitalize
         message = f"{message[0].upper()}{message[1:]}"
@@ -33,22 +35,22 @@ class BaseLog:
                 message = " " + message
         self.append(message, color)
 
-    def append(self, message: str, color: int = MessagePalette.default) -> None:
+    def append(self, message: str, color: int = gamedata.palette.MessagePalette.default) -> None:
         """Append to the log without a space."""
-        self.lines.append(LogLine(message, color))
+        self.lines.append(game.types.LogLine(message, color))
 
 
-class GUTCombatLog(BaseLog):
+class GUTCombat(BaseLog):
     """Combat log."""
 
 
-class GUTStatusLog(BaseLog):
+class GUTStatus(BaseLog):
     """Log status effects."""
 
 
-class GUTCommandLog(BaseLog):
+class GUTCommand(BaseLog):
     """Log command results."""
 
 
-class GUTDescriptionLog(BaseLog):
+class GUTDescription(BaseLog):
     """Log descriptions."""

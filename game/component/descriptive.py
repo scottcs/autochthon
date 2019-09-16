@@ -1,20 +1,20 @@
 """Descriptive components."""
-from dataclasses import InitVar, dataclass
-from typing import MutableSequence, Optional
+import dataclasses
+import typing
 
 
-@dataclass
+@dataclasses.dataclass
 class Name:
     """Name component."""
 
     first: str
-    last: Optional[str] = None
-    titles: Optional[MutableSequence[str]] = None
-    nickname: Optional[str] = None
+    last: typing.Optional[str] = None
+    titles: typing.Optional[typing.MutableSequence[str]] = None
+    nickname: typing.Optional[str] = None
     proper: bool = False
-    plural_str: InitVar[Optional[str]] = None
+    plural_str: dataclasses.InitVar[typing.Optional[str]] = None
 
-    def __post_init__(self, plural_str: Optional[str]) -> None:
+    def __post_init__(self, plural_str: typing.Optional[str]) -> None:
         self._plural = plural_str
 
     @property

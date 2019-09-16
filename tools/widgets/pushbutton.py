@@ -1,9 +1,9 @@
 """Custom QPushButton for tools."""
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QPushButton
+import PySide2.QtCore
+import PySide2.QtWidgets
 
 
-class ToolPushButton(QPushButton):
+class ToolPushButton(PySide2.QtWidgets.QPushButton):
     """Custom QPushbutton."""
 
     def __init__(self, *args, allow_focus: bool = False, **kwargs) -> None:
@@ -12,6 +12,6 @@ class ToolPushButton(QPushButton):
             self.setAutoDefault(True)
             self.setDefault(True)
         else:
-            self.setFocusPolicy(Qt.NoFocus)
+            self.setFocusPolicy(PySide2.QtCore.Qt.NoFocus)
             self.setAutoDefault(False)
             self.setDefault(False)

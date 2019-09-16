@@ -1,14 +1,14 @@
 {
   "Crab": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": "==1d10+15"
       },
-      "attack.AttackDeflectModifier": {
+      "attack.DeflectModifier": {
         "factor": 0.65
       },
-      "attack.AttackDodgeModifier": {
+      "attack.DodgeModifier": {
         "factor": 0.3
       },
       "descriptive.Name": {

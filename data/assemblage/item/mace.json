@@ -9,10 +9,10 @@
         "tint": "Palette.cyan",
         "layer": "RenderLayer.item"
       },
-      "damage.ModifierInflictDamageBludgeoning": {
+      "damage.ModifierInflictBludgeoning": {
         "addend": "2d8"
       },
-      "attack.AttackHitModifier": {
+      "attack.HitModifier": {
         "factor": 0.05
       },
       "container.Containable": {

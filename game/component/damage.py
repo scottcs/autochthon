@@ -1,80 +1,80 @@
 """Damage components."""
-from dataclasses import dataclass
+import dataclasses
 
-from game.component.base import BaseModifierComponent
-from game.types import Number
+import game.component.base
+import game.types
 
 
-@dataclass
+@dataclasses.dataclass
 class BaseDamageComponent:
     """Base damage component."""
 
-    amount: Number
+    amount: game.types.Number
 
 
-@dataclass
-class GUTTakeDamageBludgeoning(BaseDamageComponent):
+@dataclasses.dataclass
+class GUTTakeBludgeoning(BaseDamageComponent):
     """Take Bludgeoning damage."""
 
 
-class ModifierInflictDamageBludgeoning(BaseModifierComponent):
+class ModifierInflictBludgeoning(game.component.base.BaseModifierComponent):
     """Bludgeoning inflict damage modifier."""
 
 
-class ModifierTakeDamageBludgeoning(BaseModifierComponent):
+class ModifierTakeBludgeoning(game.component.base.BaseModifierComponent):
     """Bludgeoning damage vulnerability/resistance."""
 
 
-class ImmuneDamageBludgeoning:
+class ImmuneBludgeoning:
     """Entity is immune to Bludgeoning damage."""
 
 
-@dataclass
-class GUTTakeDamagePiercing(BaseDamageComponent):
+@dataclasses.dataclass
+class GUTTakePiercing(BaseDamageComponent):
     """Take Piercing damage."""
 
 
-class ModifierInflictDamagePiercing(BaseModifierComponent):
+class ModifierInflictPiercing(game.component.base.BaseModifierComponent):
     """Piercing inflict damage modifier."""
 
 
-class ModifierTakeDamagePiercing(BaseModifierComponent):
+class ModifierTakePiercing(game.component.base.BaseModifierComponent):
     """Piercing damage vulnerability/resistance."""
 
 
-class ImmuneDamagePiercing:
+class ImmunePiercing:
     """Entity is immune to Piercing damage."""
 
 
-@dataclass
-class GUTTakeDamageSlashing(BaseDamageComponent):
+@dataclasses.dataclass
+class GUTTakeSlashing(BaseDamageComponent):
     """Take Slashing damage."""
 
 
-class ModifierInflictDamageSlashing(BaseModifierComponent):
+class ModifierInflictSlashing(game.component.base.BaseModifierComponent):
     """Slashing inflict damage modifier."""
 
 
-class ModifierTakeDamageSlashing(BaseModifierComponent):
+class ModifierTakeSlashing(game.component.base.BaseModifierComponent):
     """Slashing damage vulnerability/resistance."""
 
 
-class ImmuneDamageSlashing:
+class ImmuneDamage:
     """Entity is immune to Slashing damage."""
 
 
-@dataclass
-class GUTTakeDamageElectric(BaseDamageComponent):
+@dataclasses.dataclass
+class GUTTakeElectric(BaseDamageComponent):
     """Take Electric damage."""
 
 
-class ModifierInflictDamageElectric(BaseModifierComponent):
+class ModifierInflictElectric(game.component.base.BaseModifierComponent):
     """Electric inflict damage modifier."""
 
 
-class ModifierTakeDamageElectric(BaseModifierComponent):
+class ModifierTakeElectric(game.component.base.BaseModifierComponent):
     """Electric damage vulnerability/resistance."""
 
 
-class ImmuneDamageElectric:
+class ImmuneElectric:
     """Entity is immune to Electric damage."""

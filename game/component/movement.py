@@ -1,8 +1,8 @@
 """Movement components."""
-from dataclasses import dataclass
+import dataclasses
 
 
-@dataclass
+@dataclasses.dataclass
 class Position:
     """Position component."""
 
@@ -10,7 +10,7 @@ class Position:
     y: int = 0
 
 
-@dataclass
+@dataclasses.dataclass
 class GUTMoving:
     """Entity wants to move to destination position."""
 

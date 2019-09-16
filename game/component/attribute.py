@@ -1,16 +1,16 @@
 """Attribute components."""
-from dataclasses import dataclass
+import dataclasses
 
-from game.component.base import BaseIntMinMaxComponent
-from game.types import Number
+import game.component.base
+import game.types
 
 
-class HP(BaseIntMinMaxComponent):
+class HP(game.component.base.BaseIntMinMaxComponent):
     """Hitpoint component."""
 
 
-@dataclass
+@dataclasses.dataclass
 class GUTChangeHP:
     """Change the HP attribute."""
 
-    amount: Number
+    amount: game.types.Number

@@ -1,22 +1,24 @@
 """Local (non-server) game."""
-from game.core.main import Game
-from game.events import GameOverEvent
-from game.processor.render import TCODRenderProcessor
-from gamedata.config import CONFIG
+import game.core.main
+import game.events
+import game.processor.render
+import gamedata.config
 
 
 def run_local() -> None:
     """Run the game locally."""
-    game = Game(
-        TCODRenderProcessor(
-            CONFIG["title"], width=CONFIG["local"]["width"], height=CONFIG["local"]["height"]
+    local_game = game.core.main.Game(
+        game.processor.render.TCODRender(
+            gamedata.config.CONFIG["title"],
+            width=gamedata.config.CONFIG["local"]["width"],
+            height=gamedata.config.CONFIG["local"]["height"],
         )
     )
-    game_loop(game)
+    game_loop(local_game)
 
 
-def game_loop(game: Game) -> None:
+def game_loop(game_object: game.core.main.Game) -> None:
     """Main game loop."""
-    while not game.game_over:
-        game.update()
-        GameOverEvent({"shutdown": True})
+    while not game_object.game_over:
+        game_object.update()
+        game.events.GameOver({"shutdown": True})

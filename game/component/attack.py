@@ -1,47 +1,47 @@
 """Attack components."""
-from dataclasses import dataclass
-from typing import Optional
+import dataclasses
+import typing
 
-from game.component.base import BaseModifierComponent, BaseTemporaryComponent
-from game.types import AttackType, Entity
+import game.component.base
+import game.types
 
 
-@dataclass
+@dataclasses.dataclass
 class GUTCurrentTarget:
     """Component for targeting an entity or location."""
 
     x: int
     y: int
-    attack: AttackType
-    entity: Optional[Entity] = None
+    attack: game.types.Attack
+    entity: typing.Optional[game.types.Entity] = None
 
 
-class AttackHitModifier(BaseModifierComponent):
+class HitModifier(game.component.base.BaseModifierComponent):
     """Attack modifier for hit chance."""
 
 
-class AttackDodgeModifier(BaseModifierComponent):
+class DodgeModifier(game.component.base.BaseModifierComponent):
     """Attack modifier for dodge chance."""
 
 
-@dataclass
-class ImmuneToDodge(BaseTemporaryComponent):
+@dataclasses.dataclass
+class ImmuneToDodge(game.component.base.BaseTemporaryComponent):
     """Attack cannot be dodged."""
 
 
-class AttackBlockModifier(BaseModifierComponent):
+class BlockModifier(game.component.base.BaseModifierComponent):
     """Attack modifier for block chance."""
 
 
-@dataclass
-class ImmuneToBlock(BaseTemporaryComponent):
+@dataclasses.dataclass
+class ImmuneToBlock(game.component.base.BaseTemporaryComponent):
     """Attack cannot be blocked."""
 
 
-class AttackDeflectModifier(BaseModifierComponent):
+class DeflectModifier(game.component.base.BaseModifierComponent):
     """Attack modifier for chance to deflect incoming attack."""
 
 
-@dataclass
-class ImmuneToDeflect(BaseTemporaryComponent):
+@dataclasses.dataclass
+class ImmuneToDeflect(game.component.base.BaseTemporaryComponent):
     """Attack cannot be deflected."""

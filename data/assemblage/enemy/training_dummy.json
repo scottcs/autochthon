@@ -14,7 +14,7 @@
         "tint": "Palette.white",
         "layer": "RenderLayer.enemy"
       },
-      "ai.AIDummy": {}
+      "ai.DummyMind": {}
     }
   }
 }

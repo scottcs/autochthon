@@ -1,51 +1,43 @@
 """ComboBox widgets."""
-from typing import Any, Optional, Sequence
+import typing
 
-from PySide2.QtCore import Qt, Signal
-from PySide2.QtWidgets import (
-    QComboBox,
-    QHBoxLayout,
-    QInputDialog,
-    QLabel,
-    QMessageBox,
-    QSpacerItem,
-    QWidget,
-)
+import PySide2.QtCore
+import PySide2.QtWidgets
 
-from .pushbutton import ToolPushButton
+import tools.widgets.pushbutton
 
 
-class ToolComboBox(QWidget):
+class ToolComboBox(PySide2.QtWidgets.QWidget):
     """Custom ComboBox."""
 
-    selection_changed = Signal()
+    selection_changed = PySide2.QtCore.Signal()
 
     def __init__(
         self,
         label: str,
-        parent: Optional[QWidget] = None,
-        min_label_width: Optional[int] = None,
+        parent: typing.Optional[PySide2.QtWidgets.QWidget] = None,
+        min_label_width: typing.Optional[int] = None,
         sort: bool = False,
     ) -> None:
         super().__init__(parent)
         self.name = label
         self._items = []
         self._sorted = sort
-        self._label = QLabel(label)
-        self._combobox = QComboBox()
+        self._label = PySide2.QtWidgets.QLabel(label)
+        self._combobox = PySide2.QtWidgets.QComboBox()
         if min_label_width is not None:
             self._label.setMinimumWidth(min_label_width)
         self._setup_layout()
         self._combobox.currentIndexChanged.connect(self._on_current_index_changed)
 
     def _setup_layout(self) -> None:
-        layout = QHBoxLayout()
+        layout = PySide2.QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
         layout.addWidget(self._label)
-        layout.addSpacerItem(QSpacerItem(4, 1))
-        layout.addWidget(self._combobox, Qt.AlignLeft)
+        layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(4, 1))
+        layout.addWidget(self._combobox, PySide2.QtCore.Qt.AlignLeft)
 
         self.setLayout(layout)
 
@@ -60,7 +52,7 @@ class ToolComboBox(QWidget):
             self._combobox.setCurrentIndex(idx)
         self._combobox.currentIndexChanged.connect(self._on_current_index_changed)
 
-    def add_items(self, items: Sequence[str]) -> None:
+    def add_items(self, items: typing.Sequence[str]) -> None:
         """Add items to the combobox."""
         self._items.extend(items)
         if self._sorted:
@@ -123,14 +115,16 @@ class ToolComboBox(QWidget):
 class ToolMutableComboBox(ToolComboBox):
     """A combobox that can have things added and removed from it."""
 
-    selection_changed = Signal()
-    duplicate_item = Signal(str)
+    selection_changed = PySide2.QtCore.Signal()
+    duplicate_item = PySide2.QtCore.Signal(str)
 
-    def __init__(self, *args: Any, hide_duplicate_button: bool = False, **kwargs: Any) -> None:
+    def __init__(
+        self, *args: typing.Any, hide_duplicate_button: bool = False, **kwargs: typing.Any
+    ) -> None:
         self._hide_duplicate_button = hide_duplicate_button
-        self._duplicate_button = ToolPushButton("∞")
-        self._add_button = ToolPushButton("+")
-        self._remove_button = ToolPushButton("-")
+        self._duplicate_button = tools.widgets.pushbutton.ToolPushButton("∞")
+        self._add_button = tools.widgets.pushbutton.ToolPushButton("+")
+        self._remove_button = tools.widgets.pushbutton.ToolPushButton("-")
         self._duplicate_button.clicked.connect(self._on_duplicate_item)
         self._add_button.clicked.connect(self._on_add_item)
         self._remove_button.clicked.connect(self._on_remove_item)
@@ -138,14 +132,14 @@ class ToolMutableComboBox(ToolComboBox):
         self._check_buttons()
 
     def _setup_layout(self) -> None:
-        layout = QHBoxLayout()
+        layout = PySide2.QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
         layout.addWidget(self._label)
-        layout.addSpacerItem(QSpacerItem(4, 1))
-        layout.addWidget(self._combobox, Qt.AlignLeft)
-        layout.addSpacerItem(QSpacerItem(4, 1))
+        layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(4, 1))
+        layout.addWidget(self._combobox, PySide2.QtCore.Qt.AlignLeft)
+        layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(4, 1))
         if not self._hide_duplicate_button:
             layout.addWidget(self._duplicate_button)
         layout.addWidget(self._add_button)
@@ -161,12 +155,12 @@ class ToolMutableComboBox(ToolComboBox):
             self._duplicate_button.setEnabled(True)
             self._remove_button.setEnabled(True)
 
-    def add_items(self, *args: Any, **kwargs: Any) -> None:
+    def add_items(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Add items to the combobox."""
         super().add_items(*args, **kwargs)
         self._check_buttons()
 
-    def add_item(self, *args: Any, **kwargs: Any) -> None:
+    def add_item(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Add a single item to the combobox."""
         super().add_item(*args, **kwargs)
         self._check_buttons()
@@ -176,12 +170,12 @@ class ToolMutableComboBox(ToolComboBox):
         super().clear()
         self._check_buttons()
 
-    def remove_item_by_text(self, *args: Any, **kwargs: Any) -> None:
+    def remove_item_by_text(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Remove an item with the given text."""
         super().remove_item_by_text(*args, **kwargs)
         self._check_buttons()
 
-    def remove_item_by_index(self, *args: Any, **kwargs: Any) -> None:
+    def remove_item_by_index(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Remove an item with the given index."""
         super().remove_item_by_index(*args, **kwargs)
         self._check_buttons()
@@ -189,7 +183,9 @@ class ToolMutableComboBox(ToolComboBox):
     def _on_duplicate_item(self) -> None:
         current = self.text()
         # noinspection PyCallByClass
-        item, ok = QInputDialog.getText(self, "Duplicate Item", "Name of duplicate:", text=current)
+        item, ok = PySide2.QtWidgets.QInputDialog.getText(
+            self, "Duplicate Item", "Name of duplicate:", text=current
+        )
         if ok and item != current:
             self.add_item(item)
             self.set_via_text(item)
@@ -197,20 +193,24 @@ class ToolMutableComboBox(ToolComboBox):
 
     def _on_add_item(self) -> None:
         # noinspection PyCallByClass
-        item, ok = QInputDialog.getText(self, "Add New Item", "Name of new item:")
+        item, ok = PySide2.QtWidgets.QInputDialog.getText(
+            self, "Add New Item", "Name of new item:"
+        )
         if ok:
             self.add_item(item)
             self.set_via_text(item)
 
     def _on_remove_item(self) -> None:
         # noinspection PyCallByClass
-        yes = QMessageBox.question(
+        yes = PySide2.QtWidgets.QMessageBox.question(
             self,
             "Remove Item?",
             f'Are you sure you want to remove "{self.text()}"?',
-            QMessageBox.StandardButtons(QMessageBox.Yes | QMessageBox.No),
-            QMessageBox.Yes,
+            PySide2.QtWidgets.QMessageBox.StandardButtons(
+                PySide2.QtWidgets.QMessageBox.Yes | PySide2.QtWidgets.QMessageBox.No
+            ),
+            PySide2.QtWidgets.QMessageBox.Yes,
         )
-        if yes == QMessageBox.Yes:
+        if yes == PySide2.QtWidgets.QMessageBox.Yes:
             idx = self._combobox.currentIndex()
             self.remove_item_by_index(idx)

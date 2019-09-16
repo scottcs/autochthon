@@ -1,21 +1,20 @@
 """Widget to represent an editable component."""
-from enum import Enum
-from typing import Any, Mapping, Optional
+import enum
+import typing
 
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QSpacerItem, QVBoxLayout, QWidget
+import PySide2.QtCore
+import PySide2.QtWidgets
 
-from game.types import parameter_types
-from game.utils.render import TileCache
-
-from .checkbox import ToolCheckBox
-from .combobox import ToolComboBox, ToolMutableComboBox
-from .lineedit import ToolLineEdit
+import game.types
+import game.utils.render
+import tools.widgets.checkbox
+import tools.widgets.combobox
+import tools.widgets.lineedit
 
 MIN_LABEL_WIDTH = 150
 
 
-def int_float_self(arg: Any) -> Any:
+def int_float_self(arg: typing.Any) -> typing.Any:
     """Convert an arg to int or float or itself."""
     try:
         return int(arg)
@@ -26,35 +25,35 @@ def int_float_self(arg: Any) -> Any:
             return arg
 
 
-class ComponentPanel(QWidget):
+class ComponentPanel(PySide2.QtWidgets.QWidget):
     """An editable game component."""
 
-    parameters_changed = Signal()
+    parameters_changed = PySide2.QtCore.Signal()
 
     def __init__(
         self,
         name: str,
-        component_class: Any,
-        data: Optional[Mapping] = None,
-        parent: Optional[QWidget] = None,
+        component_class: typing.Any,
+        data: typing.Optional[typing.Mapping] = None,
+        parent: typing.Optional[PySide2.QtWidgets.QWidget] = None,
     ) -> None:
         super().__init__(parent)
         self._name = name
         self._data = data or {}
-        self._parameters = parameter_types(component_class.__init__)
+        self._parameters = game.types.parameter_types(component_class.__init__)
         self._edit_widgets = []
         self._combo_widgets = []
         self._check_widgets = []
         self._setup_layout()
 
     def _setup_layout(self) -> None:
-        layout = QVBoxLayout()
+        layout = PySide2.QtWidgets.QVBoxLayout()
         layout.setSpacing(0)
         layout.setMargin(0)
 
         for name, params in self._parameters.items():
             try:
-                is_enum = issubclass(params["types"][0], Enum)
+                is_enum = issubclass(params["types"][0], enum.Enum)
             except TypeError:
                 is_enum = False
 
@@ -79,11 +78,11 @@ class ComponentPanel(QWidget):
         for widget in self._edit_widgets:
             layout.addWidget(widget)
         if len(self._edit_widgets) > 0:
-            layout.addSpacerItem(QSpacerItem(1, 8))
+            layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(1, 8))
         for widget in self._combo_widgets:
             layout.addWidget(widget)
         if len(self._edit_widgets) + len(self._combo_widgets) > 0:
-            layout.addSpacerItem(QSpacerItem(1, 8))
+            layout.addSpacerItem(PySide2.QtWidgets.QSpacerItem(1, 8))
         for widget in self._check_widgets:
             layout.addWidget(widget)
 
@@ -101,7 +100,7 @@ class ComponentPanel(QWidget):
         except KeyError:
             default = None
             required = True
-        widget = ToolLineEdit(
+        widget = tools.widgets.lineedit.ToolLineEdit(
             name, required=required, default_text=default, min_label_width=MIN_LABEL_WIDTH
         )
         if name in self._data:
@@ -110,7 +109,7 @@ class ComponentPanel(QWidget):
         self._edit_widgets.append(widget)
 
     def _add_list_combo_widget(self, name):
-        widget = ToolMutableComboBox(
+        widget = tools.widgets.combobox.ToolMutableComboBox(
             name, min_label_width=MIN_LABEL_WIDTH, hide_duplicate_button=True
         )
         widget.enum_type = "list"
@@ -120,16 +119,16 @@ class ComponentPanel(QWidget):
         self._combo_widgets.append(widget)
 
     def _add_tile_id_combo_widget(self, name):
-        widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
+        widget = tools.widgets.combobox.ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
         widget.enum_type = "tile_id"
-        widget.add_items(sorted(list(TileCache.iter_names())))
+        widget.add_items(sorted(list(game.utils.render.TileCache.iter_names())))
         if name in self._data:
             widget.set_via_text(self._data[name])
         widget.selection_changed.connect(self._on_changes)
         self._combo_widgets.append(widget)
 
     def _add_combo_widget(self, name, params):
-        widget = ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
+        widget = tools.widgets.combobox.ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
         widget.enum_type = params["types"][0]
         widget.add_items(list(widget.enum_type.__members__.keys()))
         if "default" in params:
@@ -143,7 +142,7 @@ class ComponentPanel(QWidget):
 
     def _add_check_widget(self, name, params):
         checked = self._data.get(name, params.get("default", False))
-        widget = ToolCheckBox(name, checked=checked)
+        widget = tools.widgets.checkbox.ToolCheckBox(name, checked=checked)
         widget.state_changed.connect(self._on_changes)
         self._check_widgets.append(widget)
 

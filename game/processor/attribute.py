@@ -1,36 +1,49 @@
 """Attribute processors."""
-from typing import Any
+import typing
 
 import esper
 
-from game.component.ai import Enemy
-from game.component.attribute import HP, GUTChangeHP
-from game.component.descriptive import Name
-from game.component.gamelog import GUTStatusLog
-from game.component.movement import Position
-from game.component.player import Player
-from game.utils.language import msg
-from gamedata.messages.status import MsgDeath
+import game.component.ai
+import game.component.attribute
+import game.component.descriptive
+import game.component.gamelog
+import game.component.movement
+import game.component.player
+import game.utils.language
+import gamedata.messages.status
 
 
-class HPProcessor(esper.Processor):
+class HP(esper.Processor):
     """HP Processor."""
 
-    def process(self, *args: Any, **kwargs: Any) -> None:
+    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process ChangeHP."""
-        for ent, components in self.world.get_components(HP, GUTChangeHP):
+        for ent, components in self.world.get_components(
+            game.component.attribute.HP, game.component.attribute.GUTChangeHP
+        ):
             hp, change = components
             hp.add_clamp(change.amount)
             if hp.value <= hp.min:
-                name = self.world.get_or_add_component(ent, Name, f"Entity {ent}")
-                position = self.world.optional_component_for_entity(ent, Position)
+                name = self.world.get_or_add_component(
+                    ent, game.component.descriptive.Name, f"Entity {ent}"
+                )
+                position = self.world.optional_component_for_entity(
+                    ent, game.component.movement.Position
+                )
                 if position:
-                    if self.world.optional_component_for_entity(ent, Player):
+                    if self.world.optional_component_for_entity(ent, game.component.player.Player):
                         self.world.map.contains_player[position.y, position.x] = False
-                    elif self.world.optional_component_for_entity(ent, Enemy):
+                    elif self.world.optional_component_for_entity(ent, game.component.ai.Enemy):
                         self.world.map.contains_enemy[position.y, position.x] = False
-                log = self.world.get_or_add_component(ent, GUTStatusLog)
-                log.add(*msg(self.world.players, (ent,), MsgDeath, name.specific))
+                log = self.world.get_or_add_component(ent, game.component.gamelog.GUTStatus)
+                log.add(
+                    *game.utils.language.msg(
+                        self.world.players,
+                        (ent,),
+                        gamedata.messages.status.MsgDeath,
+                        name.specific,
+                    )
+                )
                 # TODO: clean up dead entities (convert to corpses? that decay?)
                 self.world.kill_entity(ent)
-            self.world.remove_component(ent, GUTChangeHP)
+            self.world.remove_component(ent, game.component.attribute.GUTChangeHP)

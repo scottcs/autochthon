@@ -1,17 +1,16 @@
 """Pickup command."""
-from game.component.gamelog import GUTCommandLog
-from game.component.player import Player
+import game.command.base
+import game.component.gamelog
+import game.component.player
 
-from .base import BaseCommand
 
-
-class PickupCommand(BaseCommand):
+class Pickup(game.command.base.BaseCommand):
     """Pickup command."""
 
     def run(self) -> None:
         """Run the command."""
-        for ent, _ in self.world.get_component(Player):
+        for ent, _ in self.world.get_component(game.component.player.Player):
             item = self.world.pickup_item(ent)
             if not item:
-                cmd_log = self.world.get_or_add_component(ent, GUTCommandLog)
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add(f"There is nothing to pick up!")

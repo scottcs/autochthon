@@ -1,7 +1,7 @@
 {
   "Ghoul": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {},
       "descriptive.Name": {
         "first": "ghoul"
@@ -15,7 +15,7 @@
   },
   "Ghast": {
     "Components": {
-      "ai.AISimpleMind": {},
+      "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": 20
       },
@@ -28,8 +28,8 @@
         "tint": "Palette.purple",
         "layer": "RenderLayer.enemy"
       },
-      "damage.ImmuneDamageSlashing": {},
-      "damage.ModifierInflictDamageBludgeoning": {
+      "damage.ImmuneSlashing": {},
+      "damage.ModifierInflictBludgeoning": {
         "addend": "4d5"
       }
     }

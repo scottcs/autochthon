@@ -1,16 +1,16 @@
 """Game map."""
 from __future__ import annotations
 
-from enum import Enum, auto
-from typing import Any, List, Mapping, Optional, Tuple
+import enum
+import typing
 
 import numpy as np
 import tcod.map
 
-from game.utils.geometry import Point, Rect
-from game.utils.random import RNGCache
-from game.utils.render import TileCache
-from gamedata.palette import Palette
+import game.utils.geometry
+import game.utils.random
+import game.utils.render
+import gamedata.palette
 
 LOOP_TRIES = 10000
 MAP_BITS = (
@@ -28,26 +28,30 @@ MAP_BITS = (
 # TODO: interaction layer? others?
 
 
-class TileType(Enum):
+class TileType(enum.Enum):
     """Tile types."""
 
-    floor = auto()
-    wall_v = auto()
-    wall_h = auto()
+    floor = enum.auto()
+    wall_v = enum.auto()
+    wall_h = enum.auto()
 
 
 class Map(tcod.map.Map):
     """Game map."""
 
     def __init__(
-        self, width: int, height: int, seed: Optional[str] = None, config: Optional[Mapping] = None
+        self,
+        width: int,
+        height: int,
+        seed: typing.Optional[str] = None,
+        config: typing.Optional[typing.Mapping] = None,
     ) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
         self._iter_x: int = 0
         self._iter_y: int = 0
         self.config = config or {}
-        self._rng = RNGCache.get(seed)
+        self._rng = game.utils.random.RNGCache.get(seed)
         self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
 
     @property
@@ -62,9 +66,12 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_player")]
         return buffer
 
-    def spawnable_player_list(self) -> List[Point]:
+    def spawnable_player_list(self) -> typing.List[game.utils.geometry.Point]:
         """Return a list of only spawnable player coordinates."""
-        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_player.nonzero())]
+        return [
+            game.utils.geometry.Point(int(x), int(y))
+            for y, x in np.transpose(self.spawnable_player.nonzero())
+        ]
 
     @property
     def spawnable_enemy(self) -> np.array:
@@ -72,9 +79,12 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_enemy")]
         return buffer
 
-    def spawnable_enemy_list(self) -> List[Point]:
+    def spawnable_enemy_list(self) -> typing.List[game.utils.geometry.Point]:
         """Return a list of only spawnable enemy coordinates."""
-        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_enemy.nonzero())]
+        return [
+            game.utils.geometry.Point(int(x), int(y))
+            for y, x in np.transpose(self.spawnable_enemy.nonzero())
+        ]
 
     @property
     def spawnable_item(self) -> np.array:
@@ -82,9 +92,12 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_item")]
         return buffer
 
-    def spawnable_item_list(self) -> List[Point]:
+    def spawnable_item_list(self) -> typing.List[game.utils.geometry.Point]:
         """Return a list of only spawnable item coordinates."""
-        return [Point(int(x), int(y)) for y, x in np.transpose(self.spawnable_item.nonzero())]
+        return [
+            game.utils.geometry.Point(int(x), int(y))
+            for y, x in np.transpose(self.spawnable_item.nonzero())
+        ]
 
     @property
     def contains_player(self) -> np.array:
@@ -92,9 +105,12 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_player")]
         return buffer
 
-    def contains_player_list(self) -> List[Point]:
+    def contains_player_list(self) -> typing.List[game.utils.geometry.Point]:
         """Return a list of only coordinates occupied by players."""
-        return [Point(int(x), int(y)) for y, x in np.transpose(self.contains_player.nonzero())]
+        return [
+            game.utils.geometry.Point(int(x), int(y))
+            for y, x in np.transpose(self.contains_player.nonzero())
+        ]
 
     @property
     def contains_enemy(self) -> np.array:
@@ -102,9 +118,12 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_enemy")]
         return buffer
 
-    def contains_enemy_list(self) -> List[Point]:
+    def contains_enemy_list(self) -> typing.List[game.utils.geometry.Point]:
         """Return a list of only coordinates occupied by enemies."""
-        return [Point(int(x), int(y)) for y, x in np.transpose(self.contains_enemy.nonzero())]
+        return [
+            game.utils.geometry.Point(int(x), int(y))
+            for y, x in np.transpose(self.contains_enemy.nonzero())
+        ]
 
     @property
     def contains_item(self) -> np.array:
@@ -112,9 +131,12 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_item")]
         return buffer
 
-    def contains_item_list(self) -> List[Point]:
+    def contains_item_list(self) -> typing.List[game.utils.geometry.Point]:
         """Return a list of only coordinates occupied by items."""
-        return [Point(int(x), int(y)) for y, x in np.transpose(self.contains_item.nonzero())]
+        return [
+            game.utils.geometry.Point(int(x), int(y))
+            for y, x in np.transpose(self.contains_item.nonzero())
+        ]
 
     @property
     def alt_tile_1(self) -> np.array:
@@ -138,7 +160,9 @@ class Map(tcod.map.Map):
         """Create the map using the map's algorithm."""
         raise NotImplementedError("This class must be subclassed.")
 
-    def find_player_spawn(self, at: Optional[Point] = None) -> Optional[Point]:
+    def find_player_spawn(
+        self, at: typing.Optional[game.utils.geometry.Point] = None
+    ) -> typing.Optional[game.utils.geometry.Point]:
         """Find an open player spawn point."""
         if at is None:
             at = self._rng.choice(self.spawnable_player_list())
@@ -150,7 +174,9 @@ class Map(tcod.map.Map):
             return at
         return None
 
-    def find_enemy_spawn(self, at: Optional[Point] = None) -> Optional[Point]:
+    def find_enemy_spawn(
+        self, at: typing.Optional[game.utils.geometry.Point] = None
+    ) -> typing.Optional[game.utils.geometry.Point]:
         """Find an open enemy spawn point."""
         if at is None:
             at = self._rng.choice(self.spawnable_enemy_list())
@@ -162,7 +188,9 @@ class Map(tcod.map.Map):
             return at
         return None
 
-    def find_item_spawn(self, at: Optional[Point] = None) -> Optional[Point]:
+    def find_item_spawn(
+        self, at: typing.Optional[game.utils.geometry.Point] = None
+    ) -> typing.Optional[game.utils.geometry.Point]:
         """Find an open item spawn point."""
         if at is None:
             at = self._rng.choice(self.spawnable_item_list())
@@ -195,11 +223,15 @@ class Map(tcod.map.Map):
         if self.alt_tile_1[y, x]:
             idx += 1
         if tile_type == TileType.wall_v:
-            return TileCache.id_from_name("terrain_wallAVertical" + suffixes[idx])
+            return game.utils.render.TileCache.id_from_name(
+                "terrain_wallAVertical" + suffixes[idx]
+            )
         elif tile_type == TileType.wall_h:
-            return TileCache.id_from_name("terrain_wallAHorizontal" + suffixes[idx])
+            return game.utils.render.TileCache.id_from_name(
+                "terrain_wallAHorizontal" + suffixes[idx]
+            )
         elif tile_type == TileType.floor:
-            return TileCache.id_from_name("terrain_floorOverlay" + suffixes[idx])
+            return game.utils.render.TileCache.id_from_name("terrain_floorOverlay" + suffixes[idx])
         else:
             raise RuntimeError(f"Unknown tile type: {tile_type}")
 
@@ -207,11 +239,11 @@ class Map(tcod.map.Map):
     def _tile_color_from_type(tile_type: TileType) -> int:
         # TODO: move these definitions to a data file/change based on map "theme"
         if tile_type == TileType.wall_v:
-            return Palette.brown
+            return gamedata.palette.Palette.brown
         elif tile_type == TileType.wall_h:
-            return Palette.brown
+            return gamedata.palette.Palette.brown
         elif tile_type == TileType.floor:
-            return Palette.dark_grey
+            return gamedata.palette.Palette.dark_grey
         else:
             raise RuntimeError(f"Unknown tile type: {tile_type}")
 
@@ -220,7 +252,7 @@ class Map(tcod.map.Map):
         self._iter_x = 0
         return self
 
-    def __next__(self) -> Tuple[int, int]:
+    def __next__(self) -> typing.Tuple[int, int]:
         self._iter_y += 1
         if self._iter_y == self.height:
             self._iter_y = 0
@@ -229,7 +261,7 @@ class Map(tcod.map.Map):
             raise StopIteration
         return self._iter_y, self._iter_x
 
-    def get_tile(self, y: int, x: int) -> Tuple[int, int]:
+    def get_tile(self, y: int, x: int) -> typing.Tuple[int, int]:
         """Determine the tile id and color at the given coordinate."""
         tile_type = self._calculate_tile_type(y, x)
         return self._tile_id_from_type(tile_type, y, x), self._tile_color_from_type(tile_type)
@@ -241,13 +273,13 @@ class Map(tcod.map.Map):
 class ClassicMap(Map):
     """Classic rogue-style map."""
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         super().__init__(*args, **kwargs)
         self.max_rooms: int = self.config.get("max_rooms", 50)
         self.room_min_size: int = self.config.get("room_min_size", 5)
         self.room_max_size: int = self.config.get("room_max_size", 20)
 
-    def create_room(self, room: Rect) -> None:
+    def create_room(self, room: game.utils.geometry.Rect) -> None:
         """Create a new room in the map at the given coordinates.
 
         NOTE: a `room` includes wall tiles!
@@ -301,7 +333,7 @@ class ClassicMap(Map):
 
     def create(self) -> None:
         """Create the map."""
-        rooms: List[Rect] = []
+        rooms: typing.List[game.utils.geometry.Rect] = []
 
         for _ in range(self.max_rooms):
             w: int = self._rng.rand(self.room_min_size, self.room_max_size)
@@ -309,8 +341,8 @@ class ClassicMap(Map):
             x: int = self._rng.rand(self.width - w - 1)
             y: int = self._rng.rand(self.height - h - 1)
 
-            new_room: Rect = Rect(x, y, w, h)
-            new_center: Point = new_room.center
+            new_room: game.utils.geometry.Rect = game.utils.geometry.Rect(x, y, w, h)
+            new_center: game.utils.geometry.Point = new_room.center
 
             for other_room in rooms:
                 if new_room.intersects(other_room):
@@ -321,7 +353,7 @@ class ClassicMap(Map):
                 if len(rooms) == 0:  # first room
                     self.spawnable_player[new_room.center.y, new_room.center.x] = True
                 else:
-                    prev_center: Point = rooms[-1].center
+                    prev_center: game.utils.geometry.Point = rooms[-1].center
                     if self._rng.coin():
                         self.create_h_tunnel(prev_center.x, new_center.x, prev_center.y)
                         self.create_v_tunnel(prev_center.y, new_center.y, new_center.x)
