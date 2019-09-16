@@ -149,3 +149,6 @@ tags
 # Persistent undo
 [._]*.un~
 
+
+# Sensitive data
+sensitive.toml
