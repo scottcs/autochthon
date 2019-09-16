@@ -22,4 +22,4 @@ def game_loop(game_object: game.core.main.Game) -> None:
     """Main game loop."""
     while not game_object.game_over:
         game_object.update()
-        game.events.GameOver({"shutdown": True})
+    game.events.GameOver({"shutdown": True})
