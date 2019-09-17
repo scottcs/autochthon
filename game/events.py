@@ -49,7 +49,7 @@ class Event:
                 raise ValueError("Handler is not handling this event, so cannot unhandle it.")
         self._to_handle.clear()
 
-    def fire(self, event: typing.Optional[game.types.EventType] = None) -> None:
+    def fire(self, event: typing.Optional[game.types.Event] = None) -> None:
         """Fire the event."""
         self._remove_unhandled_handlers()
         # print(f"{self} fire event: {event}")

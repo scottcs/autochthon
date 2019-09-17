@@ -162,11 +162,7 @@ class Game:
             group=game.types.ProcessGroup.render,
         )
         self.world.add_processor(
-            game.processor.render.BearLibRender(
-                self.config["title"],
-                self.config["window"]["width"],
-                self.config["window"]["height"],
-            ),
+            game.processor.render.BearLibRender(),
             priority=game.types.Priority.render,
             group=game.types.ProcessGroup.render,
         )
@@ -182,37 +178,37 @@ class Game:
         current_map.create()
         self.world.map = current_map
 
-        player_factory = game.utils.factory.Player(loader, self.world)
-        enemy_factory = game.utils.factory.Enemy(loader, self.world)
-        item_factory = game.utils.factory.Item(loader, self.world)
-        player = player_factory.make(["Orc"])
-        self.world.add_component(player, game.component.action.GUTMyTurn())
-        for _ in range(200):
-            enemy_factory.make(["TrainingDummy"])
-        enemy_factory.make(["Crab"])
-        enemy_factory.make(["Boar"])
-        enemy_factory.make(["OrcShaman"])
-        enemy_factory.make(["OrcBrute"])
-        enemy_factory.make(["Firefly"])
-        enemy_factory.make(["SebastianBenini"])
-        for _ in range(100):
-            item_factory.make(["Katana"])
-            item_factory.make(["Mace"])
-            item_factory.make(["PlateArmor"])
+        # player_factory = game.utils.factory.Player(loader, self.world)
+        # enemy_factory = game.utils.factory.Enemy(loader, self.world)
+        # item_factory = game.utils.factory.Item(loader, self.world)
+        # player = player_factory.make(["Orc"])
+        # self.world.add_component(player, game.component.action.GUTMyTurn())
+        # for _ in range(200):
+        #     enemy_factory.make(["TrainingDummy"])
+        # enemy_factory.make(["Crab"])
+        # enemy_factory.make(["Boar"])
+        # enemy_factory.make(["OrcShaman"])
+        # enemy_factory.make(["OrcBrute"])
+        # enemy_factory.make(["Firefly"])
+        # enemy_factory.make(["SebastianBenini"])
+        # for _ in range(100):
+        #     item_factory.make(["Katana"])
+        #     item_factory.make(["Mace"])
+        #     item_factory.make(["PlateArmor"])
 
-    def _on_input(self, _event: game.types.EventType) -> None:
+    def _on_input(self, _event: game.types.Event) -> None:
         self.got_player_input = True
 
     @staticmethod
-    def _on_refresh_map(event: game.types.EventType) -> None:
+    def _on_refresh_map(event: game.types.Event) -> None:
         game.events.RenderMap.fire(event)
         game.events.RenderEntities.fire({"entities": [], "all": True})
 
-    def _on_game_log(self, event: game.types.EventType) -> None:
+    def _on_game_log(self, event: game.types.Event) -> None:
         for line in event["lines"]:
             self.morgue.info(line.message)
 
-    def _on_game_over(self, event: game.types.EventType) -> None:
+    def _on_game_over(self, event: game.types.Event) -> None:
         if event.get("shutdown"):
             log.info("Shutting down.")
             self.game_over = True

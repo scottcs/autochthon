@@ -6,8 +6,8 @@ import typing
 import game.const.palette
 import game.utils.random
 
-EventType = typing.Dict[typing.Any, typing.Any]
-EventHandler = typing.Callable[[EventType], typing.Any]
+Event = typing.Dict[typing.Any, typing.Any]
+EventHandler = typing.Callable[[Event], typing.Any]
 
 Entity = int
 

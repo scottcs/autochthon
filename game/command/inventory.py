@@ -17,7 +17,7 @@ class Inventory(game.command.base.BaseCommand):
 
     def __init__(self, world: game.core.world.World) -> None:
         super().__init__(world)
-        self.selected: game.types.EventType = {}
+        self.selected: game.types.Event = {}
 
     def run(self) -> None:
         """Run the command."""
@@ -33,7 +33,7 @@ class Inventory(game.command.base.BaseCommand):
                 cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add("You aren't carrying anything!")
 
-    def on_choice(self, event: game.types.EventType) -> None:
+    def on_choice(self, event: game.types.Event) -> None:
         """Callback for ChoiceFromList event."""
         input_key = event["char"]
         for ent, _ in self.world.get_component(game.component.player.Player):
@@ -68,7 +68,7 @@ class Inventory(game.command.base.BaseCommand):
                         game.events.SubMenuClosed.handle(self._on_submenu_closed)
                         break
 
-    def _on_submenu_closed(self, _event: game.types.EventType) -> None:
+    def _on_submenu_closed(self, _event: game.types.Event) -> None:
         self.submenu = False
         self.selected = {}
         game.events.SubMenuClosed.unhandle(self._on_submenu_closed)

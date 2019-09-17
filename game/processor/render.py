@@ -1,9 +1,18 @@
 """Render processors."""
 import logging
+import pathlib
 import typing
 
 import bearlibterminal.terminal as blt
 import esper
+
+import game.component.movement
+import game.component.player
+import game.component.render
+import game.const.config
+import game.const.tileset
+import game.events
+import game.types
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -12,12 +21,50 @@ log.setLevel(logging.DEBUG)
 class BearLibRender(esper.Processor):
     """Game render processor for BearLibTerminal console."""
 
-    def __init__(self, title: str, width: int, height: int) -> None:
-        blt.set(f"window: size={width}x{height}, title={title}")
+    def __init__(self) -> None:
+        self.render_entities: set = set()
+        game.events.GameOver.handle(self._on_game_over)
+
         if not blt.open():
             log.critical("Unable to initialize terminal window!")
-        blt.puts(4, 4, "Test")
+
+        window_data = game.const.config.DATA["window"]
+        window_size = f"size={window_data['width']}x{window_data['height']}"
+        tileset_data = game.const.config.DATA["tiles"]
+        cell_size = f"cellsize={tileset_data['width']}x{tileset_data['height']}"
+        title = game.const.config.DATA["title"]
+        blt.set(f"window: {window_size}, {cell_size}, resizable=true, title='{title}'")
+        self._load_tilesets()
+        blt.put(0, 0, 0x5000)
+        blt.put(window_data["width"] - 1, 0, 0x5004)
+        blt.put(0, window_data["height"] - 1, 0x5008)
+        blt.put(window_data["width"] - 1, window_data["height"] - 1, 0x500C)
+
+    def _load_tilesets(self) -> None:
+        for item in game.const.tileset.DATA["tilesets"]:
+            item_file = pathlib.Path(f"{game.const.tileset.BASE_PATH}/{item['file']}")
+            blt.set(f"{item['offset']}: {item_file}, size={item['size']}")
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
+
+        # PLAYER POSITION
+        # for ent, components in self.world.get_components(
+        #     game.component.player.Player,
+        #     game.component.render.Renderable,
+        #     game.component.movement.Position,
+        # ):
+        #     position = components[-1]
+        #     player_x = position.x
+        #     player_y = position.y
+        #     fov = components[0].fov
+        #     # TODO: handle more than one player controlled object?
+        #     break
+
         blt.refresh()
+
+    def _on_game_over(self, event: game.types.Event):
+        """Game shutdown callback."""
+        if event.get("shutdown"):
+            log.info("Closing terminal window.")
+            blt.close()

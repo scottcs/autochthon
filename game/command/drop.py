@@ -41,7 +41,7 @@ class Drop(game.command.base.BaseCommand):
                 cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add("You have nothing to drop!")
 
-    def on_choice(self, event: game.types.EventType) -> None:
+    def on_choice(self, event: game.types.Event) -> None:
         """Callback for ChoiceFromList event."""
         input_key = event["char"]
         for ent, _ in self.world.get_component(game.component.player.Player):

@@ -2,16 +2,16 @@
   "title": "Autochthon",
   "org": "Precipitation Studios",
   "window": {
-    "width": 80,
-    "height": 50
+    "width": 40,
+    "height": 25
   },
   "player": {
     "name": "UNKNOWN"
   },
   "tiles": {
-    "tileset": "oryx_ur",
-    "width": 16,
-    "height": 24
+    "tileset": "oryx_td_2x",
+    "width": 32,
+    "height": 32
   },
   "map": {
     "max_tiles_w": 100,

@@ -49,11 +49,11 @@ class BaseCommand:
             del items_carried["unequipped"]
         return items_carried
 
-    def on_choice(self, event: game.types.EventType) -> None:
+    def on_choice(self, event: game.types.Event) -> None:
         """Callback for ChoiceFromList event."""
         # Implement in child class if needed.
         pass
 
-    def _on_menu_closed(self, _event: game.types.EventType) -> None:
+    def _on_menu_closed(self, _event: game.types.Event) -> None:
         game.events.ChoiceFromList.unhandle(self.on_choice)
         game.events.MenuClosed.unhandle(self._on_menu_closed)
