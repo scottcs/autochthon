@@ -3,12 +3,12 @@ import typing
 
 import esper
 
-import constants.messages.combat
 import game.component.attribute
 import game.component.base
 import game.component.damage
 import game.component.descriptive
 import game.component.gamelog
+import game.constants.messages.combat
 import game.utils.language
 
 
@@ -27,7 +27,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                     *game.utils.language.msg(
                         self.world.players,
                         (ent,),
-                        constants.messages.combat.MsgDamageImmune,
+                        game.constants.messages.combat.MsgDamageImmune,
                         name.specific,
                         "Bludgeoning",
                     )
@@ -51,7 +51,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            constants.messages.combat.MsgDamageVulnerable,
+                            game.constants.messages.combat.MsgDamageVulnerable,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,
@@ -62,7 +62,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            constants.messages.combat.MsgDamageResist,
+                            game.constants.messages.combat.MsgDamageResist,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,
@@ -73,7 +73,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            constants.messages.combat.MsgDamageNormal,
+                            game.constants.messages.combat.MsgDamageNormal,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,

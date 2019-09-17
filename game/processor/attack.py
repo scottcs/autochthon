@@ -3,14 +3,14 @@ import typing
 
 import esper
 
-import constants.base_engine_values
-import constants.messages.combat
 import game.component.action
 import game.component.attack
 import game.component.base
 import game.component.damage
 import game.component.descriptive
 import game.component.gamelog
+import game.constants.base_engine_values
+import game.constants.messages.combat
 import game.types
 import game.utils.language
 import game.utils.random
@@ -41,7 +41,7 @@ class AttackTargeting(esper.Processor):
                 *game.utils.language.msg(
                     self.world.players,
                     (ent, target.entity),
-                    constants.messages.combat.MsgAttack,
+                    game.constants.messages.combat.MsgAttack,
                     aggressor_name.specific,
                     defender_name.specific,
                     target.attack,
@@ -74,7 +74,7 @@ class AttackMiss(esper.Processor):
                     mods.append(mod)
                 # TODO: Gather other modifiers
                 modifier = game.component.base.accumulate_modifiers(*mods)
-                chance = constants.base_engine_values.HIT_CHANCE + modifier.factor
+                chance = game.constants.base_engine_values.HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
                 if not rng.percent(chance):
                     name = self.world.get_or_add_component(
@@ -84,7 +84,7 @@ class AttackMiss(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent, target.entity),
-                            constants.messages.combat.MsgMiss,
+                            game.constants.messages.combat.MsgMiss,
                             name.specific,
                         )
                     )
@@ -123,7 +123,7 @@ class AttackDefense(esper.Processor):
                     *game.utils.language.msg(
                         self.world.players,
                         (ent, target.entity),
-                        constants.messages.combat.MsgAttackImmune,
+                        game.constants.messages.combat.MsgAttackImmune,
                         name.specific,
                         self.verb.past,
                     )
@@ -150,7 +150,7 @@ class AttackDefense(esper.Processor):
                             *game.utils.language.msg(
                                 self.world.players,
                                 (target.entity, ent),
-                                constants.messages.combat.MsgDefend,
+                                game.constants.messages.combat.MsgDefend,
                                 name.specific,
                                 self.verb.present,
                             )

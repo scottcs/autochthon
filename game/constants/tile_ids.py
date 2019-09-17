@@ -3,10 +3,10 @@ import json
 import pathlib
 import typing
 
-import constants.config
+import game.constants.config
 
 TILE_IDS_FILE = pathlib.Path(
-    f"data/tiles/{constants.config.CONFIG['tiles']['tileset']}/tile_ids.json"
+    f"data/tiles/{game.constants.config.CONFIG['tiles']['tileset']}/tile_ids.json"
 )
 
 with TILE_IDS_FILE.open() as tile_ids_file_handle:

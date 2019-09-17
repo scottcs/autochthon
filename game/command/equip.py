@@ -1,10 +1,10 @@
 """Equip/Unequip command."""
-import constants.palette
 import game.command.base
 import game.component.container
 import game.component.descriptive
 import game.component.gamelog
 import game.component.player
+import game.constants.palette
 import game.events
 import game.types
 
@@ -65,7 +65,9 @@ class Equip(game.command.base.BaseCommand):
                         ent, game.component.gamelog.GUTCommand
                     )
                     cmd_log.add("You unequip ")
-                    cmd_log.append(want_to_equip[1].generic, constants.palette.ItemPalette.epic)
+                    cmd_log.append(
+                        want_to_equip[1].generic, game.constants.palette.ItemPalette.epic
+                    )
                     cmd_log.append(f" from your {name} slot.")
                     game.events.ChoiceAccepted.fire()
                 else:
@@ -76,7 +78,7 @@ class Equip(game.command.base.BaseCommand):
                         )
                         cmd_log.add("You equip ")
                         cmd_log.append(
-                            want_to_equip[1].generic, constants.palette.ItemPalette.epic
+                            want_to_equip[1].generic, game.constants.palette.ItemPalette.epic
                         )
                         cmd_log.append(f" in your {name} slot.")
                         game.events.ChoiceAccepted.fire()

@@ -3,13 +3,13 @@ import typing
 
 import esper
 
-import constants.messages.status
 import game.component.ai
 import game.component.attribute
 import game.component.descriptive
 import game.component.gamelog
 import game.component.movement
 import game.component.player
+import game.constants.messages.status
 import game.utils.language
 
 
@@ -40,7 +40,7 @@ class HP(esper.Processor):
                     *game.utils.language.msg(
                         self.world.players,
                         (ent,),
-                        constants.messages.status.MsgDeath,
+                        game.constants.messages.status.MsgDeath,
                         name.specific,
                     )
                 )

@@ -2,7 +2,7 @@
 import dataclasses
 import typing
 
-import constants.palette
+import game.constants.palette
 import game.types
 
 
@@ -11,7 +11,7 @@ class Renderable:
     """Renderable component."""
 
     tile_id: int
-    tint: constants.palette.Palette
+    tint: game.constants.palette.Palette
     layer: game.types.RenderLayer
 
     def __post_init__(self) -> None:

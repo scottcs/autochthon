@@ -1,7 +1,7 @@
 """Base player command."""
-import constants.palette
 import game.component.container
 import game.component.descriptive
+import game.constants.palette
 import game.core.world
 import game.events
 import game.types
@@ -36,7 +36,7 @@ class BaseCommand:
                         containable.equip_type.name,
                         contained.label,
                         name.generic,
-                        constants.palette.ItemPalette.rare,
+                        game.constants.palette.ItemPalette.rare,
                     )
                 )
         if items_carried["equipped"]:
