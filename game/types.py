@@ -3,8 +3,8 @@ import enum
 import inspect
 import typing
 
+import constants.palette
 import game.utils.random
-import gamedata.palette
 
 EventType = typing.Dict[typing.Any, typing.Any]
 EventHandler = typing.Callable[[EventType], typing.Any]
@@ -145,7 +145,7 @@ class LogLine(typing.NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: int = gamedata.palette.MessagePalette.default
+    color: int = constants.palette.MessagePalette.default
 
 
 def get_union_types(union_type: typing.Any) -> tuple:

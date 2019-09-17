@@ -30,7 +30,7 @@ def convert_datum(value: typing.Any) -> typing.Any:
         return None
 
     if class_type == "Palette":
-        from gamedata.palette import Palette
+        from constants.palette import Palette
 
         result = getattr(Palette, attr)
     else:

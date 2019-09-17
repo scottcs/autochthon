@@ -5,10 +5,10 @@ import typing
 import bearlibterminal.terminal as blt
 import esper
 
-import gamedata.config
-import gamedata.palette
+import constants.config
+import constants.palette
 
-MAP_BITS = gamedata.config.CONFIG["map_bits"]
+MAP_BITS = constants.config.CONFIG["map_bits"]
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 

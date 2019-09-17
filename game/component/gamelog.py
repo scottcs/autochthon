@@ -1,8 +1,8 @@
 """Game log components."""
 import typing
 
+import constants.palette
 import game.types
-import gamedata.palette
 
 
 class BaseLog:
@@ -11,13 +11,13 @@ class BaseLog:
     def __init__(
         self,
         initial_line: typing.Optional[str] = None,
-        initial_color: int = gamedata.palette.MessagePalette.default,
+        initial_color: int = constants.palette.MessagePalette.default,
     ) -> None:
         self.lines: list = []
         if initial_line is not None:
             self.add(initial_line, color=initial_color)
 
-    def add(self, message: str, color: int = gamedata.palette.MessagePalette.default) -> None:
+    def add(self, message: str, color: int = constants.palette.MessagePalette.default) -> None:
         """Add a new line to the log."""
         # capitalize
         message = f"{message[0].upper()}{message[1:]}"
@@ -35,7 +35,7 @@ class BaseLog:
                 message = " " + message
         self.append(message, color)
 
-    def append(self, message: str, color: int = gamedata.palette.MessagePalette.default) -> None:
+    def append(self, message: str, color: int = constants.palette.MessagePalette.default) -> None:
         """Append to the log without a space."""
         self.lines.append(game.types.LogLine(message, color))
 

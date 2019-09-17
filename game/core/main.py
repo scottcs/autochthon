@@ -6,6 +6,7 @@ import typing
 
 import appdirs
 
+import constants.base_engine_values
 import game
 import game.component.action
 import game.component.attack
@@ -29,7 +30,6 @@ import game.utils.dataloader
 import game.utils.factory
 import game.utils.language
 import game.utils.random
-import gamedata.base_engine_values
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -96,19 +96,19 @@ class Game:
             game.utils.language.Verb("dodges", "dodged"),
             game.component.attack.DodgeModifier,
             game.component.attack.ImmuneToDodge,
-            gamedata.base_engine_values.DODGE_CHANCE,
+            constants.base_engine_values.DODGE_CHANCE,
         )
         block_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("blocks", "blocked"),
             game.component.attack.BlockModifier,
             game.component.attack.ImmuneToBlock,
-            gamedata.base_engine_values.BLOCK_CHANCE,
+            constants.base_engine_values.BLOCK_CHANCE,
         )
         deflect_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("deflects", "deflected"),
             game.component.attack.DeflectModifier,
             game.component.attack.ImmuneToDeflect,
-            gamedata.base_engine_values.DEFLECT_CHANCE,
+            constants.base_engine_values.DEFLECT_CHANCE,
         )
 
         self.world.add_processor(

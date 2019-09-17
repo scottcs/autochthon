@@ -1,4 +1,5 @@
 """Inventory command."""
+import constants.palette
 import game.command.base
 import game.command.drop
 import game.command.equip
@@ -9,7 +10,6 @@ import game.component.player
 import game.core.world
 import game.events
 import game.types
-import gamedata.palette
 
 
 class Inventory(game.command.base.BaseCommand):
@@ -55,10 +55,10 @@ class Inventory(game.command.base.BaseCommand):
                         self.selected = event
                         game.events.Describe.fire(
                             {
-                                "name": (name.generic, gamedata.palette.ItemPalette.epic),
+                                "name": (name.generic, constants.palette.ItemPalette.epic),
                                 "msg": [
                                     ("It's ", None),
-                                    (name.generic, gamedata.palette.ItemPalette.epic),
+                                    (name.generic, constants.palette.ItemPalette.epic),
                                     (".", None),
                                 ],
                                 "choices": "d) Drop  e) Equip/Unequip",

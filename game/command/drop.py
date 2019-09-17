@@ -1,6 +1,7 @@
 """Drop item."""
 import logging
 
+import constants.palette
 import game.command.base
 import game.component.container
 import game.component.descriptive
@@ -9,7 +10,6 @@ import game.component.movement
 import game.component.player
 import game.events
 import game.types
-import gamedata.palette
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -27,7 +27,7 @@ class Drop(game.command.base.BaseCommand):
                 cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add(
                     "There is already an item on the ground here!",
-                    gamedata.palette.MessagePalette.negative,
+                    constants.palette.MessagePalette.negative,
                 )
                 return
             items_carried = self._get_items_carried(ent)
@@ -58,7 +58,7 @@ class Drop(game.command.base.BaseCommand):
                         )
                         cmd_log.add(
                             "There is already an item on the ground here!",
-                            gamedata.palette.MessagePalette.negative,
+                            constants.palette.MessagePalette.negative,
                         )
                         game.events.ChoiceDeclined.fire({"status": "You can't drop that!"})
                     break

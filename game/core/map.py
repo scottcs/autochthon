@@ -7,10 +7,10 @@ import typing
 import numpy as np
 import tcod.map
 
+import constants.palette
 import game.utils.geometry
 import game.utils.random
 import game.utils.render
-import gamedata.palette
 
 LOOP_TRIES = 10000
 MAP_BITS = (
@@ -239,11 +239,11 @@ class Map(tcod.map.Map):
     def _tile_color_from_type(tile_type: TileType) -> int:
         # TODO: move these definitions to a data file/change based on map "theme"
         if tile_type == TileType.wall_v:
-            return gamedata.palette.Palette.brown
+            return constants.palette.Palette.brown
         elif tile_type == TileType.wall_h:
-            return gamedata.palette.Palette.brown
+            return constants.palette.Palette.brown
         elif tile_type == TileType.floor:
-            return gamedata.palette.Palette.dark_grey
+            return constants.palette.Palette.dark_grey
         else:
             raise RuntimeError(f"Unknown tile type: {tile_type}")
 

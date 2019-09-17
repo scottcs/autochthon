@@ -4,13 +4,13 @@ import typing
 
 import esper
 
+import constants.palette
 import game.component.container
 import game.component.descriptive
 import game.component.gamelog
 import game.component.movement
 import game.events
 import game.types
-import gamedata.palette
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -77,7 +77,7 @@ class Container(esper.Processor):
                         else:
                             cmd_log.add(f"{container_ent_name.generic} picks up ")
                         # TODO: colorize the item by rarity?
-                        cmd_log.append(f"{name.generic}", color=gamedata.palette.ItemPalette.epic)
+                        cmd_log.append(f"{name.generic}", color=constants.palette.ItemPalette.epic)
                         cmd_log.append(f".")
                         log.debug(f"Picked up {containable_ent}")
                     entities_to_render.append(containable_ent)
@@ -104,7 +104,7 @@ class Container(esper.Processor):
                         else:
                             cmd_log.add(f"{contained_ent_name.generic} drops ")
                         # TODO: colorize the item by rarity?
-                        cmd_log.append(f"{name.generic}", color=gamedata.palette.ItemPalette.epic)
+                        cmd_log.append(f"{name.generic}", color=constants.palette.ItemPalette.epic)
                         cmd_log.append(".")
                     entities_to_render.append(containable_ent)
                 else:
@@ -123,7 +123,7 @@ class Container(esper.Processor):
                     )
                     if contained:
                         # TODO: colorize the item by rarity?
-                        cmd_log.add(f"{name.generic}", color=gamedata.palette.ItemPalette.epic)
+                        cmd_log.add(f"{name.generic}", color=constants.palette.ItemPalette.epic)
                         cmd_log.append(f" is put into {container_name}.")
         if entities_to_render:
             game.events.RenderEntities.fire({"entities": entities_to_render})

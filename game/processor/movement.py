@@ -3,6 +3,7 @@ import typing
 
 import esper
 
+import constants.palette
 import game.component.action
 import game.component.ai
 import game.component.descriptive
@@ -11,7 +12,6 @@ import game.component.movement
 import game.component.player
 import game.component.status
 import game.events
-import gamedata.palette
 
 
 class Movement(esper.Processor):
@@ -65,7 +65,7 @@ class Movement(esper.Processor):
                             desc_log = self.world.get_or_add_component(
                                 ent, game.component.gamelog.GUTDescription
                             )
-                            desc_log.add(f"{name.generic}", gamedata.palette.ItemPalette.epic)
+                            desc_log.add(f"{name.generic}", constants.palette.ItemPalette.epic)
                             desc_log.append(" is here.")
             self.world.actor_takes_turn(ent, game.component.movement.GUTMoving)
             if entities_to_render:
