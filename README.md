@@ -73,24 +73,6 @@ After merging your branch into master. Bump the version for release:
 poetry run bumpversion release
 ```
 
-### Creating Tile Atlases
-
-Run `tools.build_atlas` as in this example:
-
-```
-tile=Avatar_Equipment
-poetry run python -m tools.build_atlas  data/tiles/oryx_ur/$tile.png data/tiles/oryx_ur/$tile.txt
- data/tiles/oryx_ur/$tile.json
-```
-
-### Building the tile index
-
-Run `tools.make_tile_ids`:
-
-```
-poetry run python -m tools.make_tile_ids data/tiles/oryx_ur
-```
-
 ### Running the Assemblage Editor
 
 Run `tools.assemblage_edit`:
