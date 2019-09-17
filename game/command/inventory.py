@@ -55,10 +55,10 @@ class Inventory(game.command.base.BaseCommand):
                         self.selected = event
                         game.events.Describe.fire(
                             {
-                                "name": (name.generic, game.constants.palette.ItemPalette.epic),
+                                "name": (name.generic, game.constants.palette.Item.epic),
                                 "msg": [
                                     ("It's ", None),
-                                    (name.generic, game.constants.palette.ItemPalette.epic),
+                                    (name.generic, game.constants.palette.Item.epic),
                                     (".", None),
                                 ],
                                 "choices": "d) Drop  e) Equip/Unequip",

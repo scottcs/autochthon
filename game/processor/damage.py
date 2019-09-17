@@ -27,7 +27,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                     *game.utils.language.msg(
                         self.world.players,
                         (ent,),
-                        game.constants.messages.combat.MsgDamageImmune,
+                        game.constants.messages.combat.DamageImmune,
                         name.specific,
                         "Bludgeoning",
                     )
@@ -51,7 +51,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            game.constants.messages.combat.MsgDamageVulnerable,
+                            game.constants.messages.combat.DamageVulnerable,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,
@@ -62,7 +62,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            game.constants.messages.combat.MsgDamageResist,
+                            game.constants.messages.combat.DamageResist,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,
@@ -73,7 +73,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            game.constants.messages.combat.MsgDamageNormal,
+                            game.constants.messages.combat.DamageNormal,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,

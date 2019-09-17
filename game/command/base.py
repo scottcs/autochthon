@@ -36,7 +36,7 @@ class BaseCommand:
                         containable.equip_type.name,
                         contained.label,
                         name.generic,
-                        game.constants.palette.ItemPalette.rare,
+                        game.constants.palette.Item.rare,
                     )
                 )
         if items_carried["equipped"]:

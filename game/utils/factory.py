@@ -31,7 +31,7 @@ def convert_datum(value: typing.Any) -> typing.Any:
         return None
 
     if class_type == "Palette":
-        result = getattr(game.constants.palette.Palette, attr)
+        result = getattr(game.constants.palette.Base, attr)
     else:
         imported = pydoc.locate(f"game.types.{class_type}")
         if imported:

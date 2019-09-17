@@ -27,7 +27,7 @@ class Drop(game.command.base.BaseCommand):
                 cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
                 cmd_log.add(
                     "There is already an item on the ground here!",
-                    game.constants.palette.MessagePalette.negative,
+                    game.constants.palette.Message.negative,
                 )
                 return
             items_carried = self._get_items_carried(ent)
@@ -58,7 +58,7 @@ class Drop(game.command.base.BaseCommand):
                         )
                         cmd_log.add(
                             "There is already an item on the ground here!",
-                            game.constants.palette.MessagePalette.negative,
+                            game.constants.palette.Message.negative,
                         )
                         game.events.ChoiceDeclined.fire({"status": "You can't drop that!"})
                     break

@@ -2,7 +2,7 @@
 import enum
 
 
-class Palette(enum.IntEnum):
+class Base(enum.IntEnum):
     """Color palette."""
 
     black = 0x000000
@@ -18,7 +18,7 @@ class Palette(enum.IntEnum):
     dark_grey = 0x333333
 
 
-class DangerPalette(enum.IntEnum):
+class Danger(enum.IntEnum):
     """Danger level colors."""
 
     deadly = 0xFF6699
@@ -29,7 +29,7 @@ class DangerPalette(enum.IntEnum):
     helpless = 0x666666
 
 
-class MessagePalette(enum.IntEnum):
+class Message(enum.IntEnum):
     """Message colors."""
 
     danger = 0xFF6666
@@ -43,7 +43,7 @@ class MessagePalette(enum.IntEnum):
     holy_crap = 0xFF66FF
 
 
-class ItemPalette(enum.IntEnum):
+class Item(enum.IntEnum):
     """Colors for item descriptions."""
 
     trash = 0x666666

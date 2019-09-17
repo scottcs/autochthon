@@ -145,7 +145,7 @@ class LogLine(typing.NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: int = game.constants.palette.MessagePalette.default
+    color: int = game.constants.palette.Message.default
 
 
 def get_union_types(union_type: typing.Any) -> tuple:

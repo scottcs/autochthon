@@ -14,7 +14,7 @@ class _TileCache:
         """Get a tile ID from its name."""
         id_ = self._cache.get(name, None)
         if id_ is None:
-            for key, data in game.constants.tile_ids.TILE_IDS.items():
+            for key, data in game.constants.tile_ids.DATA.items():
                 if data["name"] == name:
                     id_ = key
                     self._cache[name] = id_
@@ -26,16 +26,16 @@ class _TileCache:
     @staticmethod
     def data_from_id(id_: int) -> dict:
         """Get tile data from its id."""
-        return game.constants.tile_ids.TILE_IDS[str(id_)]
+        return game.constants.tile_ids.DATA[str(id_)]
 
     def data_from_name(self, name: str) -> dict:
         """Get tile data from its name."""
-        return game.constants.tile_ids.TILE_IDS[str(self.id_from_name(name))]
+        return game.constants.tile_ids.DATA[str(self.id_from_name(name))]
 
     @staticmethod
     def iter_names() -> typing.Generator[str, None, None]:
         """Iterate over tile names."""
-        for data in game.constants.tile_ids.TILE_IDS.values():
+        for data in game.constants.tile_ids.DATA.values():
             yield data["name"]
 
 

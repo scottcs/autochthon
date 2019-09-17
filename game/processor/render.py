@@ -7,7 +7,7 @@ import esper
 
 import game.constants.config
 
-MAP_BITS = game.constants.config.CONFIG["map_bits"]
+MAP_BITS = game.constants.config.DATA["map_bits"]
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 

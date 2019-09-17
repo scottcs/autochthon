@@ -41,7 +41,7 @@ class AttackTargeting(esper.Processor):
                 *game.utils.language.msg(
                     self.world.players,
                     (ent, target.entity),
-                    game.constants.messages.combat.MsgAttack,
+                    game.constants.messages.combat.Attack,
                     aggressor_name.specific,
                     defender_name.specific,
                     target.attack,
@@ -84,7 +84,7 @@ class AttackMiss(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent, target.entity),
-                            game.constants.messages.combat.MsgMiss,
+                            game.constants.messages.combat.Miss,
                             name.specific,
                         )
                     )
@@ -123,7 +123,7 @@ class AttackDefense(esper.Processor):
                     *game.utils.language.msg(
                         self.world.players,
                         (ent, target.entity),
-                        game.constants.messages.combat.MsgAttackImmune,
+                        game.constants.messages.combat.AttackImmune,
                         name.specific,
                         self.verb.past,
                     )
@@ -150,7 +150,7 @@ class AttackDefense(esper.Processor):
                             *game.utils.language.msg(
                                 self.world.players,
                                 (target.entity, ent),
-                                game.constants.messages.combat.MsgDefend,
+                                game.constants.messages.combat.Defend,
                                 name.specific,
                                 self.verb.present,
                             )

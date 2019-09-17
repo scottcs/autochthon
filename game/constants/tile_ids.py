@@ -5,11 +5,7 @@ import typing
 
 import game.constants.config
 
-TILE_IDS_FILE = pathlib.Path(
-    f"data/tiles/{game.constants.config.CONFIG['tiles']['tileset']}/tile_ids.json"
-)
+_PATH = pathlib.Path(f"data/tiles/{game.constants.config.DATA['tiles']['tileset']}/tile_ids.json")
 
-with TILE_IDS_FILE.open() as tile_ids_file_handle:
-    TILE_IDS: typing.Dict[str, typing.Dict[typing.Any, typing.Any]] = json.load(
-        tile_ids_file_handle
-    )
+with _PATH.open() as tile_ids_file_handle:
+    DATA: typing.Dict[str, typing.Dict[typing.Any, typing.Any]] = json.load(tile_ids_file_handle)

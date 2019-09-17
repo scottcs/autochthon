@@ -3,7 +3,7 @@ import json
 import pathlib
 import typing
 
-CONFIG_FILE = pathlib.Path("data/config.json")
+_PATH = pathlib.Path("data/config.json")
 
-with CONFIG_FILE.open() as config_file_handle:
-    CONFIG: typing.Dict[typing.Any, typing.Any] = json.load(config_file_handle)
+with _PATH.open() as config_file_handle:
+    DATA: typing.Dict[typing.Any, typing.Any] = json.load(config_file_handle)

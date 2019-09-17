@@ -40,7 +40,7 @@ class HP(esper.Processor):
                     *game.utils.language.msg(
                         self.world.players,
                         (ent,),
-                        game.constants.messages.status.MsgDeath,
+                        game.constants.messages.status.Death,
                         name.specific,
                     )
                 )

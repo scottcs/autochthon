@@ -1,65 +1,56 @@
 """Combat related messages."""
 import game.constants.palette
 
-MsgAttack = (
-    ("You attack {1} with {2}!", game.constants.palette.MessagePalette.default),
-    ("{0} attacks you with {2}!", game.constants.palette.MessagePalette.negative),
-    ("{0} attacks {1} with {2}!", game.constants.palette.MessagePalette.positive),
+Attack = (
+    ("You attack {1} with {2}!", game.constants.palette.Message.default),
+    ("{0} attacks you with {2}!", game.constants.palette.Message.negative),
+    ("{0} attacks {1} with {2}!", game.constants.palette.Message.positive),
 )
 
-MsgMiss = (
-    ("You miss!", game.constants.palette.MessagePalette.negative),
-    ("{0} misses!", game.constants.palette.MessagePalette.positive),
-    ("{0} misses!", game.constants.palette.MessagePalette.default),
+Miss = (
+    ("You miss!", game.constants.palette.Message.negative),
+    ("{0} misses!", game.constants.palette.Message.positive),
+    ("{0} misses!", game.constants.palette.Message.default),
 )
 
-MsgAttackImmune = (
-    ("Your attack cannot be {1}!", game.constants.palette.MessagePalette.positive),
-    ("{0}'s attack cannot be {1}!", game.constants.palette.MessagePalette.negative),
-    ("{0}'s attack cannot be {1}!", game.constants.palette.MessagePalette.default),
+AttackImmune = (
+    ("Your attack cannot be {1}!", game.constants.palette.Message.positive),
+    ("{0}'s attack cannot be {1}!", game.constants.palette.Message.negative),
+    ("{0}'s attack cannot be {1}!", game.constants.palette.Message.default),
 )
 
-MsgDefend = (
-    ("You {1}!", game.constants.palette.MessagePalette.positive),
-    ("{0} {1}!", game.constants.palette.MessagePalette.negative),
-    ("{0} {1}!", game.constants.palette.MessagePalette.default),
+Defend = (
+    ("You {1}!", game.constants.palette.Message.positive),
+    ("{0} {1}!", game.constants.palette.Message.negative),
+    ("{0} {1}!", game.constants.palette.Message.default),
 )
 
-MsgDamageImmune = (
-    ("You are immune to {1}!", game.constants.palette.MessagePalette.very_positive),
-    ("{0} is immune to {1}!", game.constants.palette.MessagePalette.very_negative),
-    ("{0} is immune to {1}!", game.constants.palette.MessagePalette.default),
+DamageImmune = (
+    ("You are immune to {1}!", game.constants.palette.Message.very_positive),
+    ("{0} is immune to {1}!", game.constants.palette.Message.very_negative),
+    ("{0} is immune to {1}!", game.constants.palette.Message.default),
 )
 
-MsgDamageResist = (
-    (
-        "You resist {1} and only take {2} damage!",
-        game.constants.palette.MessagePalette.very_positive,
-    ),
-    (
-        "{0} resists {1} and only takes {2} damage!",
-        game.constants.palette.MessagePalette.very_negative,
-    ),
-    ("{0} resists {1} and only takes {2} damage!", game.constants.palette.MessagePalette.default),
+DamageResist = (
+    ("You resist {1} and only take {2} damage!", game.constants.palette.Message.very_positive),
+    ("{0} resists {1} and only takes {2} damage!", game.constants.palette.Message.very_negative),
+    ("{0} resists {1} and only takes {2} damage!", game.constants.palette.Message.default),
 )
 
-MsgDamageVulnerable = (
+DamageVulnerable = (
     (
         "You are vulnerable to {1} and take {2} damage!",
-        game.constants.palette.MessagePalette.very_negative,
+        game.constants.palette.Message.very_negative,
     ),
     (
         "{0} is vulnerable to {1} and takes {2} damage!",
-        game.constants.palette.MessagePalette.very_positive,
+        game.constants.palette.Message.very_positive,
     ),
-    (
-        "{0} is vulnerable to {1} and takes {2} damage!",
-        game.constants.palette.MessagePalette.default,
-    ),
+    ("{0} is vulnerable to {1} and takes {2} damage!", game.constants.palette.Message.default),
 )
 
-MsgDamageNormal = (
-    ("You take {2} {1} damage!", game.constants.palette.MessagePalette.negative),
-    ("{0} takes {2} {1} damage!", game.constants.palette.MessagePalette.positive),
-    ("{0} takes {2} {1} damage!", game.constants.palette.MessagePalette.default),
+DamageNormal = (
+    ("You take {2} {1} damage!", game.constants.palette.Message.negative),
+    ("{0} takes {2} {1} damage!", game.constants.palette.Message.positive),
+    ("{0} takes {2} {1} damage!", game.constants.palette.Message.default),
 )
