@@ -1,25 +1,17 @@
 title = "Autochthon"
 org = "Precipitation Studios"
-
-[window]
-width = 40
-height = 25
+tileset = "oryx_td_2x"
 
 [player]
 name = "UNKNOWN"
 
-[tiles]
-tileset = "oryx_td_2x"
-width = 32
-height = 32
+[directories]
+base = "autochthon"
+morgue = "morgue"
 
 [map]
 max_tiles_w = 100
 max_tiles_h = 100
-
-[directories]
-base = "autochthon"
-morgue = "morgue"
 
 [map_bits]
 x = 1
