@@ -9,7 +9,7 @@ import game.component.descriptive
 import game.component.gamelog
 import game.component.movement
 import game.component.player
-import game.constants.messages.status
+import game.const.messages.status
 import game.utils.language
 
 
@@ -38,10 +38,7 @@ class HP(esper.Processor):
                 log = self.world.get_or_add_component(ent, game.component.gamelog.GUTStatus)
                 log.add(
                     *game.utils.language.msg(
-                        self.world.players,
-                        (ent,),
-                        game.constants.messages.status.Death,
-                        name.specific,
+                        self.world.players, (ent,), game.const.messages.status.Death, name.specific
                     )
                 )
                 # TODO: clean up dead entities (convert to corpses? that decay?)

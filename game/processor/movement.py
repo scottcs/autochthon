@@ -10,7 +10,7 @@ import game.component.gamelog
 import game.component.movement
 import game.component.player
 import game.component.status
-import game.constants.palette
+import game.const.palette
 import game.events
 
 
@@ -65,7 +65,7 @@ class Movement(esper.Processor):
                             desc_log = self.world.get_or_add_component(
                                 ent, game.component.gamelog.GUTDescription
                             )
-                            desc_log.add(f"{name.generic}", game.constants.palette.Item.epic)
+                            desc_log.add(f"{name.generic}", game.const.palette.Item.epic)
                             desc_log.append(" is here.")
             self.world.actor_takes_turn(ent, game.component.movement.GUTMoving)
             if entities_to_render:

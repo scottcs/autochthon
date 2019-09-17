@@ -59,7 +59,7 @@ class PCG32Generator:
         and this constant lets you choose which one you're using.
 
         You can create as many separate RNGs as you like. If you give them
-        different sequence constants, they will be independent and uncorrelated
+        different sequence const, they will be independent and uncorrelated
         with each other (i.e., their sequences will not overlap at all).
         """
         self.state = 0
