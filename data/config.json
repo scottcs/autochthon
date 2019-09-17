@@ -9,6 +9,7 @@
     "name": "UNKNOWN"
   },
   "tiles": {
+    "tileset": "oryx_ur",
     "width": 16,
     "height": 24
   },
