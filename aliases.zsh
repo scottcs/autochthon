@@ -8,6 +8,5 @@ alias bmajor='poetry run bumpversion --no-tag major'
 alias atlas='poetry run python -m tools.build_atlas  data/tiles/oryx_ur/$tile.png data/tiles/oryx_ur/$tile.txt data/tiles/oryx_ur/$tile.json'
 alias tile_ids='poetry run python -m tools.make_tile_ids data/tiles/oryx_ur'
 alias typing='poetry run mypy'
-alias rg="rg --iglob '!static/js/pixi*' --iglob '!typeshed'"
 alias black='poetry run black .'
-alias vulture='poetry run python -m vulture --exclude data/,__pycache__/,typeshed/,.vscode/,.idea/,.git/ . whitelist.py'
+alias vulture='poetry run python -m vulture --exclude data/,__pycache__/,.vscode/,.idea/,.git/ . whitelist.py'
