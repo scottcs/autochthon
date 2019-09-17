@@ -3,7 +3,7 @@ import pathlib
 
 import PySide2.QtWidgets
 
-STYLESHEET = pathlib.Path("static/css/dark_orange.qss")
+STYLESHEET = pathlib.Path("tools/style/dark_orange.qss")
 
 
 class ToolApp(PySide2.QtWidgets.QApplication):
