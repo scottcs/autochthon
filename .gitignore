@@ -153,4 +153,3 @@ tags
 # Sensitive data
 sensitive.toml
 data/tiles/*
-static/img/*
