@@ -304,18 +304,6 @@ class WebRender(esper.Processor):
         return data_append_length
 
 
-class TCODRender(esper.Processor):
-    """Game render processor for local TCOD console."""
-
-    def __init__(self, _title: str, width: int = 80, height: int = 40) -> None:
-        # Someday, implement this?
-        log.error(f"Someday maybe this will be a TCOD {width}x{height} console.")
-
-    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
-        """Process all renderables."""
-        pass
-
-
 class BearLibRender(esper.Processor):
     """Game render processor for local BearLibTerminal console."""
 
