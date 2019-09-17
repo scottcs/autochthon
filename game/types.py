@@ -6,6 +6,7 @@ import typing
 import game.const.palette
 import game.utils.random
 
+Config = typing.MutableMapping[typing.Any, typing.Any]
 Event = typing.Dict[typing.Any, typing.Any]
 EventHandler = typing.Callable[[Event], typing.Any]
 

@@ -1,9 +1,11 @@
 """Config data."""
-import json
 import pathlib
-import typing
 
-_PATH = pathlib.Path("data/default_config.json")
+import toml
+
+import game.types
+
+_PATH = pathlib.Path("data/default_config.toml")
 
 with _PATH.open() as config_file_handle:
-    DATA: typing.Dict[typing.Any, typing.Any] = json.load(config_file_handle)
+    DATA: game.types.Config = toml.load(config_file_handle)

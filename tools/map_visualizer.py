@@ -5,7 +5,6 @@ This tool is used to quickly visualize map generation algorithms.
 TODO: render path analysis and loops analysis
 
 """
-import json
 import pathlib
 import pydoc
 import sys
@@ -15,11 +14,11 @@ import PySide2.QtCore
 import PySide2.QtGui
 import PySide2.QtWidgets
 
+import game.const.config
 import game.core.map
 import game.utils.random
 import tools.widgets
 
-CONFIG_FILE = pathlib.Path("data") / pathlib.Path("default_config.json")
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 MAP_LAYERS = {
@@ -547,8 +546,7 @@ def main() -> int:
     except IndexError:
         parent_seed = "MapVisualizer"
     app = tools.widgets.ToolApp(sys.argv)
-    with CONFIG_FILE.open() as f:
-        map_config: typing.MutableMapping = json.load(f)["map"]
+    map_config: typing.MutableMapping = game.const.config.DATA["map"]
     map_config["parent_seed"] = parent_seed
     map_visualizer = MapVisualizer(map_config)
     map_visualizer.show()
