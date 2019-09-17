@@ -79,7 +79,8 @@ Run `tools.build_atlas` as in this example:
 
 ```
 tile=Avatar_Equipment
-poetry run python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/img/oryx_ur/$tile.txt static/img/oryx_ur/$tile.json
+poetry run python -m tools.build_atlas  data/tiles/oryx_ur/$tile.png data/tiles/oryx_ur/$tile.txt
+ data/tiles/oryx_ur/$tile.json
 ```
 
 ### Building the tile index
@@ -87,7 +88,7 @@ poetry run python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/img/
 Run `tools.make_tile_ids`:
 
 ```
-poetry run python -m tools.make_tile_ids static/img/oryx_ur
+poetry run python -m tools.make_tile_ids data/tiles/oryx_ur
 ```
 
 ### Running the Assemblage Editor
