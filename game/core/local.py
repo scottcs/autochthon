@@ -1,4 +1,6 @@
 """Local (non-server) game."""
+import bearlibterminal.terminal as blt
+
 import game.core.main
 import game.events
 import game.processor.render
@@ -22,4 +24,7 @@ def game_loop(game_object: game.core.main.Game) -> None:
     """Main game loop."""
     while not game_object.game_over:
         game_object.update()
-    game.events.GameOver({"shutdown": True})
+        if blt.has_input():
+            key_code = blt.read()
+            if key_code == blt.TK_ESCAPE:
+                game.events.GameOver({"shutdown": True})

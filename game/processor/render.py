@@ -319,8 +319,8 @@ class TCODRender(esper.Processor):
 class BearLibRender(esper.Processor):
     """Game render processor for local BearLibTerminal console."""
 
-    def __init__(self, _title: str, width: int = 80, height: int = 40) -> None:
-        blt.set(f"window: size={width}x{height}")
+    def __init__(self, title: str, width: int = 80, height: int = 40) -> None:
+        blt.set(f"window: size={width}x{height}, title={title}")
         if not blt.open():
             log.critical("Unable to initialize terminal window!")
         blt.puts(4, 4, "Test")
