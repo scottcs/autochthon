@@ -28,10 +28,10 @@ class BearLibRender(esper.Processor):
         if not blt.open():
             log.critical("Unable to initialize terminal window!")
 
-        window_data = game.const.config.DATA["window"]
+        window_data = game.const.tileset.DATA["window"]
         window_size = f"size={window_data['width']}x{window_data['height']}"
-        tileset_data = game.const.config.DATA["tiles"]
-        cell_size = f"cellsize={tileset_data['width']}x{tileset_data['height']}"
+        cell_data = game.const.tileset.DATA["cell"]
+        cell_size = f"cellsize={cell_data['width']}x{cell_data['height']}"
         title = game.const.config.DATA["title"]
         blt.set(f"window: {window_size}, {cell_size}, resizable=true, title='{title}'")
         self._load_tilesets()

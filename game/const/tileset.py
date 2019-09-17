@@ -5,7 +5,7 @@ import typing
 
 import game.const.config
 
-BASE_PATH = pathlib.Path(f"data/tiles/{game.const.config.DATA['tiles']['tileset']}")
+BASE_PATH = pathlib.Path(f"data/tiles/{game.const.config.DATA['tileset']}")
 _PATH = pathlib.Path(f"{BASE_PATH}/tileset.json")
 
 with _PATH.open() as tile_ids_file_handle:

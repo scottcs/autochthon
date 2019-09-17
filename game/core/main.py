@@ -10,6 +10,7 @@ import game
 import game.component.action
 import game.component.attack
 import game.const.base_engine_values
+import game.const.config
 import game.core.map
 import game.core.world
 import game.events
@@ -42,8 +43,8 @@ def _safe_dir(name: str) -> str:
 class Game:
     """Main game object."""
 
-    def __init__(self, config: typing.Optional[dict] = None) -> None:
-        self.config: dict = config or {}
+    def __init__(self) -> None:
+        self.config = game.const.config.DATA
         self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
         self.game_over: bool = False
         self.got_player_input: bool = False
