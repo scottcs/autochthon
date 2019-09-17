@@ -5,7 +5,6 @@ import time
 import typing
 
 import appdirs
-import esper
 
 import game
 import game.component.action
@@ -23,6 +22,7 @@ import game.processor.movement
 import game.processor.player_bump
 import game.processor.player_input
 import game.processor.psychopomps
+import game.processor.render
 import game.processor.time
 import game.types
 import game.utils.dataloader
@@ -42,12 +42,7 @@ def _safe_dir(name: str) -> str:
 class Game:
     """Main game object."""
 
-    def __init__(
-        self,
-        render_processor: esper.Processor,
-        input_processor: esper.Processor,
-        config: typing.Optional[dict] = None,
-    ) -> None:
+    def __init__(self, config: typing.Optional[dict] = None) -> None:
         self.config: dict = config or {}
         self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
         self.game_over: bool = False
@@ -61,7 +56,7 @@ class Game:
 
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
-        self.set_state_playing(render_processor, input_processor)
+        self.set_state_playing()
         game.events.Input.handle(self._on_input)
 
     def _setup_morgue(self) -> logging.Logger:
@@ -85,12 +80,7 @@ class Game:
         morgue_log.propagate = False
         return morgue_log
 
-    def set_state_playing(
-        self,
-        render_processor: esper.Processor,
-        input_processor: esper.Processor,
-        seed: typing.Optional[str] = None,
-    ) -> None:
+    def set_state_playing(self, seed: typing.Optional[str] = None) -> None:
         """Set the game state to playing."""
         game.utils.random.RNGCache.init(seed)
         self.state = game.types.GameState.playing
@@ -122,7 +112,7 @@ class Game:
         )
 
         self.world.add_processor(
-            input_processor,
+            game.processor.player_input.PlayerInput(),
             priority=game.types.Priority.player_input,
             group=game.types.ProcessGroup.player,
         )
@@ -172,7 +162,11 @@ class Game:
             group=game.types.ProcessGroup.render,
         )
         self.world.add_processor(
-            render_processor,
+            game.processor.render.BearLibRender(
+                self.config["title"],
+                self.config["window"]["width"],
+                self.config["window"]["height"],
+            ),
             priority=game.types.Priority.render,
             group=game.types.ProcessGroup.render,
         )

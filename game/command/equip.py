@@ -32,7 +32,7 @@ class Equip(game.command.base.BaseCommand):
 
     def on_choice(self, event: game.types.EventType) -> None:
         """Callback for ChoiceFromList event."""
-        input_key = self._keys_from_event(event)
+        input_key = event["char"]
         for ent, _ in self.world.get_component(game.component.player.Player):
             equipment = self.world.component_for_entity(ent, game.component.container.Equipment)
             want_to_equip = None

@@ -1,18 +1,12 @@
 {
   "title": "Autochthon",
   "org": "Precipitation Studios",
-  "player": {
-    "name": "UNKNOWN"
-  },
-  "server": {
-    "host": "127.0.0.1",
-    "port": 19999,
-    "width": 80,
-    "height": 26
-  },
-  "local": {
+  "window": {
     "width": 80,
     "height": 50
+  },
+  "player": {
+    "name": "UNKNOWN"
   },
   "tiles": {
     "width": 16,

@@ -1,20 +1,10 @@
 """Base player command."""
-import typing
-
 import game.component.container
 import game.component.descriptive
 import game.core.world
 import game.events
 import game.types
-import game.utils.input
 import gamedata.palette
-
-
-class InputKey(typing.NamedTuple):
-    """Key and modifiers from an input event."""
-
-    key: str
-    modifiers: typing.Dict[str, bool]
 
 
 class BaseCommand:
@@ -58,14 +48,6 @@ class BaseCommand:
         else:
             del items_carried["unequipped"]
         return items_carried
-
-    @staticmethod
-    def _keys_from_event(event: game.types.EventType) -> InputKey:
-        key: str = game.utils.input.get_key(event["code"])
-        modifiers: typing.Dict[str, bool] = game.utils.input.unpack_modifiers(event["modifiers"])
-        if modifiers["shift"]:
-            key = key.upper()
-        return InputKey(key, modifiers)
 
     def on_choice(self, event: game.types.EventType) -> None:
         """Callback for ChoiceFromList event."""

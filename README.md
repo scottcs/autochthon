@@ -50,16 +50,11 @@ poetry run pre-commit install
 
 Note: _Any of the below commands can be run in a poetry subshell using `poetry shell`, removing the need to preface each command with `poetry run`._
 
-To run as a web server using the host and port defined in `data/config.json`:
+To run:
 
 ```
 poetry run python start.py
 ```
-
-
-To run in a local window (not yet implemented):
-
-`poetry run python start.py --local`
 
 ## Development
 

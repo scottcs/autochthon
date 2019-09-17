@@ -35,7 +35,7 @@ class Inventory(game.command.base.BaseCommand):
 
     def on_choice(self, event: game.types.EventType) -> None:
         """Callback for ChoiceFromList event."""
-        input_key = self._keys_from_event(event)
+        input_key = event["char"]
         for ent, _ in self.world.get_component(game.component.player.Player):
             if self.submenu:
                 if input_key.key == "d":
