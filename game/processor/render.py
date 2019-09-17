@@ -10,6 +10,7 @@ import game.component.movement
 import game.component.player
 import game.component.render
 import game.const.config
+import game.const.tile_ids
 import game.const.tileset
 import game.events
 import game.types
@@ -35,13 +36,25 @@ class BearLibRender(esper.Processor):
         title = game.const.config.DATA["title"]
         blt.set(f"window: {window_size}, {cell_size}, resizable=true, title='{title}'")
         self._load_tilesets()
-        blt.put(0, 0, 0x5000)
-        blt.put(window_data["width"] - 1, 0, 0x5004)
-        blt.put(0, window_data["height"] - 1, 0x5008)
-        blt.put(window_data["width"] - 1, window_data["height"] - 1, 0x500C)
+        blt.put(0, 0, game.const.tile_ids.DATA["monsters"]["hero_fighter"]["e"][0])
+        blt.put(
+            window_data["width"] - 1,
+            0,
+            game.const.tile_ids.DATA["monsters"]["hero_barbarian"]["w"][0],
+        )
+        blt.put(
+            0,
+            window_data["height"] - 1,
+            game.const.tile_ids.DATA["monsters"]["hero_thief"]["n"][0],
+        )
+        blt.put(
+            window_data["width"] - 1,
+            window_data["height"] - 1,
+            game.const.tile_ids.DATA["monsters"]["hero_crusader"]["s"][0],
+        )
 
     def _load_tilesets(self) -> None:
-        for item in game.const.tileset.DATA["tilesets"]:
+        for item in game.const.tileset.DATA["tilesets"].values():
             item_file = pathlib.Path(f"{game.const.tileset.BASE_PATH}/{item['file']}")
             blt.set(f"{item['offset']}: {item_file}, size={item['size']}")
 
