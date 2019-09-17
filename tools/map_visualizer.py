@@ -19,7 +19,7 @@ import game.core.map
 import game.utils.random
 import tools.widgets
 
-CONFIG_FILE = pathlib.Path("data") / pathlib.Path("config.json")
+CONFIG_FILE = pathlib.Path("data") / pathlib.Path("default_config.json")
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 MAP_LAYERS = {
