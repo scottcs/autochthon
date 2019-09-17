@@ -14,7 +14,7 @@ log.setLevel(logging.DEBUG)
 
 
 class BearLibRender(esper.Processor):
-    """Game render processor for local BearLibTerminal console."""
+    """Game render processor for BearLibTerminal console."""
 
     def __init__(self, title: str, width: int, height: int) -> None:
         blt.set(f"window: size={width}x{height}, title={title}")

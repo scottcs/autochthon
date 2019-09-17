@@ -1,4 +1,4 @@
-"""Local (non-server) game."""
+"""Game loop."""
 import bearlibterminal.terminal as blt
 
 import game.core.main
@@ -8,14 +8,9 @@ import game.processor.render
 import gamedata.config
 
 
-def run_local() -> None:
-    """Run the game locally."""
-    local_game = game.core.main.Game(gamedata.config.CONFIG)
-    game_loop(local_game)
-
-
-def game_loop(game_object: game.core.main.Game) -> None:
-    """Main game loop."""
+def run() -> None:
+    """Run the game."""
+    game_object = game.core.main.Game(gamedata.config.CONFIG)
     while not game_object.game_over:
         game_object.update()
         if blt.has_input():

@@ -10,4 +10,4 @@ alias tile_ids='poetry run python -m tools.make_tile_ids data/tiles/oryx_ur'
 alias typing='poetry run mypy'
 alias rg="rg --iglob '!static/js/pixi*' --iglob '!typeshed'"
 alias black='poetry run black .'
-alias vulture='poetry run python -m vulture --exclude data/,__pycache__/,templates/,typeshed/,.vscode/,.idea/,node_modules/,build/,dist/,static/,.git/,.serverless/ . whitelist.py'
+alias vulture='poetry run python -m vulture --exclude data/,__pycache__/,typeshed/,.vscode/,.idea/,.git/ . whitelist.py'
