@@ -152,4 +152,4 @@ tags
 
 # Sensitive data
 sensitive.toml
-data/tiles/
+data/tiles/*
