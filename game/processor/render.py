@@ -55,7 +55,7 @@ class BearLibRender(esper.Processor):
 
     def _load_tilesets(self) -> None:
         for item in game.const.tileset.DATA["tilesets"].values():
-            item_file = pathlib.Path(f"{game.const.tileset.BASE_PATH}/{item['file']}")
+            item_file = pathlib.Path(f"{game.const.tileset.TILES_PATH}/{item['file']}")
             blt.set(f"{item['offset']}: {item_file}, size={item['size']}")
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

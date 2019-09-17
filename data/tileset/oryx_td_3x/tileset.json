@@ -1,0 +1,42 @@
+{
+  "window": {
+    "width": 32,
+    "height": 20
+  },
+  "cell": {
+    "width": 48,
+    "height": 48
+  },
+  "tilesets": {
+    "fx": {
+      "file": "fx.png",
+      "size": "48x48",
+      "offset": "0x1000"
+    },
+    "interface": {
+      "file": "interface.png",
+      "size": "48x48",
+      "offset": "0x2000"
+    },
+    "items": {
+      "file": "items.png",
+      "size": "48x48",
+      "offset": "0x3000"
+    },
+    "monsters": {
+      "file": "monsters.png",
+      "size": "48x48",
+      "offset": "0x4000"
+    },
+    "portraits": {
+      "file": "portraits.png",
+      "size": "96x96",
+      "offset": "0x5000"
+    },
+    "world": {
+      "file": "world.png",
+      "size": "48x48",
+      "offset": "0x6000"
+    }
+  }
+}
