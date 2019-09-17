@@ -1,13 +1,12 @@
 """Loaded tile ids."""
+import json
 import pathlib
-
-import toml
+import typing
 
 import game.const.config
-import game.types
 
 BASE_PATH = pathlib.Path(f"data/tiles/{game.const.config.DATA['tiles']['tileset']}")
-_PATH = pathlib.Path(f"{BASE_PATH}/tileset.toml")
+_PATH = pathlib.Path(f"{BASE_PATH}/tileset.json")
 
 with _PATH.open() as tile_ids_file_handle:
-    DATA: game.types.TilesetData = toml.load(tile_ids_file_handle)
+    DATA: typing.Dict[str, typing.Dict[typing.Any, typing.Any]] = json.load(tile_ids_file_handle)
