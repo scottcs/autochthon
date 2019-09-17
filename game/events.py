@@ -36,7 +36,7 @@ class Event:
         # print(f"{self} unhandle")
         return self
 
-    def _remove_handlers(self) -> None:
+    def _remove_unhandled_handlers(self) -> None:
         while self._to_unhandle:
             handler = self._to_unhandle.pop()
             if handler in self._to_handle:
@@ -51,11 +51,11 @@ class Event:
 
     def fire(self, event: typing.Optional[game.types.EventType] = None) -> None:
         """Fire the event."""
-        self._remove_handlers()
+        self._remove_unhandled_handlers()
         # print(f"{self} fire event: {event}")
         for handler in self.handlers.keys():
             handler(event or {})
-        self._remove_handlers()
+        self._remove_unhandled_handlers()
 
     def num_handlers(self) -> int:
         """Get the number of handlers."""

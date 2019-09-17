@@ -43,7 +43,10 @@ class Game:
     """Main game object."""
 
     def __init__(
-        self, render_processor: esper.Processor, config: typing.Optional[dict] = None
+        self,
+        render_processor: esper.Processor,
+        input_processor: esper.Processor,
+        config: typing.Optional[dict] = None,
     ) -> None:
         self.config: dict = config or {}
         self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
@@ -58,7 +61,7 @@ class Game:
 
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
-        self.set_state_playing(render_processor)
+        self.set_state_playing(render_processor, input_processor)
         game.events.Input.handle(self._on_input)
 
     def _setup_morgue(self) -> logging.Logger:
@@ -83,7 +86,10 @@ class Game:
         return morgue_log
 
     def set_state_playing(
-        self, render_processor: esper.Processor, seed: typing.Optional[str] = None
+        self,
+        render_processor: esper.Processor,
+        input_processor: esper.Processor,
+        seed: typing.Optional[str] = None,
     ) -> None:
         """Set the game state to playing."""
         game.utils.random.RNGCache.init(seed)
@@ -116,7 +122,7 @@ class Game:
         )
 
         self.world.add_processor(
-            game.processor.player_input.PlayerInput(),
+            input_processor,
             priority=game.types.Priority.player_input,
             group=game.types.ProcessGroup.player,
         )
