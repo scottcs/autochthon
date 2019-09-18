@@ -996,5 +996,423 @@
       "offset": 80,
       "n": [15]
     }
+  },
+  "world": {
+    "wall_grey": {
+      "offset": 0,
+      "n": [6, 7, 8, 9, 10, 11],
+      "e": [0, 1, 2, 3, 4, 5]
+    },
+    "stairs_down_grey": {
+      "offset": 0,
+      "n": [12]
+    },
+    "stairs_up_grey": {
+      "offset": 0,
+      "n": [13]
+    },
+    "wall_pool_grey": {
+      "offset": 0,
+      "n": [14]
+    },
+    "wall_slots_grey": {
+      "offset": 0,
+      "n": [15]
+    },
+    "wall_orange": {
+      "offset": 16,
+      "n": [6, 7, 8, 9, 10, 11],
+      "e": [0, 1, 2, 3, 4, 5]
+    },
+    "stairs_down_orange": {
+      "offset": 16,
+      "n": [12]
+    },
+    "stairs_up_orange": {
+      "offset": 16,
+      "n": [13]
+    },
+    "wall_pool_orange": {
+      "offset": 16,
+      "n": [14]
+    },
+    "wall_slots_orange": {
+      "offset": 16,
+      "n": [15]
+    },
+    "wall_blue": {
+      "offset": 16,
+      "n": [6, 7, 8, 9, 10, 11],
+      "e": [0, 1, 2, 3, 4, 5]
+    },
+    "stairs_down_blue": {
+      "offset": 16,
+      "n": [12]
+    },
+    "stairs_up_blue": {
+      "offset": 16,
+      "n": [13]
+    },
+    "wall_pool_blue": {
+      "offset": 16,
+      "n": [14]
+    },
+    "wall_slots_blue": {
+      "offset": 16,
+      "n": [15]
+    },
+    "wall_tan": {
+      "offset": 16,
+      "n": [6, 7, 8, 9, 10, 11],
+      "e": [0, 1, 2, 3, 4, 5]
+    },
+    "stairs_down_tan": {
+      "offset": 16,
+      "n": [12]
+    },
+    "stairs_up_tan": {
+      "offset": 16,
+      "n": [13]
+    },
+    "wall_pool_tan": {
+      "offset": 16,
+      "n": [14]
+    },
+    "wall_slots_tan": {
+      "offset": 16,
+      "n": [15]
+    },
+    "floor_dirt_blue": {
+      "offset": 32,
+      "n": [0, 1, 2, 3, 4, 5]
+    },
+    "floor_dirt_blue_ditch": {
+      "offset": 32,
+      "n": [6]
+    },
+    "floor_dirt_blue_pit": {
+      "offset": 32,
+      "n": [7]
+    },
+    "floor_dirt_grey": {
+      "offset": 32,
+      "n": [8, 9, 10, 11, 12, 13]
+    },
+    "floor_dirt_grey_ditch": {
+      "offset": 32,
+      "n": [14]
+    },
+    "floor_dirt_grey_pit": {
+      "offset": 32,
+      "n": [15]
+    },
+    "floor_dirt_orange": {
+      "offset": 48,
+      "n": [0, 1, 2, 3, 4, 5]
+    },
+    "floor_dirt_orange_ditch": {
+      "offset": 48,
+      "n": [6]
+    },
+    "floor_dirt_orange_pit": {
+      "offset": 48,
+      "n": [7]
+    },
+    "floor_grass": {
+      "offset": 48,
+      "n": [8, 9, 10, 11, 12, 13]
+    },
+    "floor_grass_ditch": {
+      "offset": 48,
+      "n": [14]
+    },
+    "floor_grass_pit": {
+      "offset": 48,
+      "n": [15]
+    },
+    "floor_empty": {
+      "offset": 64,
+      "n": [0]
+    },
+    "floor_stone_blue": {
+      "offset": 64,
+      "n": [1, 2, 3, 4, 5]
+    },
+    "floor_stone_grey": {
+      "offset": 64,
+      "n": [6, 7, 8, 9, 10]
+    },
+    "floor_carpet": {
+      "offset": 64,
+      "n": [11, 12, 13, 14, 15]
+    },
+    "floor_stone_orange": {
+      "offset": 80,
+      "n": [1, 2, 3, 4, 5]
+    },
+    "floor_cobble": {
+      "offset": 80,
+      "n": [6, 7, 8, 9, 10]
+    },
+    "floor_mossy_stone": {
+      "offset": 80,
+      "n": [11, 12, 13, 14, 15]
+    },
+    "fluid_blue": {
+      "offset": 96,
+      "n": [0, 1]
+    },
+    "fluid_blue_waves": {
+      "offset": 96,
+      "n": [2, 3, 4, 5]
+    },
+    "fluid_green": {
+      "offset": 96,
+      "n": [6, 7]
+    },
+    "fluid_green_waves": {
+      "offset": 96,
+      "n": [8, 9, 10, 11]
+    },
+    "fluid_grey_bubbles": {
+      "offset": 96,
+      "n": [12, 13, 14, 15]
+    },
+    "fluid_light_green": {
+      "offset": 112,
+      "n": [0, 1]
+    },
+    "fluid_light_green_bubbles": {
+      "offset": 112,
+      "n": [2, 3, 4, 5]
+    },
+    "fluid_red": {
+      "offset": 112,
+      "n": [6, 7]
+    },
+    "fluid_red_bubbles": {
+      "offset": 112,
+      "n": [8, 9, 10, 11]
+    },
+    "fluid_brown_bubbles": {
+      "offset": 112,
+      "n": [12, 13, 14, 15]
+    },
+    "door_wood": {
+      "offset": 128,
+      "n": [0, 1, 2, 3, 4, 5]
+    },
+    "door_metal": {
+      "offset": 128,
+      "n": [6, 7, 8, 9, 10, 11]
+    },
+    "door_hatch": {
+      "offset": 128,
+      "n": [12, 13]
+    },
+    "door_garage": {
+      "offset": 128,
+      "n": [14, 15]
+    },
+    "door_stone": {
+      "offset": 144,
+      "n": [0, 1, 2, 3, 4, 5]
+    },
+    "door_red": {
+      "offset": 144,
+      "n": [6, 7, 8, 9, 10, 11]
+    },
+    "floor_wood": {
+      "offset": 144,
+      "n": [12, 13, 14, 15]
+    },
+    "crate": {
+      "offset": 160,
+      "n": [0, 1]
+    },
+    "chest": {
+      "offset": 160,
+      "n": [2, 3, 4]
+    },
+    "torch": {
+      "offset": 160,
+      "n": [5, 6]
+    },
+    "torchlight": {
+      "offset": 160,
+      "n": [7, 8]
+    },
+    "tombstone": {
+      "offset": 160,
+      "n": [9, 10]
+    },
+    "lever": {
+      "offset": 160,
+      "n": [11, 12]
+    },
+    "bear_trap": {
+      "offset": 160,
+      "n": [13]
+    },
+    "boulder_grey": {
+      "offset": 160,
+      "n": [14]
+    },
+    "boulder_orange": {
+      "offset": 160,
+      "n": [15]
+    },
+    "cobweb": {
+      "offset": 176,
+      "n": [4],
+      "ne": [1],
+      "se": [3],
+      "sw": [2],
+      "nw": [0]
+    },
+    "arcane_sign": {
+      "offset": 176,
+      "n": [5, 6, 7, 8, 9, 10]
+    },
+    "blood": {
+      "offset": 176,
+      "n": [11, 12, 13, 14, 15]
+    },
+    "grass": {
+      "offset": 192,
+      "n": [0],
+      "ne": [3],
+      "se": [4],
+      "sw": [1],
+      "nw": [2]
+    },
+    "mushroom_red": {
+      "offset": 192,
+      "n": [5]
+    },
+    "mushroom_purple": {
+      "offset": 192,
+      "n": [6]
+    },
+    "mushroom_orange": {
+      "offset": 192,
+      "n": [7]
+    },
+    "lily_pad": {
+      "offset": 192,
+      "n": [10, 14],
+      "e": [11, 15],
+      "s": [8, 12],
+      "w": [9, 13]
+    },
+    "bookcase": {
+      "offset": 208,
+      "n": [0, 1]
+    },
+    "bed": {
+      "offset": 208,
+      "n": [2]
+    },
+    "chair": {
+      "offset": 208,
+      "n": [3]
+    },
+    "table": {
+      "offset": 208,
+      "n": [5, 6, 7, 8, 9, 10]
+    },
+    "altar": {
+      "offset": 208,
+      "n": [11, 12, 13, 14, 15]
+    },
+    "sticks": {
+      "offset": 224,
+      "n": [0],
+      "ne": [3],
+      "se": [4],
+      "nw": [2],
+      "sw": [1]
+    },
+    "bush": {
+      "offset": 224,
+      "n": [5, 6]
+    },
+    "floor_grass_stone": {
+      "offset": 224,
+      "n": [7, 8, 9, 10]
+    },
+    "campfire": {
+      "offset": 224,
+      "n": [12, 13],
+      "s": [11]
+    },
+    "throne_red": {
+      "offset": 224,
+      "n": [14]
+    },
+    "throne_purple": {
+      "offset": 224,
+      "n": [15]
+    },
+    "wall_stone_light": {
+      "offset": 240,
+      "n": [12],
+      "s": [0]
+    },
+    "door_cave": {
+      "offset": 240,
+      "n": [1],
+      "s": [2]
+    },
+    "fence": {
+      "offset": 240,
+      "n": [5, 6, 7],
+      "e": [3, 4]
+    },
+    "sign_empty": {
+      "offset": 240,
+      "n": [8]
+    },
+    "sign_equipment": {
+      "offset": 240,
+      "n": [9]
+    },
+    "sign_potion": {
+      "offset": 240,
+      "n": [10]
+    },
+    "sign_bed": {
+      "offset": 240,
+      "n": [11]
+    },
+    "statue": {
+      "offset": 240,
+      "n": [13, 14, 15]
+    },
+    "bones": {
+      "offset": 256,
+      "n": [0, 1, 2]
+    },
+    "candles": {
+      "offset": 256,
+      "n": [3, 4],
+      "ne": [7, 8],
+      "se": [5, 6]
+    },
+    "cauldron": {
+      "offset": 256,
+      "n": [9, 10]
+    },
+    "pots": {
+      "offset": 256,
+      "n": [13],
+      "ne": [11],
+      "se": [12]
+    },
+    "spikes": {
+      "offset": 256,
+      "n": [14],
+      "ne": [15]
+    }
   }
 }
