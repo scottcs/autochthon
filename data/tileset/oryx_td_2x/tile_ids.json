@@ -614,5 +614,387 @@
       "s": [1, 17],
       "w": [3, 19]
     }
+  },
+  "items": {
+    "book_halo": {
+      "offset": 0,
+      "n": [0]
+    },
+    "book_skull": {
+      "offset": 0,
+      "n": [1]
+    },
+    "book_infinity": {
+      "offset": 0,
+      "n": [2]
+    },
+    "key_gold": {
+      "offset": 0,
+      "n": [3]
+    },
+    "key_skeleton": {
+      "offset": 0,
+      "n": [4]
+    },
+    "key_magic": {
+      "offset": 0,
+      "n": [5]
+    },
+    "scroll": {
+      "offset": 0,
+      "n": [6]
+    },
+    "heart_dark": {
+      "offset": 0,
+      "n": [7]
+    },
+    "heart": {
+      "offset": 0,
+      "n": [8]
+    },
+    "crystal_ball_dark": {
+      "offset": 0,
+      "n": [9]
+    },
+    "crystal_ball": {
+      "offset": 0,
+      "n": [10]
+    },
+    "skull": {
+      "offset": 0,
+      "n": [11]
+    },
+    "skull_gold": {
+      "offset": 0,
+      "n": [12]
+    },
+    "food": {
+      "offset": 0,
+      "n": [13]
+    },
+    "torch": {
+      "offset": 0,
+      "n": [14, 15]
+    },
+    "potion_blue": {
+      "offset": 16,
+      "n": [0]
+    },
+    "potion_red": {
+      "offset": 16,
+      "n": [1]
+    },
+    "potion_green": {
+      "offset": 16,
+      "n": [2]
+    },
+    "potion_orange": {
+      "offset": 16,
+      "n": [3]
+    },
+    "potion_black": {
+      "offset": 16,
+      "n": [4]
+    },
+    "gem_purple": {
+      "offset": 16,
+      "n": [5]
+    },
+    "gem_red": {
+      "offset": 16,
+      "n": [6]
+    },
+    "gem_blue": {
+      "offset": 16,
+      "n": [7]
+    },
+    "gem_green": {
+      "offset": 16,
+      "n": [8]
+    },
+    "gem_orange": {
+      "offset": 16,
+      "n": [9]
+    },
+    "coins_copper": {
+      "offset": 16,
+      "n": [10]
+    },
+    "coins_silver": {
+      "offset": 16,
+      "n": [11]
+    },
+    "coins_gold": {
+      "offset": 16,
+      "n": [12]
+    },
+    "coin_copper": {
+      "offset": 16,
+      "n": [13]
+    },
+    "coin_silver": {
+      "offset": 16,
+      "n": [14]
+    },
+    "coin_gold": {
+      "offset": 16,
+      "n": [15]
+    },
+    "helm_orange": {
+      "offset": 32,
+      "n": [0]
+    },
+    "vest_orange": {
+      "offset": 32,
+      "n": [1]
+    },
+    "glove_orange": {
+      "offset": 32,
+      "n": [2]
+    },
+    "pants_orange": {
+      "offset": 32,
+      "n": [3]
+    },
+    "boot_orange": {
+      "offset": 32,
+      "n": [4]
+    },
+    "helm": {
+      "offset": 32,
+      "n": [5]
+    },
+    "vest": {
+      "offset": 32,
+      "n": [6]
+    },
+    "glove": {
+      "offset": 32,
+      "n": [7]
+    },
+    "pants": {
+      "offset": 32,
+      "n": [8]
+    },
+    "boot": {
+      "offset": 32,
+      "n": [9]
+    },
+    "helm_blue": {
+      "offset": 32,
+      "n": [10]
+    },
+    "vest_blue": {
+      "offset": 32,
+      "n": [11]
+    },
+    "glove_blue": {
+      "offset": 32,
+      "n": [12]
+    },
+    "pants_blue": {
+      "offset": 32,
+      "n": [13]
+    },
+    "boot_blue": {
+      "offset": 32,
+      "n": [14]
+    },
+    "sack": {
+      "offset": 32,
+      "n": [15]
+    },
+    "pointy_hat_orange": {
+      "offset": 48,
+      "n": [0]
+    },
+    "pointy_hat_purple": {
+      "offset": 48,
+      "n": [1]
+    },
+    "pointy_hat_blue": {
+      "offset": 48,
+      "n": [2]
+    },
+    "cape_orange": {
+      "offset": 48,
+      "n": [3]
+    },
+    "cape_purple": {
+      "offset": 48,
+      "n": [4]
+    },
+    "cape_blue": {
+      "offset": 48,
+      "n": [5]
+    },
+    "crown_silver": {
+      "offset": 48,
+      "n": [6]
+    },
+    "crown_gold": {
+      "offset": 48,
+      "n": [7]
+    },
+    "crown_purple": {
+      "offset": 48,
+      "n": [8]
+    },
+    "quiver": {
+      "offset": 48,
+      "n": [9]
+    },
+    "arrow": {
+      "offset": 48,
+      "n": [10]
+    },
+    "bolt": {
+      "offset": 48,
+      "n": [11]
+    },
+    "shuriken": {
+      "offset": 48,
+      "n": [12]
+    },
+    "bandage": {
+      "offset": 48,
+      "n": [13]
+    },
+    "cross": {
+      "offset": 48,
+      "n": [14]
+    },
+    "feather": {
+      "offset": 48,
+      "n": [15]
+    },
+    "sword": {
+      "offset": 64,
+      "n": [0]
+    },
+    "sword_broad": {
+      "offset": 64,
+      "n": [1]
+    },
+    "sword_long": {
+      "offset": 64,
+      "n": [2]
+    },
+    "battle_axe": {
+      "offset": 64,
+      "n": [3]
+    },
+    "maul": {
+      "offset": 64,
+      "n": [4]
+    },
+    "flail": {
+      "offset": 64,
+      "n": [5]
+    },
+    "club_spiked": {
+      "offset": 64,
+      "n": [6]
+    },
+    "staff_magic": {
+      "offset": 64,
+      "n": [7]
+    },
+    "staff": {
+      "offset": 64,
+      "n": [8]
+    },
+    "bow": {
+      "offset": 64,
+      "n": [9]
+    },
+    "crossbow": {
+      "offset": 64,
+      "n": [10]
+    },
+    "sling": {
+      "offset": 64,
+      "n": [11]
+    },
+    "shield_orange": {
+      "offset": 64,
+      "n": [12]
+    },
+    "shield": {
+      "offset": 64,
+      "n": [13]
+    },
+    "shield_blue": {
+      "offset": 64,
+      "n": [14]
+    },
+    "stone": {
+      "offset": 64,
+      "n": [15]
+    },
+    "necklace_silver": {
+      "offset": 80,
+      "n": [0]
+    },
+    "necklace_gold": {
+      "offset": 80,
+      "n": [1]
+    },
+    "necklace_blue": {
+      "offset": 80,
+      "n": [2]
+    },
+    "ring_silver": {
+      "offset": 80,
+      "n": [3]
+    },
+    "ring_gold": {
+      "offset": 80,
+      "n": [4]
+    },
+    "ring_blue": {
+      "offset": 80,
+      "n": [5]
+    },
+    "battery_red": {
+      "offset": 80,
+      "n": [6]
+    },
+    "battery_blue": {
+      "offset": 80,
+      "n": [7]
+    },
+    "battery_green": {
+      "offset": 80,
+      "n": [8]
+    },
+    "leaf_green": {
+      "offset": 80,
+      "n": [9]
+    },
+    "leaf_red": {
+      "offset": 80,
+      "n": [10]
+    },
+    "leaf_orange": {
+      "offset": 80,
+      "n": [11]
+    },
+    "rope": {
+      "offset": 80,
+      "n": [12]
+    },
+    "darts": {
+      "offset": 80,
+      "n": [13]
+    },
+    "compass": {
+      "offset": 80,
+      "n": [14]
+    },
+    "map": {
+      "offset": 80,
+      "n": [15]
+    }
   }
 }
