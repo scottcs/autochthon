@@ -43,6 +43,126 @@
       "sw": [3],
       "w": [6],
       "nw": [5]
+    },
+    "explosion_orange": {
+      "offset": 0,
+      "n": [15, 8, 9, 10]
+    },
+    "explosion_blue": {
+      "offset": 16,
+      "n": [15, 8, 9, 10]
+    },
+    "explosion_green": {
+      "offset": 32,
+      "n": [15, 8, 9, 10]
+    },
+    "explosion_purple": {
+      "offset": 48,
+      "n": [15, 8, 9, 10]
+    },
+    "fire_orange": {
+      "offset": 0,
+      "n": [11, 12]
+    },
+    "fire_blue": {
+      "offset": 16,
+      "n": [11, 12]
+    },
+    "fire_green": {
+      "offset": 32,
+      "n": [11, 12]
+    },
+    "fire_purple": {
+      "offset": 48,
+      "n": [11, 12]
+    },
+    "sparkle_orange": {
+      "offset": 0,
+      "n": [13, 14]
+    },
+    "sparkle_blue": {
+      "offset": 16,
+      "n": [13, 14]
+    },
+    "sparkle_green": {
+      "offset": 32,
+      "n": [13, 14]
+    },
+    "sparkle_purple": {
+      "offset": 48,
+      "n": [13, 14]
+    },
+    "projectile_color": {
+      "offset": 64,
+      "n": [0, 1, 2, 3, 4, 5, 6, 7]
+    },
+    "projectile": {
+      "offset": 64,
+      "n": [8, 9, 10, 11, 12, 13, 14, 15]
+    },
+    "\\": {
+      "offset": 80,
+      "n": [0, 1, 2]
+    },
+    "/": {
+      "offset": 80,
+      "n": [3, 4, 5]
+    },
+    "x": {
+      "offset": 80,
+      "n": [6, 7, 8]
+    },
+    "t": {
+      "offset": 80,
+      "n": [9, 10, 11]
+    },
+    "c": {
+      "offset": 80,
+      "n": [12, 13, 14]
+    },
+    "o": {
+      "offset": 96,
+      "n": [0, 1, 2]
+    },
+    "glint": {
+      "offset": 96,
+      "n": [3, 4, 5]
+    },
+    "bubble": {
+      "offset": 96,
+      "n": [6, 7, 8]
+    },
+    "singe": {
+      "offset": 96,
+      "n": [9, 10, 11]
+    },
+    "acid": {
+      "offset": 112,
+      "n": [0, 1]
+    },
+    "rain": {
+      "offset": 112,
+      "n": [2, 3]
+    },
+    "electricity": {
+      "offset": 112,
+      "n": [4, 5]
+    },
+    "smoke": {
+      "offset": 112,
+      "n": [6, 7]
+    },
+    "!": {
+      "offset": 112,
+      "n": [8, 9]
+    },
+    "?": {
+      "offset": 112,
+      "n": [10, 11]
+    },
+    "zZ": {
+      "offset": 112,
+      "n": [12, 13]
     }
   },
   "monsters": {
