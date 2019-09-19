@@ -1,291 +1,317 @@
 {
-  "fx": {
-    "fireball_orange": {
+  "fbase": {
+    "fireball": {
       "offset": 0,
-      "n": [4],
-      "ne": [7],
-      "e": [0],
-      "se": [1],
-      "s": [2],
-      "sw": [3],
-      "w": [6],
-      "nw": [5]
+      "base": 15,
+      "n": 4,
+      "ne": 7,
+      "e": 0,
+      "se": 1,
+      "s": 2,
+      "sw": 3,
+      "w": 6,
+      "nw": 5
     },
-    "fireball_blue": {
+    "iceball": {
       "offset": 16,
-      "n": [4],
-      "ne": [7],
-      "e": [0],
-      "se": [1],
-      "s": [2],
-      "sw": [3],
-      "w": [6],
-      "nw": [5]
+      "base": 15,
+      "n": 4,
+      "ne": 7,
+      "e": 0,
+      "se": 1,
+      "s": 2,
+      "sw": 3,
+      "w": 6,
+      "nw": 5
     },
-    "fireball_green": {
+    "acidball": {
       "offset": 32,
-      "n": [4],
-      "ne": [7],
-      "e": [0],
-      "se": [1],
-      "s": [2],
-      "sw": [3],
-      "w": [6],
-      "nw": [5]
+      "base": 15,
+      "n": 4,
+      "ne": 7,
+      "e": 0,
+      "se": 1,
+      "s": 2,
+      "sw": 3,
+      "w": 6,
+      "nw": 5
     },
-    "fireball_purple": {
+    "voidball": {
       "offset": 48,
-      "n": [4],
-      "ne": [7],
-      "e": [0],
-      "se": [1],
-      "s": [2],
-      "sw": [3],
-      "w": [6],
-      "nw": [5]
+      "base": 15,
+      "n": 4,
+      "ne": 7,
+      "e": 0,
+      "se": 1,
+      "s": 2,
+      "sw": 3,
+      "w": 6,
+      "nw": 5
     },
-    "explosion_orange": {
+    "fire_impact": {
       "offset": 0,
-      "n": [15, 8, 9, 10]
+      "base": [8, 9, 10]
     },
-    "explosion_blue": {
+    "ice_impact": {
       "offset": 16,
-      "n": [15, 8, 9, 10]
+      "base": [8, 9, 10]
     },
-    "explosion_green": {
+    "acid_impact": {
       "offset": 32,
-      "n": [15, 8, 9, 10]
+      "base": [8, 9, 10]
     },
-    "explosion_purple": {
+    "void_impact": {
       "offset": 48,
-      "n": [15, 8, 9, 10]
+      "base": [8, 9, 10]
     },
-    "fire_orange": {
+    "fire_burn": {
       "offset": 0,
-      "n": [11, 12]
+      "base": [11, 12]
     },
-    "fire_blue": {
+    "ice_burn": {
       "offset": 16,
-      "n": [11, 12]
+      "base": [11, 12]
     },
-    "fire_green": {
+    "acid_burn": {
       "offset": 32,
-      "n": [11, 12]
+      "base": [11, 12]
     },
-    "fire_purple": {
+    "void_burn": {
       "offset": 48,
-      "n": [11, 12]
+      "base": [11, 12]
     },
-    "sparkle_orange": {
+    "fire_spark": {
       "offset": 0,
-      "n": [13, 14]
+      "base": [13, 14]
     },
-    "sparkle_blue": {
+    "ice_spark": {
       "offset": 16,
-      "n": [13, 14]
+      "base": [13, 14]
     },
-    "sparkle_green": {
+    "acid_spark": {
       "offset": 32,
-      "n": [13, 14]
+      "base": [13, 14]
     },
-    "sparkle_purple": {
+    "void_spark": {
       "offset": 48,
-      "n": [13, 14]
+      "base": [13, 14]
     },
-    "projectile_color": {
+    "arrow": {
       "offset": 64,
-      "n": [0, 1, 2, 3, 4, 5, 6, 7]
+      "base": [0, 1, 2, 3, 4, 5, 6, 7]
     },
-    "projectile": {
+    "arrow_cardinal": {
       "offset": 64,
-      "n": [8, 9, 10, 11, 12, 13, 14, 15]
+      "n": 4,
+      "ne": 6,
+      "e": 0,
+      "se": 2,
+      "s": 4,
+      "sw": 6,
+      "w": 0,
+      "nw": 2
     },
-    "\\": {
+    "zap": {
+      "offset": 64,
+      "base": [8, 9, 10, 11, 12, 13, 14, 15]
+    },
+    "zap_cardinal": {
+      "offset": 64,
+      "n": 12,
+      "ne": 14,
+      "e": 8,
+      "se": 10,
+      "s": 12,
+      "sw": 14,
+      "w": 8,
+      "nw": 10
+    },
+    "slash2": {
       "offset": 80,
-      "n": [0, 1, 2]
+      "base": [0, 1, 2]
     },
-    "/": {
+    "slash": {
       "offset": 80,
-      "n": [3, 4, 5]
+      "base": [3, 4, 5]
     },
-    "x": {
+    "bash": {
       "offset": 80,
-      "n": [6, 7, 8]
+      "base": [6, 7, 8]
     },
-    "t": {
+    "pierce": {
       "offset": 80,
-      "n": [9, 10, 11]
+      "base": [9, 10, 11]
     },
-    "c": {
+    "cut": {
       "offset": 80,
-      "n": [12, 13, 14]
+      "base": [12, 13, 14]
     },
-    "o": {
+    "swing": {
       "offset": 96,
-      "n": [0, 1, 2]
+      "base": [0, 1, 2]
     },
-    "glint": {
+    "sparkle": {
       "offset": 96,
-      "n": [3, 4, 5]
+      "base": [3, 4, 5]
     },
     "bubble": {
       "offset": 96,
-      "n": [6, 7, 8]
+      "base": [6, 7, 8]
     },
     "singe": {
       "offset": 96,
-      "n": [9, 10, 11]
+      "base": [9, 10, 11]
     },
-    "acid": {
+    "poison": {
       "offset": 112,
-      "n": [0, 1]
+      "base": [0, 1]
     },
     "rain": {
       "offset": 112,
-      "n": [2, 3]
+      "base": [2, 3]
     },
-    "electricity": {
+    "lightning": {
       "offset": 112,
-      "n": [4, 5]
+      "base": [4, 5]
     },
     "smoke": {
       "offset": 112,
-      "n": [6, 7]
+      "base": [6, 7]
     },
     "!": {
       "offset": 112,
-      "n": [8, 9]
+      "base": [8, 9]
     },
     "?": {
       "offset": 112,
-      "n": [10, 11]
+      "base": [10, 11]
     },
     "zZ": {
       "offset": 112,
-      "n": [12, 13]
+      "base": [12, 13]
     }
   },
   "monsters": {
-    "hero_fighter": {
+    "fighter": {
       "offset": 0,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_barbarian": {
+    "berserker": {
       "offset": 4,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_thief": {
+    "rogue": {
       "offset": 8,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_crusader": {
+    "paladin": {
       "offset": 12,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_mage_knight": {
+    "mercenary": {
       "offset": 16,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_sorcerer": {
+    "wizard": {
       "offset": 20,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_wizard": {
+    "witch": {
       "offset": 24,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_cleric": {
+    "cleric": {
       "offset": 28,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_druid": {
+    "druid": {
       "offset": 32,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_warlock": {
+    "necromancer": {
       "offset": 36,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_ranger": {
+    "archer": {
       "offset": 40,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hero_samurai": {
+    "minstrel": {
       "offset": 44,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "goblin_fighter": {
+    "goblin_grunt": {
       "offset": 48,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "goblin_shaman": {
+    "goblin_mage": {
       "offset": 52,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "goblin_knight": {
+    "goblin_captain": {
       "offset": 56,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "orc": {
+    "troll": {
       "offset": 60,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "skeleton": {
+    "skeleton_unarmed": {
       "offset": 64,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "skeleton_fighter": {
+    "skeleton_warrior": {
       "offset": 68,
       "n": [2, 18],
       "e": [0, 16],
@@ -299,7 +325,7 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "lich": {
+    "skeleton_lich": {
       "offset": 76,
       "n": [2, 18],
       "e": [0, 16],
@@ -327,7 +353,7 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "death_knight": {
+    "knight": {
       "offset": 92,
       "n": [2, 18],
       "e": [0, 16],
@@ -341,7 +367,7 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "ghost": {
+    "wraith": {
       "offset": 100,
       "n": [2, 18],
       "e": [0, 16],
@@ -355,14 +381,14 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "wight": {
+    "elemental": {
       "offset": 108,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "dog": {
+    "wolf": {
       "offset": 112,
       "n": [2, 18],
       "e": [0, 16],
@@ -411,28 +437,28 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "butterfly": {
+    "moth": {
       "offset": 140,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "elf_fighter": {
+    "villager_male": {
       "offset": 144,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "elf_mage": {
+    "villager_female": {
       "offset": 148,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "elf_cleric": {
+    "merchant": {
       "offset": 152,
       "n": [2, 18],
       "e": [0, 16],
@@ -446,21 +472,21 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "elf_king": {
+    "king": {
       "offset": 160,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "elf_queen": {
+    "queen": {
       "offset": 164,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "grim_reaper": {
+    "reaper": {
       "offset": 168,
       "n": [2, 18],
       "e": [0, 16],
@@ -474,7 +500,7 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "harpy": {
+    "phoenix": {
       "offset": 176,
       "n": [2, 18],
       "e": [0, 16],
@@ -509,21 +535,21 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "dwarf_fighter": {
+    "dwarf": {
       "offset": 196,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "dwarf_rogue": {
+    "hobbit": {
       "offset": 200,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "hippogryph": {
+    "griffin": {
       "offset": 204,
       "n": [2, 18],
       "e": [0, 16],
@@ -558,21 +584,21 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "savage": {
+    "mummy": {
       "offset": 224,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "gelatinous_cube": {
+    "jelly": {
       "offset": 228,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "wisp": {
+    "void": {
       "offset": 232,
       "n": [2, 18],
       "e": [0, 16],
@@ -600,14 +626,14 @@
       "s": [1, 17],
       "w": [3, 19]
     },
-    "ghoul": {
+    "yeti": {
       "offset": 248,
       "n": [2, 18],
       "e": [0, 16],
       "s": [1, 17],
       "w": [3, 19]
     },
-    "swarm": {
+    "flies": {
       "offset": 252,
       "n": [2, 18],
       "e": [0, 16],
@@ -616,803 +642,1189 @@
     }
   },
   "items": {
-    "book_halo": {
+    "book_brown": {
       "offset": 0,
-      "n": [0]
+      "base": 0
     },
-    "book_skull": {
+    "book_black": {
       "offset": 0,
-      "n": [1]
+      "base": 1
     },
-    "book_infinity": {
+    "book_green": {
       "offset": 0,
-      "n": [2]
+      "base": 2
     },
     "key_gold": {
       "offset": 0,
-      "n": [3]
+      "base": 3
     },
     "key_skeleton": {
       "offset": 0,
-      "n": [4]
+      "base": 4
     },
     "key_magic": {
       "offset": 0,
-      "n": [5]
+      "base": 5
     },
     "scroll": {
       "offset": 0,
-      "n": [6]
+      "base": 6
     },
-    "heart_dark": {
+    "heart_empty": {
       "offset": 0,
-      "n": [7]
+      "base": 7
     },
-    "heart": {
+    "heart_full": {
       "offset": 0,
-      "n": [8]
+      "base": 8
     },
-    "crystal_ball_dark": {
+    "crystal_empty": {
       "offset": 0,
-      "n": [9]
+      "base": 9
     },
-    "crystal_ball": {
+    "crystal_full": {
       "offset": 0,
-      "n": [10]
+      "base": 10
     },
     "skull": {
       "offset": 0,
-      "n": [11]
+      "base": 11
     },
     "skull_gold": {
       "offset": 0,
-      "n": [12]
+      "base": 12
     },
-    "food": {
+    "turkey": {
       "offset": 0,
-      "n": [13]
+      "base": 13
     },
     "torch": {
       "offset": 0,
-      "n": [14, 15]
+      "base": [14, 15]
     },
     "potion_blue": {
       "offset": 16,
-      "n": [0]
+      "base": 0
     },
     "potion_red": {
       "offset": 16,
-      "n": [1]
+      "base": 1
     },
     "potion_green": {
       "offset": 16,
-      "n": [2]
+      "base": 2
     },
-    "potion_orange": {
+    "potion_yellow": {
       "offset": 16,
-      "n": [3]
+      "base": 3
     },
     "potion_black": {
       "offset": 16,
-      "n": [4]
+      "base": 4
     },
-    "gem_purple": {
+    "gem_amethyst": {
       "offset": 16,
-      "n": [5]
+      "base": 5
     },
-    "gem_red": {
+    "gem_ruby": {
       "offset": 16,
-      "n": [6]
+      "base": 6
     },
-    "gem_blue": {
+    "gem_sapphire": {
       "offset": 16,
-      "n": [7]
+      "base": 7
     },
-    "gem_green": {
+    "gem_jade": {
       "offset": 16,
-      "n": [8]
+      "base": 8
     },
-    "gem_orange": {
+    "gem_garnet": {
       "offset": 16,
-      "n": [9]
+      "base": 9
     },
     "coins_copper": {
       "offset": 16,
-      "n": [10]
+      "base": 10
     },
     "coins_silver": {
       "offset": 16,
-      "n": [11]
+      "base": 11
     },
     "coins_gold": {
       "offset": 16,
-      "n": [12]
+      "base": 12
     },
-    "coin_copper": {
+    "token_copper": {
       "offset": 16,
-      "n": [13]
+      "base": 13
     },
-    "coin_silver": {
+    "token_silver": {
       "offset": 16,
-      "n": [14]
+      "base": 14
     },
-    "coin_gold": {
+    "token_gold": {
       "offset": 16,
-      "n": [15]
+      "base": 15
     },
-    "helm_orange": {
+    "helm_leather": {
       "offset": 32,
-      "n": [0]
+      "base": 0
     },
-    "vest_orange": {
+    "chest_leather": {
       "offset": 32,
-      "n": [1]
+      "base": 1
     },
-    "glove_orange": {
+    "glove_leather": {
       "offset": 32,
-      "n": [2]
+      "base": 2
     },
-    "pants_orange": {
+    "pant_leather": {
       "offset": 32,
-      "n": [3]
+      "base": 3
     },
-    "boot_orange": {
+    "boot_leather": {
       "offset": 32,
-      "n": [4]
+      "base": 4
     },
-    "helm": {
+    "helm_steel": {
       "offset": 32,
-      "n": [5]
+      "base": 5
     },
-    "vest": {
+    "chest_steel": {
       "offset": 32,
-      "n": [6]
+      "base": 6
     },
-    "glove": {
+    "glove_steel": {
       "offset": 32,
-      "n": [7]
+      "base": 7
     },
-    "pants": {
+    "pant_steel": {
       "offset": 32,
-      "n": [8]
+      "base": 8
     },
-    "boot": {
+    "boot_steel": {
       "offset": 32,
-      "n": [9]
+      "base": 9
     },
-    "helm_blue": {
+    "helm_magic": {
       "offset": 32,
-      "n": [10]
+      "base": 10
     },
-    "vest_blue": {
+    "chest_magic": {
       "offset": 32,
-      "n": [11]
+      "base": 11
     },
-    "glove_blue": {
+    "glove_magic": {
       "offset": 32,
-      "n": [12]
+      "base": 12
     },
-    "pants_blue": {
+    "pant_magic": {
       "offset": 32,
-      "n": [13]
+      "base": 13
     },
-    "boot_blue": {
+    "boot_magic": {
       "offset": 32,
-      "n": [14]
+      "base": 14
     },
     "sack": {
       "offset": 32,
-      "n": [15]
+      "base": 15
     },
-    "pointy_hat_orange": {
+    "hat_leather": {
       "offset": 48,
-      "n": [0]
+      "base": 0
     },
-    "pointy_hat_purple": {
+    "hat_purple": {
       "offset": 48,
-      "n": [1]
+      "base": 1
     },
-    "pointy_hat_blue": {
+    "hat_magic": {
       "offset": 48,
-      "n": [2]
+      "base": 2
     },
-    "cape_orange": {
+    "cape_leather": {
       "offset": 48,
-      "n": [3]
+      "base": 3
     },
     "cape_purple": {
       "offset": 48,
-      "n": [4]
+      "base": 4
     },
-    "cape_blue": {
+    "cape_magic": {
       "offset": 48,
-      "n": [5]
+      "base": 5
     },
     "crown_silver": {
       "offset": 48,
-      "n": [6]
+      "base": 6
     },
     "crown_gold": {
       "offset": 48,
-      "n": [7]
+      "base": 7
     },
-    "crown_purple": {
+    "crown_evil": {
       "offset": 48,
-      "n": [8]
+      "base": 8
     },
     "quiver": {
       "offset": 48,
-      "n": [9]
+      "base": 9
     },
     "arrow": {
       "offset": 48,
-      "n": [10]
+      "base": 10
     },
     "bolt": {
       "offset": 48,
-      "n": [11]
+      "base": 11
     },
-    "shuriken": {
+    "caltrops": {
       "offset": 48,
-      "n": [12]
+      "base": 12
     },
     "bandage": {
       "offset": 48,
-      "n": [13]
+      "base": 13
     },
     "cross": {
       "offset": 48,
-      "n": [14]
+      "base": 14
     },
     "feather": {
       "offset": 48,
-      "n": [15]
+      "base": 15
     },
-    "sword": {
+    "weapon_dagger": {
       "offset": 64,
-      "n": [0]
+      "base": 0
     },
-    "sword_broad": {
+    "weapon_shortsword": {
       "offset": 64,
-      "n": [1]
+      "base": 1
     },
-    "sword_long": {
+    "weapon_sword": {
       "offset": 64,
-      "n": [2]
+      "base": 2
     },
-    "battle_axe": {
+    "weapon_axe": {
       "offset": 64,
-      "n": [3]
+      "base": 3
     },
-    "maul": {
+    "weapon_hammer": {
       "offset": 64,
-      "n": [4]
+      "base": 4
     },
-    "flail": {
+    "weapon_mace": {
       "offset": 64,
-      "n": [5]
+      "base": 5
     },
-    "club_spiked": {
+    "weapon_club": {
       "offset": 64,
-      "n": [6]
+      "base": 6
     },
-    "staff_magic": {
+    "weapon_staff": {
       "offset": 64,
-      "n": [7]
+      "base": 7
     },
-    "staff": {
+    "weapon_quarterstaff": {
       "offset": 64,
-      "n": [8]
+      "base": 8
     },
-    "bow": {
+    "weapon_bow": {
       "offset": 64,
-      "n": [9]
+      "base": 9
     },
-    "crossbow": {
+    "weapon_crossbow": {
       "offset": 64,
-      "n": [10]
+      "base": 10
     },
-    "sling": {
+    "weapon_sling": {
       "offset": 64,
-      "n": [11]
+      "base": 11
     },
-    "shield_orange": {
+    "shield_wood": {
       "offset": 64,
-      "n": [12]
+      "base": 12
     },
-    "shield": {
+    "shield_steel": {
       "offset": 64,
-      "n": [13]
+      "base": 13
     },
-    "shield_blue": {
+    "shield_magic": {
       "offset": 64,
-      "n": [14]
+      "base": 14
     },
     "stone": {
       "offset": 64,
-      "n": [15]
+      "base": 15
     },
-    "necklace_silver": {
+    "amulet_silver": {
       "offset": 80,
-      "n": [0]
+      "base": 0
     },
-    "necklace_gold": {
+    "amulet_gold": {
       "offset": 80,
-      "n": [1]
+      "base": 1
     },
-    "necklace_blue": {
+    "amulet_magic": {
       "offset": 80,
-      "n": [2]
+      "base": 2
     },
     "ring_silver": {
       "offset": 80,
-      "n": [3]
+      "base": 3
     },
     "ring_gold": {
       "offset": 80,
-      "n": [4]
+      "base": 4
     },
-    "ring_blue": {
+    "ring_magic": {
       "offset": 80,
-      "n": [5]
+      "base": 5
     },
-    "battery_red": {
+    "flask_red": {
       "offset": 80,
-      "n": [6]
+      "base": 6
     },
-    "battery_blue": {
+    "flask_blue": {
       "offset": 80,
-      "n": [7]
+      "base": 7
     },
-    "battery_green": {
+    "flask_green": {
       "offset": 80,
-      "n": [8]
+      "base": 8
     },
-    "leaf_green": {
+    "herb_green": {
       "offset": 80,
-      "n": [9]
+      "base": 9
     },
-    "leaf_red": {
+    "herb_red": {
       "offset": 80,
-      "n": [10]
+      "base": 10
     },
-    "leaf_orange": {
+    "herb_gold": {
       "offset": 80,
-      "n": [11]
+      "base": 11
     },
     "rope": {
       "offset": 80,
-      "n": [12]
+      "base": 12
     },
     "darts": {
       "offset": 80,
-      "n": [13]
+      "base": 13
     },
     "compass": {
       "offset": 80,
-      "n": [14]
+      "base": 14
     },
     "map": {
       "offset": 80,
-      "n": [15]
+      "base": 15
     }
   },
   "world": {
-    "wall_grey": {
+    "wall_stone_h": {
       "offset": 0,
-      "n": [6, 7, 8, 9, 10, 11],
-      "e": [0, 1, 2, 3, 4, 5]
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4}
+      ]
     },
-    "stairs_down_grey": {
+    "wall_stone_h_cracked": {
       "offset": 0,
-      "n": [12]
+      "base": 5
     },
-    "stairs_up_grey": {
+    "wall_stone_v": {
       "offset": 0,
-      "n": [13]
+      "variations": [
+        {"base": 6},
+        {"base": 7},
+        {"base": 8},
+        {"base": 9},
+        {"base": 11}
+      ]
     },
-    "wall_pool_grey": {
+    "wall_stone_v_cracked": {
       "offset": 0,
-      "n": [14]
+      "base": 10
     },
-    "wall_slots_grey": {
+    "wall_stone_stair_down": {
       "offset": 0,
-      "n": [15]
+      "base": 12
     },
-    "wall_orange": {
+    "wall_stone_stair_up": {
+      "offset": 0,
+      "base": 13
+    },
+    "wall_stone_pool_full": {
+      "offset": 0,
+      "base": 14
+    },
+    "wall_stone_pool_empty": {
+      "offset": 0,
+      "base": 15
+    },
+    "wall_cave_h": {
       "offset": 16,
-      "n": [6, 7, 8, 9, 10, 11],
-      "e": [0, 1, 2, 3, 4, 5]
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4}
+      ]
     },
-    "stairs_down_orange": {
+    "wall_cave_h_cracked": {
       "offset": 16,
-      "n": [12]
+      "base": 5
     },
-    "stairs_up_orange": {
+    "wall_cave_v": {
       "offset": 16,
-      "n": [13]
+      "variations": [
+        {"base": 6},
+        {"base": 7},
+        {"base": 8},
+        {"base": 9},
+        {"base": 11}
+      ]
     },
-    "wall_pool_orange": {
+    "wall_cave_v_cracked": {
       "offset": 16,
-      "n": [14]
+      "base": 10
     },
-    "wall_slots_orange": {
+    "wall_cave_stair_down": {
       "offset": 16,
-      "n": [15]
+      "base": 12
     },
-    "wall_blue": {
+    "wall_cave_stair_up": {
       "offset": 16,
-      "n": [6, 7, 8, 9, 10, 11],
-      "e": [0, 1, 2, 3, 4, 5]
+      "base": 13
     },
-    "stairs_down_blue": {
+    "wall_cave_pool_full": {
       "offset": 16,
-      "n": [12]
+      "base": 14
     },
-    "stairs_up_blue": {
+    "wall_cave_pool_empty": {
       "offset": 16,
-      "n": [13]
+      "base": 15
     },
-    "wall_pool_blue": {
-      "offset": 16,
-      "n": [14]
-    },
-    "wall_slots_blue": {
-      "offset": 16,
-      "n": [15]
-    },
-    "wall_tan": {
-      "offset": 16,
-      "n": [6, 7, 8, 9, 10, 11],
-      "e": [0, 1, 2, 3, 4, 5]
-    },
-    "stairs_down_tan": {
-      "offset": 16,
-      "n": [12]
-    },
-    "stairs_up_tan": {
-      "offset": 16,
-      "n": [13]
-    },
-    "wall_pool_tan": {
-      "offset": 16,
-      "n": [14]
-    },
-    "wall_slots_tan": {
-      "offset": 16,
-      "n": [15]
-    },
-    "floor_dirt_blue": {
+    "wall_crypt_h": {
       "offset": 32,
-      "n": [0, 1, 2, 3, 4, 5]
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4}
+      ]
     },
-    "floor_dirt_blue_ditch": {
+    "wall_crypt_h_cracked": {
       "offset": 32,
-      "n": [6]
+      "base": 5
     },
-    "floor_dirt_blue_pit": {
+    "wall_crypt_v": {
       "offset": 32,
-      "n": [7]
+      "variations": [
+        {"base": 6},
+        {"base": 7},
+        {"base": 8},
+        {"base": 9},
+        {"base": 11}
+      ]
     },
-    "floor_dirt_grey": {
+    "wall_crypt_v_cracked": {
       "offset": 32,
-      "n": [8, 9, 10, 11, 12, 13]
+      "base": 10
     },
-    "floor_dirt_grey_ditch": {
+    "wall_crypt_stair_down": {
       "offset": 32,
-      "n": [14]
+      "base": 12
     },
-    "floor_dirt_grey_pit": {
+    "wall_crypt_stair_up": {
       "offset": 32,
-      "n": [15]
+      "base": 13
     },
-    "floor_dirt_orange": {
+    "wall_crypt_pool_full": {
+      "offset": 32,
+      "base": 14
+    },
+    "wall_crypt_pool_empty": {
+      "offset": 32,
+      "base": 15
+    },
+    "wall_sewer_h": {
       "offset": 48,
-      "n": [0, 1, 2, 3, 4, 5]
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4}
+      ]
     },
-    "floor_dirt_orange_ditch": {
+    "wall_sewer_h_cracked": {
       "offset": 48,
-      "n": [6]
+      "base": 5
     },
-    "floor_dirt_orange_pit": {
+    "wall_sewer_v": {
       "offset": 48,
-      "n": [7]
+      "variations": [
+        {"base": 6},
+        {"base": 7},
+        {"base": 8},
+        {"base": 9},
+        {"base": 11}
+      ]
     },
-    "floor_grass": {
+    "wall_sewer_v_cracked": {
       "offset": 48,
-      "n": [8, 9, 10, 11, 12, 13]
+      "base": 10
     },
-    "floor_grass_ditch": {
+    "wall_sewer_stair_down": {
       "offset": 48,
-      "n": [14]
+      "base": 12
     },
-    "floor_grass_pit": {
+    "wall_sewer_stair_up": {
       "offset": 48,
-      "n": [15]
+      "base": 13
     },
-    "floor_empty": {
-      "offset": 64,
-      "n": [0]
+    "wall_sewer_pool_full": {
+      "offset": 48,
+      "base": 14
     },
-    "floor_stone_blue": {
-      "offset": 64,
-      "n": [1, 2, 3, 4, 5]
-    },
-    "floor_stone_grey": {
-      "offset": 64,
-      "n": [6, 7, 8, 9, 10]
-    },
-    "floor_carpet": {
-      "offset": 64,
-      "n": [11, 12, 13, 14, 15]
-    },
-    "floor_stone_orange": {
-      "offset": 80,
-      "n": [1, 2, 3, 4, 5]
+    "wall_sewer_pool_empty": {
+      "offset": 48,
+      "base": 15
     },
     "floor_cobble": {
+      "offset": 64,
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4},
+        {"base": 5}
+      ]
+    },
+    "floor_cobble_drain": {
+      "offset": 64,
+      "base": 6
+    },
+    "floor_cobble_pit_edge": {
+      "offset": 64,
+      "base": 7
+    },
+    "floor_cobble2": {
+      "offset": 64,
+      "variations": [
+        {"base": 8},
+        {"base": 9},
+        {"base": 10},
+        {"base": 11},
+        {"base": 12},
+        {"base": 13}
+      ]
+    },
+    "floor_cobble2_drain": {
+      "offset": 64,
+      "base": 14
+    },
+    "floor_cobble2_pit_edge": {
+      "offset": 64,
+      "base": 15
+    },
+    "floor_dirt": {
       "offset": 80,
-      "n": [6, 7, 8, 9, 10]
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4},
+        {"base": 5}
+      ]
     },
-    "floor_mossy_stone": {
+    "floor_dirt_hole": {
       "offset": 80,
-      "n": [11, 12, 13, 14, 15]
+      "base": 6
     },
-    "fluid_blue": {
+    "floor_dirt_pit_edge": {
+      "offset": 80,
+      "base": 7
+    },
+    "floor_grass": {
+      "offset": 80,
+      "variations": [
+        {"base": 8},
+        {"base": 9},
+        {"base": 10},
+        {"base": 11},
+        {"base": 12},
+        {"base": 13}
+      ]
+    },
+    "floor_grass_hole": {
+      "offset": 80,
+      "base": 14
+    },
+    "floor_grass_pit_edge": {
+      "offset": 80,
+      "base": 15
+    },
+    "floor_pit": {
       "offset": 96,
-      "n": [0, 1]
+      "base": 0
     },
-    "fluid_blue_waves": {
+    "floor_tile": {
       "offset": 96,
-      "n": [2, 3, 4, 5]
+      "variations": [
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4},
+        {"base": 5}
+      ]
     },
-    "fluid_green": {
+    "floor_tile2": {
       "offset": 96,
-      "n": [6, 7]
+      "variations": [
+        {"base": 6},
+        {"base": 7},
+        {"base": 8},
+        {"base": 9},
+        {"base": 10}
+      ]
     },
-    "fluid_green_waves": {
+    "floor_carpet": {
       "offset": 96,
-      "n": [8, 9, 10, 11]
+      "variations": [
+        {"base": 11},
+        {"base": 12},
+        {"base": 13},
+        {"base": 14},
+        {"base": 15}
+      ]
     },
-    "fluid_grey_bubbles": {
-      "offset": 96,
-      "n": [12, 13, 14, 15]
-    },
-    "fluid_light_green": {
+    "blank": {
       "offset": 112,
-      "n": [0, 1]
+      "base": 0
     },
-    "fluid_light_green_bubbles": {
+    "floor_tile3": {
       "offset": 112,
-      "n": [2, 3, 4, 5]
+      "variations": [
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4},
+        {"base": 5}
+      ]
     },
-    "fluid_red": {
+    "floor_cobble_round": {
       "offset": 112,
-      "n": [6, 7]
+      "variations": [
+        {"base": 6},
+        {"base": 7},
+        {"base": 8},
+        {"base": 9},
+        {"base": 10}
+      ]
     },
-    "fluid_red_bubbles": {
+    "floor_mossy": {
       "offset": 112,
-      "n": [8, 9, 10, 11]
+      "variations": [
+        {"base": 11},
+        {"base": 12},
+        {"base": 13},
+        {"base": 14},
+        {"base": 15}
+      ]
     },
-    "fluid_brown_bubbles": {
-      "offset": 112,
-      "n": [12, 13, 14, 15]
-    },
-    "door_wood": {
+    "water_edge": {
       "offset": 128,
-      "n": [0, 1, 2, 3, 4, 5]
+      "base": 0
     },
-    "door_metal": {
+    "water": {
       "offset": 128,
-      "n": [6, 7, 8, 9, 10, 11]
+      "base": 1
     },
-    "door_hatch": {
+    "water_edge_anim": {
       "offset": 128,
-      "n": [12, 13]
+      "base": [2, 3]
     },
-    "door_garage": {
+    "water_anim": {
       "offset": 128,
-      "n": [14, 15]
+      "base": [4, 5]
     },
-    "door_stone": {
+    "swamp_edge": {
+      "offset": 128,
+      "base": 6
+    },
+    "swamp": {
+      "offset": 128,
+      "base": 7
+    },
+    "swamp_edge_anim": {
+      "offset": 128,
+      "base": [8, 9]
+    },
+    "swamp_anim": {
+      "offset": 128,
+      "base": [10, 11]
+    },
+    "murky_edge_anim": {
+      "offset": 128,
+      "base": [12, 13]
+    },
+    "murky_anim": {
+      "offset": 128,
+      "base": [14, 15]
+    },
+    "acid_edge": {
       "offset": 144,
-      "n": [0, 1, 2, 3, 4, 5]
+      "base": 0
     },
-    "door_red": {
+    "acid": {
       "offset": 144,
-      "n": [6, 7, 8, 9, 10, 11]
+      "base": 1
+    },
+    "acid_edge_anim": {
+      "offset": 144,
+      "base": [2, 3]
+    },
+    "acid_anim": {
+      "offset": 144,
+      "base": [4, 5]
+    },
+    "lava_edge": {
+      "offset": 144,
+      "base": 6
+    },
+    "lava": {
+      "offset": 144,
+      "base": 7
+    },
+    "lava_edge_anim": {
+      "offset": 144,
+      "base": [8, 9]
+    },
+    "lava_anim": {
+      "offset": 144,
+      "base": [10, 11]
+    },
+    "mud_edge_anim": {
+      "offset": 144,
+      "base": [12, 13]
+    },
+    "mud_anim": {
+      "offset": 144,
+      "base": [14, 15]
+    },
+    "door_wood_h_open": {
+      "offset": 160,
+      "base": 1
+    },
+    "door_wood_h_closed": {
+      "offset": 160,
+      "base": 0
+    },
+    "door_wood_v_open": {
+      "offset": 160,
+      "base": [4, 5]
+    },
+    "door_wood_v_closed": {
+      "offset": 160,
+      "base": [2, 3]
+    },
+    "door_gate_h_open": {
+      "offset": 160,
+      "base": 7
+    },
+    "door_gate_h_closed": {
+      "offset": 160,
+      "base": 6
+    },
+    "door_gate_v_open": {
+      "offset": 160,
+      "base": [10, 11]
+    },
+    "door_gate_v_closed": {
+      "offset": 160,
+      "base": [8, 9]
+    },
+    "trapdoor_closed": {
+      "offset": 160,
+      "base": 12
+    },
+    "trapdoor_open": {
+      "offset": 160,
+      "variations": [
+        {"base": 13},
+        {"base": 14}
+      ]
+    },
+    "shadow": {
+      "offset": 160,
+      "base": 15
+    },
+    "door_stone_h_open": {
+      "offset": 176,
+      "base": 1
+    },
+    "door_stone_h_closed": {
+      "offset": 176,
+      "base": 0
+    },
+    "door_stone_v_open": {
+      "offset": 176,
+      "base": [4, 5]
+    },
+    "door_stone_v_closed": {
+      "offset": 176,
+      "base": [2, 3]
+    },
+    "door_evil_h_open": {
+      "offset": 176,
+      "base": 7
+    },
+    "door_evil_h_closed": {
+      "offset": 176,
+      "base": 6
+    },
+    "door_evil_v_closed": {
+      "offset": 176,
+      "variations": [8, 9]
+    },
+    "door_evil_v_open": {
+      "offset": 176,
+      "variations": [10, 11]
     },
     "floor_wood": {
-      "offset": 144,
-      "n": [12, 13, 14, 15]
+      "offset": 176,
+      "variations": [
+        {"base":  12},
+        {"base":  13},
+        {"base":  14},
+        {"base":  15}
+      ]
     },
     "crate": {
-      "offset": 160,
-      "n": [0, 1]
+      "offset": 192,
+      "base": 0
     },
-    "chest": {
-      "offset": 160,
-      "n": [2, 3, 4]
+    "crate_broken": {
+      "offset": 192,
+      "base": 1
+    },
+    "chest_closed": {
+      "offset": 192,
+      "base": 2
+    },
+    "chest_open_full": {
+      "offset": 192,
+      "base": 3
+    },
+    "chest_open_empty": {
+      "offset": 192,
+      "base": 4
     },
     "torch": {
-      "offset": 160,
-      "n": [5, 6]
+      "offset": 192,
+      "base": [5, 6]
     },
     "torchlight": {
-      "offset": 160,
-      "n": [7, 8]
+      "offset": 192,
+      "base": [7, 8]
     },
     "tombstone": {
-      "offset": 160,
-      "n": [9, 10]
+      "offset": 192,
+      "base": 9
     },
-    "lever": {
-      "offset": 160,
-      "n": [11, 12]
+    "tombstone_broken": {
+      "offset": 192,
+      "base": 10
     },
-    "bear_trap": {
-      "offset": 160,
-      "n": [13]
+    "lever_right": {
+      "offset": 192,
+      "base": 12
     },
-    "boulder_grey": {
-      "offset": 160,
-      "n": [14]
+    "lever_left": {
+      "offset": 192,
+      "base": 11
     },
-    "boulder_orange": {
-      "offset": 160,
-      "n": [15]
+    "trap": {
+      "offset": 192,
+      "base": 13
     },
-    "cobweb": {
-      "offset": 176,
-      "n": [4],
-      "ne": [1],
-      "se": [3],
-      "sw": [2],
-      "nw": [0]
+    "stone_grey": {
+      "offset": 192,
+      "base": 14
     },
-    "arcane_sign": {
-      "offset": 176,
-      "n": [5, 6, 7, 8, 9, 10]
+    "stone_cave": {
+      "offset": 192,
+      "base": 15
+    },
+    "web": {
+      "offset": 208,
+      "base": 4,
+      "ne": 1,
+      "se": 3,
+      "sw": 2,
+      "nw": 0
+    },
+    "magic": {
+      "offset": 208,
+      "variations": [
+        {"base": 5},
+        {"base": 6},
+        {"base": 7},
+        {"base": 8},
+        {"base": [9, 10]}
+      ]
+    },
+    "blood_bone": {
+      "offset": 208,
+      "base": 11
     },
     "blood": {
-      "offset": 176,
-      "n": [11, 12, 13, 14, 15]
+      "offset": 208,
+      "variations": [
+        {"base": 12},
+        {"base": 13},
+        {"base": 14},
+        {"base": 15}
+      ]
     },
     "grass": {
-      "offset": 192,
-      "n": [0],
-      "ne": [3],
-      "se": [4],
-      "sw": [1],
-      "nw": [2]
+      "offset": 224,
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4}
+      ]
     },
     "mushroom_red": {
-      "offset": 192,
-      "n": [5]
+      "offset": 224,
+      "base": 5
     },
-    "mushroom_purple": {
-      "offset": 192,
-      "n": [6]
+    "mushroom_pink": {
+      "offset": 224,
+      "base": 6
     },
-    "mushroom_orange": {
-      "offset": 192,
-      "n": [7]
+    "mushroom_yellow": {
+      "offset": 224,
+      "base": 7
     },
     "lily_pad": {
-      "offset": 192,
-      "n": [10, 14],
-      "e": [11, 15],
-      "s": [8, 12],
-      "w": [9, 13]
+      "offset": 224,
+      "variations": [
+        {"base": [10, 14]},
+        {"base": [11, 15]},
+        {"base": [8, 12]},
+        {"base": [9, 13]}
+      ]
     },
-    "bookcase": {
-      "offset": 208,
-      "n": [0, 1]
+    "bookshelf_full": {
+      "offset": 240,
+      "base": 0
+    },
+    "bookshelf_empty": {
+      "offset": 240,
+      "base": 1
     },
     "bed": {
-      "offset": 208,
-      "n": [2]
+      "offset": 240,
+      "base": 2
     },
     "chair": {
-      "offset": 208,
-      "n": [3]
+      "offset": 240,
+      "base": 3
     },
     "table": {
-      "offset": 208,
-      "n": [5, 6, 7, 8, 9, 10]
+      "offset": 240,
+      "base": 5
     },
-    "altar": {
-      "offset": 208,
-      "n": [11, 12, 13, 14, 15]
+    "table_left": {
+      "offset": 240,
+      "variations": [
+        {"base": 6},
+        {"base": 9}
+      ]
     },
-    "sticks": {
-      "offset": 224,
-      "n": [0],
-      "ne": [3],
-      "se": [4],
-      "nw": [2],
-      "sw": [1]
+    "table_middle": {
+      "offset": 240,
+      "variations": [
+        {"base": 7},
+        {"base": 10}
+      ]
     },
-    "bush": {
-      "offset": 224,
-      "n": [5, 6]
+    "table_right": {
+      "offset": 240,
+      "variations": [
+        {"base": 8},
+        {"base": 11}
+      ]
     },
-    "floor_grass_stone": {
-      "offset": 224,
-      "n": [7, 8, 9, 10]
+    "slab": {
+      "offset": 240,
+      "variations": [
+        {"base":  11},
+        {"base":  12}
+      ]
+    },
+    "slab_left": {
+      "offset": 240,
+      "base": 13
+    },
+    "slab_middle": {
+      "offset": 240,
+      "base": 13
+    },
+    "slab_right": {
+      "offset": 240,
+      "base": 13
+    },
+    "grass_root": {
+      "offset": 256,
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2},
+        {"base": 3},
+        {"base": 4}
+      ]
+    },
+    "shrub": {
+      "offset": 256,
+      "variations": [
+        {"base": 5},
+        {"base": 6}
+      ]
+    },
+    "floor_grass_tile": {
+      "offset": 256,
+      "variations": [
+        {"base": 7},
+        {"base": 8},
+        {"base": 9},
+        {"base": 10}
+      ]
+    },
+    "campfire_stones": {
+      "offset": 256,
+      "base": 11
     },
     "campfire": {
-      "offset": 224,
-      "n": [12, 13],
-      "s": [11]
+      "offset": 256,
+      "base": [12, 13]
     },
-    "throne_red": {
-      "offset": 224,
-      "n": [14]
+    "throne_wood": {
+      "offset": 256,
+      "base": 14
     },
-    "throne_purple": {
-      "offset": 224,
-      "n": [15]
+    "throne_evil": {
+      "offset": 256,
+      "base": 15
     },
-    "wall_stone_light": {
-      "offset": 240,
-      "n": [12],
-      "s": [0]
+    "house_wall": {
+      "offset": 272,
+      "base": 0
     },
-    "door_cave": {
-      "offset": 240,
-      "n": [1],
-      "s": [2]
+    "house_wall_lit": {
+      "offset": 272,
+      "base": 12
     },
-    "fence": {
-      "offset": 240,
-      "n": [5, 6, 7],
-      "e": [3, 4]
+    "house_door_closed": {
+      "offset": 272,
+      "base": 1
     },
-    "sign_empty": {
-      "offset": 240,
-      "n": [8]
+    "house_door_open": {
+      "offset": 272,
+      "base": 2
     },
-    "sign_equipment": {
-      "offset": 240,
-      "n": [9]
+    "house_roof": {
+      "offset": 272,
+      "variations": [
+        {"base": 5},
+        {"base": 6},
+        {"base": 7}
+      ]
     },
-    "sign_potion": {
-      "offset": 240,
-      "n": [10]
+    "house_roof_edge": {
+      "offset": 272,
+      "variations": [
+        {"base": 3},
+        {"base": 4}
+      ]
     },
-    "sign_bed": {
-      "offset": 240,
-      "n": [11]
+    "sign_blank": {
+      "offset": 272,
+      "base": 8
     },
-    "statue": {
-      "offset": 240,
-      "n": [13, 14, 15]
+    "sign_weapons": {
+      "offset": 272,
+      "base": 9
+    },
+    "sign_potions": {
+      "offset": 272,
+      "base": 10
+    },
+    "sign_inn": {
+      "offset": 272,
+      "base": 11
+    },
+    "statue_winged": {
+      "offset": 272,
+      "base": 13
+    },
+    "statue_warrior": {
+      "offset": 272,
+      "base": 14
+    },
+    "statue_tentacle": {
+      "offset": 272,
+      "base": 15
     },
     "bones": {
-      "offset": 256,
-      "n": [0, 1, 2]
+      "offset": 288,
+      "variations": [
+        {"base": 0},
+        {"base": 1},
+        {"base": 2}
+      ]
     },
     "candles": {
-      "offset": 256,
-      "n": [3, 4],
-      "ne": [7, 8],
-      "se": [5, 6]
+      "offset": 288,
+      "variations": [
+        {"base": [3, 4]},
+        {"base": [5, 6]},
+        {"base": [7, 8]}
+      ]
     },
     "cauldron": {
-      "offset": 256,
-      "n": [9, 10]
+      "offset": 288,
+      "base": [9, 10]
     },
-    "pots": {
-      "offset": 256,
-      "n": [13],
-      "ne": [11],
-      "se": [12]
+    "urns": {
+      "offset": 288,
+      "variations": [
+        {"base": 11},
+        {"base": 12},
+        {"base": 13}
+      ]
     },
-    "spikes": {
-      "offset": 256,
-      "n": [14],
-      "ne": [15]
+    "stalagmite": {
+      "offset": 288,
+      "variations": [
+        {"base": 14},
+        {"base": 15}
+      ]
     }
   }
 }
