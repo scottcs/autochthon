@@ -214,26 +214,27 @@ class Map(tcod.map.Map):
 
     def _tile_id_from_type(self, tile_type: TileType, y: int, x: int) -> int:
         # TODO: move these definitions to a data file/change based on map "theme"
-        suffixes = "ABCD"
-        idx = 0
-        if self.alt_tile_3[y, x]:
-            idx += 1
-        if self.alt_tile_2[y, x]:
-            idx += 1
-        if self.alt_tile_1[y, x]:
-            idx += 1
-        if tile_type == TileType.wall_v:
-            return game.utils.render.TileCache.id_from_name(
-                "terrain_wallAVertical" + suffixes[idx]
-            )
-        elif tile_type == TileType.wall_h:
-            return game.utils.render.TileCache.id_from_name(
-                "terrain_wallAHorizontal" + suffixes[idx]
-            )
-        elif tile_type == TileType.floor:
-            return game.utils.render.TileCache.id_from_name("terrain_floorOverlay" + suffixes[idx])
-        else:
-            raise RuntimeError(f"Unknown tile type: {tile_type}")
+        pass
+        # suffixes = "ABCD"
+        # idx = 0
+        # if self.alt_tile_3[y, x]:
+        #     idx += 1
+        # if self.alt_tile_2[y, x]:
+        #     idx += 1
+        # if self.alt_tile_1[y, x]:
+        #     idx += 1
+        # if tile_type == TileType.wall_v:
+        #     return game.utils.render.TileCache.id_from_name(
+        #         "terrain_wallAVertical" + suffixes[idx]
+        #     )
+        # elif tile_type == TileType.wall_h:
+        #     return game.utils.render.TileCache.id_from_name(
+        #         "terrain_wallAHorizontal" + suffixes[idx]
+        #     )
+        # elif tile_type == TileType.floor:
+        #     return game.utils.render.TileCache.id_from_name("terrain_floorOverlay" + suffixes[idx])
+        # else:
+        #     raise RuntimeError(f"Unknown tile type: {tile_type}")
 
     @staticmethod
     def _tile_color_from_type(tile_type: TileType) -> int:
