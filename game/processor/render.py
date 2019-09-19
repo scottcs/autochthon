@@ -38,7 +38,7 @@ class BearLibRender(esper.Processor):
         blt.set(f"window: {window_size}, {cell_size}, resizable=true, title='{title}'")
         self._load_tilesets()
 
-        blt.put(0, 0, game.utils.render.TileCache.get("monsters", "fighter", direction="e"))
+        blt.put(0, 0, game.utils.render.TileCache.get("monsters", "fighter"))
         blt.put(
             window_data["width"] - 1,
             0,
