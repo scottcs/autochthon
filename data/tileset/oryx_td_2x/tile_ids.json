@@ -1826,5 +1826,503 @@
         {"base": 15}
       ]
     }
+  },
+  "interface": {
+    "panel_stone": {
+      "offset": 0,
+      "nw": 0,
+      "n": 1,
+      "ne": 2,
+      "w": 16,
+      "base": 17,
+      "e": 18,
+      "sw": 32,
+      "s": 33,
+      "se": 34
+    },
+    "panel_stone_cracked": {
+      "offset": 3,
+      "nw": 0,
+      "n": 1,
+      "ne": 2,
+      "w": 16,
+      "base": 17,
+      "e": 18,
+      "sw": 32,
+      "s": 33,
+      "se": 34
+    },
+    "panel_scroll": {
+      "offset": 6,
+      "nw": 0,
+      "n": 1,
+      "ne": 2,
+      "w": 16,
+      "base": 17,
+      "e": 18,
+      "sw": 32,
+      "s": 33,
+      "se": 34
+    },
+    "panel_scroll_worn": {
+      "offset": 9,
+      "nw": 0,
+      "n": 1,
+      "ne": 2,
+      "w": 16,
+      "base": 17,
+      "e": 18,
+      "sw": 32,
+      "s": 33,
+      "se": 34
+    },
+    "panel_window": {
+      "offset": 12,
+      "nw": 0,
+      "n": 1,
+      "ne": 2,
+      "w": 16,
+      "base": 17,
+      "e": 18,
+      "sw": 32,
+      "s": 33,
+      "se": 34
+    },
+    "bubble": {
+      "offset": 60,
+      "nw": 0,
+      "n": 1,
+      "ne": 2,
+      "w": 16,
+      "base": 17,
+      "e": 18,
+      "sw": 32,
+      "s": 33,
+      "se": 34
+    },
+    "bar_v_stone_top": {
+      "offset": 64,
+      "base": 0
+    },
+    "bar_v_stone_middle": {
+      "offset": 80,
+      "base": 0
+    },
+    "bar_v_stone_bottom": {
+      "offset": 96,
+      "base": 0
+    },
+    "bar_h_stone_left": {
+      "offset": 96,
+      "base": 1
+    },
+    "bar_h_stone_middle": {
+      "offset": 96,
+      "base": 2
+    },
+    "bar_h_stone_right": {
+      "offset": 96,
+      "base": 3
+    },
+    "bar_v_scroll_top": {
+      "offset": 64,
+      "base": 6
+    },
+    "bar_v_scroll_middle": {
+      "offset": 80,
+      "base": 6
+    },
+    "bar_v_scroll_bottom": {
+      "offset": 96,
+      "base": 6
+    },
+    "bar_h_scroll_left": {
+      "offset": 96,
+      "base": 7
+    },
+    "bar_h_scroll_middle": {
+      "offset": 96,
+      "base": 8
+    },
+    "bar_h_scroll_right": {
+      "offset": 96,
+      "base": 9
+    },
+    "bar_stone_tab": {
+      "offset": 64,
+      "base": 1
+    },
+    "bar_scroll_tab": {
+      "offset": 64,
+      "base": 7
+    },
+    "button_stone_left": {
+      "offset": 80,
+      "base": 1
+    },
+    "button_stone_right": {
+      "offset": 80,
+      "base": 2
+    },
+    "button_stone_pressed_left": {
+      "offset": 80,
+      "base": 3
+    },
+    "button_stone_pressed_right": {
+      "offset": 80,
+      "base": 4
+    },
+    "button_scroll_left": {
+      "offset": 80,
+      "base": 7
+    },
+    "button_scroll_right": {
+      "offset": 80,
+      "base": 8
+    },
+    "button_scroll_pressed_left": {
+      "offset": 80,
+      "base": 9
+    },
+    "button_scroll_pressed_right": {
+      "offset": 80,
+      "base": 10
+    },
+    "check_stone": {
+      "offset": 64,
+      "base": 2
+    },
+    "check_stone_checked": {
+      "offset": 64,
+      "base": 3
+    },
+    "close_stone": {
+      "offset": 64,
+      "base": 4
+    },
+    "close_stone_checked": {
+      "offset": 64,
+      "base": 5
+    },
+    "check_scroll": {
+      "offset": 64,
+      "base": 8
+    },
+    "check_scroll_checked": {
+      "offset": 64,
+      "base": 9
+    },
+    "close_scroll": {
+      "offset": 64,
+      "base": 10
+    },
+    "close_scroll_checked": {
+      "offset": 64,
+      "base": 11
+    },
+    "option_blank": {
+      "offset": 96,
+      "base": 0
+    },
+    "option_attack": {
+      "offset": 96,
+      "base": 1
+    },
+    "option_defend": {
+      "offset": 96,
+      "base": 2
+    },
+    "option_magic": {
+      "offset": 96,
+      "base": 3
+    },
+    "option_bag": {
+      "offset": 96,
+      "base": 4
+    },
+    "option_setting": {
+      "offset": 96,
+      "base": 5
+    },
+    "option_item": {
+      "offset": 96,
+      "base": 6
+    },
+    "option_equip": {
+      "offset": 96,
+      "base": 7
+    },
+    "option_go": {
+      "offset": 96,
+      "base": 8
+    },
+    "option_cancel": {
+      "offset": 96,
+      "base": 9
+    },
+    "option_alert": {
+      "offset": 96,
+      "base": 10
+    },
+    "option_blank_pressed": {
+      "offset": 112,
+      "base": 0
+    },
+    "option_attack_pressed": {
+      "offset": 112,
+      "base": 1
+    },
+    "option_defend_pressed": {
+      "offset": 112,
+      "base": 2
+    },
+    "option_magic_pressed": {
+      "offset": 112,
+      "base": 3
+    },
+    "option_bag_pressed": {
+      "offset": 112,
+      "base": 4
+    },
+    "option_setting_pressed": {
+      "offset": 112,
+      "base": 5
+    },
+    "option_item_pressed": {
+      "offset": 112,
+      "base": 6
+    },
+    "option_equip_pressed": {
+      "offset": 112,
+      "base": 7
+    },
+    "option_go_pressed": {
+      "offset": 112,
+      "base": 8
+    },
+    "option_cancel_pressed": {
+      "offset": 112,
+      "base": 9
+    },
+    "option_alert_pressed": {
+      "offset": 112,
+      "base": 10
+    },
+    "bubble_arrow_left": {
+      "offset": 96,
+      "base": 12
+    },
+    "bubble_arrow_middle": {
+      "offset": 96,
+      "base": 13
+    },
+    "bubble_arrow_right": {
+      "offset": 96,
+      "base": 14
+    },
+    "bubble_arrow_left_arrow": {
+      "offset": 112,
+      "base": 12
+    },
+    "bubble_arrow_middle_arrow": {
+      "offset": 112,
+      "base": 13
+    },
+    "bubble_arrow_right_arrow": {
+      "offset": 112,
+      "base": 14
+    },
+    "cursor_arrow_light": {
+      "offset": 128,
+      "base": 0
+    },
+    "cursor_triangle_light": {
+      "offset": 128,
+      "base": 1
+    },
+    "cursor_watch_light": {
+      "offset": 128,
+      "base": 2
+    },
+    "cursor_pointer_light": {
+      "offset": 128,
+      "base": 3
+    },
+    "cursor_finger_light": {
+      "offset": 128,
+      "base": 4
+    },
+    "cursor_hand_light": {
+      "offset": 128,
+      "base": 5
+    },
+    "cursor_grab_light": {
+      "offset": 128,
+      "base": 6
+    },
+    "cursor_target_light": {
+      "offset": 128,
+      "base": 7
+    },
+    "cursor_crosshair1_light": {
+      "offset": 128,
+      "base": 8
+    },
+    "cursor_crosshair2_light": {
+      "offset": 128,
+      "base": 9
+    },
+    "cursor_magnify_light": {
+      "offset": 128,
+      "base": 10
+    },
+    "cursor_reduce_light": {
+      "offset": 128,
+      "base": 11
+    },
+    "cursor_undo_light": {
+      "offset": 128,
+      "base": 12
+    },
+    "cursor_redo_light": {
+      "offset": 128,
+      "base": 13
+    },
+    "cursor_arrow_dark": {
+      "offset": 144,
+      "base": 0
+    },
+    "cursor_triangle_dark": {
+      "offset": 144,
+      "base": 1
+    },
+    "cursor_watch_dark": {
+      "offset": 144,
+      "base": 2
+    },
+    "cursor_pointer_dark": {
+      "offset": 144,
+      "base": 3
+    },
+    "cursor_finger_dark": {
+      "offset": 144,
+      "base": 4
+    },
+    "cursor_hand_dark": {
+      "offset": 144,
+      "base": 5
+    },
+    "cursor_grab_dark": {
+      "offset": 144,
+      "base": 6
+    },
+    "cursor_target_dark": {
+      "offset": 144,
+      "base": 7
+    },
+    "cursor_crosshair1_dark": {
+      "offset": 144,
+      "base": 8
+    },
+    "cursor_crosshair2_dark": {
+      "offset": 144,
+      "base": 9
+    },
+    "cursor_magnify_dark": {
+      "offset": 144,
+      "base": 10
+    },
+    "cursor_reduce_dark": {
+      "offset": 144,
+      "base": 11
+    },
+    "cursor_undo_dark": {
+      "offset": 144,
+      "base": 12
+    },
+    "cursor_redo_dark": {
+      "offset": 144,
+      "base": 13
+    },
+    "hp_empty_left": {
+      "offset": 160,
+      "base": 0
+    },
+    "hp_empty_middle": {
+      "offset": 160,
+      "base": 1
+    },
+    "hp_empty_right": {
+      "offset": 160,
+      "base": 2
+    },
+    "mp_empty_left": {
+      "offset": 160,
+      "base": 3
+    },
+    "mp_empty_middle": {
+      "offset": 160,
+      "base": 4
+    },
+    "mp_empty_right": {
+      "offset": 160,
+      "base": 5
+    },
+    "heart_full": {
+      "offset": 160,
+      "base": 6
+    },
+    "heart_empty": {
+      "offset": 160,
+      "base": 7
+    },
+    "hp_full_left": {
+      "offset": 176,
+      "base": 0
+    },
+    "hp_full_middle": {
+      "offset": 176,
+      "base": 1
+    },
+    "hp_full_right": {
+      "offset": 176,
+      "base": 2
+    },
+    "mp_full_left": {
+      "offset": 176,
+      "base": 3
+    },
+    "mp_full_middle": {
+      "offset": 176,
+      "base": 4
+    },
+    "mp_full_right": {
+      "offset": 176,
+      "base": 5
+    },
+    "crystal_full": {
+      "offset": 176,
+      "base": 6
+    },
+    "crystal_empty": {
+      "offset": 176,
+      "base": 7
+    },
+    "select_green": {
+      "offset": 160,
+      "variations": [
+        {"base": [8, 24]},
+        {"base": [9, 25]},
+        {"base": [10, 26]}
+      ]
+    },
+    "select_red": {
+      "offset": 160,
+      "variations": [
+        {"base": [11, 27]},
+        {"base": [12, 28]},
+        {"base": [13, 29]}
+      ]
+    }
   }
 }
