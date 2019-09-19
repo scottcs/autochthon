@@ -2324,5 +2324,247 @@
         {"base": [13, 29]}
       ]
     }
+  },
+  "portraits": {
+    "fighter_male": {
+      "offset": 0,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "fighter_female": {
+      "offset": 0,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "berserker_male": {
+      "offset": 10,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "berserker_female": {
+      "offset": 10,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "rogue_male": {
+      "offset": 20,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "rogue_female": {
+      "offset": 20,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "paladin_male": {
+      "offset": 30,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "paladin_female": {
+      "offset": 30,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "mercenary_male": {
+      "offset": 40,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "mercenary_female": {
+      "offset": 40,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "wizard_male": {
+      "offset": 50,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "wizard_female": {
+      "offset": 50,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "witch_male": {
+      "offset": 60,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "witch_female": {
+      "offset": 60,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "cleric_male": {
+      "offset": 70,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "cleric_female": {
+      "offset": 70,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "druid_male": {
+      "offset": 80,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "druid_female": {
+      "offset": 80,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "necromancer_male": {
+      "offset": 90,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "necromancer_female": {
+      "offset": 90,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "archer_male": {
+      "offset": 100,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "archer_female": {
+      "offset": 100,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    },
+    "minstrel_male": {
+      "offset": 110,
+      "variations": [
+        {"base": 0},
+        {"base": 2},
+        {"base": 4},
+        {"base": 6},
+        {"base": 8}
+      ]
+    },
+    "minstrel_female": {
+      "offset": 110,
+      "variations": [
+        {"base": 1},
+        {"base": 3},
+        {"base": 5},
+        {"base": 7},
+        {"base": 9}
+      ]
+    }
   }
 }
