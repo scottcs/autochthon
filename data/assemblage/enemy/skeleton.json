@@ -1,0 +1,19 @@
+{
+  "Skeleton": {
+    "Components": {
+      "ai.SimpleMind": {},
+      "attribute.HP": {
+        "initial": "==3d6+10"
+      },
+      "descriptive.Name": {
+        "first": "skeleton",
+        "last": "warrior"
+      },
+      "render.Renderable": {
+        "tile_id": ["monsters", "skeleton_warrior"],
+        "tint": "Palette.green",
+        "layer": "RenderLayer.enemy"
+      }
+    }
+  }
+}

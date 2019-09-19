@@ -1,16 +1,14 @@
 {
-  "Boar": {
+  "Wraith": {
     "Components": {
       "ai.SimpleMind": {},
-      "attribute.HP": {
-        "initial": 10
-      },
+      "attribute.HP": {},
       "descriptive.Name": {
-        "first": "boar"
+        "first": "wraith"
       },
       "render.Renderable": {
-        "tile_id": "monster_boar",
-        "tint": "Palette.blue",
+        "tile_id": ["monsters", "wraith"],
+        "tint": "Palette.purple",
         "layer": "RenderLayer.enemy"
       }
     }

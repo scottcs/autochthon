@@ -179,23 +179,23 @@ class Game:
         current_map.create()
         self.world.map = current_map
 
-        # player_factory = game.utils.factory.Player(loader, self.world)
-        # enemy_factory = game.utils.factory.Enemy(loader, self.world)
-        # item_factory = game.utils.factory.Item(loader, self.world)
-        # player = player_factory.make(["Orc"])
-        # self.world.add_component(player, game.component.action.GUTMyTurn())
-        # for _ in range(200):
-        #     enemy_factory.make(["TrainingDummy"])
-        # enemy_factory.make(["Crab"])
-        # enemy_factory.make(["Boar"])
-        # enemy_factory.make(["OrcShaman"])
-        # enemy_factory.make(["OrcBrute"])
-        # enemy_factory.make(["Firefly"])
-        # enemy_factory.make(["SebastianBenini"])
-        # for _ in range(100):
-        #     item_factory.make(["Katana"])
-        #     item_factory.make(["Mace"])
-        #     item_factory.make(["PlateArmor"])
+        player_factory = game.utils.factory.Player(loader, self.world)
+        enemy_factory = game.utils.factory.Enemy(loader, self.world)
+        item_factory = game.utils.factory.Item(loader, self.world)
+        player = player_factory.make(["Rogue"])
+        self.world.add_component(player, game.component.action.GUTMyTurn())
+        for _ in range(200):
+            enemy_factory.make(["TrainingDummy"])
+        enemy_factory.make(["Spider"])
+        enemy_factory.make(["Bat"])
+        enemy_factory.make(["GoblinMage"])
+        enemy_factory.make(["GoblinGrunt"])
+        enemy_factory.make(["Flies"])
+        enemy_factory.make(["SebastianBenini"])
+        for _ in range(100):
+            item_factory.make(["Katana"])
+            item_factory.make(["Mace"])
+            item_factory.make(["PlateArmor"])
 
     def _on_input(self, _event: game.types.Event) -> None:
         self.got_player_input = True

@@ -5,7 +5,7 @@
         "first": "item"
       },
       "render.Renderable": {
-        "tile_id": "item_feather",
+        "tile_id": ["items", "feather"],
         "tint": "Palette.white",
         "layer": "RenderLayer.item"
       },

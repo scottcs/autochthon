@@ -1,5 +1,5 @@
 {
-  "Crab": {
+  "Spider": {
     "Components": {
       "ai.SimpleMind": {},
       "attribute.HP": {
@@ -12,10 +12,10 @@
         "factor": 0.3
       },
       "descriptive.Name": {
-        "first": "crab"
+        "first": "spider"
       },
       "render.Renderable": {
-        "tile_id": "monster_crab",
+        "tile_id": ["monsters", "spider"],
         "tint": "Palette.orange",
         "layer": "RenderLayer.enemy"
       }
