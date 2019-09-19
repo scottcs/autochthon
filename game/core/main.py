@@ -11,6 +11,7 @@ import game.component.action
 import game.component.attack
 import game.const.base_engine_values
 import game.const.config
+import game.const.layout
 import game.core.map
 import game.core.world
 import game.events
@@ -50,6 +51,8 @@ class Game:
         self.got_player_input: bool = False
         self.world: game.core.world.World = game.core.world.World()
         self.state: game.types.GameState = game.types.GameState.unknown
+        self.loader: game.utils.dataloader.DataLoader = game.utils.dataloader.DataLoader()
+        self.loader.load_all_json()
         self.morgue: logging.Logger = self._setup_morgue()
         version_string = f'* {self.config["title"]} version {game.VERSION}'
         log.info(version_string)
@@ -89,9 +92,6 @@ class Game:
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
         game.events.RequestRender.handle(self._on_refresh_map)
-
-        loader = game.utils.dataloader.DataLoader()
-        loader.load_all_json()
 
         dodge_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("dodges", "dodged"),
@@ -179,26 +179,26 @@ class Game:
         current_map.create()
         self.world.map = current_map
 
-        player_factory = game.utils.factory.Player(loader, self.world)
-        enemy_factory = game.utils.factory.Enemy(loader, self.world)
-        item_factory = game.utils.factory.Item(loader, self.world)
-        player = player_factory.make(["Rogue"])
-        self.world.add_component(player, game.component.action.GUTMyTurn())
-        for _ in range(200):
-            enemy_factory.make(["TrainingDummy"])
-        enemy_factory.make(["Spider"])
-        enemy_factory.make(["Bat"])
-        enemy_factory.make(["GoblinMage"])
-        enemy_factory.make(["GoblinGrunt"])
-        enemy_factory.make(["Flies"])
-        enemy_factory.make(["SebastianBenini"])
-        for _ in range(100):
-            item_factory.make(["Katana"])
-            item_factory.make(["Mace"])
-            item_factory.make(["PlateArmor"])
+        self._load_layout("Test1")
 
     def _on_input(self, _event: game.types.Event) -> None:
         self.got_player_input = True
+
+    def _load_layout(self, name: str) -> None:
+        layout = game.const.layout.DATA[name]
+
+        player_factory = game.utils.factory.Player(self.loader, self.world)
+        enemy_factory = game.utils.factory.Enemy(self.loader, self.world)
+        item_factory = game.utils.factory.Item(self.loader, self.world)
+
+        player = player_factory.make(layout["player"])
+        self.world.add_component(player, game.component.action.GUTMyTurn())
+        for enemy in layout["enemies"]:
+            for _ in range(enemy["count"]):
+                enemy_factory.make(enemy["assemblages"])
+        for item in layout["items"]:
+            for _ in range(item["count"]):
+                item_factory.make(item["assemblages"])
 
     @staticmethod
     def _on_refresh_map(event: game.types.Event) -> None:

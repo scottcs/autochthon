@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Test1",
+    "player": ["Rogue"],
+    "enemies": [
+      {
+        "assemblages":  ["TrainingDummy"],
+        "count": 200
+      },
+      {
+        "assemblages":  ["Spider"],
+        "count": 1
+      },
+      {
+        "assemblages":  ["Bat"],
+        "count": 1
+      },
+      {
+        "assemblages":  ["GoblinMage"],
+        "count": 1
+      },
+      {
+        "assemblages":  ["GoblinGrunt"],
+        "count": 3
+      },
+      {
+        "assemblages":  ["Flies"],
+        "count": 2
+      },
+      {
+        "assemblages":  ["SebastianBenini"],
+        "count": 1
+      }
+    ],
+    "items": [
+      {
+        "assemblages":  ["Katana"],
+        "count": 100
+      },
+      {
+        "assemblages":  ["Mace"],
+        "count": 100
+      },
+      {
+        "assemblages":  ["PlateArmor"],
+        "count": 100
+      }
+    ]
+  }
+]

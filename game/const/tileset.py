@@ -1,4 +1,4 @@
-"""Loaded tile ids."""
+"""Loaded tilesets."""
 import json
 import pathlib
 import typing
