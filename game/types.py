@@ -14,6 +14,15 @@ Layout = typing.Dict[str, typing.Any]
 Entity = int
 
 
+class PlayerRenderData(typing.NamedTuple):
+    """Player render data."""
+
+    x: int
+    y: int
+    fov: int
+    tile_id: int
+
+
 class RenderLayer(enum.Enum):
     """Render layers, from bottom to top."""
 

@@ -14,6 +14,7 @@ import game.const.tile_ids
 import game.const.tileset
 import game.events
 import game.types
+import game.utils.geometry
 import game.utils.render
 
 log = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ class BearLibRender(esper.Processor):
         cell_size = f"cellsize={cell_data['width']}x{cell_data['height']}"
         title = game.const.config.DATA["title"]
         blt.set(f"window: {window_size}, {cell_size}, resizable=true, title='{title}'")
+        blt.composition(True)
         self._load_tilesets()
 
     @staticmethod
@@ -52,40 +54,36 @@ class BearLibRender(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
+        player_data = self._get_player_render_data()
+        center_x = self.width // 2
+        center_y = self.height // 2
+        viewport_x = max(0, player_data.x - center_x)
+        viewport_y = max(0, player_data.y - center_y)
 
-        # PLAYER POSITION
-        player_x: int = 0
-        player_y: int = 0
-        # fov: int = 0
-        player_tile_id: int = 0
+        for draw_x in range(self.width):
+            map_x: int = draw_x + viewport_x
+            for draw_y in range(self.height):
+                map_y: int = draw_y + viewport_y
+                if map_x >= self.world.map.width or map_y >= self.world.map.height:
+                    continue
+                tile_id, tile_color = self.world.map.get_tile(map_y, map_x)
+                blt.put(draw_x, draw_y, tile_id)
+
+        blt.put(center_x, center_y, player_data.tile_id)
+        blt.refresh()
+
+    def _get_player_render_data(self) -> game.types.PlayerRenderData:
+        # TODO: handle more than one player controlled object?
         for ent, components in self.world.get_components(
             game.component.player.Player,
             game.component.render.Renderable,
             game.component.movement.Position,
         ):
             player, renderable, position = components
-            player_x = position.x
-            player_y = position.y
             category, name = renderable.tile_id
-            player_tile_id = game.utils.render.TileCache.get(category, name, frame=1)
-            # fov = player.fov
-            # TODO: handle more than one player controlled object?
-            break
-
-        center_x = self.width // 2
-        center_y = self.height // 2
-        viewport_x1 = max(0, player_x - center_x)
-        viewport_x2 = min(self.width, player_x + center_x)
-        viewport_y1 = max(0, player_y - center_y)
-        viewport_y2 = min(self.height, player_y + center_y)
-        blt.put(center_x, center_y, player_tile_id)
-
-        for map_x in range(viewport_x1, viewport_x2):
-            for map_y in range(viewport_y1, viewport_y2):
-                # TODO: draw
-                pass
-
-        blt.refresh()
+            player_tile_id = game.utils.render.TileCache.get(category, name)
+            return game.types.PlayerRenderData(position.x, position.y, player.fov, player_tile_id)
+        return game.types.PlayerRenderData(0, 0, 0, 0)
 
     @staticmethod
     def _on_game_over(event: game.types.Event):
