@@ -14,17 +14,7 @@ Layout = typing.Dict[str, typing.Any]
 Entity = int
 
 
-class PlayerRenderData(typing.NamedTuple):
-    """Player render data."""
-
-    x: int
-    y: int
-    fov: int
-    tile_id: int
-    color: str
-
-
-class RenderLayer(enum.Enum):
+class RenderLayer(enum.IntEnum):
     """Render layers, from bottom to top."""
 
     background = enum.auto()
@@ -188,3 +178,22 @@ def parameter_types(func: typing.Callable) -> dict:
         if parameter.default != inspect.Parameter.empty:
             result[name]["default"] = parameter.default
     return result
+
+
+class PlayerRenderData(typing.NamedTuple):
+    """Player render data."""
+
+    x: int
+    y: int
+    fov: int
+    layer: RenderLayer
+    tile_id: int
+    color: str
+
+
+class TileType(enum.Enum):
+    """Tile types."""
+
+    floor = enum.auto()
+    wall_v = enum.auto()
+    wall_h = enum.auto()

@@ -1,13 +1,13 @@
 """Game map."""
 from __future__ import annotations
 
-import enum
 import typing
 
 import numpy as np
 import tcod.map
 
 import game.const.palette
+import game.types
 import game.utils.geometry
 import game.utils.random
 import game.utils.render
@@ -26,14 +26,6 @@ MAP_BITS = (
     "alt_tile_3",
 )
 # TODO: interaction layer? others?
-
-
-class TileType(enum.Enum):
-    """Tile types."""
-
-    floor = enum.auto()
-    wall_v = enum.auto()
-    wall_h = enum.auto()
 
 
 class Map(tcod.map.Map):
@@ -202,17 +194,17 @@ class Map(tcod.map.Map):
             return at
         return None
 
-    def _calculate_tile_type(self, y: int, x: int) -> TileType:
+    def _calculate_tile_type(self, y: int, x: int) -> game.types.TileType:
         if self.walkable[y, x]:
-            return TileType.floor
+            return game.types.TileType.floor
         try:
             if self.walkable[y + 1, x]:
-                return TileType.wall_h
+                return game.types.TileType.wall_h
         except IndexError:
             pass
-        return TileType.wall_v
+        return game.types.TileType.wall_v
 
-    def _tile_id_from_type(self, tile_type: TileType, y: int, x: int) -> int:
+    def _tile_id_from_type(self, tile_type: game.types.TileType, y: int, x: int) -> int:
         idx = 0
         if self.alt_tile_3[y, x]:
             idx += 1
@@ -220,15 +212,15 @@ class Map(tcod.map.Map):
             idx += 1
         if self.alt_tile_1[y, x]:
             idx += 1
-        if tile_type == TileType.wall_v:
+        if tile_type == game.types.TileType.wall_v:
             return game.utils.render.TileCache.get(
                 "world", self.config["tile_ids"]["wall_v"], variant=idx
             )
-        elif tile_type == TileType.wall_h:
+        elif tile_type == game.types.TileType.wall_h:
             return game.utils.render.TileCache.get(
                 "world", self.config["tile_ids"]["wall_h"], variant=idx
             )
-        elif tile_type == TileType.floor:
+        elif tile_type == game.types.TileType.floor:
             return game.utils.render.TileCache.get(
                 "world", self.config["tile_ids"]["floor"], variant=idx
             )
@@ -249,10 +241,10 @@ class Map(tcod.map.Map):
             raise StopIteration
         return self._iter_y, self._iter_x
 
-    def get_tile(self, y: int, x: int) -> int:
+    def get_tile(self, y: int, x: int) -> typing.Tuple[int, game.types.TileType]:
         """Determine the tile id at the given coordinate."""
         tile_type = self._calculate_tile_type(y, x)
-        return self._tile_id_from_type(tile_type, y, x)
+        return self._tile_id_from_type(tile_type, y, x), tile_type
 
     def __len__(self) -> int:
         return self.width * self.height
