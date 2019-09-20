@@ -243,7 +243,7 @@ class Game:
         if self._is_player_turn():
             if self.got_player_input:
                 self.got_player_input = False
-                self.world.process_group(game.types.ProcessGroup.player)
+                self.world.process_group(game.types.ProcessGroup.player, state=self.state)
         self.world.process_group(game.types.ProcessGroup.default)
         self.world.process_group(game.types.ProcessGroup.render)
         self.world.process_group(game.types.ProcessGroup.gamelog)

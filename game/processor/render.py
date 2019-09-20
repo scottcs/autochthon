@@ -57,6 +57,7 @@ class BearLibRender(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
         # TODO: optimize
+        blt.clear()
         blt.layer(game.types.RenderLayer.background)
         blt.color("white")
 
