@@ -5,6 +5,7 @@ import typing
 
 import bearlibterminal.terminal as blt
 import esper
+import tcod
 
 import game.component.movement
 import game.component.player
@@ -64,23 +65,40 @@ class BearLibRender(esper.Processor):
         viewport_y = player_data.y - center_y
 
         # TODO: fov
+        self.world.map.compute_fov(
+            player_data.x,
+            player_data.y,
+            algorithm=tcod.FOV_PERMISSIVE_3,
+            radius=player_data.fov,
+            light_walls=True,
+        )
         # TODO: enemies
         # TODO: items
         # TODO: optimize
 
         for draw_x in range(self.width):
-            map_x: int = draw_x + viewport_x
-            if map_x >= self.world.map.width:
+            x: int = draw_x + viewport_x
+            if x >= self.world.map.width:
                 break
-            if map_x < 0:
+            if x < 0:
                 continue
             for draw_y in range(self.height):
-                map_y: int = draw_y + viewport_y
-                if map_y >= self.world.map.height:
+                y: int = draw_y + viewport_y
+                if y >= self.world.map.height:
                     break
-                if map_y < 0:
+                if y < 0:
                     continue
-                tile_id, tile_type = self.world.map.get_tile(map_y, map_x)
+                tile_id, tile_type = self.world.map.get_tile(y, x)
+                # TODO: support tile colorization?
+                tile_color = "#00FFFFFF"
+                if self.world.map.explored[y, x]:
+                    tile_color = "#60FFFFFF"
+                if self.world.map.fov[y, x]:
+                    self.world.map.explored[y, x] = True
+                    tile_color = "#FFFFFFFF"
+                if tile_color.startswith("#00"):
+                    continue
+
                 blt.layer(_render_layer_from_tile_type(tile_type))
                 blt.put(draw_x, draw_y, tile_id)
 
