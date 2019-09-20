@@ -28,7 +28,7 @@
       "player.Player": {},
       "movement.Position": {},
       "render.Renderable": {
-        "tile_id": "avatar_A",
+        "tile_id": ["monsters", "fighter"],
         "tint": "Palette.yellow",
         "layer": "RenderLayer.player"
       },

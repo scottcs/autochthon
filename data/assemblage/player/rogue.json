@@ -1,0 +1,12 @@
+{
+  "Rogue": {
+    "Components": {
+      "attack.ImmuneToDeflect": {},
+      "render.Renderable": {
+        "tile_id": ["monsters", "rogue"],
+        "tint": "Palette.yellow",
+        "layer": "RenderLayer.player"
+      }
+    }
+  }
+}

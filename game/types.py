@@ -9,11 +9,12 @@ import game.utils.random
 Config = typing.MutableMapping[typing.Any, typing.Any]
 Event = typing.Dict[typing.Any, typing.Any]
 EventHandler = typing.Callable[[Event], typing.Any]
+Layout = typing.Dict[str, typing.Any]
 
 Entity = int
 
 
-class RenderLayer(enum.Enum):
+class RenderLayer(enum.IntEnum):
     """Render layers, from bottom to top."""
 
     background = enum.auto()
@@ -146,7 +147,7 @@ class LogLine(typing.NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: int = game.const.palette.Message.default
+    color: str = game.const.palette.Message.default
 
 
 def get_union_types(union_type: typing.Any) -> tuple:
@@ -177,3 +178,22 @@ def parameter_types(func: typing.Callable) -> dict:
         if parameter.default != inspect.Parameter.empty:
             result[name]["default"] = parameter.default
     return result
+
+
+class PlayerRenderData(typing.NamedTuple):
+    """Player render data."""
+
+    x: int
+    y: int
+    fov: int
+    layer: RenderLayer
+    tile_id: int
+    color: str
+
+
+class TileType(enum.Enum):
+    """Tile types."""
+
+    floor = enum.auto()
+    wall_v = enum.auto()
+    wall_h = enum.auto()

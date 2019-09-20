@@ -1,55 +1,60 @@
 """Color palette."""
-import enum
 
 
-class Base(enum.IntEnum):
+class Base:
     """Color palette."""
 
-    black = 0x000000
-    white = 0xFFFFFF
-    red = 0xFF0000
-    green = 0x00FF00
-    blue = 0x0000FF
-    yellow = 0xFFFF00
-    purple = 0xFF00FF
-    cyan = 0x00FFFF
-    orange = 0xFFA500
-    brown = 0x654321
-    dark_grey = 0x333333
+    black = "#000000"
+    white = "#FFFFFF"
+    red = "#FF0000"
+    green = "#00FF00"
+    blue = "#0000FF"
+    yellow = "#FFFF00"
+    purple = "#FF00FF"
+    cyan = "#00FFFF"
+    orange = "#FFA500"
+    brown = "#654321"
+    dark_grey = "#333333"
 
 
-class Danger(enum.IntEnum):
+class Danger:
     """Danger level colors."""
 
-    deadly = 0xFF6699
-    dangerous = 0xFF6666
-    threatening = 0xFFFF66
-    fair = 0xAAAAAA
-    weak = 0x66FFFF
-    helpless = 0x666666
+    deadly = "#FF6699"
+    dangerous = "#FF6666"
+    threatening = "#FFFF66"
+    fair = "#AAAAAA"
+    weak = "#66FFFF"
+    helpless = "#666666"
 
 
-class Message(enum.IntEnum):
+class Message:
     """Message colors."""
 
-    danger = 0xFF6666
-    warning = 0xFFFF66
-    side_note = 0x666666
-    default = 0xAAAAAA
-    very_negative = 0xFF6699
-    negative = 0x654321
-    positive = 0x669966
-    very_positive = 0x66FF66
-    holy_crap = 0xFF66FF
+    danger = "#FF6666"
+    warning = "#FFFF66"
+    side_note = "#666666"
+    default = "#AAAAAA"
+    very_negative = "#FF6699"
+    negative = "#654321"
+    positive = "#669966"
+    very_positive = "#66FF66"
+    holy_crap = "#FF66FF"
 
 
-class Item(enum.IntEnum):
+class Item:
     """Colors for item descriptions."""
 
-    trash = 0x666666
-    common = 0xAAAAAA
-    uncommon = 0x66FF66
-    rare = 0x9999FF
-    epic = 0xCC66FF
-    legendary = 0xFFA500
-    artifact = 0xFF9999
+    trash = "#666666"
+    common = "#AAAAAA"
+    uncommon = "#66FF66"
+    rare = "#9999FF"
+    epic = "#CC66FF"
+    legendary = "#FFA500"
+    artifact = "#FF9999"
+
+
+def color_from_class_string(class_string: str) -> str:
+    """Get a palette color string from a class string like `Base.brown`."""
+    palette_class, color_name = class_string.split(".")
+    return getattr(palette_class, color_name)

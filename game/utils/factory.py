@@ -55,16 +55,6 @@ def validate_kwargs(kwargs: typing.MutableMapping) -> None:
     for key, value in kwargs.items():
         if value is None:
             raise TypeError(f'Value for "{key}" must be specified.')
-        if key == "tile_id":
-            try:
-                value = int(value)
-            except ValueError:
-                # id_ = game.utils.render.TileCache.id_from_name(value)
-                # if id_ is None:
-                #     raise ValueError(f"Cannot find tile id for {value}")
-                # value = int(id_)
-                pass
-            kwargs[key] = value
 
 
 class BaseEntityFactory:

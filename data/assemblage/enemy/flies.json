@@ -1,15 +1,15 @@
 {
-  "Firefly": {
+  "Flies": {
     "Components": {
       "ai.SimpleMind": {},
       "attribute.HP": {
         "initial": "==1d6+1"
       },
       "descriptive.Name": {
-        "first": "firefly"
+        "first": "flies"
       },
       "render.Renderable": {
-        "tile_id": "monster_firefly",
+        "tile_id": ["monsters", "flies"],
         "tint": "Palette.cyan",
         "layer": "RenderLayer.enemy"
       },
