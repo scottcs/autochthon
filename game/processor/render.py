@@ -25,35 +25,21 @@ class BearLibRender(esper.Processor):
 
     def __init__(self) -> None:
         self.render_entities: set = set()
+        self.width = game.const.tileset.DATA["window"]["width"]
+        self.height = game.const.tileset.DATA["window"]["height"]
+
         game.events.GameOver.handle(self._on_game_over)
 
         if not blt.open():
             log.critical("Unable to initialize terminal window!")
 
-        window_data = game.const.tileset.DATA["window"]
-        window_size = f"size={window_data['width']}x{window_data['height']}"
+        window_size = f"size={self.width}x{self.height}"
+
         cell_data = game.const.tileset.DATA["cell"]
         cell_size = f"cellsize={cell_data['width']}x{cell_data['height']}"
         title = game.const.config.DATA["title"]
         blt.set(f"window: {window_size}, {cell_size}, resizable=true, title='{title}'")
         self._load_tilesets()
-
-        blt.put(0, 0, game.utils.render.TileCache.get("monsters", "fighter"))
-        blt.put(
-            window_data["width"] - 1,
-            0,
-            game.utils.render.TileCache.get("monsters", "berserker", direction="w"),
-        )
-        blt.put(
-            0,
-            window_data["height"] - 1,
-            game.utils.render.TileCache.get("monsters", "rogue", direction="n", frame=1),
-        )
-        blt.put(
-            window_data["width"] - 1,
-            window_data["height"] - 1,
-            game.utils.render.TileCache.get("monsters", "paladin", direction="s", frame=1),
-        )
 
     @staticmethod
     def _load_tilesets() -> None:
@@ -85,7 +71,19 @@ class BearLibRender(esper.Processor):
             # fov = player.fov
             # TODO: handle more than one player controlled object?
             break
-        blt.put(player_x, player_y, player_tile_id)
+
+        center_x = self.width // 2
+        center_y = self.height // 2
+        viewport_x1 = max(0, player_x - center_x)
+        viewport_x2 = min(self.width, player_x + center_x)
+        viewport_y1 = max(0, player_y - center_y)
+        viewport_y2 = min(self.height, player_y + center_y)
+        blt.put(center_x, center_y, player_tile_id)
+
+        for map_x in range(viewport_x1, viewport_x2):
+            for map_y in range(viewport_y1, viewport_y2):
+                # TODO: draw
+                pass
 
         blt.refresh()
 
