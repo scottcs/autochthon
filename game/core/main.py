@@ -50,6 +50,7 @@ class Game:
         self.game_over: bool = False
         self.got_player_input: bool = False
         self.world: game.core.world.World = game.core.world.World()
+        self.layout: game.types.Layout = {}
         self.state: game.types.GameState = game.types.GameState.unknown
         self.loader: game.utils.dataloader.DataLoader = game.utils.dataloader.DataLoader()
         self.loader.load_all_json()
@@ -60,7 +61,7 @@ class Game:
 
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
-        self.set_state_playing()
+        self.set_state_playing("Test1")
         game.events.Input.handle(self._on_input)
 
     def _setup_morgue(self) -> logging.Logger:
@@ -84,8 +85,10 @@ class Game:
         morgue_log.propagate = False
         return morgue_log
 
-    def set_state_playing(self, seed: typing.Optional[str] = None) -> None:
+    def set_state_playing(self, layout_name, seed: typing.Optional[str] = None) -> None:
         """Set the game state to playing."""
+        self.layout = game.const.layout.DATA[layout_name]
+
         game.utils.random.RNGCache.init(seed)
         self.state = game.types.GameState.playing
 
@@ -174,29 +177,28 @@ class Game:
         )
 
         current_map = game.core.map.ClassicMap(
-            self.config["map"]["max_tiles_w"], self.config["map"]["max_tiles_h"]
+            self.config["map"]["max_tiles_w"],
+            self.config["map"]["max_tiles_h"],
+            config=self.layout["map"],
         )
         current_map.create()
         self.world.map = current_map
-
-        self._load_layout("Test1")
+        self._populate_map()
 
     def _on_input(self, _event: game.types.Event) -> None:
         self.got_player_input = True
 
-    def _load_layout(self, name: str) -> None:
-        layout = game.const.layout.DATA[name]
-
+    def _populate_map(self) -> None:
         player_factory = game.utils.factory.Player(self.loader, self.world)
         enemy_factory = game.utils.factory.Enemy(self.loader, self.world)
         item_factory = game.utils.factory.Item(self.loader, self.world)
 
-        player = player_factory.make(layout["player"])
+        player = player_factory.make(self.layout["player"])
         self.world.add_component(player, game.component.action.GUTMyTurn())
-        for enemy in layout["enemies"]:
+        for enemy in self.layout["enemies"]:
             for _ in range(enemy["count"]):
                 enemy_factory.make(enemy["assemblages"])
-        for item in layout["items"]:
+        for item in self.layout["items"]:
             for _ in range(item["count"]):
                 item_factory.make(item["assemblages"])
 

@@ -9,6 +9,7 @@ import game.utils.random
 Config = typing.MutableMapping[typing.Any, typing.Any]
 Event = typing.Dict[typing.Any, typing.Any]
 EventHandler = typing.Callable[[Event], typing.Any]
+Layout = typing.Dict[str, typing.Any]
 
 Entity = int
 

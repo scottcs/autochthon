@@ -213,7 +213,6 @@ class Map(tcod.map.Map):
         return TileType.wall_v
 
     def _tile_id_from_type(self, tile_type: TileType, y: int, x: int) -> int:
-        # TODO: move these definitions to a data file/change based on map "theme"
         idx = 0
         if self.alt_tile_3[y, x]:
             idx += 1
@@ -222,11 +221,17 @@ class Map(tcod.map.Map):
         if self.alt_tile_1[y, x]:
             idx += 1
         if tile_type == TileType.wall_v:
-            return game.utils.render.TileCache.get("world", "wall_stone_v", variant=idx)
+            return game.utils.render.TileCache.get(
+                "world", self.config["tile_ids"]["wall_v"], variant=idx
+            )
         elif tile_type == TileType.wall_h:
-            return game.utils.render.TileCache.get("world", "wall_stone_h", variant=idx)
+            return game.utils.render.TileCache.get(
+                "world", self.config["tile_ids"]["wall_h"], variant=idx
+            )
         elif tile_type == TileType.floor:
-            return game.utils.render.TileCache.get("world", "floor_cobble", variant=idx)
+            return game.utils.render.TileCache.get(
+                "world", self.config["tile_ids"]["floor"], variant=idx
+            )
         else:
             raise RuntimeError(f"Unknown tile type: {tile_type}")
 

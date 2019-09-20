@@ -45,6 +45,13 @@
         "assemblages":  ["PlateArmor"],
         "count": 100
       }
-    ]
+    ],
+    "map": {
+      "tile_ids": {
+        "wall_v": "wall_stone_v",
+        "wall_h": "wall_stone_h",
+        "floor": "floor_cobble"
+      }
+    }
   }
 ]
