@@ -94,7 +94,6 @@ class Game:
 
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
-        game.events.RequestRender.handle(self._on_refresh_map)
 
         dodge_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("dodges", "dodged"),
@@ -201,11 +200,6 @@ class Game:
         for item in self.layout["items"]:
             for _ in range(item["count"]):
                 item_factory.make(item["assemblages"])
-
-    @staticmethod
-    def _on_refresh_map(event: game.types.Event) -> None:
-        game.events.RenderMap.fire(event)
-        game.events.RenderEntities.fire({"entities": [], "all": True})
 
     def _on_game_log(self, event: game.types.Event) -> None:
         for line in event["lines"]:

@@ -21,7 +21,7 @@ class Container(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process container components."""
-        entities_to_render: list = []
+        entities_need_rendering: bool = False
 
         # TODO: process unequip
 
@@ -80,7 +80,7 @@ class Container(esper.Processor):
                         cmd_log.append(f"{name.generic}", color=game.const.palette.Item.epic)
                         cmd_log.append(f".")
                         log.debug(f"Picked up {containable_ent}")
-                    entities_to_render.append(containable_ent)
+                    entities_need_rendering = True
                 else:
                     # TODO: what to do if can't pick up?
                     log.error(f"{containable} has no Position!")
@@ -106,7 +106,7 @@ class Container(esper.Processor):
                         # TODO: colorize the item by rarity?
                         cmd_log.append(f"{name.generic}", color=game.const.palette.Item.epic)
                         cmd_log.append(".")
-                    entities_to_render.append(containable_ent)
+                    entities_need_rendering = True
                 else:
                     # TODO: what to do if can't drop?
                     log.error(f"{contained} has no Position!")
@@ -125,8 +125,8 @@ class Container(esper.Processor):
                         # TODO: colorize the item by rarity?
                         cmd_log.add(f"{name.generic}", color=game.const.palette.Item.epic)
                         cmd_log.append(f" is put into {container_name}.")
-        if entities_to_render:
-            game.events.RenderEntities.fire({"entities": entities_to_render})
+        if entities_need_rendering:
+            game.events.RenderEntities.fire()
 
     def _get_next_free_slot(
         self, ent: game.types.Entity, container: game.component.container.Container
