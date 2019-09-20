@@ -68,17 +68,24 @@ class BearLibRender(esper.Processor):
         """Process all renderables."""
 
         # PLAYER POSITION
-        # for ent, components in self.world.get_components(
-        #     game.component.player.Player,
-        #     game.component.render.Renderable,
-        #     game.component.movement.Position,
-        # ):
-        #     position = components[-1]
-        #     player_x = position.x
-        #     player_y = position.y
-        #     fov = components[0].fov
-        #     # TODO: handle more than one player controlled object?
-        #     break
+        player_x: int = 0
+        player_y: int = 0
+        # fov: int = 0
+        player_tile_id: int = 0
+        for ent, components in self.world.get_components(
+            game.component.player.Player,
+            game.component.render.Renderable,
+            game.component.movement.Position,
+        ):
+            player, renderable, position = components
+            player_x = position.x
+            player_y = position.y
+            category, name = renderable.tile_id
+            player_tile_id = game.utils.render.TileCache.get(category, name, frame=1)
+            # fov = player.fov
+            # TODO: handle more than one player controlled object?
+            break
+        blt.put(player_x, player_y, player_tile_id)
 
         blt.refresh()
 
