@@ -235,18 +235,6 @@ class Map(tcod.map.Map):
         else:
             raise RuntimeError(f"Unknown tile type: {tile_type}")
 
-    @staticmethod
-    def _tile_color_from_type(tile_type: TileType) -> int:
-        # TODO: move these definitions to a data file/change based on map "theme"
-        if tile_type == TileType.wall_v:
-            return game.const.palette.Base.brown
-        elif tile_type == TileType.wall_h:
-            return game.const.palette.Base.brown
-        elif tile_type == TileType.floor:
-            return game.const.palette.Base.dark_grey
-        else:
-            raise RuntimeError(f"Unknown tile type: {tile_type}")
-
     def __iter__(self) -> Map:
         self._iter_y = -1
         self._iter_x = 0
@@ -261,10 +249,10 @@ class Map(tcod.map.Map):
             raise StopIteration
         return self._iter_y, self._iter_x
 
-    def get_tile(self, y: int, x: int) -> typing.Tuple[int, int]:
-        """Determine the tile id and color at the given coordinate."""
+    def get_tile(self, y: int, x: int) -> int:
+        """Determine the tile id at the given coordinate."""
         tile_type = self._calculate_tile_type(y, x)
-        return self._tile_id_from_type(tile_type, y, x), self._tile_color_from_type(tile_type)
+        return self._tile_id_from_type(tile_type, y, x)
 
     def __len__(self) -> int:
         return self.width * self.height

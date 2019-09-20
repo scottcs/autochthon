@@ -10,6 +10,7 @@ import game.component.movement
 import game.component.player
 import game.component.render
 import game.const.config
+import game.const.palette
 import game.const.tile_ids
 import game.const.tileset
 import game.events
@@ -66,10 +67,12 @@ class BearLibRender(esper.Processor):
                 map_y: int = draw_y + viewport_y
                 if map_x >= self.world.map.width or map_y >= self.world.map.height:
                     continue
-                tile_id, tile_color = self.world.map.get_tile(map_y, map_x)
-                blt.put(draw_x, draw_y, tile_id)
+                blt.put(draw_x, draw_y, self.world.map.get_tile(map_y, map_x))
 
+        blt.color(player_data.color)
         blt.put(center_x, center_y, player_data.tile_id)
+
+        blt.color("white")
         blt.refresh()
 
     def _get_player_render_data(self) -> game.types.PlayerRenderData:
@@ -82,8 +85,10 @@ class BearLibRender(esper.Processor):
             player, renderable, position = components
             category, name = renderable.tile_id
             player_tile_id = game.utils.render.TileCache.get(category, name)
-            return game.types.PlayerRenderData(position.x, position.y, player.fov, player_tile_id)
-        return game.types.PlayerRenderData(0, 0, 0, 0)
+            return game.types.PlayerRenderData(
+                position.x, position.y, player.fov, player_tile_id, renderable.tint
+            )
+        return game.types.PlayerRenderData(0, 0, 0, 0, "white")
 
     @staticmethod
     def _on_game_over(event: game.types.Event):

@@ -21,6 +21,7 @@ class PlayerRenderData(typing.NamedTuple):
     y: int
     fov: int
     tile_id: int
+    color: str
 
 
 class RenderLayer(enum.Enum):
@@ -156,7 +157,7 @@ class LogLine(typing.NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: int = game.const.palette.Message.default
+    color: str = game.const.palette.Message.default
 
 
 def get_union_types(union_type: typing.Any) -> tuple:
