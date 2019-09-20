@@ -60,14 +60,25 @@ class BearLibRender(esper.Processor):
         player_data = self._get_player_render_data()
         center_x = self.width // 2
         center_y = self.height // 2
-        viewport_x = max(0, player_data.x - center_x)
-        viewport_y = max(0, player_data.y - center_y)
+        viewport_x = player_data.x - center_x
+        viewport_y = player_data.y - center_y
+
+        # TODO: fov
+        # TODO: enemies
+        # TODO: items
+        # TODO: optimize
 
         for draw_x in range(self.width):
             map_x: int = draw_x + viewport_x
+            if map_x >= self.world.map.width:
+                break
+            if map_x < 0:
+                continue
             for draw_y in range(self.height):
                 map_y: int = draw_y + viewport_y
-                if map_x >= self.world.map.width or map_y >= self.world.map.height:
+                if map_y >= self.world.map.height:
+                    break
+                if map_y < 0:
                     continue
                 tile_id, tile_type = self.world.map.get_tile(map_y, map_x)
                 blt.layer(_render_layer_from_tile_type(tile_type))
