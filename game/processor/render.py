@@ -14,6 +14,7 @@ import game.const.tile_ids
 import game.const.tileset
 import game.events
 import game.types
+import game.utils.render
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -36,27 +37,32 @@ class BearLibRender(esper.Processor):
         title = game.const.config.DATA["title"]
         blt.set(f"window: {window_size}, {cell_size}, resizable=true, title='{title}'")
         self._load_tilesets()
-        blt.put(0, 0, game.const.tile_ids.DATA["monsters"]["hero_fighter"]["e"][0])
+
+        blt.put(0, 0, game.utils.render.TileCache.get("monsters", "fighter", direction="e"))
         blt.put(
             window_data["width"] - 1,
             0,
-            game.const.tile_ids.DATA["monsters"]["hero_barbarian"]["w"][0],
+            game.utils.render.TileCache.get("monsters", "berserker", direction="w"),
         )
         blt.put(
             0,
             window_data["height"] - 1,
-            game.const.tile_ids.DATA["monsters"]["hero_thief"]["n"][0],
+            game.utils.render.TileCache.get("monsters", "rogue", direction="n", frame=1),
         )
         blt.put(
             window_data["width"] - 1,
             window_data["height"] - 1,
-            game.const.tile_ids.DATA["monsters"]["hero_crusader"]["s"][0],
+            game.utils.render.TileCache.get("monsters", "paladin", direction="s", frame=1),
         )
 
-    def _load_tilesets(self) -> None:
+    @staticmethod
+    def _load_tilesets() -> None:
         for item in game.const.tileset.DATA["tilesets"].values():
             item_file = pathlib.Path(f"{game.const.tileset.TILES_PATH}/{item['file']}")
-            blt.set(f"{item['offset']}: {item_file}, size={item['size']}")
+            load_str = f"{item['offset']}: {item_file}, size={item['size']}"
+            if "align" in item:
+                load_str += f", align={item['align']}"
+            blt.set(load_str)
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
@@ -76,7 +82,8 @@ class BearLibRender(esper.Processor):
 
         blt.refresh()
 
-    def _on_game_over(self, event: game.types.Event):
+    @staticmethod
+    def _on_game_over(event: game.types.Event):
         """Game shutdown callback."""
         if event.get("shutdown"):
             log.info("Closing terminal window.")

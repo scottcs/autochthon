@@ -59,10 +59,11 @@ def validate_kwargs(kwargs: typing.MutableMapping) -> None:
             try:
                 value = int(value)
             except ValueError:
-                id_ = game.utils.render.TileCache.id_from_name(value)
-                if id_ is None:
-                    raise ValueError(f"Cannot find tile id for {value}")
-                value = int(id_)
+                # id_ = game.utils.render.TileCache.id_from_name(value)
+                # if id_ is None:
+                #     raise ValueError(f"Cannot find tile id for {value}")
+                # value = int(id_)
+                pass
             kwargs[key] = value
 
 

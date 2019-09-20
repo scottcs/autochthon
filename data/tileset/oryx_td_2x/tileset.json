@@ -16,7 +16,8 @@
     "interface": {
       "file": "interface.png",
       "size": "32x32",
-      "offset": "0x2000"
+      "offset": "0x2000",
+      "align": "top-left"
     },
     "items": {
       "file": "items.png",
@@ -31,12 +32,14 @@
     "portraits": {
       "file": "portraits.png",
       "size": "64x64",
-      "offset": "0x5000"
+      "offset": "0x5000",
+      "align": "top-left"
     },
     "world": {
       "file": "world.png",
       "size": "32x32",
-      "offset": "0x6000"
+      "offset": "0x6000",
+      "align": "top-left"
     }
   }
 }
