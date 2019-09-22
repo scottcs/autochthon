@@ -73,4 +73,14 @@ class PlayerInput(esper.Processor):
         return True
 
     def _try_command(self, key_code: int) -> bool:
-        return False
+        handled = True
+        try:
+            {
+                blt.TK_COMMA: game.command.pickup.Pickup,
+                blt.TK_D: game.command.drop.Drop,
+                blt.TK_I: game.command.inventory.Inventory,
+                blt.TK_E: game.command.equip.Equip,
+            }[key_code](self.world).run()
+        except KeyError:
+            handled = False
+        return handled
