@@ -62,7 +62,6 @@ class Game:
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
         self.set_state_playing("Test1")
-        game.events.Input.handle(self._on_input)
 
     def _setup_morgue(self) -> logging.Logger:
         """Set up the morgue log."""
@@ -184,9 +183,6 @@ class Game:
         self.world.map = current_map
         self._populate_map()
 
-    def _on_input(self, _event: game.types.Event) -> None:
-        self.got_player_input = True
-
     def _populate_map(self) -> None:
         player_factory = game.utils.factory.Player(self.loader, self.world)
         enemy_factory = game.utils.factory.Enemy(self.loader, self.world)
@@ -235,9 +231,7 @@ class Game:
         #     render only entities that need it
         self.world.process_group(game.types.ProcessGroup.time)
         if self._is_player_turn():
-            if self.got_player_input:
-                self.got_player_input = False
-                self.world.process_group(game.types.ProcessGroup.player, state=self.state)
+            self.world.process_group(game.types.ProcessGroup.player, state=self.state)
         self.world.process_group(game.types.ProcessGroup.default)
         self.world.process_group(game.types.ProcessGroup.render)
         self.world.process_group(game.types.ProcessGroup.gamelog)
