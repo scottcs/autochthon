@@ -37,6 +37,7 @@ class BearLibRender(esper.Processor):
 
         game.events.RenderEntities.handle(self._on_render_entities)
         game.events.RenderMap.handle(self._on_render_map)
+        game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
         if not blt.open():
@@ -223,6 +224,22 @@ class BearLibRender(esper.Processor):
 
     def _on_render_map(self, _event: game.types.Event) -> None:
         self.should_render_map = True
+
+    def _on_game_log(self, event: game.types.Event) -> None:
+        current_layer = blt.state(blt.TK_LAYER)
+        blt.layer(game.types.RenderLayer.ui_log)
+        blt.clear_area(0, 0, self.width, self.height)
+        blt.puts(0, self.height - 2, self._format_game_log(event["lines"], 4, 0))
+        blt.layer(current_layer)
+
+    @staticmethod
+    def _format_game_log(
+        lines: typing.Sequence[game.types.LogLine], offset_x: int, offset_y: int
+    ) -> str:
+        formatted = f"[offset={offset_x},{offset_y}]"
+        for line in lines:
+            formatted += f" [color={line.color}]{line.message}[/color]"
+        return formatted
 
     @staticmethod
     def _on_game_over(event: game.types.Event) -> None:

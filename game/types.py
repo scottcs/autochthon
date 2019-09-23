@@ -25,6 +25,7 @@ class RenderLayer(enum.IntEnum):
     enemy = enum.auto()
     player = enum.auto()
     effect = enum.auto()
+    ui_log = enum.auto()
 
 
 class Priority(enum.IntEnum):
