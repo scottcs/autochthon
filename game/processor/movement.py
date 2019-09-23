@@ -19,7 +19,7 @@ class Movement(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process movement components."""
-        entities_to_render: list = []
+        entities_need_rendering: bool = False
         for ent, components in self.world.get_components(
             game.component.action.Actor,
             game.component.movement.GUTWaiting,
@@ -53,7 +53,7 @@ class Movement(esper.Processor):
                     self.world.map.contains_enemy[moving.y, moving.x] = True
                 position.x = moving.x
                 position.y = moving.y
-                entities_to_render.append(ent)
+                entities_need_rendering = True
                 if ent in self.world.players:
                     game.events.RenderMap.fire()
                     item = self.world.get_item_at_position(moving.x, moving.y)
@@ -68,5 +68,5 @@ class Movement(esper.Processor):
                             desc_log.add(f"{name.generic}", game.const.palette.Item.epic)
                             desc_log.append(" is here.")
             self.world.actor_takes_turn(ent, game.component.movement.GUTMoving)
-            if entities_to_render:
-                game.events.RenderEntities.fire({"entities": entities_to_render})
+            if entities_need_rendering:
+                game.events.RenderEntities.fire()

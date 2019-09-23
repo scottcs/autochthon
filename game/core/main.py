@@ -62,7 +62,6 @@ class Game:
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
         self.set_state_playing("Test1")
-        game.events.Input.handle(self._on_input)
 
     def _setup_morgue(self) -> logging.Logger:
         """Set up the morgue log."""
@@ -94,7 +93,6 @@ class Game:
 
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
-        game.events.RequestRender.handle(self._on_refresh_map)
 
         dodge_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("dodges", "dodged"),
@@ -185,9 +183,6 @@ class Game:
         self.world.map = current_map
         self._populate_map()
 
-    def _on_input(self, _event: game.types.Event) -> None:
-        self.got_player_input = True
-
     def _populate_map(self) -> None:
         player_factory = game.utils.factory.Player(self.loader, self.world)
         enemy_factory = game.utils.factory.Enemy(self.loader, self.world)
@@ -201,11 +196,6 @@ class Game:
         for item in self.layout["items"]:
             for _ in range(item["count"]):
                 item_factory.make(item["assemblages"])
-
-    @staticmethod
-    def _on_refresh_map(event: game.types.Event) -> None:
-        game.events.RenderMap.fire(event)
-        game.events.RenderEntities.fire({"entities": [], "all": True})
 
     def _on_game_log(self, event: game.types.Event) -> None:
         for line in event["lines"]:
@@ -241,9 +231,7 @@ class Game:
         #     render only entities that need it
         self.world.process_group(game.types.ProcessGroup.time)
         if self._is_player_turn():
-            if self.got_player_input:
-                self.got_player_input = False
-                self.world.process_group(game.types.ProcessGroup.player)
+            self.world.process_group(game.types.ProcessGroup.player, state=self.state)
         self.world.process_group(game.types.ProcessGroup.default)
         self.world.process_group(game.types.ProcessGroup.render)
         self.world.process_group(game.types.ProcessGroup.gamelog)

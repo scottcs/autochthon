@@ -29,9 +29,14 @@ class BearLibRender(esper.Processor):
     """Game render processor for BearLibTerminal console."""
 
     def __init__(self) -> None:
-        self.width = game.const.tileset.DATA["window"]["width"]
-        self.height = game.const.tileset.DATA["window"]["height"]
+        self.width: int = game.const.tileset.DATA["window"]["width"]
+        self.height: int = game.const.tileset.DATA["window"]["height"]
+        self.should_render_map: bool = True
+        self.should_render_entities: bool = True
+        self.cache: typing.Dict[str, typing.Any] = {"player_x": -1, "player_y": -1}
 
+        game.events.RenderEntities.handle(self._on_render_entities)
+        game.events.RenderMap.handle(self._on_render_map)
         game.events.GameOver.handle(self._on_game_over)
 
         if not blt.open():
@@ -56,9 +61,8 @@ class BearLibRender(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
-        # TODO: optimize
-        blt.layer(game.types.RenderLayer.background)
-        blt.color("white")
+        if not (self.should_render_map or self.should_render_entities):
+            return
 
         player_data = self._get_player_render_data()
         center_x = self.width // 2
@@ -66,45 +70,61 @@ class BearLibRender(esper.Processor):
         viewport_x = player_data.x - center_x
         viewport_y = player_data.y - center_y
 
-        self.world.map.compute_fov(
-            player_data.x,
-            player_data.y,
-            algorithm=tcod.FOV_PERMISSIVE_3,
-            radius=player_data.fov,
-            light_walls=True,
-        )
+        self._update_fov(player_data)
 
-        self._draw_map(viewport_x, viewport_y)
-        self._draw_entities(viewport_x, viewport_y)
-        self._draw_player(center_x, center_y, player_data)
+        if self.should_render_map:
+            self._draw_map(viewport_x, viewport_y)
+            self.should_render_map = False
+        if self.should_render_entities:
+            self._draw_entities(viewport_x, viewport_y)
+            self.should_render_entities = False
 
         blt.refresh()
 
+    def _clear_layer(self, layer: game.types.RenderLayer):
+        current_layer = blt.state(blt.TK_LAYER)
+        blt.layer(layer)
+        blt.clear_area(0, 0, self.width, self.height)
+        blt.layer(current_layer)
+
     @staticmethod
-    def _draw_player(center_x, center_y, player_data):
-        blt.layer(player_data.layer)
-        blt.color(player_data.color)
-        blt.put(center_x, center_y, player_data.tile_id)
+    def _draw_layer(
+        layer: game.types.RenderLayer,
+        x: int,
+        y: int,
+        tile_id: int,
+        color: typing.Optional[str] = None,
+    ):
+        current_layer = blt.state(blt.TK_LAYER)
+        current_color = blt.state(blt.TK_COLOR)
+        blt.layer(layer)
+        if color is not None:
+            blt.color(color)
+        blt.put(x, y, tile_id)
+        blt.layer(current_layer)
+        blt.color(current_color)
+
+    def _update_fov(self, player_data):
+        if player_data.x != self.cache["player_x"] or player_data.y != self.cache["player_y"]:
+            self.world.map.compute_fov(
+                player_data.x,
+                player_data.y,
+                algorithm=tcod.FOV_PERMISSIVE_3,
+                radius=player_data.fov,
+                light_walls=True,
+            )
+        self.cache["player_x"] = player_data.x
+        self.cache["player_y"] = player_data.y
 
     def _draw_entities(self, viewport_x, viewport_y):
-        render_entities = set()
-        for ent, renderable in self.world.get_component(game.component.render.Renderable):
-            position = self.world.optional_component_for_entity(
-                ent, game.component.movement.Position
-            )
-            if position is not None:
-                if self.world.map.fov[position.y, position.x]:
-                    # we can see it now
-                    render_entities.add((renderable.layer.value, ent))
-            if renderable.last_seen_x is not None:
-                # we've seen it before
-                render_entities.add((renderable.layer.value, ent))
+        self._clear_layer(game.types.RenderLayer.enemy)
+        self._clear_layer(game.types.RenderLayer.item)
+        self._clear_layer(game.types.RenderLayer.player)
 
-        for _, ent in sorted(render_entities):
-            renderable = self.world.component_for_entity(ent, game.component.render.Renderable)
-            position = self.world.optional_component_for_entity(
-                ent, game.component.movement.Position
-            )
+        for ent, components in self.world.get_components(
+            game.component.render.Renderable, game.component.movement.Position
+        ):
+            renderable, position = components
             # is_dead = self.world.has_component(ent, game.component.status.GUTDead)
             # is_contained = self.world.has_component(ent, game.component.container.GUTContained)
             pos_x = pos_y = None
@@ -123,8 +143,8 @@ class BearLibRender(esper.Processor):
             # if we can see it now, draw it and update seen pos
             if can_see_now:
                 color = "#FFFFFFFF"
-                renderable.last_seen_y = position.y
                 renderable.last_seen_x = position.x
+                renderable.last_seen_y = position.y
             # else if we can see where it last was, forget where we've seen it and don't draw it
             elif can_see_prev:
                 renderable.last_seen_y = None
@@ -137,13 +157,16 @@ class BearLibRender(esper.Processor):
             # else don't draw it
             else:
                 continue
-            blt.layer(renderable.layer)
-            blt.color(color)
             category, name = renderable.tile_id
             tile_id = game.utils.render.TileCache.get(category, name)
-            blt.put(pos_x - viewport_x, pos_y - viewport_y, tile_id)
+            self._draw_layer(
+                renderable.layer, pos_x - viewport_x, pos_y - viewport_y, tile_id, color=color
+            )
 
     def _draw_map(self, viewport_x, viewport_y):
+        self._clear_layer(game.types.RenderLayer.floor)
+        self._clear_layer(game.types.RenderLayer.wall)
+
         for draw_x in range(self.width):
             x: int = draw_x + viewport_x
             if x >= self.world.map.width:
@@ -167,8 +190,13 @@ class BearLibRender(esper.Processor):
                 if tile_color.startswith("#00"):
                     continue
 
-                blt.layer(_render_layer_from_tile_type(tile_type))
-                blt.put(draw_x, draw_y, tile_id)
+                self._draw_layer(
+                    _render_layer_from_tile_type(tile_type),
+                    draw_x,
+                    draw_y,
+                    tile_id,
+                    color=tile_color,
+                )
 
     def _get_player_render_data(self) -> game.types.PlayerRenderData:
         # TODO: handle more than one player controlled object?
@@ -190,8 +218,14 @@ class BearLibRender(esper.Processor):
             )
         return game.types.PlayerRenderData(0, 0, 0, game.types.RenderLayer.player, 0, "white")
 
+    def _on_render_entities(self, _event: game.types.Event) -> None:
+        self.should_render_entities = True
+
+    def _on_render_map(self, _event: game.types.Event) -> None:
+        self.should_render_map = True
+
     @staticmethod
-    def _on_game_over(event: game.types.Event):
+    def _on_game_over(event: game.types.Event) -> None:
         """Game shutdown callback."""
         if event.get("shutdown"):
             log.info("Closing terminal window.")
