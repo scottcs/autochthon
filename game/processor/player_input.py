@@ -36,7 +36,7 @@ class PlayerInput(esper.Processor):
             handled = self._try_command(key_code)
         if not handled:
             # TODO: more?
-            # TODO: remove this
+            # TODO: remove this (quit through menu)
             self._handle_default(key_code)
 
     @staticmethod
