@@ -31,6 +31,7 @@ class BearLibRender(esper.Processor):
     def __init__(self) -> None:
         self.width: int = game.const.tileset.DATA["window"]["width"]
         self.height: int = game.const.tileset.DATA["window"]["height"]
+        self.spacing: typing.Dict[str, typing.List[int]] = {}
         self.should_render_map: bool = True
         self.should_render_entities: bool = True
         self.cache: typing.Dict[str, typing.Any] = {"player_x": -1, "player_y": -1}
@@ -44,20 +45,28 @@ class BearLibRender(esper.Processor):
             log.critical("Unable to initialize terminal window!")
 
         window_size = f"size={self.width}x{self.height}"
+        font_data = game.const.tileset.DATA["font"]
+        font_file = pathlib.Path(f"{game.const.tileset.FONT_PATH}/{font_data['file']}")
 
-        cell_data = game.const.tileset.DATA["cell"]
-        cell_size = f"cellsize={cell_data['width']}x{cell_data['height']}"
         title = game.const.config.DATA["title"]
-        blt.set(f"window: {window_size}, {cell_size}, resizable=true, title='{title}'")
+        blt.set(f"window: {window_size}, resizable=true, title='{title}'")
+        blt.set(f"font: {font_file}, size={str(font_data['size'][0])}x{str(font_data['size'][1])}")
+        blt.color("white")
         self._load_tilesets()
 
-    @staticmethod
-    def _load_tilesets() -> None:
-        for item in game.const.tileset.DATA["tilesets"].values():
+    def _load_tilesets(self) -> None:
+        for tileset_name, item in game.const.tileset.DATA["tilesets"].items():
             item_file = pathlib.Path(f"{game.const.tileset.TILES_PATH}/{item['file']}")
-            load_str = f"{item['offset']}: {item_file}, size={item['size']}"
+            load_str = f"{item['offset']}: {item_file}"
+            if "size" in item:
+                load_str += f", size={str(item['size'][0])}x{str(item['size'][1])}"
             if "align" in item:
                 load_str += f", align={item['align']}"
+            if "spacing" in item:
+                load_str += f", spacing={str(item['spacing'][0])}x{str(item['spacing'][1])}"
+                self.spacing[tileset_name] = item["spacing"]
+            else:
+                self.spacing[tileset_name] = game.const.tileset.DATA["font"]["spacing"]
             blt.set(load_str)
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -68,8 +77,8 @@ class BearLibRender(esper.Processor):
         player_data = self._get_player_render_data()
         center_x = self.width // 2
         center_y = self.height // 2
-        viewport_x = player_data.x - center_x
-        viewport_y = player_data.y - center_y
+        viewport_x = (player_data.x * self.spacing["monsters"][0]) - center_x
+        viewport_y = (player_data.y * self.spacing["monsters"][1]) - center_y
 
         self._update_fov(player_data)
 
@@ -89,7 +98,7 @@ class BearLibRender(esper.Processor):
         blt.layer(current_layer)
 
     @staticmethod
-    def _draw_layer(
+    def _draw_on_layer(
         layer: game.types.RenderLayer,
         x: int,
         y: int,
@@ -160,22 +169,27 @@ class BearLibRender(esper.Processor):
                 continue
             category, name = renderable.tile_id
             tile_id = game.utils.render.TileCache.get(category, name)
-            self._draw_layer(
-                renderable.layer, pos_x - viewport_x, pos_y - viewport_y, tile_id, color=color
+            self._draw_on_layer(
+                renderable.layer,
+                (pos_x * self.spacing["monsters"][0]) - viewport_x,
+                (pos_y * self.spacing["monsters"][1]) - viewport_y,
+                tile_id,
+                color=color,
             )
 
     def _draw_map(self, viewport_x, viewport_y):
         self._clear_layer(game.types.RenderLayer.floor)
         self._clear_layer(game.types.RenderLayer.wall)
+        spacing_x, spacing_y = self.spacing["world"]
 
-        for draw_x in range(self.width):
-            x: int = draw_x + viewport_x
+        for draw_x in range(0, self.width, spacing_x):
+            x: int = (draw_x + viewport_x) // spacing_x
             if x >= self.world.map.width:
                 break
             if x < 0:
                 continue
-            for draw_y in range(self.height):
-                y: int = draw_y + viewport_y
+            for draw_y in range(0, self.height, spacing_y):
+                y: int = (draw_y + viewport_y) // spacing_y
                 if y >= self.world.map.height:
                     break
                 if y < 0:
@@ -191,7 +205,7 @@ class BearLibRender(esper.Processor):
                 if tile_color.startswith("#00"):
                     continue
 
-                self._draw_layer(
+                self._draw_on_layer(
                     _render_layer_from_tile_type(tile_type),
                     draw_x,
                     draw_y,
