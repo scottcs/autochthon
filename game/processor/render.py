@@ -55,16 +55,26 @@ class BearLibRender(esper.Processor):
         self._load_tilesets()
 
     def _load_tilesets(self) -> None:
+        tile_scale = game.const.config.DATA.get("tile_scale", 1)
         for tileset_name, item in game.const.tileset.DATA["tilesets"].items():
             item_file = pathlib.Path(f"{game.const.tileset.TILES_PATH}/{item['file']}")
             load_str = f"{item['offset']}: {item_file}"
             if "size" in item:
-                load_str += f", size={str(item['size'][0])}x{str(item['size'][1])}"
+                width, height = item["size"]
+                load_str += f", size={str(width)}x{str(height)}"
+                if tile_scale != 1:
+                    width *= tile_scale
+                    height *= tile_scale
+                    load_str += f", resize={str(width)}x{str(height)}, resize-filter=nearest"
             if "align" in item:
                 load_str += f", align={item['align']}"
             if "spacing" in item:
-                load_str += f", spacing={str(item['spacing'][0])}x{str(item['spacing'][1])}"
-                self.spacing[tileset_name] = item["spacing"]
+                x, y = item["spacing"]
+                if tile_scale != 1:
+                    x *= tile_scale
+                    y *= tile_scale
+                load_str += f", spacing={str(x)}x{str(y)}"
+                self.spacing[tileset_name] = [x, y]
             else:
                 self.spacing[tileset_name] = game.const.tileset.DATA["font"]["spacing"]
             blt.set(load_str)
