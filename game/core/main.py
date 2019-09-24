@@ -164,14 +164,14 @@ class Game:
             group=game.types.ProcessGroup.render,
         )
         self.world.add_processor(
-            game.processor.render.BearLibRender(),
-            priority=game.types.Priority.render,
-            group=game.types.ProcessGroup.render,
-        )
-        self.world.add_processor(
             game.processor.gamelog.GameLog(),
             priority=game.types.Priority.gamelog,
             group=game.types.ProcessGroup.gamelog,
+        )
+        self.world.add_processor(
+            game.processor.render.BearLibRender(),
+            priority=game.types.Priority.render,
+            group=game.types.ProcessGroup.render,
         )
 
         current_map = game.core.map.ClassicMap(
@@ -233,5 +233,5 @@ class Game:
         if self._is_player_turn():
             self.world.process_group(game.types.ProcessGroup.player, state=self.state)
         self.world.process_group(game.types.ProcessGroup.default)
-        self.world.process_group(game.types.ProcessGroup.render)
         self.world.process_group(game.types.ProcessGroup.gamelog)
+        self.world.process_group(game.types.ProcessGroup.render)

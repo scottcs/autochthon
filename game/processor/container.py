@@ -77,8 +77,8 @@ class Container(esper.Processor):
                         else:
                             cmd_log.add(f"{container_ent_name.generic} picks up ")
                         # TODO: colorize the item by rarity?
-                        cmd_log.append(f"{name.generic}", color=game.const.palette.Item.epic)
-                        cmd_log.append(f".")
+                        cmd_log.add_raw(f"{name.generic}", color=game.const.palette.Item.epic)
+                        cmd_log.add_raw(f".")
                         log.debug(f"Picked up {containable_ent}")
                     entities_need_rendering = True
                 else:
@@ -104,8 +104,8 @@ class Container(esper.Processor):
                         else:
                             cmd_log.add(f"{contained_ent_name.generic} drops ")
                         # TODO: colorize the item by rarity?
-                        cmd_log.append(f"{name.generic}", color=game.const.palette.Item.epic)
-                        cmd_log.append(".")
+                        cmd_log.add_raw(f"{name.generic}", color=game.const.palette.Item.epic)
+                        cmd_log.add_raw(".")
                     entities_need_rendering = True
                 else:
                     # TODO: what to do if can't drop?
@@ -124,7 +124,7 @@ class Container(esper.Processor):
                     if contained:
                         # TODO: colorize the item by rarity?
                         cmd_log.add(f"{name.generic}", color=game.const.palette.Item.epic)
-                        cmd_log.append(f" is put into {container_name}.")
+                        cmd_log.add_raw(f" is put into {container_name}.")
         if entities_need_rendering:
             game.events.RenderEntities.fire()
 

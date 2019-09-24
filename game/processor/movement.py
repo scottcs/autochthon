@@ -66,7 +66,7 @@ class Movement(esper.Processor):
                                 ent, game.component.gamelog.TMPDescription
                             )
                             desc_log.add(f"{name.generic}", game.const.palette.Item.epic)
-                            desc_log.append(" is here.")
+                            desc_log.add_raw(" is here.")
             self.world.actor_takes_turn(ent, game.component.movement.TMPMoving)
             if entities_need_rendering:
                 game.events.RenderEntities.fire()

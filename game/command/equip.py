@@ -65,8 +65,8 @@ class Equip(game.command.base.BaseCommand):
                         ent, game.component.gamelog.TMPCommand
                     )
                     cmd_log.add("You unequip ")
-                    cmd_log.append(want_to_equip[1].generic, game.const.palette.Item.epic)
-                    cmd_log.append(f" from your {name} slot.")
+                    cmd_log.add_raw(want_to_equip[1].generic, game.const.palette.Item.epic)
+                    cmd_log.add_raw(f" from your {name} slot.")
                     game.events.ChoiceAccepted.fire()
                 else:
                     if equipment_slot["max"] > equip_count:
@@ -75,8 +75,8 @@ class Equip(game.command.base.BaseCommand):
                             ent, game.component.gamelog.TMPCommand
                         )
                         cmd_log.add("You equip ")
-                        cmd_log.append(want_to_equip[1].generic, game.const.palette.Item.epic)
-                        cmd_log.append(f" in your {name} slot.")
+                        cmd_log.add_raw(want_to_equip[1].generic, game.const.palette.Item.epic)
+                        cmd_log.add_raw(f" in your {name} slot.")
                         game.events.ChoiceAccepted.fire()
                     else:
                         msg = f"You can't equip any more items in your {name} slot."

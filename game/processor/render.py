@@ -262,7 +262,7 @@ class BearLibRender(esper.Processor):
     ) -> str:
         formatted = f"[offset={offset_x},{offset_y}]"
         for line in lines:
-            formatted += f" [color={line.color}]{line.message}[/color]"
+            formatted += f"[color={line.color}]{line.message}[/color]"
         return formatted
 
     @staticmethod
