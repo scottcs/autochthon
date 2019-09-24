@@ -31,6 +31,7 @@ class BearLibRender(esper.Processor):
     def __init__(self) -> None:
         self.width: int = game.const.tileset.DATA["window"]["width"]
         self.height: int = game.const.tileset.DATA["window"]["height"]
+        self.center: typing.List[int] = [self.width // 2, self.height // 2]
         self.spacing: typing.Dict[str, typing.List[int]] = {}
         self.should_render_map: bool = True
         self.should_render_entities: bool = True
@@ -81,25 +82,24 @@ class BearLibRender(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
-        if not (self.should_render_map or self.should_render_entities):
-            return
-
+        refresh = False
         player_data = self._get_player_render_data()
-        center_x = self.width // 2
-        center_y = self.height // 2
-        viewport_x = (player_data.x * self.spacing["monsters"][0]) - center_x
-        viewport_y = (player_data.y * self.spacing["monsters"][1]) - center_y
+        viewport_x = (player_data.x * self.spacing["monsters"][0]) - self.center[0]
+        viewport_y = (player_data.y * self.spacing["monsters"][1]) - self.center[1]
 
         self._update_fov(player_data)
 
         if self.should_render_map:
             self._draw_map(viewport_x, viewport_y)
             self.should_render_map = False
+            refresh = True
         if self.should_render_entities:
             self._draw_entities(viewport_x, viewport_y)
             self.should_render_entities = False
+            refresh = True
 
-        blt.refresh()
+        if refresh:
+            blt.refresh()
 
     def _clear_layer(self, layer: game.types.RenderLayer):
         current_layer = blt.state(blt.TK_LAYER)
