@@ -34,7 +34,7 @@ class BearLibRender(esper.Processor):
         self.spacing: typing.Dict[str, typing.List[int]] = {}
         self.should_render_map: bool = True
         self.should_render_entities: bool = True
-        self.cache: typing.Dict[str, typing.Any] = {"player_x": -1, "player_y": -1}
+        self.known_player_xy: typing.List[int] = [-1, -1]
 
         game.events.RenderEntities.handle(self._on_render_entities)
         game.events.RenderMap.handle(self._on_render_map)
@@ -125,7 +125,7 @@ class BearLibRender(esper.Processor):
         blt.color(current_color)
 
     def _update_fov(self, player_data):
-        if player_data.x != self.cache["player_x"] or player_data.y != self.cache["player_y"]:
+        if [player_data.x, player_data.y] != self.known_player_xy:
             self.world.map.compute_fov(
                 player_data.x,
                 player_data.y,
@@ -133,8 +133,7 @@ class BearLibRender(esper.Processor):
                 radius=player_data.fov,
                 light_walls=True,
             )
-        self.cache["player_x"] = player_data.x
-        self.cache["player_y"] = player_data.y
+        self.known_player_xy = [player_data.x, player_data.y]
 
     def _draw_entities(self, viewport_x, viewport_y):
         self._clear_layer(game.types.RenderLayer.enemy)
