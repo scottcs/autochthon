@@ -1,5 +1,5 @@
 """Status components."""
 
 
-class GUTDead:
+class TMPDead:
     """Component indicating something is dead."""

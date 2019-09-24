@@ -18,7 +18,7 @@ class Turn(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process turns."""
-        for ent, _ in self.world.get_component(game.component.action.GUTMyTurn):
+        for ent, _ in self.world.get_component(game.component.action.TMPMyTurn):
             # someone hasn't taken their turn yet
             return
         if len(self.queue) > 0:
@@ -44,4 +44,4 @@ class Turn(esper.Processor):
         actor.initiative = actor.base_initiative + self._rng.rand(-2, 2)
 
     def _give_turn(self, ent: game.types.Entity) -> None:
-        self.world.add_component(ent, game.component.action.GUTMyTurn())
+        self.world.add_component(ent, game.component.action.TMPMyTurn())

@@ -10,7 +10,7 @@ class HP(game.component.base.BaseIntMinMaxComponent):
 
 
 @dataclasses.dataclass
-class GUTChangeHP:
+class TMPChangeHP:
     """Change the HP attribute."""
 
     amount: game.types.Number

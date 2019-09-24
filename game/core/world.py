@@ -65,7 +65,7 @@ class World(esper.World):
     def actor_takes_turn(self, ent: game.types.Entity, *remove_components: typing.Any) -> None:
         """Clean up after an actor takes a turn."""
         try:
-            self.remove_component(ent, game.component.action.GUTMyTurn)
+            self.remove_component(ent, game.component.action.TMPMyTurn)
         except KeyError:
             pass
         for component in remove_components:
@@ -77,10 +77,10 @@ class World(esper.World):
     def kill_entity(self, ent: game.types.Entity) -> None:
         """Kill an entity."""
         try:
-            self.remove_component(ent, game.component.action.GUTMyTurn)
+            self.remove_component(ent, game.component.action.TMPMyTurn)
         except KeyError:
             pass
-        self.add_component(ent, game.component.status.GUTDead())
+        self.add_component(ent, game.component.status.TMPDead())
         game.events.RenderEntities.fire()
 
     def pickup_item(self, ent: game.types.Entity) -> typing.Optional[game.types.Entity]:
@@ -88,7 +88,7 @@ class World(esper.World):
         at = self.component_for_entity(ent, game.component.movement.Position)
         item_ent = self.get_item_at_position(at.x, at.y)
         if item_ent:
-            self.add_component(item_ent, game.component.container.GUTTransfer(ent))
+            self.add_component(item_ent, game.component.container.TMPTransfer(ent))
             game.events.RenderEntities.fire()
             return item_ent
         return None
@@ -99,7 +99,7 @@ class World(esper.World):
         current_item_ent = self.get_item_at_position(at.x, at.y)
         if current_item_ent:
             return False
-        self.add_component(item_ent, game.component.container.GUTTransfer())
+        self.add_component(item_ent, game.component.container.TMPTransfer())
         game.events.RenderEntities.fire()
         return True
 

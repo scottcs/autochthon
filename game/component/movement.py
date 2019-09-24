@@ -11,12 +11,12 @@ class Position:
 
 
 @dataclasses.dataclass
-class GUTMoving:
+class TMPMoving:
     """Entity wants to move to destination position."""
 
     x: int
     y: int
 
 
-class GUTWaiting:
+class TMPWaiting:
     """Waiting component."""

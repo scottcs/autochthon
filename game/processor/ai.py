@@ -21,14 +21,14 @@ class AI(esper.Processor):
         for ent, components in self.world.get_components(
             game.component.action.Actor,
             game.component.ai.DummyMind,
-            game.component.action.GUTMyTurn,
+            game.component.action.TMPMyTurn,
         ):
-            self.world.add_component(ent, game.component.movement.GUTWaiting())
+            self.world.add_component(ent, game.component.movement.TMPWaiting())
         for ent, components in self.world.get_components(
             game.component.movement.Position,
             game.component.action.Actor,
             game.component.ai.SimpleMind,
-            game.component.action.GUTMyTurn,
+            game.component.action.TMPMyTurn,
         ):
             position, actor = components[:2]
             self._try_moving(ent, position)
@@ -48,5 +48,5 @@ class AI(esper.Processor):
                 and not self.world.map.contains_player[dest.y, dest.x]
                 and self.world.map.walkable[dest.y, dest.x]
             ):
-                self.world.add_component(ent, game.component.movement.GUTMoving(dest.x, dest.y))
+                self.world.add_component(ent, game.component.movement.TMPMoving(dest.x, dest.y))
                 break

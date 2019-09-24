@@ -145,8 +145,8 @@ class BearLibRender(esper.Processor):
             game.component.render.Renderable, game.component.movement.Position
         ):
             renderable, position = components
-            # is_dead = self.world.has_component(ent, game.component.status.GUTDead)
-            # is_contained = self.world.has_component(ent, game.component.container.GUTContained)
+            # is_dead = self.world.has_component(ent, game.component.status.TMPDead)
+            # is_contained = self.world.has_component(ent, game.component.container.TMPContained)
             pos_x = pos_y = None
             can_see_now = can_see_prev = seen = False
 

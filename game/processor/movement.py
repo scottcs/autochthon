@@ -22,20 +22,20 @@ class Movement(esper.Processor):
         entities_need_rendering: bool = False
         for ent, components in self.world.get_components(
             game.component.action.Actor,
-            game.component.movement.GUTWaiting,
-            game.component.action.GUTMyTurn,
+            game.component.movement.TMPWaiting,
+            game.component.action.TMPMyTurn,
         ):
-            if self.world.has_component(ent, game.component.status.GUTDead):
+            if self.world.has_component(ent, game.component.status.TMPDead):
                 continue
-            self.world.actor_takes_turn(ent, game.component.movement.GUTWaiting)
+            self.world.actor_takes_turn(ent, game.component.movement.TMPWaiting)
 
         for ent, components in self.world.get_components(
             game.component.movement.Position,
             game.component.action.Actor,
-            game.component.movement.GUTMoving,
-            game.component.action.GUTMyTurn,
+            game.component.movement.TMPMoving,
+            game.component.action.TMPMyTurn,
         ):
-            if self.world.has_component(ent, game.component.status.GUTDead):
+            if self.world.has_component(ent, game.component.status.TMPDead):
                 continue
             position, actor, moving = components[:3]
             if (
@@ -63,10 +63,10 @@ class Movement(esper.Processor):
                         )
                         if name:
                             desc_log = self.world.get_or_add_component(
-                                ent, game.component.gamelog.GUTDescription
+                                ent, game.component.gamelog.TMPDescription
                             )
                             desc_log.add(f"{name.generic}", game.const.palette.Item.epic)
                             desc_log.append(" is here.")
-            self.world.actor_takes_turn(ent, game.component.movement.GUTMoving)
+            self.world.actor_takes_turn(ent, game.component.movement.TMPMoving)
             if entities_need_rendering:
                 game.events.RenderEntities.fire()

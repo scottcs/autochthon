@@ -12,5 +12,5 @@ class Actor:
         self.initiative: int = self.base_initiative
 
 
-class GUTMyTurn:
+class TMPMyTurn:
     """Current Actor's turn."""

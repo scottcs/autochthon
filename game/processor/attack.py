@@ -23,14 +23,14 @@ class AttackTargeting(esper.Processor):
         """Process AttackTargeting components."""
         for ent, components in self.world.get_components(
             game.component.action.Actor,
-            game.component.attack.GUTCurrentTarget,
-            game.component.action.GUTMyTurn,
+            game.component.attack.TMPCurrentTarget,
+            game.component.action.TMPMyTurn,
         ):
             actor, target = components[:2]
             if not self.still_can_target(ent, target):
-                self.world.actor_takes_turn(ent, game.component.attack.GUTCurrentTarget)
+                self.world.actor_takes_turn(ent, game.component.attack.TMPCurrentTarget)
                 continue
-            combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
+            combat_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCombat)
             aggressor_name = self.world.get_or_add_component(
                 ent, game.component.descriptive.Name, f"Entity {ent}"
             )
@@ -51,7 +51,7 @@ class AttackTargeting(esper.Processor):
             self.world.actor_takes_turn(ent)
 
     def still_can_target(
-        self, _ent: game.types.Entity, target: game.component.attack.GUTCurrentTarget
+        self, _ent: game.types.Entity, target: game.component.attack.TMPCurrentTarget
     ) -> bool:
         """Determine if target is still valid."""
         if target.attack == game.types.Attack.melee:
@@ -67,7 +67,7 @@ class AttackMiss(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process whether attack missed."""
         rng = game.utils.random.RNGCache.get("AttackProcessor")
-        for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
+        for ent, target in self.world.get_component(game.component.attack.TMPCurrentTarget):
             if target.attack == game.types.Attack.melee:
                 mods = []
                 for mod in self.world.try_component(ent, game.component.attack.HitModifier):
@@ -75,7 +75,7 @@ class AttackMiss(esper.Processor):
                 # TODO: Gather other modifiers
                 modifier = game.component.base.accumulate_modifiers(*mods)
                 chance = game.const.base_engine_values.HIT_CHANCE + modifier.factor
-                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
+                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCombat)
                 if not rng.percent(chance):
                     name = self.world.get_or_add_component(
                         ent, game.component.descriptive.Name, f"Entity {ent}"
@@ -88,7 +88,7 @@ class AttackMiss(esper.Processor):
                             name.specific,
                         )
                     )
-                    self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)
+                    self.world.remove_component(ent, game.component.attack.TMPCurrentTarget)
 
 
 class AttackDefense(esper.Processor):
@@ -109,7 +109,7 @@ class AttackDefense(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process whether an attack was defended."""
         rng = game.utils.random.RNGCache.get("AttackProcessor")
-        for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
+        for ent, target in self.world.get_component(game.component.attack.TMPCurrentTarget):
             if self.world.has_component(ent, self.immunity_component_class):
                 # This attack cannot be thwarted by this defense
                 immune = self.world.component_for_entity(ent, self.immunity_component_class)
@@ -118,7 +118,7 @@ class AttackDefense(esper.Processor):
                 name = self.world.get_or_add_component(
                     ent, game.component.descriptive.Name, f"Entity {ent}"
                 )
-                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
+                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCombat)
                 combat_log.add(
                     *game.utils.language.msg(
                         self.world.players,
@@ -139,7 +139,7 @@ class AttackDefense(esper.Processor):
                 if chance > 0:
                     if not rng.percent(chance):
                         combat_log = self.world.get_or_add_component(
-                            ent, game.component.gamelog.GUTCombat
+                            ent, game.component.gamelog.TMPCombat
                         )
                         name = self.world.get_or_add_component(
                             target.entity,
@@ -156,7 +156,7 @@ class AttackDefense(esper.Processor):
                             )
                         )
                         # TODO: Add success comp for other processors (DeflectSuccess -> Disarm)
-                        self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)
+                        self.world.remove_component(ent, game.component.attack.TMPCurrentTarget)
 
 
 class AttackHit(esper.Processor):
@@ -164,14 +164,14 @@ class AttackHit(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process AttackHappening."""
-        for ent, target in self.world.get_component(game.component.attack.GUTCurrentTarget):
+        for ent, target in self.world.get_component(game.component.attack.TMPCurrentTarget):
             if target.attack == game.types.Attack.melee:
                 self.generate_melee_damage(ent, target)
             # TODO: generate effects here too (knockback, electric arc, etc)
-            self.world.remove_component(ent, game.component.attack.GUTCurrentTarget)
+            self.world.remove_component(ent, game.component.attack.TMPCurrentTarget)
 
     def generate_melee_damage(
-        self, ent: game.types.Entity, target: game.component.attack.GUTCurrentTarget
+        self, ent: game.types.Entity, target: game.component.attack.TMPCurrentTarget
     ) -> None:
         """Generate DoDamage components on attacker."""
         mods = []
@@ -185,5 +185,5 @@ class AttackHit(esper.Processor):
         damage = modifier.addend * (1 + modifier.factor)
         if damage > 0:
             self.world.add_component(
-                target.entity, game.component.damage.GUTTakeBludgeoning(damage)
+                target.entity, game.component.damage.TMPTakeBludgeoning(damage)
             )

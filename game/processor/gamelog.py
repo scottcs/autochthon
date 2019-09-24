@@ -13,10 +13,10 @@ class GameLog(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process the game log."""
         for component_class in (
-            game.component.gamelog.GUTCommand,
-            game.component.gamelog.GUTCombat,
-            game.component.gamelog.GUTStatus,
-            game.component.gamelog.GUTDescription,
+            game.component.gamelog.TMPCommand,
+            game.component.gamelog.TMPCombat,
+            game.component.gamelog.TMPStatus,
+            game.component.gamelog.TMPDescription,
         ):
             for ent, log in self.world.get_component(component_class):
                 if not log.lines:

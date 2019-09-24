@@ -40,17 +40,17 @@ class BaseLog:
         self.lines.append(game.types.LogLine(message, color))
 
 
-class GUTCombat(BaseLog):
+class TMPCombat(BaseLog):
     """Combat log."""
 
 
-class GUTStatus(BaseLog):
+class TMPStatus(BaseLog):
     """Log status effects."""
 
 
-class GUTCommand(BaseLog):
+class TMPCommand(BaseLog):
     """Log command results."""
 
 
-class GUTDescription(BaseLog):
+class TMPDescription(BaseLog):
     """Log descriptions."""

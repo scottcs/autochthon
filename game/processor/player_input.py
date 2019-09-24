@@ -69,7 +69,7 @@ class PlayerInput(esper.Processor):
             return False
 
         for ent, _ in self.world.get_component(game.component.player.Player):
-            self.world.add_component(ent, game.component.player.GUTPlayerBump(dx, dy))
+            self.world.add_component(ent, game.component.player.TMPPlayerBump(dx, dy))
         return True
 
     def _try_command(self, key_code: int) -> bool:

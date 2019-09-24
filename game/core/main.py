@@ -189,7 +189,7 @@ class Game:
         item_factory = game.utils.factory.Item(self.loader, self.world)
 
         player = player_factory.make(self.layout["player"])
-        self.world.add_component(player, game.component.action.GUTMyTurn())
+        self.world.add_component(player, game.component.action.TMPMyTurn())
         for enemy in self.layout["enemies"]:
             for _ in range(enemy["count"]):
                 enemy_factory.make(enemy["assemblages"])
@@ -208,7 +208,7 @@ class Game:
 
     def _is_player_turn(self) -> bool:
         for ent in self.world.players:
-            if self.world.has_component(ent, game.component.action.GUTMyTurn):
+            if self.world.has_component(ent, game.component.action.TMPMyTurn):
                 return True
         return False
 
