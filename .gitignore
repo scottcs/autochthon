@@ -153,4 +153,5 @@ tags
 # Sensitive data
 sensitive.toml
 data/tiles/*
+trace.txt
 *.prof

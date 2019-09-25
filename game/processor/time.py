@@ -1,11 +1,16 @@
 """Time processor."""
+import logging
 import typing
 
 import esper
 
 import game.component.action
+import game.component.status
 import game.types
 import game.utils.random
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class Turn(esper.Processor):
@@ -21,16 +26,22 @@ class Turn(esper.Processor):
         for ent, _ in self.world.get_component(game.component.action.TMPMyTurn):
             # someone hasn't taken their turn yet
             return
-        if len(self.queue) > 0:
-            next_ent: game.types.Entity = self._rng.choice(self.queue)
-            self.queue.remove(next_ent)
-        else:
-            self._reduce_initiatives()
-            try:
-                next_ent = self.queue.pop()
-            except IndexError:
-                return
-        self._give_turn(next_ent)
+
+        while True:
+            if len(self.queue) > 0:
+                next_ent: game.types.Entity = self._rng.choice(self.queue)
+                self.queue.remove(next_ent)
+            else:
+                self._reduce_initiatives()
+                try:
+                    next_ent = self.queue.pop()
+                except IndexError:
+                    break
+            if self.world.entity_exists(next_ent) and not self.world.has_component(
+                next_ent, game.component.status.TMPDead
+            ):
+                self._give_turn(next_ent)
+                break
 
     def _reduce_initiatives(self) -> None:
         for ent, actor in self.world.get_component(game.component.action.Actor):

@@ -15,7 +15,7 @@ import game.events
 import game.types
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 
 class World(esper.World):
@@ -146,6 +146,10 @@ class World(esper.World):
             if other_pos.x == x and other_pos.y == y:
                 yield ent
 
+    def entity_exists(self, ent: int) -> bool:
+        """Determine whether an entity exists in the world."""
+        return ent in self._entities
+
     # def _get_component(self, component_type: typing.Any) -> typing.Any:
     #     """Get an iterator for Entity, Component pairs.
     #
@@ -189,20 +193,6 @@ class World(esper.World):
     #                 yield entity, [entity_db[entity][ct] for ct in component_types]
     #     except KeyError:
     #         pass
-
-    def try_component(self, entity: game.types.Entity, component_type: typing.Any) -> typing.Any:
-        """Try to get a single component type for an Entity.
-
-          This method will return the requested Component if it exists, but
-          will pass silently if it does not. This allows a way to access optional
-          Components that may or may not exist.
-
-          :param entity: The Entity ID to retrieve the Component for.
-          :param component_type: The Component instance you wish to retrieve.
-          :return: The single Component instance requested, or None
-          """
-        if component_type in self._entities[entity]:
-            yield self._entities[entity][component_type]
 
     def optional_component_for_entity(
         self, entity: game.types.Entity, component_type: typing.Any
