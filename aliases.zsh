@@ -1,5 +1,7 @@
 alias run='poetry run python start.py'
 alias runp='rm start.prof; poetry run python -m cProfile -o start.prof start.py; snakeviz start.prof'
+alias rund='poetry run python -m pdb start.py'
+alias runt='poetry run python -m trace --trace start.py > trace.txt'
 alias ae='poetry run python -m tools.assemblage_edit'
 alias mapv='poetry run python -m tools.map_visualizer'
 alias brelease='poetry run bumpversion release'

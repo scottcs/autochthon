@@ -1,4 +1,5 @@
 """Attribute processors."""
+import logging
 import typing
 
 import esper
@@ -11,6 +12,8 @@ import game.component.movement
 import game.component.player
 import game.const.messages.status
 import game.utils.language
+
+log = logging.getLogger(__name__)
 
 
 class HP(esper.Processor):
@@ -35,8 +38,8 @@ class HP(esper.Processor):
                         self.world.map.contains_player[position.y, position.x] = False
                     elif self.world.optional_component_for_entity(ent, game.component.ai.Enemy):
                         self.world.map.contains_enemy[position.y, position.x] = False
-                log = self.world.get_or_add_component(ent, game.component.gamelog.TMPStatus)
-                log.add(
+                status_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPStatus)
+                status_log.add(
                     *game.utils.language.msg(
                         self.world.players, (ent,), game.const.messages.status.Death, name.specific
                     )
