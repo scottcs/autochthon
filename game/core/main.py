@@ -164,14 +164,14 @@ class Game:
             group=game.types.ProcessGroup.render,
         )
         self.world.add_processor(
-            game.processor.render.BearLibRender(),
-            priority=game.types.Priority.render,
-            group=game.types.ProcessGroup.render,
-        )
-        self.world.add_processor(
             game.processor.gamelog.GameLog(),
             priority=game.types.Priority.gamelog,
             group=game.types.ProcessGroup.gamelog,
+        )
+        self.world.add_processor(
+            game.processor.render.BearLibRender(),
+            priority=game.types.Priority.render,
+            group=game.types.ProcessGroup.render,
         )
 
         current_map = game.core.map.ClassicMap(
@@ -189,7 +189,7 @@ class Game:
         item_factory = game.utils.factory.Item(self.loader, self.world)
 
         player = player_factory.make(self.layout["player"])
-        self.world.add_component(player, game.component.action.GUTMyTurn())
+        self.world.add_component(player, game.component.action.TMPMyTurn())
         for enemy in self.layout["enemies"]:
             for _ in range(enemy["count"]):
                 enemy_factory.make(enemy["assemblages"])
@@ -208,7 +208,7 @@ class Game:
 
     def _is_player_turn(self) -> bool:
         for ent in self.world.players:
-            if self.world.has_component(ent, game.component.action.GUTMyTurn):
+            if self.world.has_component(ent, game.component.action.TMPMyTurn):
                 return True
         return False
 
@@ -233,5 +233,5 @@ class Game:
         if self._is_player_turn():
             self.world.process_group(game.types.ProcessGroup.player, state=self.state)
         self.world.process_group(game.types.ProcessGroup.default)
-        self.world.process_group(game.types.ProcessGroup.render)
         self.world.process_group(game.types.ProcessGroup.gamelog)
+        self.world.process_group(game.types.ProcessGroup.render)

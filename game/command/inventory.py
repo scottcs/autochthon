@@ -30,7 +30,7 @@ class Inventory(game.command.base.BaseCommand):
                     {"header": "Describe what?", "items": items_carried}
                 )
             else:
-                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add("You aren't carrying anything!")
 
     def on_choice(self, event: game.types.Event) -> None:
@@ -48,7 +48,7 @@ class Inventory(game.command.base.BaseCommand):
                     game.events.ChoiceDeclined.fire({"substatus": "Do what?"})
             else:
                 for item_ent, components in self.world.get_components(
-                    game.component.container.GUTContained, game.component.descriptive.Name
+                    game.component.container.TMPContained, game.component.descriptive.Name
                 ):
                     contained, name = components
                     if contained.by_ent == ent and contained.label == input_key.key:

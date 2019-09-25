@@ -24,7 +24,7 @@ class Drop(game.command.base.BaseCommand):
             pos = self.world.component_for_entity(ent, game.component.movement.Position)
             item = self.world.get_item_at_position(pos.x, pos.y)
             if item:
-                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add(
                     "There is already an item on the ground here!",
                     game.const.palette.Message.negative,
@@ -38,7 +38,7 @@ class Drop(game.command.base.BaseCommand):
                     {"header": "Drop what?", "items": items_carried, "multiple": True}
                 )
             else:
-                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add("You have nothing to drop!")
 
     def on_choice(self, event: game.types.Event) -> None:
@@ -46,7 +46,7 @@ class Drop(game.command.base.BaseCommand):
         input_key = event["char"]
         for ent, _ in self.world.get_component(game.component.player.Player):
             for item_ent, components in self.world.get_components(
-                game.component.container.GUTContained, game.component.descriptive.Name
+                game.component.container.TMPContained, game.component.descriptive.Name
             ):
                 contained, name = components
                 if contained.by_ent == ent and contained.label == input_key.key:
@@ -54,7 +54,7 @@ class Drop(game.command.base.BaseCommand):
                         game.events.ChoiceAccepted.fire()
                     else:
                         cmd_log = self.world.get_or_add_component(
-                            ent, game.component.gamelog.GUTCommand
+                            ent, game.component.gamelog.TMPCommand
                         )
                         cmd_log.add(
                             "There is already an item on the ground here!",

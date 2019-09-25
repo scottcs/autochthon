@@ -25,13 +25,14 @@ class RenderLayer(enum.IntEnum):
     enemy = enum.auto()
     player = enum.auto()
     effect = enum.auto()
+    ui_log = enum.auto()
 
 
 class Priority(enum.IntEnum):
     """Processor priorities."""
 
-    gamelog = enum.auto()
     render = enum.auto()
+    gamelog = enum.auto()
     psychopomps = enum.auto()
     attributes = enum.auto()
     damage_resolution = enum.auto()
@@ -57,8 +58,8 @@ class ProcessGroup(enum.Enum):
     default = enum.auto()
     player = enum.auto()
     time = enum.auto()
-    render = enum.auto()
     gamelog = enum.auto()
+    render = enum.auto()
 
 
 class GameState(enum.Enum):

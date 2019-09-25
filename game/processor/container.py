@@ -29,17 +29,17 @@ class Container(esper.Processor):
 
         # process all container transfers
         for containable_ent, components in self.world.get_components(
-            game.component.container.GUTTransfer,
+            game.component.container.TMPTransfer,
             game.component.container.Containable,
             game.component.descriptive.Name,
         ):
             transfer, containable, name = components
-            self.world.remove_component(containable_ent, game.component.container.GUTTransfer)
+            self.world.remove_component(containable_ent, game.component.container.TMPTransfer)
             cmd_log = self.world.get_or_add_component(
-                containable_ent, game.component.gamelog.GUTCommand
+                containable_ent, game.component.gamelog.TMPCommand
             )
             contained = self.world.optional_component_for_entity(
-                containable_ent, game.component.container.GUTContained
+                containable_ent, game.component.container.TMPContained
             )
 
             if transfer.to_ent is None:
@@ -59,7 +59,7 @@ class Container(esper.Processor):
 
             # remove from wherever it is
             if contained:
-                self.world.remove_component(containable_ent, game.component.container.GUTContained)
+                self.world.remove_component(containable_ent, game.component.container.TMPContained)
             else:
                 position = self.world.optional_component_for_entity(
                     containable_ent, game.component.movement.Position
@@ -77,8 +77,8 @@ class Container(esper.Processor):
                         else:
                             cmd_log.add(f"{container_ent_name.generic} picks up ")
                         # TODO: colorize the item by rarity?
-                        cmd_log.append(f"{name.generic}", color=game.const.palette.Item.epic)
-                        cmd_log.append(f".")
+                        cmd_log.add_raw(f"{name.generic}", color=game.const.palette.Item.epic)
+                        cmd_log.add_raw(f".")
                         log.debug(f"Picked up {containable_ent}")
                     entities_need_rendering = True
                 else:
@@ -104,8 +104,8 @@ class Container(esper.Processor):
                         else:
                             cmd_log.add(f"{contained_ent_name.generic} drops ")
                         # TODO: colorize the item by rarity?
-                        cmd_log.append(f"{name.generic}", color=game.const.palette.Item.epic)
-                        cmd_log.append(".")
+                        cmd_log.add_raw(f"{name.generic}", color=game.const.palette.Item.epic)
+                        cmd_log.add_raw(".")
                     entities_need_rendering = True
                 else:
                     # TODO: what to do if can't drop?
@@ -117,14 +117,14 @@ class Container(esper.Processor):
                 else:
                     self.world.add_component(
                         containable_ent,
-                        game.component.container.GUTContained(
+                        game.component.container.TMPContained(
                             transfer.to_ent, game.component.container.Container, free_slot
                         ),
                     )
                     if contained:
                         # TODO: colorize the item by rarity?
                         cmd_log.add(f"{name.generic}", color=game.const.palette.Item.epic)
-                        cmd_log.append(f" is put into {container_name}.")
+                        cmd_log.add_raw(f" is put into {container_name}.")
         if entities_need_rendering:
             game.events.RenderEntities.fire()
 
@@ -132,7 +132,7 @@ class Container(esper.Processor):
         self, ent: game.types.Entity, container: game.component.container.Container
     ) -> typing.Optional[int]:
         seen_slots = set()
-        for _, other_contained in self.world.get_component(game.component.container.GUTContained):
+        for _, other_contained in self.world.get_component(game.component.container.TMPContained):
             if (
                 other_contained.by_ent == ent
                 and other_contained.component_class == game.component.container.Container

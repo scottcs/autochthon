@@ -22,7 +22,6 @@ class BaseLog:
         # capitalize
         message = f"{message[0].upper()}{message[1:]}"
 
-        # if this isn't the first line, add a space before it
         try:
             last = self.lines.pop()
         except IndexError:
@@ -33,24 +32,24 @@ class BaseLog:
             else:
                 self.lines.append(last)
                 message = " " + message
-        self.append(message, color)
+        self.add_raw(message, color)
 
-    def append(self, message: str, color: str = game.const.palette.Message.default) -> None:
-        """Append to the log without a space."""
+    def add_raw(self, message: str, color: str = game.const.palette.Message.default) -> None:
+        """Append to the log without any additional formatting."""
         self.lines.append(game.types.LogLine(message, color))
 
 
-class GUTCombat(BaseLog):
+class TMPCombat(BaseLog):
     """Combat log."""
 
 
-class GUTStatus(BaseLog):
+class TMPStatus(BaseLog):
     """Log status effects."""
 
 
-class GUTCommand(BaseLog):
+class TMPCommand(BaseLog):
     """Log command results."""
 
 
-class GUTDescription(BaseLog):
+class TMPDescription(BaseLog):
     """Log descriptions."""

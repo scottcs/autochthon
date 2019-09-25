@@ -17,7 +17,7 @@ import tools.widgets
 DATA_DIR = pathlib.Path("data/assemblage")
 COMPONENT_DIR = pathlib.Path("game/component")
 COMPONENT_RE = re.compile(r"(?<=^class )\w+")
-IGNORE_COMPONENT_PREFIXES = ("Base", "GUT")
+IGNORE_COMPONENT_PREFIXES = ("Base", "TMP")
 
 
 class RenderWidget(PySide2.QtWidgets.QWidget):

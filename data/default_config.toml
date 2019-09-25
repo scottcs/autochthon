@@ -1,6 +1,7 @@
 title = "Autochthon"
 org = "Precipitation Studios"
-tileset = "oryx_td_2x"
+tileset = "oryx_td"
+tile_scale = 2
 
 [player]
 name = "UNKNOWN"

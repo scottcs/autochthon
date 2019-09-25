@@ -17,9 +17,9 @@ class DamageBludgeoningMitigation(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process TakeDamageBludgeoning components."""
-        for ent, damage in self.world.get_component(game.component.damage.GUTTakeBludgeoning):
+        for ent, damage in self.world.get_component(game.component.damage.TMPTakeBludgeoning):
             if self.world.has_component(ent, game.component.damage.ImmuneBludgeoning):
-                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
+                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCombat)
                 name = self.world.get_or_add_component(
                     ent, game.component.descriptive.Name, f"Entity {ent}"
                 )
@@ -32,7 +32,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         "Bludgeoning",
                     )
                 )
-                self.world.remove_component(ent, game.component.damage.GUTTakeBludgeoning)
+                self.world.remove_component(ent, game.component.damage.TMPTakeBludgeoning)
             else:
                 mods = []
                 for mod in self.world.try_component(
@@ -42,7 +42,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                 modifier = game.component.base.accumulate_modifiers(*mods)
                 full_amount = damage.amount
                 damage.amount = (damage.amount + modifier.addend) * (1 + modifier.factor)
-                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCombat)
+                combat_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCombat)
                 name = self.world.get_or_add_component(
                     ent, game.component.descriptive.Name, f"Entity {ent}"
                 )
@@ -80,7 +80,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         )
                     )
                 if damage.amount <= 0:
-                    self.world.remove_component(ent, game.component.damage.GUTTakeBludgeoning)
+                    self.world.remove_component(ent, game.component.damage.TMPTakeBludgeoning)
 
 
 class DamageBludgeoning(esper.Processor):
@@ -88,10 +88,10 @@ class DamageBludgeoning(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process TakeDamageBludgeoning components."""
-        for ent, damage in self.world.get_component(game.component.damage.GUTTakeBludgeoning):
-            for change_hp in self.world.try_component(ent, game.component.attribute.GUTChangeHP):
+        for ent, damage in self.world.get_component(game.component.damage.TMPTakeBludgeoning):
+            for change_hp in self.world.try_component(ent, game.component.attribute.TMPChangeHP):
                 change_hp.amount -= damage.amount
                 break
             else:
-                self.world.add_component(ent, game.component.attribute.GUTChangeHP(-damage.amount))
-            self.world.remove_component(ent, game.component.damage.GUTTakeBludgeoning)
+                self.world.add_component(ent, game.component.attribute.TMPChangeHP(-damage.amount))
+            self.world.remove_component(ent, game.component.damage.TMPTakeBludgeoning)

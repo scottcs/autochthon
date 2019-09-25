@@ -21,7 +21,7 @@ class BaseCommand:
     def _get_items_carried(self, ent: game.types.Entity) -> dict:
         items_carried: dict = {"equipped": [], "unequipped": []}
         for item_ent, components in self.world.get_components(
-            game.component.container.GUTContained,
+            game.component.container.TMPContained,
             game.component.descriptive.Name,
             game.component.container.Containable,
         ):
