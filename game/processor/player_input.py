@@ -23,9 +23,9 @@ class PlayerInput(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process the input queue."""
-        state: game.types.GameState = kwargs.pop("state")
         if blt.has_input():
             key_code = blt.read()
+            state: game.types.GameState = kwargs.pop("state")
             try:
                 {game.types.GameState.playing: self._handle_state_playing}[state](key_code)
             except KeyError:

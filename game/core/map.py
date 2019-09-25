@@ -97,38 +97,17 @@ class Map(tcod.map.Map):
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_player")]
         return buffer
 
-    def contains_player_list(self) -> typing.List[game.utils.geometry.Point]:
-        """Return a list of only coordinates occupied by players."""
-        return [
-            game.utils.geometry.Point(int(x), int(y))
-            for y, x in np.transpose(self.contains_player.nonzero())
-        ]
-
     @property
     def contains_enemy(self) -> np.array:
         """Array of cells that contain enemies."""
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_enemy")]
         return buffer
 
-    def contains_enemy_list(self) -> typing.List[game.utils.geometry.Point]:
-        """Return a list of only coordinates occupied by enemies."""
-        return [
-            game.utils.geometry.Point(int(x), int(y))
-            for y, x in np.transpose(self.contains_enemy.nonzero())
-        ]
-
     @property
     def contains_item(self) -> np.array:
         """Array of cells that can spawn items."""
         buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_item")]
         return buffer
-
-    def contains_item_list(self) -> typing.List[game.utils.geometry.Point]:
-        """Return a list of only coordinates occupied by items."""
-        return [
-            game.utils.geometry.Point(int(x), int(y))
-            for y, x in np.transpose(self.contains_item.nonzero())
-        ]
 
     @property
     def alt_tile_1(self) -> np.array:

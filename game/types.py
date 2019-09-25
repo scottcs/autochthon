@@ -52,16 +52,6 @@ class Priority(enum.IntEnum):
     player_input = enum.auto()
 
 
-class ProcessGroup(enum.Enum):
-    """Groups of processors."""
-
-    default = enum.auto()
-    player = enum.auto()
-    time = enum.auto()
-    gamelog = enum.auto()
-    render = enum.auto()
-
-
 class GameState(enum.Enum):
     """Game states."""
 

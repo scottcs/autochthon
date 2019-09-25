@@ -17,5 +17,3 @@ class Renderable:
     def __post_init__(self) -> None:
         self.last_seen_x: typing.Optional[int] = None
         self.last_seen_y: typing.Optional[int] = None
-        self.last_draw_x: typing.Optional[int] = None
-        self.last_draw_y: typing.Optional[int] = None
