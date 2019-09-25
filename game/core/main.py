@@ -48,7 +48,6 @@ class Game:
         self.config = game.const.config.DATA
         self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
         self.game_over: bool = False
-        self.got_player_input: bool = False
         self.world: game.core.world.World = game.core.world.World()
         self.layout: game.types.Layout = {}
         self.state: game.types.GameState = game.types.GameState.unknown
