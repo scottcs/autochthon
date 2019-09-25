@@ -114,20 +114,12 @@ class Game:
         )
 
         self.world.add_processor(
-            game.processor.player_input.PlayerInput(),
-            priority=game.types.Priority.player_input,
-            group=game.types.ProcessGroup.player,
+            game.processor.player_input.PlayerInput(), priority=game.types.Priority.player_input
         )
         self.world.add_processor(
-            game.processor.player_bump.PlayerBump(),
-            priority=game.types.Priority.player_bump,
-            group=game.types.ProcessGroup.player,
+            game.processor.player_bump.PlayerBump(), priority=game.types.Priority.player_bump
         )
-        self.world.add_processor(
-            game.processor.time.Turn(),
-            priority=game.types.Priority.turn,
-            group=game.types.ProcessGroup.time,
-        )
+        self.world.add_processor(game.processor.time.Turn(), priority=game.types.Priority.turn)
         self.world.add_processor(
             game.processor.container.Container(), priority=game.types.Priority.container
         )
@@ -159,19 +151,13 @@ class Game:
             game.processor.attribute.HP(), priority=game.types.Priority.attributes
         )
         self.world.add_processor(
-            game.processor.psychopomps.Psychopomps(),
-            priority=game.types.Priority.psychopomps,
-            group=game.types.ProcessGroup.render,
+            game.processor.psychopomps.Psychopomps(), priority=game.types.Priority.psychopomps
         )
         self.world.add_processor(
-            game.processor.gamelog.GameLog(),
-            priority=game.types.Priority.gamelog,
-            group=game.types.ProcessGroup.gamelog,
+            game.processor.gamelog.GameLog(), priority=game.types.Priority.gamelog
         )
         self.world.add_processor(
-            game.processor.render.BearLibRender(),
-            priority=game.types.Priority.render,
-            group=game.types.ProcessGroup.render,
+            game.processor.render.BearLibRender(), priority=game.types.Priority.render
         )
 
         current_map = game.core.map.ClassicMap(
@@ -206,32 +192,6 @@ class Game:
             log.info("Shutting down.")
             self.game_over = True
 
-    def _is_player_turn(self) -> bool:
-        for ent in self.world.players:
-            if self.world.has_component(ent, game.component.action.TMPMyTurn):
-                return True
-        return False
-
     def update(self) -> None:
         """Update the game world."""
-        # if it's currently nobody's turn:
-        #     if initiative queue is empty:
-        #         roll initiative for every actor and sort
-        #     set lowest initiative actor to MyTurn
-        # if it's the player's turn:
-        #     if no input:
-        #         continue
-        #     interpret input
-        #     do player turn
-        # else:
-        #     do actor's turn
-        # if map needs render:
-        #     render map
-        # if entities need render:
-        #     render only entities that need it
-        self.world.process_group(game.types.ProcessGroup.time)
-        if self._is_player_turn():
-            self.world.process_group(game.types.ProcessGroup.player, state=self.state)
-        self.world.process_group(game.types.ProcessGroup.default)
-        self.world.process_group(game.types.ProcessGroup.gamelog)
-        self.world.process_group(game.types.ProcessGroup.render)
+        self.world.process(state=self.state)
