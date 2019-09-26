@@ -1,16 +1,16 @@
-"""Factory utilities."""
+"""Factories."""
 import logging
 import pydoc
 import typing
 
 import game.component.movement
-import game.const.palette
-import game.core.world
+import game.palette
 import game.types
 import game.utils.dataloader
 import game.utils.geometry
 import game.utils.random
 import game.utils.render
+import game.world
 
 ON_CREATE = "=="
 
@@ -31,7 +31,7 @@ def convert_datum(value: typing.Any) -> typing.Any:
         return None
 
     if class_type == "Palette":
-        result = getattr(game.const.palette.Base, attr)
+        result = getattr(game.palette.Base, attr)
     else:
         imported = pydoc.locate(f"game.types.{class_type}")
         if imported:
@@ -60,11 +60,9 @@ def validate_kwargs(kwargs: typing.MutableMapping) -> None:
 class BaseEntityFactory:
     """Entity Factory."""
 
-    def __init__(
-        self, loader: game.utils.dataloader.DataLoader, world: game.core.world.World
-    ) -> None:
+    def __init__(self, loader: game.utils.dataloader.DataLoader, world: game.world.World) -> None:
         self._loader: game.utils.dataloader.DataLoader = loader
-        self._world: game.core.world.World = world
+        self._world: game.world.World = world
         self._rng: typing.Optional[game.utils.random.GameRNG] = None
         self._data_key: typing.Optional[str] = None
 
@@ -133,9 +131,7 @@ class BaseEntityFactory:
 class Player(BaseEntityFactory):
     """Factory for creating Player entities."""
 
-    def __init__(
-        self, loader: game.utils.dataloader.DataLoader, world: game.core.world.World
-    ) -> None:
+    def __init__(self, loader: game.utils.dataloader.DataLoader, world: game.world.World) -> None:
         super().__init__(loader, world)
         self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("PlayerFactory")
         self._data_key: str = "assemblage.player"
@@ -160,9 +156,7 @@ class Player(BaseEntityFactory):
 class Enemy(BaseEntityFactory):
     """Factory for creating Enemy entities."""
 
-    def __init__(
-        self, loader: game.utils.dataloader.DataLoader, world: game.core.world.World
-    ) -> None:
+    def __init__(self, loader: game.utils.dataloader.DataLoader, world: game.world.World) -> None:
         super().__init__(loader, world)
         self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("EnemyFactory")
         self._data_key: str = "assemblage.enemy"
@@ -186,9 +180,7 @@ class Enemy(BaseEntityFactory):
 class Item(BaseEntityFactory):
     """Factory for creating Item entities."""
 
-    def __init__(
-        self, loader: game.utils.dataloader.DataLoader, world: game.core.world.World
-    ) -> None:
+    def __init__(self, loader: game.utils.dataloader.DataLoader, world: game.world.World) -> None:
         super().__init__(loader, world)
         self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("ItemFactory")
         self._data_key: str = "assemblage.item"

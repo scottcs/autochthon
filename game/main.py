@@ -7,14 +7,14 @@ import typing
 import appdirs
 
 import game
+import game.base_engine_values
 import game.component.action
 import game.component.attack
-import game.const.base_engine_values
-import game.const.config
-import game.const.layout
-import game.core.map
-import game.core.world
+import game.config
 import game.events
+import game.factory
+import game.level_layout
+import game.map
 import game.processor.ai
 import game.processor.attack
 import game.processor.attribute
@@ -29,9 +29,9 @@ import game.processor.render
 import game.processor.time
 import game.types
 import game.utils.dataloader
-import game.utils.factory
 import game.utils.language
 import game.utils.random
+import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -45,10 +45,10 @@ class Game:
     """Main game object."""
 
     def __init__(self) -> None:
-        self.config = game.const.config.DATA
+        self.config = game.config.DATA
         self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
         self.game_over: bool = False
-        self.world: game.core.world.World = game.core.world.World()
+        self.world: game.world.World = game.world.World()
         self.layout: game.types.Layout = {}
         self.state: game.types.GameState = game.types.GameState.unknown
         self.loader: game.utils.dataloader.DataLoader = game.utils.dataloader.DataLoader()
@@ -85,7 +85,7 @@ class Game:
 
     def set_state_playing(self, layout_name, seed: typing.Optional[str] = None) -> None:
         """Set the game state to playing."""
-        self.layout = game.const.layout.DATA[layout_name]
+        self.layout = game.level_layout.DATA[layout_name]
 
         game.utils.random.RNGCache.init(seed)
         self.state = game.types.GameState.playing
@@ -97,19 +97,19 @@ class Game:
             game.utils.language.Verb("dodges", "dodged"),
             game.component.attack.DodgeModifier,
             game.component.attack.ImmuneToDodge,
-            game.const.base_engine_values.DODGE_CHANCE,
+            game.base_engine_values.DODGE_CHANCE,
         )
         block_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("blocks", "blocked"),
             game.component.attack.BlockModifier,
             game.component.attack.ImmuneToBlock,
-            game.const.base_engine_values.BLOCK_CHANCE,
+            game.base_engine_values.BLOCK_CHANCE,
         )
         deflect_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("deflects", "deflected"),
             game.component.attack.DeflectModifier,
             game.component.attack.ImmuneToDeflect,
-            game.const.base_engine_values.DEFLECT_CHANCE,
+            game.base_engine_values.DEFLECT_CHANCE,
         )
 
         self.world.add_processor(
@@ -159,7 +159,7 @@ class Game:
             game.processor.render.BearLibRender(), priority=game.types.Priority.render
         )
 
-        current_map = game.core.map.ClassicMap(
+        current_map = game.map.ClassicMap(
             self.config["map"]["max_tiles_w"],
             self.config["map"]["max_tiles_h"],
             config=self.layout["map"],
@@ -169,9 +169,9 @@ class Game:
         self._populate_map()
 
     def _populate_map(self) -> None:
-        player_factory = game.utils.factory.Player(self.loader, self.world)
-        enemy_factory = game.utils.factory.Enemy(self.loader, self.world)
-        item_factory = game.utils.factory.Item(self.loader, self.world)
+        player_factory = game.factory.Player(self.loader, self.world)
+        enemy_factory = game.factory.Enemy(self.loader, self.world)
+        item_factory = game.factory.Item(self.loader, self.world)
 
         player = player_factory.make(self.layout["player"])
         self.world.add_component(player, game.component.action.TMPMyTurn())

@@ -6,7 +6,7 @@ import typing
 import numpy as np
 import tcod.map
 
-import game.const.palette
+import game.palette
 import game.types
 import game.utils.geometry
 import game.utils.random

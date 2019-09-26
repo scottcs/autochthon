@@ -8,7 +8,7 @@ import game.component.base
 import game.component.damage
 import game.component.descriptive
 import game.component.gamelog
-import game.const.messages.combat
+import game.messages.combat
 import game.utils.language
 
 
@@ -27,7 +27,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                     *game.utils.language.msg(
                         self.world.players,
                         (ent,),
-                        game.const.messages.combat.DamageImmune,
+                        game.messages.combat.DamageImmune,
                         name.specific,
                         "Bludgeoning",
                     )
@@ -51,7 +51,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            game.const.messages.combat.DamageVulnerable,
+                            game.messages.combat.DamageVulnerable,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,
@@ -62,7 +62,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            game.const.messages.combat.DamageResist,
+                            game.messages.combat.DamageResist,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,
@@ -73,7 +73,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent,),
-                            game.const.messages.combat.DamageNormal,
+                            game.messages.combat.DamageNormal,
                             name.specific,
                             "Bludgeoning",
                             damage.amount,

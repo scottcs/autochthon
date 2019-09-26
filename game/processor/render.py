@@ -13,11 +13,11 @@ import game.component.movement
 import game.component.player
 import game.component.render
 import game.component.status
-import game.const.config
-import game.const.palette
-import game.const.tile_ids
-import game.const.tileset
+import game.config
 import game.events
+import game.palette
+import game.tile_ids
+import game.tileset
 import game.types
 import game.utils.geometry
 import game.utils.render
@@ -37,8 +37,8 @@ class BearLibRender(esper.Processor):
     """Game render processor for BearLibTerminal console."""
 
     def __init__(self) -> None:
-        self.width: int = game.const.tileset.DATA["window"]["width"]
-        self.height: int = game.const.tileset.DATA["window"]["height"]
+        self.width: int = game.tileset.DATA["window"]["width"]
+        self.height: int = game.tileset.DATA["window"]["height"]
         self.center: typing.List[int] = [self.width // 2, self.height // 2]
         self.spacing: typing.Dict[str, typing.List[int]] = {}
         self.last_process_time: int = time.time_ns()
@@ -56,19 +56,19 @@ class BearLibRender(esper.Processor):
             log.critical("Unable to initialize terminal window!")
 
         window_size = f"size={self.width}x{self.height}"
-        font_data = game.const.tileset.DATA["font"]
-        font_file = pathlib.Path(f"{game.const.tileset.FONT_PATH}/{font_data['file']}")
+        font_data = game.tileset.DATA["font"]
+        font_file = pathlib.Path(f"{game.tileset.FONT_PATH}/{font_data['file']}")
 
-        title = game.const.config.DATA["title"]
+        title = game.config.DATA["title"]
         blt.set(f"window: {window_size}, resizable=true, title='{title}'")
         blt.set(f"font: {font_file}, size={str(font_data['size'][0])}x{str(font_data['size'][1])}")
         blt.color("white")
         self._load_tilesets()
 
     def _load_tilesets(self) -> None:
-        tile_scale = game.const.config.DATA.get("tile_scale", 1)
-        for tileset_name, item in game.const.tileset.DATA["tilesets"].items():
-            item_file = pathlib.Path(f"{game.const.tileset.TILES_PATH}/{item['file']}")
+        tile_scale = game.config.DATA.get("tile_scale", 1)
+        for tileset_name, item in game.tileset.DATA["tilesets"].items():
+            item_file = pathlib.Path(f"{game.tileset.TILES_PATH}/{item['file']}")
             load_str = f"{item['offset']}: {item_file}"
             if "size" in item:
                 width, height = item["size"]
@@ -87,7 +87,7 @@ class BearLibRender(esper.Processor):
                 load_str += f", spacing={str(x)}x{str(y)}"
                 self.spacing[tileset_name] = [x, y]
             else:
-                self.spacing[tileset_name] = game.const.tileset.DATA["font"]["spacing"]
+                self.spacing[tileset_name] = game.tileset.DATA["font"]["spacing"]
             blt.set(load_str)
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

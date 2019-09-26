@@ -1,17 +1,17 @@
 """Base player command."""
 import game.component.container
 import game.component.descriptive
-import game.const.palette
-import game.core.world
 import game.events
+import game.palette
 import game.types
+import game.world
 
 
 class BaseCommand:
     """Base player command."""
 
-    def __init__(self, world: game.core.world.World) -> None:
-        self.world: game.core.world.World = world
+    def __init__(self, world: game.world.World) -> None:
+        self.world: game.world.World = world
         self.submenu = False
 
     def run(self) -> None:
@@ -36,7 +36,7 @@ class BaseCommand:
                         containable.equip_type.name,
                         contained.label,
                         name.generic,
-                        game.const.palette.Item.rare,
+                        game.palette.Item.rare,
                     )
                 )
         if items_carried["equipped"]:

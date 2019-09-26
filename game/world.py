@@ -10,8 +10,8 @@ import game.component.container
 import game.component.movement
 import game.component.player
 import game.component.status
-import game.core.map
 import game.events
+import game.map
 import game.types
 
 log = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ class World(esper.World):
 
     def __init__(self, timed: bool = False) -> None:
         super().__init__(timed)
-        self.map: typing.Optional[game.core.map.Map] = None
+        self.map: typing.Optional[game.map.Map] = None
         self.players: typing.Set[game.types.Entity] = set()
 
     def actor_takes_turn(self, ent: game.types.Entity, *remove_components: typing.Any) -> None:

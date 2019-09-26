@@ -4,8 +4,8 @@ import game.component.container
 import game.component.descriptive
 import game.component.gamelog
 import game.component.player
-import game.const.palette
 import game.events
+import game.palette
 import game.types
 
 
@@ -65,7 +65,7 @@ class Equip(game.command.base.BaseCommand):
                         ent, game.component.gamelog.TMPCommand
                     )
                     cmd_log.add("You unequip ")
-                    cmd_log.add_raw(want_to_equip[1].generic, game.const.palette.Item.epic)
+                    cmd_log.add_raw(want_to_equip[1].generic, game.palette.Item.epic)
                     cmd_log.add_raw(f" from your {name} slot.")
                     game.events.ChoiceAccepted.fire()
                 else:
@@ -75,7 +75,7 @@ class Equip(game.command.base.BaseCommand):
                             ent, game.component.gamelog.TMPCommand
                         )
                         cmd_log.add("You equip ")
-                        cmd_log.add_raw(want_to_equip[1].generic, game.const.palette.Item.epic)
+                        cmd_log.add_raw(want_to_equip[1].generic, game.palette.Item.epic)
                         cmd_log.add_raw(f" in your {name} slot.")
                         game.events.ChoiceAccepted.fire()
                     else:
