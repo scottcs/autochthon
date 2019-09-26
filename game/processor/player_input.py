@@ -25,40 +25,42 @@ class PlayerInput(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process the input queue."""
         if blt.has_input():
-            key_code = blt.read()
+            input_key = game.types.InputKey(
+                blt.read(),
+                blt.check(blt.TK_SHIFT),
+                blt.check(blt.TK_CONTROL),
+                blt.check(blt.TK_ALT),
+            )
             state: game.types.GameState = kwargs.pop("state")
             try:
-                {game.types.GameState.playing: self._handle_state_playing}[state](key_code)
+                {game.types.GameState.playing: self._handle_state_playing}[state](input_key)
             except KeyError:
-                self._handle_default(key_code)
+                self._handle_default(input_key)
 
-    def _handle_state_playing(self, key_code: int) -> None:
-        handled = self._try_bump(key_code)
+    def _handle_state_playing(self, input_key: game.types.InputKey) -> None:
+        handled = self._try_bump(input_key)
         if not handled:
-            handled = self._try_command(key_code)
+            handled = self._try_command(input_key)
         if not handled:
             # TODO: more?
             # TODO: remove this (quit through menu)
-            self._handle_default(key_code)
+            self._handle_default(input_key)
 
     @staticmethod
-    def _handle_default(key_code: int) -> None:
-        if game.utils.input.GameInterface.match("quit", key_code):
+    def _handle_default(input_key: game.types.InputKey) -> None:
+        if game.utils.input.GameInterface.match("quit", input_key):
             game.events.GameOver({"shutdown": True})
 
-    def _try_bump(self, key_code: int) -> bool:
-        if blt.check(blt.TK_SHIFT) or blt.check(blt.TK_ALT) or blt.check(blt.TK_CONTROL):
-            return False
-
+    def _try_bump(self, input_key: game.types.InputKey) -> bool:
         dx = 0
         dy = 0
-        wait = game.utils.input.GameCommand.match("wait", key_code)
+        wait = game.utils.input.GameCommand.match("wait", input_key)
 
         if not wait:
-            bump_up = game.utils.input.GameMovement.match_any(["nw", "n", "ne"], key_code)
-            bump_down = game.utils.input.GameMovement.match_any(["sw", "s", "se"], key_code)
-            bump_left = game.utils.input.GameMovement.match_any(["nw", "w", "sw"], key_code)
-            bump_right = game.utils.input.GameMovement.match_any(["ne", "e", "se"], key_code)
+            bump_up = game.utils.input.GameMovement.match_any(["nw", "n", "ne"], input_key)
+            bump_down = game.utils.input.GameMovement.match_any(["sw", "s", "se"], input_key)
+            bump_left = game.utils.input.GameMovement.match_any(["nw", "w", "sw"], input_key)
+            bump_right = game.utils.input.GameMovement.match_any(["ne", "e", "se"], input_key)
 
             if bump_up:
                 dy -= 1
@@ -76,9 +78,9 @@ class PlayerInput(esper.Processor):
             self.world.add_component(ent, game.component.player.TMPPlayerBump(dx, dy))
         return True
 
-    def _try_command(self, key_code: int) -> bool:
+    def _try_command(self, input_key: game.types.InputKey) -> bool:
         handled = True
-        command = game.utils.input.GameCommand.from_key_code(key_code)
+        command = game.utils.input.GameCommand.from_key_code(input_key)
         if command is None:
             handled = False
         else:

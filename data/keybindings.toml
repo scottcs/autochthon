@@ -2,23 +2,23 @@
 # special keys are named, as in "space" instead of " " and "comma" instead of ","
 [game]
     [game.movement]
-    N = {name = "k", shift = false, ctrl = false, alt = false}
-    S = {name = "j", shift = false, ctrl = false, alt = false}
-    E = {name = "l", shift = false, ctrl = false, alt = false}
-    W = {name = "h", shift = false, ctrl = false, alt = false}
-    NE = {name = "u", shift = false, ctrl = false, alt = false}
-    NW = {name = "y", shift = false, ctrl = false, alt = false}
-    SE = {name = "n", shift = false, ctrl = false, alt = false}
-    SW = {name = "b", shift = false, ctrl = false, alt = false}
+    N = {key = "k", shift = false, ctrl = false, alt = false}
+    S = {key = "j", shift = false, ctrl = false, alt = false}
+    E = {key = "l", shift = false, ctrl = false, alt = false}
+    W = {key = "h", shift = false, ctrl = false, alt = false}
+    NE = {key = "u", shift = false, ctrl = false, alt = false}
+    NW = {key = "y", shift = false, ctrl = false, alt = false}
+    SE = {key = "n", shift = false, ctrl = false, alt = false}
+    SW = {key = "b", shift = false, ctrl = false, alt = false}
 
     [game.command]
-    WAIT = {name = "period", shift = false, ctrl = false, alt = false}
-    OPEN = {name = "o", shift = false, ctrl = false, alt = false}
-    CLOSE = {name = "c", shift = false, ctrl = false, alt = false}
-    PICK_UP = {name = "comma", shift = false, ctrl = false, alt = false}
-    DROP = {name = "d", shift = false, ctrl = false, alt = false}
-    EQUIP = {name = "e", shift = false, ctrl = false, alt = false}
-    INVENTORY = {name = "i", shift = false, ctrl = false, alt = false}
+    WAIT = {key = "period", shift = false, ctrl = false, alt = false}
+    OPEN = {key = "o", shift = false, ctrl = false, alt = false}
+    CLOSE = {key = "c", shift = false, ctrl = false, alt = false}
+    PICK_UP = {key = "comma", shift = false, ctrl = false, alt = false}
+    DROP = {key = "d", shift = false, ctrl = false, alt = false}
+    EQUIP = {key = "e", shift = false, ctrl = false, alt = false}
+    INVENTORY = {key = "i", shift = false, ctrl = false, alt = false}
 
     [game.interface]
-    QUIT = {name = "escape", shift = false, ctrl = false, alt = false}
+    QUIT = {key = "escape", shift = false, ctrl = false, alt = false}

@@ -10,11 +10,11 @@ import game.types
 log = logging.getLogger(__name__)
 
 
-def name_to_keycode(name: str) -> typing.Optional[int]:
+def key_to_keycode(key: str) -> typing.Optional[int]:
     """Convert a key by name to a key code."""
     for k, v in blt.__dict__.items():
         if k.startswith("TK_"):
-            if k[3:] == name.upper():
+            if k[3:] == key.upper():
                 return v
     return None
 
@@ -32,30 +32,30 @@ class KeyMap:
         """(Re)load the key mappings from game data."""
         keys: typing.Dict[str, game.types.InputKey] = {}
         for key, key_map in game.data.keybindings[self.group][self.subgroup].items():
-            keycode = name_to_keycode(key_map["name"])
+            keycode = key_to_keycode(key_map["key"])
             if keycode is None:
                 log.error(f"Could not determine keycode for {key_map}")
                 continue
             keys[key.lower()] = game.types.InputKey(
-                key_map["name"], keycode, key_map["shift"], key_map["ctrl"], key_map["alt"]
+                keycode, key_map["shift"], key_map["ctrl"], key_map["alt"]
             )
         self.keys = keys
 
-    def match(self, key: str, key_code: int) -> bool:
-        """Return whether the given key_code matches the given key."""
+    def match(self, key: str, input_key: game.types.InputKey) -> bool:
+        """Return whether the given key_code matches the given input key."""
         try:
-            return self.keys[key].key_code == key_code
+            return self.keys[key] == input_key
         except KeyError:
             return False
 
-    def match_any(self, keys: typing.Sequence[str], key_code: int) -> bool:
-        """Return whether the given key_code matches any of the given keys."""
-        return any([self.match(key, key_code) for key in keys])
+    def match_any(self, keys: typing.Sequence[str], input_key: game.types.InputKey) -> bool:
+        """Return whether the given input key matches any of the given keys."""
+        return any([self.match(key, input_key) for key in keys])
 
-    def from_key_code(self, key_code: int) -> typing.Optional[str]:
-        """Return an input string for a given key code."""
-        for input_name, input_key in self.keys.items():
-            if input_key.key_code == key_code:
+    def from_key_code(self, input_key: game.types.InputKey) -> typing.Optional[str]:
+        """Return an input string for a given input key."""
+        for input_name, my_input_key in self.keys.items():
+            if my_input_key == input_key:
                 return input_name
         return None
 

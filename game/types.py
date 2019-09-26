@@ -193,7 +193,6 @@ class TileType(enum.Enum):
 class InputKey(typing.NamedTuple):
     """Input key values."""
 
-    name: str
     key_code: int
     shift: bool
     ctrl: bool
