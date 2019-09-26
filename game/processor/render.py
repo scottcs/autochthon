@@ -14,10 +14,10 @@ import game.component.player
 import game.component.render
 import game.component.status
 import game.config
-import game.const.tile_ids
 import game.const.tileset
 import game.events
 import game.palette
+import game.tile_ids
 import game.types
 import game.utils.geometry
 import game.utils.render
