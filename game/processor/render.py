@@ -9,6 +9,7 @@ import esper
 import tcod
 
 import game.component.container
+import game.component.gamelog
 import game.component.movement
 import game.component.player
 import game.component.render
@@ -282,17 +283,11 @@ class BearLibRender(esper.Processor):
         current_layer = blt.state(blt.TK_LAYER)
         blt.layer(game.types.RenderLayer.ui_log)
         blt.clear_area(0, 0, self.width, self.height)
-        blt.puts(0, self.height - 2, self._format_game_log(event["lines"], 4, 0))
+        offset_x = 4
+        offset_y = 0
+        log_line = f"[offset={offset_x},{offset_y}]{event['log_component'].blt_colorized()}"
+        blt.puts(0, self.height - 2, log_line)
         blt.layer(current_layer)
-
-    @staticmethod
-    def _format_game_log(
-        lines: typing.Sequence[game.types.LogLine], offset_x: int, offset_y: int
-    ) -> str:
-        formatted = f"[offset={offset_x},{offset_y}]"
-        for line in lines:
-            formatted += f"[color={line.color}]{line.message}[/color]"
-        return formatted
 
     @staticmethod
     def _on_game_over(event: game.types.Event) -> None:

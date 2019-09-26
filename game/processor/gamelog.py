@@ -1,10 +1,14 @@
 """Game Log processing."""
+import collections
 import typing
 
 import esper
 
 import game.component.gamelog
+import game.data
 import game.events
+
+buffer: collections.deque = collections.deque(maxlen=game.data.config["max_game_log_buffer"])
 
 
 class GameLog(esper.Processor):
@@ -18,8 +22,9 @@ class GameLog(esper.Processor):
             game.component.gamelog.TMPStatus,
             game.component.gamelog.TMPDescription,
         ):
-            for ent, log in self.world.get_component(component_class):
-                if not log.lines:
+            for ent, log_component in self.world.get_component(component_class):
+                if not log_component.lines:
                     continue
-                game.events.GameLog.fire({"lines": log.lines})
+                game.events.GameLog.fire({"log_component": log_component})
+                buffer.append(log_component)
                 self.world.remove_component(ent, component_class)

@@ -13,4 +13,6 @@ class ShowLog(game.command.base.BaseCommand):
 
     def run(self) -> None:
         """Run the command."""
-        log.debug("Run ShowLog Command")
+
+        for log_component in game.processor.gamelog.buffer:
+            log.debug(str(log_component))

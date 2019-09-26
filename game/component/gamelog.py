@@ -38,6 +38,13 @@ class BaseLog:
         """Append to the log without any additional formatting."""
         self.lines.append(game.types.LogLine(message, color))
 
+    def __str__(self) -> str:
+        return "".join([l.message for l in self.lines])
+
+    def blt_colorized(self) -> str:
+        """Return a colorized string of the lines for BearLibTerminal."""
+        return "".join([f"[color={l.color}]{l.message}[/color]" for l in self.lines])
+
 
 class TMPCombat(BaseLog):
     """Combat log."""
