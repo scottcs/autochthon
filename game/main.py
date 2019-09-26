@@ -11,10 +11,10 @@ import game.base_engine_values
 import game.component.action
 import game.component.attack
 import game.config
-import game.core.map
 import game.core.world
 import game.events
 import game.level_layout
+import game.map
 import game.processor.ai
 import game.processor.attack
 import game.processor.attribute
@@ -159,7 +159,7 @@ class Game:
             game.processor.render.BearLibRender(), priority=game.types.Priority.render
         )
 
-        current_map = game.core.map.ClassicMap(
+        current_map = game.map.ClassicMap(
             self.config["map"]["max_tiles_w"],
             self.config["map"]["max_tiles_h"],
             config=self.layout["map"],

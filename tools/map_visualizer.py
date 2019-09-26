@@ -15,7 +15,7 @@ import PySide2.QtGui
 import PySide2.QtWidgets
 
 import game.config
-import game.core.map
+import game.map
 import game.utils.random
 import tools.widgets
 
@@ -37,7 +37,7 @@ MAP_LAYERS = {
 # TODO: Maybe we can define this in the map module and use it there too? Or in data files?
 ALGORITHMS = {
     "ClassicMap": {
-        "class": game.core.map.ClassicMap,
+        "class": game.map.ClassicMap,
         "opts": {
             "max_rooms": {"type": "int", "min": 0, "max": 1000, "default": 50},
             "room_min_size": {"type": "int", "min": 0, "max": 1000, "default": 5},
@@ -343,7 +343,7 @@ class ImageWidget(PySide2.QtWidgets.QWidget):
         self.layers = {n: not n.startswith("alt_") for n in MAP_LAYERS.keys()}
         self.show()
 
-    def draw_map(self, game_map: game.core.map.Map, scale_factor: int) -> None:
+    def draw_map(self, game_map: game.map.Map, scale_factor: int) -> None:
         """Draw the map to an image."""
         img = PySide2.QtGui.QImage(
             game_map.width, game_map.height, PySide2.QtGui.QImage.Format_RGB32
@@ -386,7 +386,7 @@ class ImageWidget(PySide2.QtWidgets.QWidget):
         """Set a particular layer to enabled or disabled."""
         self.layers[name] = enabled
 
-    def _get_cell_color(self, game_map: game.core.map.Map, x: int, y: int) -> PySide2.QtGui.qRgb:
+    def _get_cell_color(self, game_map: game.map.Map, x: int, y: int) -> PySide2.QtGui.qRgb:
         color = MAP_LAYERS["base"]
         # color gets replaced by each layer in order until the highest wins
         for layer_name, layer_color in MAP_LAYERS.items():
@@ -428,7 +428,7 @@ class CentralWidget(PySide2.QtWidgets.QWidget):
         self.options.scale_changed.connect(self._on_scale_changed)
         self.options.seed_reset.connect(self._on_seed_reset)
 
-    def set_map(self, game_map: game.core.map.Map, scale_factor: int) -> None:
+    def set_map(self, game_map: game.map.Map, scale_factor: int) -> None:
         """Set our map."""
         self.game_map = game_map
         self.scale_factor = scale_factor
