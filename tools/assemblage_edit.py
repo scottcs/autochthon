@@ -10,6 +10,7 @@ import PySide2.QtCore
 import PySide2.QtGui
 import PySide2.QtWidgets
 
+import game.data
 import game.factory
 import game.utils.render
 import tools.widgets
@@ -27,25 +28,38 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
         super().__init__(parent)
         self.setMinimumSize(32, 48)
         self.setMaximumSize(32, 48)
-        self.tile_data = None
+        self.tileset = None
+        self.tile_size = None
+        self.tile_coords = None
         self.color = None
         self.sprite = None
 
     def clear_sprite(self) -> None:
         """Clear the sprite."""
-        self.tile_data = None
+        self.tileset = None
+        self.tile_size = None
+        self.tile_coords = None
         self.color = None
         self.sprite = None
         self.update()
         self.repaint()
 
-    def update_tile(self, tile_id: str, color: str) -> None:
+    def update_tile(self, tile_id: typing.Sequence[str], color: str) -> None:
         """Update the rendered tile."""
         try:
-            self.tile_data = game.utils.render.TileCache.data_from_name(tile_id)
+            self.tileset = game.data.TILES_PATH / pathlib.Path(
+                game.data.tileset["tilesets"][tile_id[0]]["file"]
+            )
+            self.tile_size = game.data.tileset["tilesets"][tile_id[0]]["size"]
+            total_offset = game.utils.render.TileCache.get(*tile_id)
+            offset = total_offset - int(game.data.tileset["tilesets"][tile_id[0]]["offset"], 0)
+            x = offset % int(self.tile_size[0])
+            y = offset // int(self.tile_size[1])
+            self.tile_coords = [x * self.tile_size[0], y * self.tile_size[1]]
         except KeyError:
-            tools.widgets.msg_error(f"Tile id not found: {tile_id}", self)
+            tools.widgets.msg_error(f"Tileset not found for: {tile_id}", self)
             return
+
         try:
             self.color = game.factory.convert_datum(color)
         except AttributeError:
@@ -57,20 +71,19 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
 
     def set_sprite(self) -> None:
         """Draw the image."""
-        tileset = pathlib.Path(self.tile_data["tileset"])
-        tile = self.tile_data["tiles"][0]
-        with tileset.open() as f:
-            tileset_data = json.load(f)
-        frame = None
-        for frame_name, frame_data in tileset_data["frames"].items():
-            if frame_name == tile:
-                frame = frame_data["frame"]
-                break
-        if not frame:
-            tools.widgets.msg_error(f"Could not find frame for {tile}", self)
-            return
-        sheet = PySide2.QtGui.QImage(str(tileset.parent / tileset_data["meta"]["image"]))
-        self.sprite = sheet.copy(frame["x"], frame["y"], frame["w"], frame["h"])
+        # frame = None
+        # for frame_name, frame_data in tileset_data["frames"].items():
+        #     if frame_name == tile:
+        #         frame = frame_data["frame"]
+        #         break
+        # if not frame:
+        #     tools.widgets.msg_error(f"Could not find frame for {tile}", self)
+        #     return
+        x, y = self.tile_coords
+        w, h = self.tile_size
+        sheet = PySide2.QtGui.QImage(str(self.tileset))
+        print(x, y, w, h)
+        self.sprite = sheet.copy(x, y, w, h)
 
     def paintEvent(self, event):
         """Called when this widget should be painted."""
@@ -80,10 +93,10 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
         mask = PySide2.QtGui.QImage(self.sprite)
         painter = PySide2.QtGui.QPainter()
 
-        painter.begin(mask)
-        painter.setCompositionMode(PySide2.QtGui.QPainter.CompositionMode_SourceIn)
-        painter.fillRect(mask.rect(), PySide2.QtGui.QColor(self.color))
-        painter.end()
+        # painter.begin(mask)
+        # painter.setCompositionMode(PySide2.QtGui.QPainter.CompositionMode_SourceIn)
+        # painter.fillRect(mask.rect(), PySide2.QtGui.QColor(self.color))
+        # painter.end()
 
         painter.begin(self)
         painter.fillRect(self.rect(), PySide2.QtCore.Qt.black)
