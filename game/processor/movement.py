@@ -1,4 +1,5 @@
 """Movement processor."""
+import logging
 import typing
 
 import esper
@@ -12,6 +13,9 @@ import game.component.player
 import game.component.status
 import game.const.palette
 import game.events
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class Movement(esper.Processor):

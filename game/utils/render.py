@@ -9,12 +9,35 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
+def get_facing(dx: int, dy: int) -> str:
+    """Get a facing/direction string from an x and y movement coordinate."""
+    if dx < 0:
+        if dy < 0:
+            facing = "nw"
+        elif dy > 0:
+            facing = "sw"
+        else:
+            facing = "w"
+    elif dx > 0:
+        if dy < 0:
+            facing = "ne"
+        elif dy > 0:
+            facing = "se"
+        else:
+            facing = "e"
+    else:
+        if dy < 0:
+            facing = "n"
+        else:
+            facing = "s"
+    return facing
+
+
 class _TileCache:
     """Tile Cache."""
 
     def __init__(self) -> None:
         self._cache: typing.Dict[typing.Sequence, int] = {}
-        self._default_direction_cache: typing.Dict[typing.Sequence, str] = {}
 
     def get(
         self,
@@ -26,7 +49,7 @@ class _TileCache:
     ) -> int:
         """Get a tile id for the specified tile."""
         variant = variant or 0
-        direction = direction or self._get_default_direction(category, name, variant)
+        direction = self._get_direction(category, name, variant, direction)
         frame = frame or 0
         key_ = (category, name, variant, direction, frame)
         id_ = self._cache.get(key_, None)
@@ -47,26 +70,35 @@ class _TileCache:
             raise KeyError(f"ID {key_} not found in tile ids.")
         return id_
 
-    def _get_default_direction(self, category: str, name: str, variant: int) -> str:
+    def _get_direction(
+        self, category: str, name: str, variant: int, direction: typing.Optional[str] = None
+    ) -> str:
         key_ = (category, name, variant)
-        direction = self._default_direction_cache.get(key_, None)
+        category_data = game.const.tile_ids.DATA.get(category, None)
+        if category_data:
+            tile_data = category_data.get(name, None)
+            if tile_data:
+                if "variations" in tile_data:
+                    direction = self._find_best_direction(
+                        tile_data["variations"][variant], direction
+                    )
+                else:
+                    direction = self._find_best_direction(tile_data, direction)
         if direction is None:
-            category_data = game.const.tile_ids.DATA.get(category, None)
-            if category_data:
-                tile_data = category_data.get(name, None)
-                if tile_data:
-                    if "variations" in tile_data:
-                        direction = self._find_best_direction(tile_data["variations"][variant])
-                    else:
-                        direction = self._find_best_direction(tile_data)
-                    if direction is not None:
-                        self._default_direction_cache[key_] = direction
-        if direction is None:
-            raise KeyError(f"Direction {key_} not found in tile ids.")
+            raise KeyError(f"Direction {key_} not found")
         return direction
 
     @staticmethod
-    def _find_best_direction(data: typing.Dict[typing.Any, typing.Any]) -> typing.Optional[str]:
+    def _find_best_direction(
+        data: typing.Dict[typing.Any, typing.Any], direction: typing.Optional[str] = None
+    ) -> typing.Optional[str]:
+        if direction is not None:
+            if direction in data:
+                return direction
+            elif "e" in data and direction in ("ne", "se"):
+                return "e"
+            elif "w" in data and direction in ("nw", "sw"):
+                return "w"
         if "base" in data:
             return "base"
         elif "e" in data:
@@ -83,9 +115,8 @@ class _TileCache:
             except IndexError:
                 return None
 
-    @staticmethod
     def _get_local_tile_offset(
-        tile_data: typing.Dict[str, typing.Any], variant: int, direction: str, frame: int
+        self, tile_data: typing.Dict[str, typing.Any], variant: int, direction: str, frame: int
     ) -> typing.Optional[int]:
         local_offset = tile_data.get("offset", None)
         if local_offset is None:
@@ -93,7 +124,13 @@ class _TileCache:
         try:
             sequence = tile_data["variations"][variant][direction]
         except KeyError:
-            sequence = tile_data[direction]
+            try:
+                sequence = tile_data[direction]
+            except KeyError:
+                found_direction = self._find_best_direction(tile_data)
+                if found_direction is None:
+                    raise RuntimeError(f"No direction found for {tile_data}")
+                sequence = tile_data[found_direction]
         if isinstance(sequence, int):
             local_offset += sequence
         else:

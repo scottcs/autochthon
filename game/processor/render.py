@@ -168,6 +168,7 @@ class BearLibRender(esper.Processor):
 
             pos_x: typing.Optional[int] = None
             pos_y: typing.Optional[int] = None
+            facing: typing.Optional[str] = None
             can_see_now: bool = False
             can_see_prev: bool = False
             seen: bool = False
@@ -175,6 +176,7 @@ class BearLibRender(esper.Processor):
             if position is not None:
                 pos_x = position.x
                 pos_y = position.y
+                facing = position.facing
                 can_see_now = self.world.map.fov[position.y, position.x]
 
             color = "#00FFFFFF"
@@ -187,21 +189,26 @@ class BearLibRender(esper.Processor):
                 color = "#FFFFFFFF"
                 renderable.last_seen_x = position.x
                 renderable.last_seen_y = position.y
+                renderable.facing = position.facing
             # else if we can see where it last was, forget where we've seen it and don't draw it
             elif can_see_prev:
                 renderable.last_seen_y = None
                 renderable.last_seen_x = None
+                renderable.facing = None
             # else if we've seen it, draw it faded where we last saw it
             elif seen:
                 color = "#60FFFFFF"
                 pos_y = renderable.last_seen_y
                 pos_x = renderable.last_seen_x
+                facing = renderable.last_seen_facing
             # else don't draw it
             else:
                 continue
 
             category, name = renderable.tile_id
-            tile_id = game.utils.render.TileCache.get(category, name, frame=self.anim_tick)
+            tile_id = game.utils.render.TileCache.get(
+                category, name, direction=facing, frame=self.anim_tick
+            )
             if pos_x is not None and pos_y is not None:
                 self._draw_on_layer(
                     renderable.layer,
