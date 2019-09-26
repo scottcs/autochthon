@@ -6,16 +6,16 @@ import game.component.container
 import game.component.descriptive
 import game.component.gamelog
 import game.component.player
-import game.core.world
 import game.events
 import game.palette
 import game.types
+import game.world
 
 
 class Inventory(game.command.base.BaseCommand):
     """Inventory command."""
 
-    def __init__(self, world: game.core.world.World) -> None:
+    def __init__(self, world: game.world.World) -> None:
         super().__init__(world)
         self.selected: game.types.Event = {}
 

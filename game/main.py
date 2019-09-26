@@ -11,7 +11,6 @@ import game.base_engine_values
 import game.component.action
 import game.component.attack
 import game.config
-import game.core.world
 import game.events
 import game.level_layout
 import game.map
@@ -32,6 +31,7 @@ import game.utils.dataloader
 import game.utils.factory
 import game.utils.language
 import game.utils.random
+import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -48,7 +48,7 @@ class Game:
         self.config = game.config.DATA
         self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
         self.game_over: bool = False
-        self.world: game.core.world.World = game.core.world.World()
+        self.world: game.world.World = game.world.World()
         self.layout: game.types.Layout = {}
         self.state: game.types.GameState = game.types.GameState.unknown
         self.loader: game.utils.dataloader.DataLoader = game.utils.dataloader.DataLoader()
