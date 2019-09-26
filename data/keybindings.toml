@@ -22,3 +22,4 @@
 
     [game.interface]
     QUIT = {key = "escape", shift = false, ctrl = false, alt = false}
+    GAMELOG = {key = "space", shift = false, ctrl = false, alt = false}
