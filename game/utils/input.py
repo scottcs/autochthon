@@ -41,6 +41,25 @@ class KeyMap:
             )
         self.keys = keys
 
+    def match(self, key: str, key_code: int) -> bool:
+        """Return whether the given key_code matches the given key."""
+        try:
+            return self.keys[key].key_code == key_code
+        except KeyError:
+            return False
+
+    def match_any(self, keys: typing.Sequence[str], key_code: int) -> bool:
+        """Return whether the given key_code matches any of the given keys."""
+        return any([self.match(key, key_code) for key in keys])
+
+    def from_key_code(self, key_code: int) -> typing.Optional[str]:
+        """Return an input string for a given key code."""
+        for input_name, input_key in self.keys.items():
+            if input_key.key_code == key_code:
+                return input_name
+        return None
+
 
 GameMovement = KeyMap("game", "movement")
 GameCommand = KeyMap("game", "command")
+GameInterface = KeyMap("game", "interface")

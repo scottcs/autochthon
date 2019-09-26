@@ -12,9 +12,13 @@
     SW = {name = "b", shift = false, ctrl = false, alt = false}
 
     [game.command]
+    WAIT = {name = "period", shift = false, ctrl = false, alt = false}
     OPEN = {name = "o", shift = false, ctrl = false, alt = false}
     CLOSE = {name = "c", shift = false, ctrl = false, alt = false}
     PICK_UP = {name = "comma", shift = false, ctrl = false, alt = false}
     DROP = {name = "d", shift = false, ctrl = false, alt = false}
     EQUIP = {name = "e", shift = false, ctrl = false, alt = false}
     INVENTORY = {name = "i", shift = false, ctrl = false, alt = false}
+
+    [game.interface]
+    QUIT = {name = "escape", shift = false, ctrl = false, alt = false}

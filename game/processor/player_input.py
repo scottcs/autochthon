@@ -13,6 +13,7 @@ import game.component.player
 import game.events
 import game.types
 import game.utils.geometry
+import game.utils.input
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -42,32 +43,34 @@ class PlayerInput(esper.Processor):
 
     @staticmethod
     def _handle_default(key_code: int) -> None:
-        if key_code == blt.TK_ESCAPE:
+        if game.utils.input.GameInterface.match("quit", key_code):
             game.events.GameOver({"shutdown": True})
 
     def _try_bump(self, key_code: int) -> bool:
         if blt.check(blt.TK_SHIFT) or blt.check(blt.TK_ALT) or blt.check(blt.TK_CONTROL):
             return False
 
-        bump_up = key_code in (blt.TK_K, blt.TK_Y, blt.TK_U)
-        bump_down = key_code in (blt.TK_J, blt.TK_B, blt.TK_N)
-        bump_left = key_code in (blt.TK_H, blt.TK_Y, blt.TK_B)
-        bump_right = key_code in (blt.TK_L, blt.TK_U, blt.TK_N)
-        wait = key_code == blt.TK_PERIOD
-
         dx = 0
         dy = 0
-        if bump_up:
-            dy -= 1
-        if bump_down:
-            dy += 1
-        if bump_left:
-            dx -= 1
-        if bump_right:
-            dx += 1
+        wait = game.utils.input.GameCommand.match("wait", key_code)
 
-        if not (dx or dy or wait):
-            return False
+        if not wait:
+            bump_up = game.utils.input.GameMovement.match_any(["nw", "n", "ne"], key_code)
+            bump_down = game.utils.input.GameMovement.match_any(["sw", "s", "se"], key_code)
+            bump_left = game.utils.input.GameMovement.match_any(["nw", "w", "sw"], key_code)
+            bump_right = game.utils.input.GameMovement.match_any(["ne", "e", "se"], key_code)
+
+            if bump_up:
+                dy -= 1
+            if bump_down:
+                dy += 1
+            if bump_left:
+                dx -= 1
+            if bump_right:
+                dx += 1
+
+            if not (dx or dy):
+                return False
 
         for ent, _ in self.world.get_component(game.component.player.Player):
             self.world.add_component(ent, game.component.player.TMPPlayerBump(dx, dy))
@@ -75,13 +78,17 @@ class PlayerInput(esper.Processor):
 
     def _try_command(self, key_code: int) -> bool:
         handled = True
-        try:
-            {
-                blt.TK_COMMA: game.command.pickup.Pickup,
-                blt.TK_D: game.command.drop.Drop,
-                blt.TK_I: game.command.inventory.Inventory,
-                blt.TK_E: game.command.equip.Equip,
-            }[key_code](self.world).run()
-        except KeyError:
+        command = game.utils.input.GameCommand.from_key_code(key_code)
+        if command is None:
             handled = False
+        else:
+            try:
+                {
+                    "pick_up": game.command.pickup.Pickup,
+                    "drop": game.command.drop.Drop,
+                    "inventory": game.command.inventory.Inventory,
+                    "equip": game.command.equip.Equip,
+                }[command](self.world).run()
+            except KeyError:
+                handled = False
         return handled
