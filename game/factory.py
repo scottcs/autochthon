@@ -1,4 +1,4 @@
-"""Factory utilities."""
+"""Factories."""
 import logging
 import pydoc
 import typing

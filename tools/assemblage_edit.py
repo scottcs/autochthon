@@ -10,7 +10,7 @@ import PySide2.QtCore
 import PySide2.QtGui
 import PySide2.QtWidgets
 
-import game.utils.factory
+import game.factory
 import game.utils.render
 import tools.widgets
 
@@ -47,7 +47,7 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
             tools.widgets.msg_error(f"Tile id not found: {tile_id}", self)
             return
         try:
-            self.color = game.utils.factory.convert_datum(color)
+            self.color = game.factory.convert_datum(color)
         except AttributeError:
             tools.widgets.msg_error(f"Unknown color: {color}", self)
             return
@@ -369,7 +369,7 @@ class ComponentPane(PySide2.QtWidgets.QWidget):
         self.data.setdefault(selected, {})
         if self.params_widget.widget() is not None:
             self.params_widget.widget().parameters_changed.disconnect(self._on_parameters_changed)
-        component_class = game.utils.factory.get_component_class(selected)
+        component_class = game.factory.get_component_class(selected)
         widget = tools.widgets.ComponentPanel(selected, component_class, data=self.data[selected])
         widget.parameters_changed.connect(self._on_parameters_changed)
         self.params_widget.setWidget(widget)

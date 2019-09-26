@@ -12,6 +12,7 @@ import game.component.action
 import game.component.attack
 import game.config
 import game.events
+import game.factory
 import game.level_layout
 import game.map
 import game.processor.ai
@@ -28,7 +29,6 @@ import game.processor.render
 import game.processor.time
 import game.types
 import game.utils.dataloader
-import game.utils.factory
 import game.utils.language
 import game.utils.random
 import game.world
@@ -169,9 +169,9 @@ class Game:
         self._populate_map()
 
     def _populate_map(self) -> None:
-        player_factory = game.utils.factory.Player(self.loader, self.world)
-        enemy_factory = game.utils.factory.Enemy(self.loader, self.world)
-        item_factory = game.utils.factory.Item(self.loader, self.world)
+        player_factory = game.factory.Player(self.loader, self.world)
+        enemy_factory = game.factory.Enemy(self.loader, self.world)
+        item_factory = game.factory.Item(self.loader, self.world)
 
         player = player_factory.make(self.layout["player"])
         self.world.add_component(player, game.component.action.TMPMyTurn())
