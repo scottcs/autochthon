@@ -4,8 +4,8 @@ import pydoc
 import typing
 
 import game.component.movement
-import game.const.palette
 import game.core.world
+import game.palette
 import game.types
 import game.utils.dataloader
 import game.utils.geometry
@@ -31,7 +31,7 @@ def convert_datum(value: typing.Any) -> typing.Any:
         return None
 
     if class_type == "Palette":
-        result = getattr(game.const.palette.Base, attr)
+        result = getattr(game.palette.Base, attr)
     else:
         imported = pydoc.locate(f"game.types.{class_type}")
         if imported:

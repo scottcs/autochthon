@@ -7,8 +7,8 @@ import game.component.descriptive
 import game.component.gamelog
 import game.component.movement
 import game.component.player
-import game.const.palette
 import game.events
+import game.palette
 import game.types
 
 log = logging.getLogger(__name__)
@@ -26,8 +26,7 @@ class Drop(game.command.base.BaseCommand):
             if item:
                 cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add(
-                    "There is already an item on the ground here!",
-                    game.const.palette.Message.negative,
+                    "There is already an item on the ground here!", game.palette.Message.negative
                 )
                 return
             items_carried = self._get_items_carried(ent)
@@ -58,7 +57,7 @@ class Drop(game.command.base.BaseCommand):
                         )
                         cmd_log.add(
                             "There is already an item on the ground here!",
-                            game.const.palette.Message.negative,
+                            game.palette.Message.negative,
                         )
                         game.events.ChoiceDeclined.fire({"status": "You can't drop that!"})
                     break

@@ -3,7 +3,7 @@ import enum
 import inspect
 import typing
 
-import game.const.palette
+import game.palette
 import game.utils.random
 
 Config = typing.MutableMapping[typing.Any, typing.Any]
@@ -138,7 +138,7 @@ class LogLine(typing.NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: str = game.const.palette.Message.default
+    color: str = game.palette.Message.default
 
 
 def get_union_types(union_type: typing.Any) -> tuple:

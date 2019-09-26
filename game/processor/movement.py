@@ -11,8 +11,8 @@ import game.component.gamelog
 import game.component.movement
 import game.component.player
 import game.component.status
-import game.const.palette
 import game.events
+import game.palette
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -69,7 +69,7 @@ class Movement(esper.Processor):
                             desc_log = self.world.get_or_add_component(
                                 ent, game.component.gamelog.TMPDescription
                             )
-                            desc_log.add(f"{name.generic}", game.const.palette.Item.epic)
+                            desc_log.add(f"{name.generic}", game.palette.Item.epic)
                             desc_log.add_raw(" is here.")
             self.world.actor_takes_turn(ent, game.component.movement.TMPMoving)
             if entities_need_rendering:
