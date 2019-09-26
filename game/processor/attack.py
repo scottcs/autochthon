@@ -10,7 +10,7 @@ import game.component.damage
 import game.component.descriptive
 import game.component.gamelog
 import game.const.base_engine_values
-import game.const.messages.combat
+import game.messages.combat
 import game.types
 import game.utils.language
 import game.utils.random
@@ -41,7 +41,7 @@ class AttackTargeting(esper.Processor):
                 *game.utils.language.msg(
                     self.world.players,
                     (ent, target.entity),
-                    game.const.messages.combat.Attack,
+                    game.messages.combat.Attack,
                     aggressor_name.specific,
                     defender_name.specific,
                     target.attack,
@@ -84,7 +84,7 @@ class AttackMiss(esper.Processor):
                         *game.utils.language.msg(
                             self.world.players,
                             (ent, target.entity),
-                            game.const.messages.combat.Miss,
+                            game.messages.combat.Miss,
                             name.specific,
                         )
                     )
@@ -123,7 +123,7 @@ class AttackDefense(esper.Processor):
                     *game.utils.language.msg(
                         self.world.players,
                         (ent, target.entity),
-                        game.const.messages.combat.AttackImmune,
+                        game.messages.combat.AttackImmune,
                         name.specific,
                         self.verb.past,
                     )
@@ -150,7 +150,7 @@ class AttackDefense(esper.Processor):
                             *game.utils.language.msg(
                                 self.world.players,
                                 (target.entity, ent),
-                                game.const.messages.combat.Defend,
+                                game.messages.combat.Defend,
                                 name.specific,
                                 self.verb.present,
                             )
