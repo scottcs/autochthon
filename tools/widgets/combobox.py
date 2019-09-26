@@ -52,7 +52,7 @@ class ToolComboBox(PySide2.QtWidgets.QWidget):
             self._combobox.setCurrentIndex(idx)
         self._combobox.currentIndexChanged.connect(self._on_current_index_changed)
 
-    def add_items(self, items: typing.Sequence[str]) -> None:
+    def add_items(self, items: typing.Sequence[typing.Sequence[str]]) -> None:
         """Add items to the combobox."""
         self._items.extend(items)
         if self._sorted:
@@ -182,7 +182,7 @@ class ToolMutableComboBox(ToolComboBox):
 
     def _on_duplicate_item(self) -> None:
         current = self.text()
-        # noinspection PyCallByClass
+        # noinspection PyCallByClass,PyArgumentList
         item, ok = PySide2.QtWidgets.QInputDialog.getText(
             self, "Duplicate Item", "Name of duplicate:", text=current
         )
@@ -192,7 +192,7 @@ class ToolMutableComboBox(ToolComboBox):
             self.duplicate_item.emit(current)
 
     def _on_add_item(self) -> None:
-        # noinspection PyCallByClass
+        # noinspection PyCallByClass,PyArgumentList
         item, ok = PySide2.QtWidgets.QInputDialog.getText(
             self, "Add New Item", "Name of new item:"
         )

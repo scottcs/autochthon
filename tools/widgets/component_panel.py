@@ -5,8 +5,8 @@ import typing
 import PySide2.QtCore
 import PySide2.QtWidgets
 
+import game.data
 import game.types
-import game.utils.render
 import tools.widgets.checkbox
 import tools.widgets.combobox
 import tools.widgets.lineedit
@@ -121,9 +121,14 @@ class ComponentPanel(PySide2.QtWidgets.QWidget):
     def _add_tile_id_combo_widget(self, name):
         widget = tools.widgets.combobox.ToolComboBox(name, min_label_width=MIN_LABEL_WIDTH)
         widget.enum_type = "tile_id"
-        widget.add_items(sorted(list(game.utils.render.TileCache.iter_names())))
+        items = []
+        for category in game.data.tile_ids.keys():
+            for tile_name in game.data.tile_ids[category].keys():
+                items.append(f"{category},{tile_name}")
+        widget.add_items(sorted(items))
         if name in self._data:
-            widget.set_via_text(self._data[name])
+            text = f"{self._data[name][0]},{self._data[name][1]}"
+            widget.set_via_text(text)
         widget.selection_changed.connect(self._on_changes)
         self._combo_widgets.append(widget)
 
@@ -161,7 +166,7 @@ class ComponentPanel(PySide2.QtWidgets.QWidget):
         for widget in self._combo_widgets:
             orig = self._parameters[widget.name]
             if widget.enum_type == "tile_id":
-                params[widget.name] = widget.text()
+                params[widget.name] = widget.text().split(",")
             elif widget.enum_type == "list":
                 items = list(widget.iter_texts())
                 if items:

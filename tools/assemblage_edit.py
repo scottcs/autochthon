@@ -71,18 +71,9 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
 
     def set_sprite(self) -> None:
         """Draw the image."""
-        # frame = None
-        # for frame_name, frame_data in tileset_data["frames"].items():
-        #     if frame_name == tile:
-        #         frame = frame_data["frame"]
-        #         break
-        # if not frame:
-        #     tools.widgets.msg_error(f"Could not find frame for {tile}", self)
-        #     return
         x, y = self.tile_coords
         w, h = self.tile_size
         sheet = PySide2.QtGui.QImage(str(self.tileset))
-        print(x, y, w, h)
         self.sprite = sheet.copy(x, y, w, h)
 
     def paintEvent(self, event):
@@ -93,6 +84,7 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
         mask = PySide2.QtGui.QImage(self.sprite)
         painter = PySide2.QtGui.QPainter()
 
+        # TODO: fix colorization
         # painter.begin(mask)
         # painter.setCompositionMode(PySide2.QtGui.QPainter.CompositionMode_SourceIn)
         # painter.fillRect(mask.rect(), PySide2.QtGui.QColor(self.color))
