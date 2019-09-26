@@ -3,13 +3,13 @@ import typing
 
 import esper
 
+import game.base_engine_values
 import game.component.action
 import game.component.attack
 import game.component.base
 import game.component.damage
 import game.component.descriptive
 import game.component.gamelog
-import game.const.base_engine_values
 import game.messages.combat
 import game.types
 import game.utils.language
@@ -74,7 +74,7 @@ class AttackMiss(esper.Processor):
                     mods.append(mod)
                 # TODO: Gather other modifiers
                 modifier = game.component.base.accumulate_modifiers(*mods)
-                chance = game.const.base_engine_values.HIT_CHANCE + modifier.factor
+                chance = game.base_engine_values.HIT_CHANCE + modifier.factor
                 combat_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCombat)
                 if not rng.percent(chance):
                     name = self.world.get_or_add_component(
