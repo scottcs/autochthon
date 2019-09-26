@@ -70,21 +70,26 @@ class _TileCache:
         return id_
 
     def _get_direction(
-        self, category: str, name: str, variant: int, direction: typing.Optional[str] = None
+        self,
+        category: str,
+        name: str,
+        variant: typing.Optional[int],
+        direction: typing.Optional[str] = None,
     ) -> str:
-        key_ = (category, name, variant)
+        """Get the best direction for the tile."""
         category_data = game.data.tile_ids.get(category, None)
         if category_data:
             tile_data = category_data.get(name, None)
             if tile_data:
                 if "variations" in tile_data:
-                    direction = self._find_best_direction(
-                        tile_data["variations"][variant], direction
-                    )
+                    if variant is not None:
+                        direction = self._find_best_direction(
+                            tile_data["variations"][variant], direction
+                        )
                 else:
                     direction = self._find_best_direction(tile_data, direction)
         if direction is None:
-            raise KeyError(f"Direction {key_} not found")
+            raise KeyError(f"Direction for ({category}, {name}, {variant}) not found")
         return direction
 
     @staticmethod
