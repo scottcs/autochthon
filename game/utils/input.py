@@ -8,6 +8,7 @@ import game.data
 import game.types
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 def key_to_keycode(key: str) -> typing.Optional[int]:
