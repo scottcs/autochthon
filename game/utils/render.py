@@ -98,7 +98,7 @@ class _TileCache:
             local_offset += sequence
         else:
             # assumes sequence is a list
-            local_offset += sequence[frame]
+            local_offset += sequence[frame % len(sequence)]
         return local_offset
 
 
