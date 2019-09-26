@@ -10,7 +10,7 @@ import game
 import game.base_engine_values
 import game.component.action
 import game.component.attack
-import game.const.config
+import game.config
 import game.const.layout
 import game.core.map
 import game.core.world
@@ -45,7 +45,7 @@ class Game:
     """Main game object."""
 
     def __init__(self) -> None:
-        self.config = game.const.config.DATA
+        self.config = game.config.DATA
         self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
         self.game_over: bool = False
         self.world: game.core.world.World = game.core.world.World()

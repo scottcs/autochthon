@@ -14,7 +14,7 @@ import PySide2.QtCore
 import PySide2.QtGui
 import PySide2.QtWidgets
 
-import game.const.config
+import game.config
 import game.core.map
 import game.utils.random
 import tools.widgets
@@ -546,7 +546,7 @@ def main() -> int:
     except IndexError:
         parent_seed = "MapVisualizer"
     app = tools.widgets.ToolApp(sys.argv)
-    map_config: typing.MutableMapping = game.const.config.DATA["map"]
+    map_config: typing.MutableMapping = game.config.DATA["map"]
     map_config["parent_seed"] = parent_seed
     map_visualizer = MapVisualizer(map_config)
     map_visualizer.show()

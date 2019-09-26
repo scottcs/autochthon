@@ -3,10 +3,10 @@ import json
 import pathlib
 import typing
 
-import game.const.config
+import game.config
 
-TILES_PATH = pathlib.Path(f"data/tiles/{game.const.config.DATA['tileset']}")
-TILESET_PATH = pathlib.Path(f"data/tileset/{game.const.config.DATA['tileset']}")
+TILES_PATH = pathlib.Path(f"data/tiles/{game.config.DATA['tileset']}")
+TILESET_PATH = pathlib.Path(f"data/tileset/{game.config.DATA['tileset']}")
 FONT_PATH = pathlib.Path(f"data/font")
 _PATH = pathlib.Path(f"{TILESET_PATH}/tileset.json")
 

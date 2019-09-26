@@ -13,7 +13,7 @@ import game.component.movement
 import game.component.player
 import game.component.render
 import game.component.status
-import game.const.config
+import game.config
 import game.const.palette
 import game.const.tile_ids
 import game.const.tileset
@@ -59,14 +59,14 @@ class BearLibRender(esper.Processor):
         font_data = game.const.tileset.DATA["font"]
         font_file = pathlib.Path(f"{game.const.tileset.FONT_PATH}/{font_data['file']}")
 
-        title = game.const.config.DATA["title"]
+        title = game.config.DATA["title"]
         blt.set(f"window: {window_size}, resizable=true, title='{title}'")
         blt.set(f"font: {font_file}, size={str(font_data['size'][0])}x{str(font_data['size'][1])}")
         blt.color("white")
         self._load_tilesets()
 
     def _load_tilesets(self) -> None:
-        tile_scale = game.const.config.DATA.get("tile_scale", 1)
+        tile_scale = game.config.DATA.get("tile_scale", 1)
         for tileset_name, item in game.const.tileset.DATA["tilesets"].items():
             item_file = pathlib.Path(f"{game.const.tileset.TILES_PATH}/{item['file']}")
             load_str = f"{item['offset']}: {item_file}"
