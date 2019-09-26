@@ -44,6 +44,10 @@
       {
         "assemblages":  ["PlateArmor"],
         "count": 100
+      },
+      {
+        "assemblages":  ["Torch"],
+        "count": 100
       }
     ],
     "map": {

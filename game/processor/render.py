@@ -1,6 +1,7 @@
 """Render processors."""
 import logging
 import pathlib
+import time
 import typing
 
 import bearlibterminal.terminal as blt
@@ -24,6 +25,13 @@ import game.utils.render
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+# 1 second = 1 billion nanoseconds
+NS = 1_000_000_000
+# animate a frame every quarter of a second
+ANIM_FRAME_TIME = NS // 4
+# maximum number of frames in an animation
+MAX_ANIM_FRAMES = 8
+
 
 class BearLibRender(esper.Processor):
     """Game render processor for BearLibTerminal console."""
@@ -33,6 +41,8 @@ class BearLibRender(esper.Processor):
         self.height: int = game.const.tileset.DATA["window"]["height"]
         self.center: typing.List[int] = [self.width // 2, self.height // 2]
         self.spacing: typing.Dict[str, typing.List[int]] = {}
+        self.last_process_time: int = time.time_ns()
+        self.anim_tick: int = 0
         self.should_render_map: bool = True
         self.should_render_entities: bool = True
         self.known_player_xy: typing.List[int] = [-1, -1]
@@ -82,6 +92,12 @@ class BearLibRender(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
+        elapsed = time.time_ns() - self.last_process_time
+        if elapsed >= ANIM_FRAME_TIME:
+            self.last_process_time = time.time_ns()
+            self.anim_tick = (self.anim_tick + 1) % MAX_ANIM_FRAMES
+            self.should_render_entities = True
+
         refresh = False
         player_data = self._get_player_render_data()
         viewport_x = (player_data.x * self.spacing["monsters"][0]) - self.center[0]
@@ -135,7 +151,7 @@ class BearLibRender(esper.Processor):
             )
         self.known_player_xy = [player_data.x, player_data.y]
 
-    def _draw_entities(self, viewport_x, viewport_y):
+    def _draw_entities(self, viewport_x: int, viewport_y: int) -> None:
         self._clear_layer(game.types.RenderLayer.enemy)
         self._clear_layer(game.types.RenderLayer.item)
         self._clear_layer(game.types.RenderLayer.player)
@@ -150,8 +166,11 @@ class BearLibRender(esper.Processor):
             if is_dead or is_contained:
                 continue
 
-            pos_x = pos_y = None
-            can_see_now = can_see_prev = seen = False
+            pos_x: typing.Optional[int] = None
+            pos_y: typing.Optional[int] = None
+            can_see_now: bool = False
+            can_see_prev: bool = False
+            seen: bool = False
 
             if position is not None:
                 pos_x = position.x
@@ -180,17 +199,19 @@ class BearLibRender(esper.Processor):
             # else don't draw it
             else:
                 continue
-            category, name = renderable.tile_id
-            tile_id = game.utils.render.TileCache.get(category, name)
-            self._draw_on_layer(
-                renderable.layer,
-                (pos_x * self.spacing["monsters"][0]) - viewport_x,
-                (pos_y * self.spacing["monsters"][1]) - viewport_y,
-                tile_id,
-                color=color,
-            )
 
-    def _draw_map(self, viewport_x, viewport_y):
+            category, name = renderable.tile_id
+            tile_id = game.utils.render.TileCache.get(category, name, frame=self.anim_tick)
+            if pos_x is not None and pos_y is not None:
+                self._draw_on_layer(
+                    renderable.layer,
+                    (pos_x * self.spacing["monsters"][0]) - viewport_x,
+                    (pos_y * self.spacing["monsters"][1]) - viewport_y,
+                    tile_id,
+                    color=color,
+                )
+
+    def _draw_map(self, viewport_x: int, viewport_y: int) -> None:
         self._clear_layer(game.types.RenderLayer.floor)
         self._clear_layer(game.types.RenderLayer.wall)
         spacing_x, spacing_y = self.spacing["world"]
