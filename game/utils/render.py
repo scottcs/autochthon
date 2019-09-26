@@ -83,9 +83,8 @@ class _TileCache:
             except IndexError:
                 return None
 
-    @staticmethod
     def _get_local_tile_offset(
-        tile_data: typing.Dict[str, typing.Any], variant: int, direction: str, frame: int
+        self, tile_data: typing.Dict[str, typing.Any], variant: int, direction: str, frame: int
     ) -> typing.Optional[int]:
         local_offset = tile_data.get("offset", None)
         if local_offset is None:
@@ -93,7 +92,13 @@ class _TileCache:
         try:
             sequence = tile_data["variations"][variant][direction]
         except KeyError:
-            sequence = tile_data[direction]
+            try:
+                sequence = tile_data[direction]
+            except KeyError:
+                found_direction = self._find_best_direction(tile_data)
+                if found_direction is None:
+                    raise RuntimeError(f"No direction found for {tile_data}")
+                sequence = tile_data[found_direction]
         if isinstance(sequence, int):
             local_offset += sequence
         else:

@@ -8,6 +8,7 @@ class Position:
 
     x: int = 0
     y: int = 0
+    facing: str = "base"
 
 
 @dataclasses.dataclass
