@@ -2,8 +2,7 @@
 import logging
 import typing
 
-import game.tile_ids
-import game.tileset
+import game.data
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -55,8 +54,8 @@ class _TileCache:
         id_ = self._cache.get(key_, None)
 
         if id_ is None:
-            main_offset = int(game.tileset.DATA["tilesets"][category]["offset"], 0)
-            category_data = game.tile_ids.DATA.get(category, None)
+            main_offset = int(game.data.tileset["tilesets"][category]["offset"], 0)
+            category_data = game.data.tile_ids.get(category, None)
             if category_data:
                 tile_data = category_data.get(name, None)
                 if tile_data:
@@ -74,7 +73,7 @@ class _TileCache:
         self, category: str, name: str, variant: int, direction: typing.Optional[str] = None
     ) -> str:
         key_ = (category, name, variant)
-        category_data = game.tile_ids.DATA.get(category, None)
+        category_data = game.data.tile_ids.get(category, None)
         if category_data:
             tile_data = category_data.get(name, None)
             if tile_data:

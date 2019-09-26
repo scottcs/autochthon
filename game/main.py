@@ -10,7 +10,7 @@ import game
 import game.base_engine_values
 import game.component.action
 import game.component.attack
-import game.config
+import game.data
 import game.events
 import game.factory
 import game.level_layout
@@ -45,7 +45,7 @@ class Game:
     """Main game object."""
 
     def __init__(self) -> None:
-        self.config = game.config.DATA
+        self.config = game.data.config
         self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
         self.game_over: bool = False
         self.world: game.world.World = game.world.World()
