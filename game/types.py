@@ -6,7 +6,7 @@ import typing
 import game.palette
 import game.utils.random
 
-Config = typing.MutableMapping[typing.Any, typing.Any]
+ImportedData = typing.MutableMapping[typing.Any, typing.Any]
 Event = typing.Dict[typing.Any, typing.Any]
 EventHandler = typing.Callable[[Event], typing.Any]
 Layout = typing.Dict[str, typing.Any]
@@ -188,3 +188,12 @@ class TileType(enum.Enum):
     floor = enum.auto()
     wall_v = enum.auto()
     wall_h = enum.auto()
+
+
+class InputKey(typing.NamedTuple):
+    """Input key values."""
+
+    key_code: int
+    shift: bool
+    ctrl: bool
+    alt: bool

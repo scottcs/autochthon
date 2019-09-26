@@ -13,6 +13,7 @@ import game.component.player
 import game.events
 import game.types
 import game.utils.geometry
+import game.utils.input
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -24,64 +25,72 @@ class PlayerInput(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process the input queue."""
         if blt.has_input():
-            key_code = blt.read()
+            input_key = game.types.InputKey(
+                blt.read(),
+                blt.check(blt.TK_SHIFT),
+                blt.check(blt.TK_CONTROL),
+                blt.check(blt.TK_ALT),
+            )
             state: game.types.GameState = kwargs.pop("state")
             try:
-                {game.types.GameState.playing: self._handle_state_playing}[state](key_code)
+                {game.types.GameState.playing: self._handle_state_playing}[state](input_key)
             except KeyError:
-                self._handle_default(key_code)
+                self._handle_default(input_key)
 
-    def _handle_state_playing(self, key_code: int) -> None:
-        handled = self._try_bump(key_code)
+    def _handle_state_playing(self, input_key: game.types.InputKey) -> None:
+        handled = self._try_bump(input_key)
         if not handled:
-            handled = self._try_command(key_code)
+            handled = self._try_command(input_key)
         if not handled:
             # TODO: more?
             # TODO: remove this (quit through menu)
-            self._handle_default(key_code)
+            self._handle_default(input_key)
 
     @staticmethod
-    def _handle_default(key_code: int) -> None:
-        if key_code == blt.TK_ESCAPE:
+    def _handle_default(input_key: game.types.InputKey) -> None:
+        if game.utils.input.GameInterface.match("quit", input_key):
             game.events.GameOver({"shutdown": True})
 
-    def _try_bump(self, key_code: int) -> bool:
-        if blt.check(blt.TK_SHIFT) or blt.check(blt.TK_ALT) or blt.check(blt.TK_CONTROL):
-            return False
-
-        bump_up = key_code in (blt.TK_K, blt.TK_Y, blt.TK_U)
-        bump_down = key_code in (blt.TK_J, blt.TK_B, blt.TK_N)
-        bump_left = key_code in (blt.TK_H, blt.TK_Y, blt.TK_B)
-        bump_right = key_code in (blt.TK_L, blt.TK_U, blt.TK_N)
-        wait = key_code == blt.TK_PERIOD
-
+    def _try_bump(self, input_key: game.types.InputKey) -> bool:
         dx = 0
         dy = 0
-        if bump_up:
-            dy -= 1
-        if bump_down:
-            dy += 1
-        if bump_left:
-            dx -= 1
-        if bump_right:
-            dx += 1
+        wait = game.utils.input.GameCommand.match("wait", input_key)
 
-        if not (dx or dy or wait):
-            return False
+        if not wait:
+            bump_up = game.utils.input.GameMovement.match_any(["nw", "n", "ne"], input_key)
+            bump_down = game.utils.input.GameMovement.match_any(["sw", "s", "se"], input_key)
+            bump_left = game.utils.input.GameMovement.match_any(["nw", "w", "sw"], input_key)
+            bump_right = game.utils.input.GameMovement.match_any(["ne", "e", "se"], input_key)
+
+            if bump_up:
+                dy -= 1
+            if bump_down:
+                dy += 1
+            if bump_left:
+                dx -= 1
+            if bump_right:
+                dx += 1
+
+            if not (dx or dy):
+                return False
 
         for ent, _ in self.world.get_component(game.component.player.Player):
             self.world.add_component(ent, game.component.player.TMPPlayerBump(dx, dy))
         return True
 
-    def _try_command(self, key_code: int) -> bool:
+    def _try_command(self, input_key: game.types.InputKey) -> bool:
         handled = True
-        try:
-            {
-                blt.TK_COMMA: game.command.pickup.Pickup,
-                blt.TK_D: game.command.drop.Drop,
-                blt.TK_I: game.command.inventory.Inventory,
-                blt.TK_E: game.command.equip.Equip,
-            }[key_code](self.world).run()
-        except KeyError:
+        command = game.utils.input.GameCommand.from_key_code(input_key)
+        if command is None:
             handled = False
+        else:
+            try:
+                {
+                    "pick_up": game.command.pickup.Pickup,
+                    "drop": game.command.drop.Drop,
+                    "inventory": game.command.inventory.Inventory,
+                    "equip": game.command.equip.Equip,
+                }[command](self.world).run()
+            except KeyError:
+                handled = False
         return handled

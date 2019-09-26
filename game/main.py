@@ -10,7 +10,7 @@ import game
 import game.base_engine_values
 import game.component.action
 import game.component.attack
-import game.config
+import game.data
 import game.events
 import game.factory
 import game.level_layout
@@ -45,8 +45,9 @@ class Game:
     """Main game object."""
 
     def __init__(self) -> None:
-        self.config = game.config.DATA
-        self.dirs = appdirs.AppDirs(_safe_dir(self.config["title"]), _safe_dir(self.config["org"]))
+        self.dirs = appdirs.AppDirs(
+            _safe_dir(game.data.config["title"]), _safe_dir(game.data.config["org"])
+        )
         self.game_over: bool = False
         self.world: game.world.World = game.world.World()
         self.layout: game.types.Layout = {}
@@ -54,7 +55,7 @@ class Game:
         self.loader: game.utils.dataloader.DataLoader = game.utils.dataloader.DataLoader()
         self.loader.load_all_json()
         self.morgue: logging.Logger = self._setup_morgue()
-        version_string = f'* {self.config["title"]} version {game.VERSION}'
+        version_string = f'* {game.data.config["title"]} version {game.VERSION}'
         log.info(version_string)
         self.morgue.info(version_string)
 
@@ -66,9 +67,9 @@ class Game:
         """Set up the morgue log."""
         morgue_dir = (
             pathlib.Path(self.dirs.user_log_dir)
-            / pathlib.Path(self.config["directories"]["base"])
-            / pathlib.Path(self.config["directories"]["morgue"])
-            / pathlib.Path(self.config["player"]["name"])
+            / pathlib.Path(game.data.config["directories"]["base"])
+            / pathlib.Path(game.data.config["directories"]["morgue"])
+            / pathlib.Path(game.data.config["player"]["name"])
         )
         morgue_dir.mkdir(parents=True, exist_ok=True)
         log_file = morgue_dir / pathlib.Path(f"{time.time()}.morgue")
@@ -160,8 +161,8 @@ class Game:
         )
 
         current_map = game.map.ClassicMap(
-            self.config["map"]["max_tiles_w"],
-            self.config["map"]["max_tiles_h"],
+            game.data.config["map"]["max_tiles_w"],
+            game.data.config["map"]["max_tiles_h"],
             config=self.layout["map"],
         )
         current_map.create()
