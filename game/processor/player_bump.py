@@ -7,7 +7,9 @@ import game.component.attack
 import game.component.attribute
 import game.component.movement
 import game.component.player
+import game.events
 import game.types
+import game.utils.render
 
 
 class PlayerBump(esper.Processor):
@@ -28,6 +30,10 @@ class PlayerBump(esper.Processor):
         """Process the player entity."""
         if not self._check_waiting(ent, bump):
             position = self.world.component_for_entity(ent, game.component.movement.Position)
+            facing = game.utils.render.get_facing(bump.dx, bump.dy)
+            if position.facing != facing:
+                position.facing = facing
+                game.events.RenderEntities.fire()
             destination = game.component.movement.Position(
                 position.x + bump.dx, position.y + bump.dy
             )

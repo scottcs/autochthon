@@ -6,8 +6,10 @@ import esper
 import game.component.action
 import game.component.ai
 import game.component.movement
+import game.events
 import game.types
 import game.utils.random
+import game.utils.render
 
 
 class AI(esper.Processor):
@@ -19,10 +21,15 @@ class AI(esper.Processor):
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process AI Components."""
         for ent, components in self.world.get_components(
+            game.component.movement.Position,
             game.component.action.Actor,
             game.component.ai.DummyMind,
             game.component.action.TMPMyTurn,
         ):
+            position, actor = components[:2]
+            position.facing = game.utils.render.get_facing(
+                self._rng.rand(-1, 1), self._rng.rand(-1, 1)
+            )
             self.world.add_component(ent, game.component.movement.TMPWaiting())
         for ent, components in self.world.get_components(
             game.component.movement.Position,
@@ -42,6 +49,7 @@ class AI(esper.Processor):
             while dx == 0 and dy == 0:
                 dx = self._rng.rand(-1, 1)
                 dy = self._rng.rand(-1, 1)
+            position.facing = game.utils.render.get_facing(dx, dy)
             dest = game.component.movement.Position(position.x + dx, position.y + dy)
             if (
                 not self.world.map.contains_enemy[dest.y, dest.x]
