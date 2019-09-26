@@ -11,10 +11,10 @@ import game.base_engine_values
 import game.component.action
 import game.component.attack
 import game.config
-import game.const.layout
 import game.core.map
 import game.core.world
 import game.events
+import game.layout
 import game.processor.ai
 import game.processor.attack
 import game.processor.attribute
@@ -85,7 +85,7 @@ class Game:
 
     def set_state_playing(self, layout_name, seed: typing.Optional[str] = None) -> None:
         """Set the game state to playing."""
-        self.layout = game.const.layout.DATA[layout_name]
+        self.layout = game.layout.DATA[layout_name]
 
         game.utils.random.RNGCache.init(seed)
         self.state = game.types.GameState.playing
