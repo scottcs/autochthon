@@ -62,6 +62,41 @@ class Playing(game.state.base.BaseState):
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
+        self._setup_processors()
+        self._setup_map()
+
+    def on_exit(self):
+        """Called when this state is discarded or popped off the stack."""
+        super().on_exit()
+        self.world.clear_database()
+        game.events.GameLog.unhandle(self._on_game_log)
+        game.events.GameOver.unhandle(self._on_game_over)
+
+    def on_pause(self):
+        """Called when another state is pushed on top of this one."""
+        super().on_pause()
+        game.events.GameLog.unhandle(self._on_game_log)
+        game.events.GameOver.unhandle(self._on_game_over)
+
+    def on_resume(self):
+        """Called when this state becomes top-most on the stack after having been pushed down."""
+        super().on_resume()
+        game.events.GameLog.handle(self._on_game_log)
+        game.events.GameOver.handle(self._on_game_over)
+
+    def update(self) -> None:
+        """Update iteration."""
+        self.world.process()
+
+    def _on_game_log(self, event: game.types.Event) -> None:
+        self.morgue.info(str(event["log_component"]))
+
+    def _on_game_over(self, _event: game.types.Event) -> None:
+        self.morgue.info("Game Over.")
+        log.info("Game Over.")
+        game.state.base.Stack.pop_to(self)
+
+    def _setup_processors(self):
         dodge_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("dodges", "dodged"),
             game.component.attack.DodgeModifier,
@@ -125,6 +160,8 @@ class Playing(game.state.base.BaseState):
             game.processor.render.BearLibRender(), priority=game.types.Priority.render
         )
 
+    def _setup_map(self) -> None:
+        # TODO: get map type from layout
         current_map = game.map.ClassicMap(
             game.data.config["map"]["max_tiles_w"],
             game.data.config["map"]["max_tiles_h"],
@@ -132,31 +169,7 @@ class Playing(game.state.base.BaseState):
         )
         current_map.create()
         self.world.map = current_map
-        self._populate_map()
 
-    def on_exit(self):
-        """Called when this state is discarded or popped off the stack."""
-        super().on_exit()
-        game.events.GameLog.unhandle(self._on_game_log)
-        game.events.GameOver.unhandle(self._on_game_over)
-
-    def on_pause(self):
-        """Called when another state is pushed on top of this one."""
-        super().on_pause()
-        game.events.GameLog.unhandle(self._on_game_log)
-        game.events.GameOver.unhandle(self._on_game_over)
-
-    def on_resume(self):
-        """Called when this state becomes top-most on the stack after having been pushed down."""
-        super().on_resume()
-        game.events.GameLog.handle(self._on_game_log)
-        game.events.GameOver.handle(self._on_game_over)
-
-    def update(self) -> None:
-        """Update iteration."""
-        self.world.process()
-
-    def _populate_map(self) -> None:
         player_factory = game.factory.Player(self.world)
         enemy_factory = game.factory.Enemy(self.world)
         item_factory = game.factory.Item(self.world)
@@ -169,14 +182,6 @@ class Playing(game.state.base.BaseState):
         for item in self.layout["items"]:
             for _ in range(item["count"]):
                 item_factory.make(item["assemblages"])
-
-    def _on_game_log(self, event: game.types.Event) -> None:
-        self.morgue.info(str(event["log_component"]))
-
-    def _on_game_over(self, _event: game.types.Event) -> None:
-        self.morgue.info("Game Over.")
-        log.info("Game Over.")
-        game.state.base.Stack.pop_to(self)
 
 
 class PlayingInput(game.state.base.StateInput):
