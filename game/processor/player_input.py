@@ -9,6 +9,7 @@ import game.command.drop
 import game.command.equip
 import game.command.inventory
 import game.command.pickup
+import game.command.show_log
 import game.component.player
 import game.events
 import game.types
@@ -80,7 +81,7 @@ class PlayerInput(esper.Processor):
 
     def _try_command(self, input_key: game.types.InputKey) -> bool:
         handled = True
-        command = game.utils.input.GameCommand.from_key_code(input_key)
+        command = game.utils.input.GameCommand.from_input_key(input_key)
         if command is None:
             handled = False
         else:
@@ -90,7 +91,8 @@ class PlayerInput(esper.Processor):
                     "drop": game.command.drop.Drop,
                     "inventory": game.command.inventory.Inventory,
                     "equip": game.command.equip.Equip,
-                }[command](self.world).run()
+                    "gamelog": game.command.show_log.ShowLog,
+                }[command.lower()](self.world).run()
             except KeyError:
                 handled = False
         return handled

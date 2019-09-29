@@ -184,8 +184,7 @@ class Game:
                 item_factory.make(item["assemblages"])
 
     def _on_game_log(self, event: game.types.Event) -> None:
-        for line in event["lines"]:
-            self.morgue.info(line.message)
+        self.morgue.info(str(event["log_component"]))
 
     def _on_game_over(self, event: game.types.Event) -> None:
         if event.get("shutdown"):

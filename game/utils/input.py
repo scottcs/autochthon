@@ -8,6 +8,7 @@ import game.data
 import game.types
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 def key_to_keycode(key: str) -> typing.Optional[int]:
@@ -44,7 +45,7 @@ class KeyMap:
     def match(self, key: str, input_key: game.types.InputKey) -> bool:
         """Return whether the given key_code matches the given input key."""
         try:
-            return self.keys[key] == input_key
+            return self.keys[key.lower()] == input_key
         except KeyError:
             return False
 
@@ -52,7 +53,7 @@ class KeyMap:
         """Return whether the given input key matches any of the given keys."""
         return any([self.match(key, input_key) for key in keys])
 
-    def from_key_code(self, input_key: game.types.InputKey) -> typing.Optional[str]:
+    def from_input_key(self, input_key: game.types.InputKey) -> typing.Optional[str]:
         """Return an input string for a given input key."""
         for input_name, my_input_key in self.keys.items():
             if my_input_key == input_key:
