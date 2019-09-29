@@ -1,7 +1,5 @@
 """Playing game state."""
 import logging
-import pathlib
-import time
 import typing
 
 import game.base_engine_values
@@ -34,6 +32,7 @@ import game.state.base
 import game.types
 import game.utils.dataloader
 import game.utils.language
+import game.utils.morgue
 import game.utils.random
 import game.world
 
@@ -50,7 +49,7 @@ class Playing(game.state.base.BaseState):
         self.seed = seed
         self.world: game.world.World = game.world.World()
         self.layout: game.types.Layout = {}
-        self.morgue: logging.Logger = self._setup_morgue()
+        self.morgue = game.utils.morgue.new()
 
     def on_enter(self) -> None:
         """Called when this state is entered."""
@@ -155,28 +154,6 @@ class Playing(game.state.base.BaseState):
     def update(self) -> None:
         """Update iteration."""
         self.world.process()
-
-    @staticmethod
-    def _setup_morgue() -> logging.Logger:
-        """Set up the morgue log."""
-        morgue_dir = (
-            pathlib.Path(game.data.DIRS.user_log_dir)
-            / pathlib.Path(game.data.config["directories"]["base"])
-            / pathlib.Path(game.data.config["directories"]["morgue"])
-            / pathlib.Path(game.data.config["player"]["name"])
-        )
-        morgue_dir.mkdir(parents=True, exist_ok=True)
-        log_file = morgue_dir / pathlib.Path(f"{time.time()}.morgue")
-        handler = logging.FileHandler(str(log_file))
-        handler.setLevel(logging.INFO)
-        handler.setFormatter(logging.Formatter("%(message)s"))
-        morgue_log = logging.getLogger("morgue")
-        morgue_log.setLevel(logging.INFO)
-        for old_handler in morgue_log.handlers[:]:
-            log.removeHandler(old_handler)
-        morgue_log.addHandler(handler)
-        morgue_log.propagate = False
-        return morgue_log
 
     def _populate_map(self) -> None:
         player_factory = game.factory.Player(self.world)
