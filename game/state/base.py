@@ -2,6 +2,9 @@
 import collections
 import typing
 
+import game.events
+import game.types
+
 
 class EmptyStateQueueException(Exception):
     """There is no current state but state was accessed."""
@@ -15,18 +18,22 @@ class BaseState:
 
     def on_enter(self) -> None:
         """Called when this state is entered."""
-        pass
+        game.events.Input.handle(self._on_input)
 
     def on_exit(self) -> None:
         """Called when this state is discarded or popped off the stack."""
-        pass
+        game.events.Input.unhandle(self._on_input)
 
     def on_pause(self) -> None:
         """Called when another state is pushed on top of this one."""
-        pass
+        game.events.Input.unhandle(self._on_input)
 
     def on_resume(self) -> None:
         """Called when this state becomes top-most on the stack after having been pushed down."""
+        game.events.Input.handle(self._on_input)
+
+    def _on_input(self, event: game.types.Event):
+        """Handle input."""
         pass
 
     def update(self) -> None:

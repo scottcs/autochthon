@@ -59,7 +59,6 @@ class Playing(game.state.base.BaseState):
         self.layout = game.level_layout.DATA[self.layout_name]
         game.utils.random.RNGCache.init(self.seed)
 
-        game.events.Input.handle(self._on_input)
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
@@ -137,19 +136,19 @@ class Playing(game.state.base.BaseState):
 
     def on_exit(self):
         """Called when this state is discarded or popped off the stack."""
-        game.events.Input.unhandle(self._on_input)
+        super().on_exit()
         game.events.GameLog.unhandle(self._on_game_log)
         game.events.GameOver.unhandle(self._on_game_over)
 
     def on_pause(self):
         """Called when another state is pushed on top of this one."""
-        game.events.Input.unhandle(self._on_input)
+        super().on_pause()
         game.events.GameLog.unhandle(self._on_game_log)
         game.events.GameOver.unhandle(self._on_game_over)
 
     def on_resume(self):
         """Called when this state becomes top-most on the stack after having been pushed down."""
-        game.events.Input.handle(self._on_input)
+        super().on_resume()
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
@@ -209,12 +208,16 @@ class Playing(game.state.base.BaseState):
         if not handled:
             # TODO: more?
             # TODO: remove this (quit through menu)
-            self._input_handle_default(input_key)
+            handled = self._input_handle_default(input_key)
+        if not handled:
+            super()._on_input(event)
 
-    def _input_handle_default(self, input_key: game.types.InputKey) -> None:
+    def _input_handle_default(self, input_key: game.types.InputKey) -> bool:
         if game.input.GameInterface.match("quit", input_key):
             game.events.GameOver.fire()
             game.state.base.Stack.pop_to(self)
+            return True
+        return False
 
     def _input_try_bump(self, input_key: game.types.InputKey) -> bool:
         dx = 0
