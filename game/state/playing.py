@@ -50,6 +50,7 @@ class Playing(game.state.base.BaseState):
         self.world: game.world.World = game.world.World()
         self.layout: game.types.Layout = {}
         self.morgue = game.utils.morgue.new()
+        self.input_handler = PlayingInput(self.world)
 
     def on_enter(self) -> None:
         """Called when this state is entered."""
@@ -177,21 +178,22 @@ class Playing(game.state.base.BaseState):
         log.info("Game Over.")
         game.state.base.Stack.pop_to(self)
 
-    def _on_input(self, event: game.types.Event) -> None:
-        """Input handler."""
-        input_key = event["key"]
-        handled = self._input_try_bump(input_key)
-        if not handled:
-            handled = self._input_try_command(input_key)
-        # TODO: more?
-        if not handled:
-            if game.input.GameInterface.match("quit", input_key):
-                # TODO: remove this (quit through menu)
-                game.events.GameOver()
-            else:
-                super()._on_input(event)
 
-    def _input_try_bump(self, input_key: game.types.InputKey) -> bool:
+class PlayingInput(game.state.base.StateInput):
+    """Input handler for playing state."""
+
+    def handle(self, input_key: game.types.InputKey) -> None:
+        """Handle an input key."""
+        if not self._try_bump(input_key):
+            if not self._try_command(input_key):
+                # TODO: more?
+                if game.input.GameInterface.match("quit", input_key):
+                    # TODO: remove this (quit through menu)
+                    game.events.GameOver()
+                else:
+                    super().handle(input_key)
+
+    def _try_bump(self, input_key: game.types.InputKey) -> bool:
         dx = 0
         dy = 0
         wait = game.input.GameCommand.match("wait", input_key)
@@ -218,7 +220,7 @@ class Playing(game.state.base.BaseState):
             self.world.add_component(ent, game.component.player.TMPPlayerBump(dx, dy))
         return True
 
-    def _input_try_command(self, input_key: game.types.InputKey) -> bool:
+    def _try_command(self, input_key: game.types.InputKey) -> bool:
         handled = True
         command = game.input.GameCommand.from_input_key(input_key)
         if command is None:

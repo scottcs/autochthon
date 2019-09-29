@@ -4,6 +4,7 @@ import typing
 
 import game.events
 import game.types
+import game.world
 
 
 class EmptyStateQueueException(Exception):
@@ -14,7 +15,7 @@ class BaseState:
     """Game state base class."""
 
     def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
-        pass
+        self.input_handler: typing.Optional[StateInput] = None
 
     def on_enter(self) -> None:
         """Called when this state is entered."""
@@ -34,10 +35,22 @@ class BaseState:
 
     def _on_input(self, event: game.types.Event):
         """Handle input."""
-        pass
+        if self.input_handler is not None:
+            self.input_handler.handle(event["key"])
 
     def update(self) -> None:
         """Update iteration."""
+        pass
+
+
+class StateInput:
+    """Base class for state input handler."""
+
+    def __init__(self, world: game.world.World) -> None:
+        self.world = world
+
+    def handle(self, input_key: game.types.InputKey) -> None:
+        """Handle an input key or return False."""
         pass
 
 
