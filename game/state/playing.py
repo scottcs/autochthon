@@ -175,6 +175,7 @@ class Playing(game.state.base.BaseState):
     def _on_game_over(self, _event: game.types.Event) -> None:
         self.morgue.info("Game Over.")
         log.info("Game Over.")
+        game.state.base.Stack.pop_to(self)
 
     def _on_input(self, event: game.types.Event) -> None:
         """Input handler."""
@@ -182,19 +183,13 @@ class Playing(game.state.base.BaseState):
         handled = self._input_try_bump(input_key)
         if not handled:
             handled = self._input_try_command(input_key)
+        # TODO: more?
         if not handled:
-            # TODO: more?
-            # TODO: remove this (quit through menu)
-            handled = self._input_handle_default(input_key)
-        if not handled:
-            super()._on_input(event)
-
-    def _input_handle_default(self, input_key: game.types.InputKey) -> bool:
-        if game.input.GameInterface.match("quit", input_key):
-            game.events.GameOver()
-            game.state.base.Stack.pop_to(self)
-            return True
-        return False
+            if game.input.GameInterface.match("quit", input_key):
+                # TODO: remove this (quit through menu)
+                game.events.GameOver()
+            else:
+                super()._on_input(event)
 
     def _input_try_bump(self, input_key: game.types.InputKey) -> bool:
         dx = 0
