@@ -31,7 +31,7 @@ class App:
                 game.state.base.Stack.current.update()
             except game.state.base.EmptyStateQueueException:
                 log.debug("No current state; initiating shutdown")
-                game.events.ShutDown.fire()
+                game.events.ShutDown()
 
     def _on_shutdown(self, _event: game.types.Event) -> None:
         log.info("Shutting down.")

@@ -191,7 +191,7 @@ class Playing(game.state.base.BaseState):
 
     def _input_handle_default(self, input_key: game.types.InputKey) -> bool:
         if game.input.GameInterface.match("quit", input_key):
-            game.events.GameOver.fire()
+            game.events.GameOver()
             game.state.base.Stack.pop_to(self)
             return True
         return False

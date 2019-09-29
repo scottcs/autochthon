@@ -42,7 +42,7 @@ class BearLibInput(InputHandler):
                 blt.check(blt.TK_CONTROL),
                 blt.check(blt.TK_ALT),
             )
-            game.events.Input.fire(event={"key": input_key})
+            game.events.Input(event={"key": input_key})
 
 
 class KeyMap:

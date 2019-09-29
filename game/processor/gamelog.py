@@ -25,6 +25,6 @@ class GameLog(esper.Processor):
             for ent, log_component in self.world.get_component(component_class):
                 if not log_component.lines:
                     continue
-                game.events.GameLog.fire({"log_component": log_component})
+                game.events.GameLog({"log_component": log_component})
                 buffer.append(log_component)
                 self.world.remove_component(ent, component_class)

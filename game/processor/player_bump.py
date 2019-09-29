@@ -33,7 +33,7 @@ class PlayerBump(esper.Processor):
             facing = game.utils.render.get_facing(bump.dx, bump.dy)
             if position.facing != facing:
                 position.facing = facing
-                game.events.RenderEntities.fire()
+                game.events.RenderEntities()
             destination = game.component.movement.Position(
                 position.x + bump.dx, position.y + bump.dy
             )
