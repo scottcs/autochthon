@@ -3,6 +3,10 @@ import collections
 import typing
 
 
+class EmptyStateQueueException(Exception):
+    """There is no current state but state was accessed."""
+
+
 class BaseState:
     """Game state base class."""
 
@@ -25,10 +29,6 @@ class BaseState:
         """Called when this state becomes top-most on the stack after having been pushed down."""
         pass
 
-    def handle_input(self) -> None:
-        """Input handler."""
-        pass
-
     def update(self) -> None:
         """Update iteration."""
         pass
@@ -48,7 +48,10 @@ class _Stack:
     @property
     def current(self) -> BaseState:
         """Get the current state."""
-        return self._stack[-1]
+        try:
+            return self._stack[-1]
+        except IndexError:
+            raise EmptyStateQueueException("Attempt to access top of empty queue.")
 
     def push(self, state: BaseState) -> None:
         """Push a new state onto the stack."""
@@ -59,11 +62,20 @@ class _Stack:
 
     def pop(self) -> BaseState:
         """Remove and return the top-most state."""
-        old_state = self._stack.pop()
+        try:
+            old_state = self._stack.pop()
+        except IndexError:
+            raise EmptyStateQueueException("Attempt to pop from empty queue.")
         old_state.on_exit()
         if self.size > 0:
             self.current.on_resume()
         return old_state
+
+    def pop_to(self, state: BaseState) -> BaseState:
+        """Pop all states up to and including the given state."""
+        while self.current != state:
+            self.pop()
+        return self.pop()
 
 
 Stack = _Stack()

@@ -5,11 +5,18 @@ import time
 import typing
 
 import game.base_engine_values
+import game.command.drop
+import game.command.equip
+import game.command.inventory
+import game.command.pickup
+import game.command.show_log
 import game.component.action
 import game.component.attack
+import game.component.player
 import game.data
 import game.events
 import game.factory
+import game.input
 import game.level_layout
 import game.map
 import game.processor.ai
@@ -20,7 +27,6 @@ import game.processor.damage
 import game.processor.gamelog
 import game.processor.movement
 import game.processor.player_bump
-import game.processor.player_input
 import game.processor.psychopomps
 import game.processor.render
 import game.processor.time
@@ -42,7 +48,6 @@ class Playing(game.state.base.BaseState):
         super().__init__()
         self.layout_name = layout_name
         self.seed = seed
-        self.game_over: bool = False
         self.world: game.world.World = game.world.World()
         self.layout: game.types.Layout = {}
         self.morgue: logging.Logger = self._setup_morgue()
@@ -53,6 +58,8 @@ class Playing(game.state.base.BaseState):
         self.morgue.info(game.data.VERSION_STRING)
         self.layout = game.level_layout.DATA[self.layout_name]
         game.utils.random.RNGCache.init(self.seed)
+
+        game.events.Input.handle(self._on_input)
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
@@ -75,9 +82,6 @@ class Playing(game.state.base.BaseState):
             game.base_engine_values.DEFLECT_CHANCE,
         )
 
-        self.world.add_processor(
-            game.processor.player_input.PlayerInput(), priority=game.types.Priority.player_input
-        )
         self.world.add_processor(
             game.processor.player_bump.PlayerBump(), priority=game.types.Priority.player_bump
         )
@@ -133,20 +137,28 @@ class Playing(game.state.base.BaseState):
 
     def on_exit(self):
         """Called when this state is discarded or popped off the stack."""
+        game.events.Input.unhandle(self._on_input)
         game.events.GameLog.unhandle(self._on_game_log)
         game.events.GameOver.unhandle(self._on_game_over)
 
     def on_pause(self):
         """Called when another state is pushed on top of this one."""
+        game.events.Input.unhandle(self._on_input)
         game.events.GameLog.unhandle(self._on_game_log)
         game.events.GameOver.unhandle(self._on_game_over)
 
     def on_resume(self):
         """Called when this state becomes top-most on the stack after having been pushed down."""
+        game.events.Input.handle(self._on_input)
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
-    def _setup_morgue(self) -> logging.Logger:
+    def update(self) -> None:
+        """Update iteration."""
+        self.world.process()
+
+    @staticmethod
+    def _setup_morgue() -> logging.Logger:
         """Set up the morgue log."""
         morgue_dir = (
             pathlib.Path(game.data.DIRS.user_log_dir)
@@ -188,10 +200,63 @@ class Playing(game.state.base.BaseState):
         self.morgue.info("Game Over.")
         log.info("Game Over.")
 
-    def handle_input(self) -> None:
+    def _on_input(self, event: game.types.Event) -> None:
         """Input handler."""
-        pass
+        input_key = event["key"]
+        handled = self._input_try_bump(input_key)
+        if not handled:
+            handled = self._input_try_command(input_key)
+        if not handled:
+            # TODO: more?
+            # TODO: remove this (quit through menu)
+            self._input_handle_default(input_key)
 
-    def update(self) -> None:
-        """Update iteration."""
-        self.world.process()
+    def _input_handle_default(self, input_key: game.types.InputKey) -> None:
+        if game.input.GameInterface.match("quit", input_key):
+            game.events.GameOver.fire()
+            game.state.base.Stack.pop_to(self)
+
+    def _input_try_bump(self, input_key: game.types.InputKey) -> bool:
+        dx = 0
+        dy = 0
+        wait = game.input.GameCommand.match("wait", input_key)
+
+        if not wait:
+            bump_up = game.input.GameMovement.match_any(["nw", "n", "ne"], input_key)
+            bump_down = game.input.GameMovement.match_any(["sw", "s", "se"], input_key)
+            bump_left = game.input.GameMovement.match_any(["nw", "w", "sw"], input_key)
+            bump_right = game.input.GameMovement.match_any(["ne", "e", "se"], input_key)
+
+            if bump_up:
+                dy -= 1
+            if bump_down:
+                dy += 1
+            if bump_left:
+                dx -= 1
+            if bump_right:
+                dx += 1
+
+            if not (dx or dy):
+                return False
+
+        for ent, _ in self.world.get_component(game.component.player.Player):
+            self.world.add_component(ent, game.component.player.TMPPlayerBump(dx, dy))
+        return True
+
+    def _input_try_command(self, input_key: game.types.InputKey) -> bool:
+        handled = True
+        command = game.input.GameCommand.from_input_key(input_key)
+        if command is None:
+            handled = False
+        else:
+            try:
+                {
+                    "pick_up": game.command.pickup.Pickup,
+                    "drop": game.command.drop.Drop,
+                    "inventory": game.command.inventory.Inventory,
+                    "equip": game.command.equip.Equip,
+                    "gamelog": game.command.show_log.ShowLog,
+                }[command.lower()](self.world).run()
+            except KeyError:
+                handled = False
+        return handled

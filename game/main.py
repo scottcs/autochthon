@@ -1,6 +1,8 @@
 """Main game class."""
 import logging
 
+import game.events
+import game.input
 import game.state.base
 import game.state.playing
 import game.types
@@ -9,15 +11,13 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-def _safe_dir(name: str) -> str:
-    return name.lower().replace(" ", "_")
-
-
-class Game:
+class App:
     """Main game object."""
 
-    def __init__(self) -> None:
-        self.game_over: bool = False
+    def __init__(self, input_handler: game.input.InputHandler) -> None:
+        self.input_handler = input_handler
+        self.shutting_down: bool = False
+        game.events.ShutDown.handle(self._on_shutdown)
 
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
@@ -25,9 +25,21 @@ class Game:
 
     def update(self):
         """Game update."""
-        game.state.base.Stack.current.update()
+        if not self.shutting_down:
+            self.input_handler.process()
+            try:
+                game.state.base.Stack.current.update()
+            except game.state.base.EmptyStateQueueException:
+                log.debug("No current state; initiating shutdown")
+                game.events.ShutDown.fire()
 
-    def _on_game_over(self, event: game.types.Event) -> None:
-        if event.get("shutdown"):
-            log.info("Shutting down.")
-            self.game_over = True
+    def _on_shutdown(self, _event: game.types.Event) -> None:
+        log.info("Shutting down.")
+        self.shutting_down = True
+
+
+def run() -> None:
+    """Run the game."""
+    app = App(game.input.BearLibInput())
+    while not app.shutting_down:
+        app.update()

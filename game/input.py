@@ -1,10 +1,11 @@
-"""Input utilities."""
+"""Input handling class."""
 import logging
 import typing
 
 import bearlibterminal.terminal as blt
 
 import game.data
+import game.events
 import game.types
 
 log = logging.getLogger(__name__)
@@ -18,6 +19,30 @@ def key_to_keycode(key: str) -> typing.Optional[int]:
             if k[3:] == key.upper():
                 return v
     return None
+
+
+class InputHandler:
+    """Base Input Handler class."""
+
+    def process(self) -> None:
+        """Process input."""
+        pass
+
+
+class BearLibInput(InputHandler):
+    """Input handler for bearlibterminal."""
+
+    def process(self) -> None:
+        """Check for input and fire an event if found."""
+        super().process()
+        if blt.has_input():
+            input_key = game.types.InputKey(
+                blt.read(),
+                blt.check(blt.TK_SHIFT),
+                blt.check(blt.TK_CONTROL),
+                blt.check(blt.TK_ALT),
+            )
+            game.events.Input.fire(event={"key": input_key})
 
 
 class KeyMap:

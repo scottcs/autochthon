@@ -52,18 +52,6 @@ class Priority(enum.IntEnum):
     player_input = enum.auto()
 
 
-class GameState(enum.Enum):
-    """Game states."""
-
-    unknown = enum.auto()
-    loading = enum.auto()
-    main_menu = enum.auto()
-    creating = enum.auto()
-    playing = enum.auto()
-    in_game_menu = enum.auto()
-    shutdown = enum.auto()
-
-
 class Attack(enum.Enum):
     """Attack types."""
 
