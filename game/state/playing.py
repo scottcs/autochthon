@@ -1,0 +1,197 @@
+"""Playing game state."""
+import logging
+import pathlib
+import time
+import typing
+
+import game.base_engine_values
+import game.component.action
+import game.component.attack
+import game.data
+import game.events
+import game.factory
+import game.level_layout
+import game.map
+import game.processor.ai
+import game.processor.attack
+import game.processor.attribute
+import game.processor.container
+import game.processor.damage
+import game.processor.gamelog
+import game.processor.movement
+import game.processor.player_bump
+import game.processor.player_input
+import game.processor.psychopomps
+import game.processor.render
+import game.processor.time
+import game.state.base
+import game.types
+import game.utils.dataloader
+import game.utils.language
+import game.utils.random
+import game.world
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+
+
+class Playing(game.state.base.BaseState):
+    """Playing game state."""
+
+    def __init__(self, layout_name: str, seed: typing.Optional[str] = None) -> None:
+        super().__init__()
+        self.layout_name = layout_name
+        self.seed = seed
+        self.game_over: bool = False
+        self.world: game.world.World = game.world.World()
+        self.layout: game.types.Layout = {}
+        self.morgue: logging.Logger = self._setup_morgue()
+
+    def on_enter(self) -> None:
+        """Called when this state is entered."""
+        super().on_enter()
+        self.morgue.info(game.data.VERSION_STRING)
+        self.layout = game.level_layout.DATA[self.layout_name]
+        game.utils.random.RNGCache.init(self.seed)
+        game.events.GameLog.handle(self._on_game_log)
+        game.events.GameOver.handle(self._on_game_over)
+
+        dodge_processor = game.processor.attack.AttackDefense(
+            game.utils.language.Verb("dodges", "dodged"),
+            game.component.attack.DodgeModifier,
+            game.component.attack.ImmuneToDodge,
+            game.base_engine_values.DODGE_CHANCE,
+        )
+        block_processor = game.processor.attack.AttackDefense(
+            game.utils.language.Verb("blocks", "blocked"),
+            game.component.attack.BlockModifier,
+            game.component.attack.ImmuneToBlock,
+            game.base_engine_values.BLOCK_CHANCE,
+        )
+        deflect_processor = game.processor.attack.AttackDefense(
+            game.utils.language.Verb("deflects", "deflected"),
+            game.component.attack.DeflectModifier,
+            game.component.attack.ImmuneToDeflect,
+            game.base_engine_values.DEFLECT_CHANCE,
+        )
+
+        self.world.add_processor(
+            game.processor.player_input.PlayerInput(), priority=game.types.Priority.player_input
+        )
+        self.world.add_processor(
+            game.processor.player_bump.PlayerBump(), priority=game.types.Priority.player_bump
+        )
+        self.world.add_processor(game.processor.time.Turn(), priority=game.types.Priority.turn)
+        self.world.add_processor(
+            game.processor.container.Container(), priority=game.types.Priority.container
+        )
+        self.world.add_processor(game.processor.ai.AI(), priority=game.types.Priority.ai)
+        self.world.add_processor(
+            game.processor.movement.Movement(), priority=game.types.Priority.movement
+        )
+        self.world.add_processor(
+            game.processor.attack.AttackTargeting(), priority=game.types.Priority.targeting
+        )
+        self.world.add_processor(
+            game.processor.attack.AttackMiss(), priority=game.types.Priority.attack_miss
+        )
+        self.world.add_processor(dodge_processor, priority=game.types.Priority.attack_dodge)
+        self.world.add_processor(block_processor, priority=game.types.Priority.attack_block)
+        self.world.add_processor(deflect_processor, priority=game.types.Priority.attack_deflect)
+        self.world.add_processor(
+            game.processor.attack.AttackHit(), priority=game.types.Priority.attack_hit
+        )
+        self.world.add_processor(
+            game.processor.damage.DamageBludgeoningMitigation(),
+            priority=game.types.Priority.defense,
+        )
+        self.world.add_processor(
+            game.processor.damage.DamageBludgeoning(),
+            priority=game.types.Priority.damage_resolution,
+        )
+        self.world.add_processor(
+            game.processor.attribute.HP(), priority=game.types.Priority.attributes
+        )
+        self.world.add_processor(
+            game.processor.psychopomps.Psychopomps(), priority=game.types.Priority.psychopomps
+        )
+        self.world.add_processor(
+            game.processor.gamelog.GameLog(), priority=game.types.Priority.gamelog
+        )
+        self.world.add_processor(
+            game.processor.render.BearLibRender(), priority=game.types.Priority.render
+        )
+
+        current_map = game.map.ClassicMap(
+            game.data.config["map"]["max_tiles_w"],
+            game.data.config["map"]["max_tiles_h"],
+            config=self.layout["map"],
+        )
+        current_map.create()
+        self.world.map = current_map
+        self._populate_map()
+
+    def on_exit(self):
+        """Called when this state is discarded or popped off the stack."""
+        game.events.GameLog.unhandle(self._on_game_log)
+        game.events.GameOver.unhandle(self._on_game_over)
+
+    def on_pause(self):
+        """Called when another state is pushed on top of this one."""
+        game.events.GameLog.unhandle(self._on_game_log)
+        game.events.GameOver.unhandle(self._on_game_over)
+
+    def on_resume(self):
+        """Called when this state becomes top-most on the stack after having been pushed down."""
+        game.events.GameLog.handle(self._on_game_log)
+        game.events.GameOver.handle(self._on_game_over)
+
+    def _setup_morgue(self) -> logging.Logger:
+        """Set up the morgue log."""
+        morgue_dir = (
+            pathlib.Path(game.data.DIRS.user_log_dir)
+            / pathlib.Path(game.data.config["directories"]["base"])
+            / pathlib.Path(game.data.config["directories"]["morgue"])
+            / pathlib.Path(game.data.config["player"]["name"])
+        )
+        morgue_dir.mkdir(parents=True, exist_ok=True)
+        log_file = morgue_dir / pathlib.Path(f"{time.time()}.morgue")
+        handler = logging.FileHandler(str(log_file))
+        handler.setLevel(logging.INFO)
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        morgue_log = logging.getLogger("morgue")
+        morgue_log.setLevel(logging.INFO)
+        for old_handler in morgue_log.handlers[:]:
+            log.removeHandler(old_handler)
+        morgue_log.addHandler(handler)
+        morgue_log.propagate = False
+        return morgue_log
+
+    def _populate_map(self) -> None:
+        player_factory = game.factory.Player(self.world)
+        enemy_factory = game.factory.Enemy(self.world)
+        item_factory = game.factory.Item(self.world)
+
+        player = player_factory.make(self.layout["player"])
+        self.world.add_component(player, game.component.action.TMPMyTurn())
+        for enemy in self.layout["enemies"]:
+            for _ in range(enemy["count"]):
+                enemy_factory.make(enemy["assemblages"])
+        for item in self.layout["items"]:
+            for _ in range(item["count"]):
+                item_factory.make(item["assemblages"])
+
+    def _on_game_log(self, event: game.types.Event) -> None:
+        self.morgue.info(str(event["log_component"]))
+
+    def _on_game_over(self, _event: game.types.Event) -> None:
+        self.morgue.info("Game Over.")
+        log.info("Game Over.")
+
+    def handle_input(self) -> None:
+        """Input handler."""
+        pass
+
+    def update(self) -> None:
+        """Update iteration."""
+        self.world.process()

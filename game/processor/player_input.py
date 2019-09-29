@@ -32,11 +32,7 @@ class PlayerInput(esper.Processor):
                 blt.check(blt.TK_CONTROL),
                 blt.check(blt.TK_ALT),
             )
-            state: game.types.GameState = kwargs.pop("state")
-            try:
-                {game.types.GameState.playing: self._handle_state_playing}[state](input_key)
-            except KeyError:
-                self._handle_default(input_key)
+            self._handle_state_playing(input_key)
 
     def _handle_state_playing(self, input_key: game.types.InputKey) -> None:
         handled = self._try_bump(input_key)
