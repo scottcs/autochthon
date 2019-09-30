@@ -1,8 +1,12 @@
 """Render utilities."""
 import logging
+import pathlib
 import typing
 
+import bearlibterminal.terminal as blt
+
 import game.data
+import game.types
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -144,3 +148,129 @@ class _TileCache:
 
 
 TileCache = _TileCache()
+
+
+class BaseRenderer:
+    """Base renderer class."""
+
+    def __init__(self):
+        self.width: int = game.data.tileset["window"]["width"]
+        self.height: int = game.data.tileset["window"]["height"]
+        self.center: typing.List[int] = [self.width // 2, self.height // 2]
+        self.font_size = game.data.tileset["font"]["size"]
+        self.font_file = pathlib.Path(f"{game.data.FONT_PATH}/{game.data.tileset['font']['file']}")
+        self.title = f"{game.data.config['title']} v{game.VERSION}"
+        self.spacing: typing.Dict[str, typing.List[int]] = {}
+
+    def refresh(self):
+        """Refresh graphics."""
+        raise NotImplementedError()
+
+    def clear_layer(self, layer: game.types.RenderLayer):
+        """Clear the given layer."""
+        raise NotImplementedError()
+
+    @staticmethod
+    def draw_on_layer(
+        layer: game.types.RenderLayer,
+        x: int,
+        y: int,
+        tile_id: int,
+        color: typing.Optional[str] = None,
+    ):
+        """Draw on the given layer."""
+        raise NotImplementedError()
+
+    def draw_gamelog(self, x: int, y: int, lines: typing.Sequence[game.types.LogLine]) -> None:
+        """Draw a game log line."""
+        raise NotImplementedError()
+
+    def close(self):
+        """Close all windows."""
+        raise NotImplementedError()
+
+
+class BearLibRenderer(BaseRenderer):
+    """Bearlibterminal renderer."""
+
+    def __init__(self):
+        super().__init__()
+        if not blt.open():
+            log.critical("Unable to initialize terminal window!")
+        window_size = f"size={self.width}x{self.height}"
+        blt.set(f"window: {window_size}, resizable=true, title='{self.title}'")
+        blt.set(f"font: {self.font_file}, size={str(self.font_size[0])}x{str(self.font_size[1])}")
+        blt.color("white")
+        self._load_tilesets()
+
+    def _load_tilesets(self) -> None:
+        tile_scale = game.data.config.get("tile_scale", 1)
+        for tileset_name, item in game.data.tileset["tilesets"].items():
+            item_file = pathlib.Path(f"{game.data.TILES_PATH}/{item['file']}")
+            load_str = f"{item['offset']}: {item_file}"
+            if "size" in item:
+                width, height = item["size"]
+                load_str += f", size={str(width)}x{str(height)}"
+                if tile_scale != 1:
+                    width *= tile_scale
+                    height *= tile_scale
+                    load_str += f", resize={str(width)}x{str(height)}, resize-filter=nearest"
+            if "align" in item:
+                load_str += f", align={item['align']}"
+            if "spacing" in item:
+                x, y = item["spacing"]
+                if tile_scale != 1:
+                    x *= tile_scale
+                    y *= tile_scale
+                load_str += f", spacing={str(x)}x{str(y)}"
+                self.spacing[tileset_name] = [x, y]
+            else:
+                self.spacing[tileset_name] = game.data.tileset["font"]["spacing"]
+            blt.set(load_str)
+
+    def refresh(self):
+        """Refresh graphics."""
+        blt.refresh()
+
+    def clear_layer(self, layer: game.types.RenderLayer):
+        """Clear the given layer."""
+        current_layer = blt.state(blt.TK_LAYER)
+        blt.layer(layer)
+        blt.clear_area(0, 0, self.width, self.height)
+        blt.layer(current_layer)
+
+    @staticmethod
+    def draw_on_layer(
+        layer: game.types.RenderLayer,
+        x: int,
+        y: int,
+        tile_id: int,
+        color: typing.Optional[str] = None,
+    ):
+        """Draw on the given layer."""
+        current_layer = blt.state(blt.TK_LAYER)
+        current_color = blt.state(blt.TK_COLOR)
+        blt.layer(layer)
+        if color is not None:
+            blt.color(color)
+        blt.put(x, y, tile_id)
+        blt.layer(current_layer)
+        blt.color(current_color)
+
+    def draw_gamelog(self, x: int, y: int, lines: typing.Sequence[game.types.LogLine]) -> None:
+        """Draw a game log line."""
+        self.clear_layer(game.types.RenderLayer.ui_last_game_message)
+        log_line = f"[offset={x},{y}]{self._colorize_gamelog(lines)}"
+        current_layer = blt.state(blt.TK_LAYER)
+        blt.layer(game.types.RenderLayer.ui_last_game_message)
+        blt.puts(0, self.height - 2, log_line)
+        blt.layer(current_layer)
+
+    def close(self):
+        """Close all windows."""
+        blt.close()
+
+    @staticmethod
+    def _colorize_gamelog(lines: typing.Sequence[game.types.LogLine]) -> str:
+        """Return a colorized string of log lines for BearLibTerminal."""
+        return "".join([f"[color={l.color}]{l.message}[/color]" for l in lines])

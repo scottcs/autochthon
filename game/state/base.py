@@ -46,8 +46,8 @@ class BaseState:
 class StateInput:
     """Base class for state input handler."""
 
-    def __init__(self, world: game.world.World) -> None:
-        self.world = world
+    def __init__(self) -> None:
+        pass
 
     def handle(self, input_key: game.types.InputKey) -> None:
         """Handle an input key or return False."""

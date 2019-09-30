@@ -7,10 +7,10 @@ import numpy as np
 import tcod.map
 
 import game.palette
+import game.render
 import game.types
 import game.utils.geometry
 import game.utils.random
-import game.utils.render
 
 LOOP_TRIES = 10000
 MAP_BITS = (
@@ -192,15 +192,15 @@ class Map(tcod.map.Map):
         if self.alt_tile_1[y, x]:
             idx += 1
         if tile_type == game.types.TileType.wall_v:
-            return game.utils.render.TileCache.get(
+            return game.render.TileCache.get(
                 "world", self.config["tile_ids"]["wall_v"], variant=idx
             )
         elif tile_type == game.types.TileType.wall_h:
-            return game.utils.render.TileCache.get(
+            return game.render.TileCache.get(
                 "world", self.config["tile_ids"]["wall_h"], variant=idx
             )
         elif tile_type == game.types.TileType.floor:
-            return game.utils.render.TileCache.get(
+            return game.render.TileCache.get(
                 "world", self.config["tile_ids"]["floor"], variant=idx
             )
         else:

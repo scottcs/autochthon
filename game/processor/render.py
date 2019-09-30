@@ -1,10 +1,8 @@
 """Render processors."""
 import logging
-import pathlib
 import time
 import typing
 
-import bearlibterminal.terminal as blt
 import esper
 import tcod
 
@@ -17,9 +15,9 @@ import game.component.status
 import game.data
 import game.events
 import game.palette
+import game.render
 import game.types
 import game.utils.geometry
-import game.utils.render
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -32,14 +30,11 @@ ANIM_FRAME_TIME = NS // 4
 MAX_ANIM_FRAMES = 8
 
 
-class BearLibRender(esper.Processor):
+class Render(esper.Processor):
     """Game render processor for BearLibTerminal console."""
 
-    def __init__(self) -> None:
-        self.width: int = game.data.tileset["window"]["width"]
-        self.height: int = game.data.tileset["window"]["height"]
-        self.center: typing.List[int] = [self.width // 2, self.height // 2]
-        self.spacing: typing.Dict[str, typing.List[int]] = {}
+    def __init__(self, renderer: game.render.BaseRenderer) -> None:
+        self.renderer = renderer
         self.last_process_time: int = time.time_ns()
         self.anim_tick: int = 0
         self.should_render_map: bool = True
@@ -51,44 +46,6 @@ class BearLibRender(esper.Processor):
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
-        if not blt.open():
-            log.critical("Unable to initialize terminal window!")
-
-        window_size = f"size={self.width}x{self.height}"
-        font_data = game.data.tileset["font"]
-        font_file = pathlib.Path(f"{game.data.FONT_PATH}/{font_data['file']}")
-
-        title = f"{game.data.config['title']} v{game.VERSION}"
-        blt.set(f"window: {window_size}, resizable=true, title='{title}'")
-        blt.set(f"font: {font_file}, size={str(font_data['size'][0])}x{str(font_data['size'][1])}")
-        blt.color("white")
-        self._load_tilesets()
-
-    def _load_tilesets(self) -> None:
-        tile_scale = game.data.config.get("tile_scale", 1)
-        for tileset_name, item in game.data.tileset["tilesets"].items():
-            item_file = pathlib.Path(f"{game.data.TILES_PATH}/{item['file']}")
-            load_str = f"{item['offset']}: {item_file}"
-            if "size" in item:
-                width, height = item["size"]
-                load_str += f", size={str(width)}x{str(height)}"
-                if tile_scale != 1:
-                    width *= tile_scale
-                    height *= tile_scale
-                    load_str += f", resize={str(width)}x{str(height)}, resize-filter=nearest"
-            if "align" in item:
-                load_str += f", align={item['align']}"
-            if "spacing" in item:
-                x, y = item["spacing"]
-                if tile_scale != 1:
-                    x *= tile_scale
-                    y *= tile_scale
-                load_str += f", spacing={str(x)}x{str(y)}"
-                self.spacing[tileset_name] = [x, y]
-            else:
-                self.spacing[tileset_name] = game.data.tileset["font"]["spacing"]
-            blt.set(load_str)
-
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
         elapsed = time.time_ns() - self.last_process_time
@@ -99,8 +56,9 @@ class BearLibRender(esper.Processor):
 
         refresh = False
         player_data = self._get_player_render_data()
-        viewport_x = (player_data.x * self.spacing["monsters"][0]) - self.center[0]
-        viewport_y = (player_data.y * self.spacing["monsters"][1]) - self.center[1]
+        spacing = self.renderer.spacing["monsters"]
+        viewport_x = (player_data.x * spacing[0]) - self.renderer.center[0]
+        viewport_y = (player_data.y * spacing[1]) - self.renderer.center[1]
 
         self._update_fov(player_data)
 
@@ -114,30 +72,7 @@ class BearLibRender(esper.Processor):
             refresh = True
 
         if refresh:
-            blt.refresh()
-
-    def _clear_layer(self, layer: game.types.RenderLayer):
-        current_layer = blt.state(blt.TK_LAYER)
-        blt.layer(layer)
-        blt.clear_area(0, 0, self.width, self.height)
-        blt.layer(current_layer)
-
-    @staticmethod
-    def _draw_on_layer(
-        layer: game.types.RenderLayer,
-        x: int,
-        y: int,
-        tile_id: int,
-        color: typing.Optional[str] = None,
-    ):
-        current_layer = blt.state(blt.TK_LAYER)
-        current_color = blt.state(blt.TK_COLOR)
-        blt.layer(layer)
-        if color is not None:
-            blt.color(color)
-        blt.put(x, y, tile_id)
-        blt.layer(current_layer)
-        blt.color(current_color)
+            self.renderer.refresh()
 
     def _update_fov(self, player_data):
         if [player_data.x, player_data.y] != self.known_player_xy:
@@ -151,9 +86,9 @@ class BearLibRender(esper.Processor):
         self.known_player_xy = [player_data.x, player_data.y]
 
     def _draw_entities(self, viewport_x: int, viewport_y: int) -> None:
-        self._clear_layer(game.types.RenderLayer.enemy)
-        self._clear_layer(game.types.RenderLayer.item)
-        self._clear_layer(game.types.RenderLayer.player)
+        self.renderer.clear_layer(game.types.RenderLayer.enemy)
+        self.renderer.clear_layer(game.types.RenderLayer.item)
+        self.renderer.clear_layer(game.types.RenderLayer.player)
 
         for ent, components in self.world.get_components(
             game.component.render.Renderable, game.component.movement.Position
@@ -205,30 +140,30 @@ class BearLibRender(esper.Processor):
                 continue
 
             category, name = renderable.tile_id
-            tile_id = game.utils.render.TileCache.get(
+            tile_id = game.render.TileCache.get(
                 category, name, direction=facing, frame=self.anim_tick
             )
             if pos_x is not None and pos_y is not None:
-                self._draw_on_layer(
+                self.renderer.draw_on_layer(
                     renderable.layer,
-                    (pos_x * self.spacing["monsters"][0]) - viewport_x,
-                    (pos_y * self.spacing["monsters"][1]) - viewport_y,
+                    (pos_x * self.renderer.spacing["monsters"][0]) - viewport_x,
+                    (pos_y * self.renderer.spacing["monsters"][1]) - viewport_y,
                     tile_id,
                     color=color,
                 )
 
     def _draw_map(self, viewport_x: int, viewport_y: int) -> None:
-        self._clear_layer(game.types.RenderLayer.floor)
-        self._clear_layer(game.types.RenderLayer.wall)
-        spacing_x, spacing_y = self.spacing["world"]
+        self.renderer.clear_layer(game.types.RenderLayer.floor)
+        self.renderer.clear_layer(game.types.RenderLayer.wall)
+        spacing_x, spacing_y = self.renderer.spacing["world"]
 
-        for draw_x in range(0, self.width, spacing_x):
+        for draw_x in range(0, self.renderer.width, spacing_x):
             x: int = (draw_x + viewport_x) // spacing_x
             if x >= self.world.map.width:
                 break
             if x < 0:
                 continue
-            for draw_y in range(0, self.height, spacing_y):
+            for draw_y in range(0, self.renderer.height, spacing_y):
                 y: int = (draw_y + viewport_y) // spacing_y
                 if y >= self.world.map.height:
                     break
@@ -245,7 +180,7 @@ class BearLibRender(esper.Processor):
                 if tile_color.startswith("#00"):
                     continue
 
-                self._draw_on_layer(
+                self.renderer.draw_on_layer(
                     _render_layer_from_tile_type(tile_type),
                     draw_x,
                     draw_y,
@@ -262,7 +197,7 @@ class BearLibRender(esper.Processor):
         ):
             player, renderable, position = components
             category, name = renderable.tile_id
-            player_tile_id = game.utils.render.TileCache.get(category, name)
+            player_tile_id = game.render.TileCache.get(category, name)
             return game.types.PlayerRenderData(
                 position.x,
                 position.y,
@@ -280,21 +215,13 @@ class BearLibRender(esper.Processor):
         self.should_render_map = True
 
     def _on_game_log(self, event: game.types.Event) -> None:
-        current_layer = blt.state(blt.TK_LAYER)
-        blt.layer(game.types.RenderLayer.ui_log)
-        blt.clear_area(0, 0, self.width, self.height)
-        offset_x = 4
-        offset_y = 0
-        log_line = f"[offset={offset_x},{offset_y}]{event['log_component'].blt_colorized()}"
-        blt.puts(0, self.height - 2, log_line)
-        blt.layer(current_layer)
+        self.renderer.draw_gamelog(4, 0, event["log_component"].lines)
 
-    @staticmethod
-    def _on_game_over(event: game.types.Event) -> None:
+    def _on_game_over(self, event: game.types.Event) -> None:
         """Game shutdown callback."""
         if event.get("shutdown"):
             log.info("Closing terminal window.")
-            blt.close()
+            self.renderer.close()
 
 
 def _render_layer_from_tile_type(tile_type: game.types.TileType) -> game.types.RenderLayer:

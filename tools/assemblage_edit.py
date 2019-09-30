@@ -12,7 +12,7 @@ import PySide2.QtWidgets
 
 import game.data
 import game.factory
-import game.utils.render
+import game.render
 import tools.widgets
 
 DATA_DIR = pathlib.Path("data/assemblage")
@@ -51,7 +51,7 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
                 game.data.tileset["tilesets"][tile_id[0]]["file"]
             )
             self.tile_size = game.data.tileset["tilesets"][tile_id[0]]["size"]
-            total_offset = game.utils.render.TileCache.get(*tile_id)
+            total_offset = game.render.TileCache.get(*tile_id)
             offset = total_offset - int(game.data.tileset["tilesets"][tile_id[0]]["offset"], 0)
             x = offset % int(self.tile_size[0])
             y = offset // int(self.tile_size[1])

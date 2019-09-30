@@ -28,6 +28,7 @@ import game.processor.player_bump
 import game.processor.psychopomps
 import game.processor.render
 import game.processor.time
+import game.render
 import game.state.base
 import game.types
 import game.utils.dataloader
@@ -156,8 +157,9 @@ class Playing(game.state.base.BaseState):
         self.world.add_processor(
             game.processor.gamelog.GameLog(), priority=game.types.Priority.gamelog
         )
+        renderer = game.render.BearLibRenderer()
         self.world.add_processor(
-            game.processor.render.BearLibRender(), priority=game.types.Priority.render
+            game.processor.render.Render(renderer), priority=game.types.Priority.render
         )
 
     def _setup_map(self) -> None:
@@ -186,6 +188,10 @@ class Playing(game.state.base.BaseState):
 
 class PlayingInput(game.state.base.StateInput):
     """Input handler for playing state."""
+
+    def __init__(self, world: game.world.World) -> None:
+        super().__init__()
+        self.world = world
 
     def handle(self, input_key: game.types.InputKey) -> None:
         """Handle an input key."""

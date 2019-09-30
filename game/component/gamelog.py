@@ -13,7 +13,7 @@ class BaseLog:
         initial_line: typing.Optional[str] = None,
         initial_color: str = game.palette.Message.default,
     ) -> None:
-        self.lines: list = []
+        self.lines: typing.List[game.types.LogLine] = []
         if initial_line is not None:
             self.add(initial_line, color=initial_color)
 
@@ -25,13 +25,14 @@ class BaseLog:
         try:
             last = self.lines.pop()
         except IndexError:
-            last = None
-        if last:
-            if last.color == color:
-                message = f"{last.message} {message}"
-            else:
-                self.lines.append(last)
-                message = " " + message
+            self.add_raw(message, color)
+            return
+
+        if last.color == color:
+            message = f"{last.message} {message}"
+        else:
+            self.lines.append(last)
+            message = " " + message
         self.add_raw(message, color)
 
     def add_raw(self, message: str, color: str = game.palette.Message.default) -> None:
@@ -40,10 +41,6 @@ class BaseLog:
 
     def __str__(self) -> str:
         return "".join([l.message for l in self.lines])
-
-    def blt_colorized(self) -> str:
-        """Return a colorized string of the lines for BearLibTerminal."""
-        return "".join([f"[color={l.color}]{l.message}[/color]" for l in self.lines])
 
 
 class TMPCombat(BaseLog):
