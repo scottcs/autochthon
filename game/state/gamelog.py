@@ -9,6 +9,7 @@ import game.render
 import game.state.base
 import game.types
 import game.ui.frame
+import game.ui.text
 import game.ui.widget
 import game.utils.geometry
 
@@ -24,21 +25,30 @@ class GameLog(game.state.base.BaseState):
     def __init__(self, renderer: game.render.BaseRenderer) -> None:
         self.renderer: game.render.BaseRenderer = renderer
         self.lines: typing.List[game.types.LogLine] = []
-        self.line_height: int = 0
         self.num_lines: int = 0
         self.frame: typing.Optional[game.ui.frame.Frame] = None
         self.do_render: bool = False
 
     def _on_enter(self):
         """Called when this state is entered."""
-        self.line_height = game.data.tileset["font"]["size"][1]
+        outer_margin = 6
+        inner_margin = 1
         for log_component in game.processor.gamelog.buffer:
             self.lines.append(log_component.lines)
-        self.num_lines = self.renderer.height // self.line_height
+        inner_height = self.renderer.height - (outer_margin * 2) - (inner_margin * 2)
+        self.num_lines = min(len(self.lines), inner_height)
         self.frame = game.ui.frame.Frame(
-            game.utils.geometry.Rect(10, 10, 80, 20), style=game.types.UIFrameStyle.stone
+            game.utils.geometry.Rect(
+                outer_margin,
+                outer_margin,
+                self.renderer.width - (outer_margin * 2),
+                self.renderer.height - (outer_margin * 2),
+            ),
+            style=game.types.UIFrameStyle.stone,
         )
-        # self.frame.set_layout(game.ui.widget.VerticalLayout(4, 4))
+        for y in range(self.num_lines):
+            self.frame.add_widget(game.ui.text.Text(self.renderer.colorize_gamelog(self.lines[y])))
+        self.frame.set_layout(game.ui.widget.VerticalLayout(inner_margin, 0))
         self.frame.show()
         self.do_render = True
 

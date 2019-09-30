@@ -196,6 +196,15 @@ class BaseRenderer:
         """Close all windows."""
         raise NotImplementedError()
 
+    @staticmethod
+    def colorize_text(text: str, color: str) -> str:
+        """Return a colorized string of text for BearLibTerminal."""
+        raise NotImplementedError()
+
+    def colorize_gamelog(self, lines: typing.Sequence[game.types.LogLine]) -> str:
+        """Return a colorized string of log lines for BearLibTerminal."""
+        raise NotImplementedError()
+
 
 class BearLibRenderer(BaseRenderer):
     """Bearlibterminal renderer."""
@@ -270,7 +279,7 @@ class BearLibRenderer(BaseRenderer):
     ) -> None:
         """Draw some text."""
         if color is not None:
-            text = self._colorize_text(text, color)
+            text = self.colorize_text(text, color)
         current_layer = blt.state(blt.TK_LAYER)
         blt.layer(layer)
         blt.puts(x, y, text)
@@ -280,17 +289,17 @@ class BearLibRenderer(BaseRenderer):
         self, layer: int, x: int, y: int, lines: typing.Sequence[game.types.LogLine]
     ) -> None:
         """Draw a game log line."""
-        self.draw_text_on_layer(layer, x, y, self._colorize_gamelog(lines))
+        self.draw_text_on_layer(layer, x, y, self.colorize_gamelog(lines))
 
     def close(self):
         """Close all windows."""
         blt.close()
 
     @staticmethod
-    def _colorize_text(text: str, color: str) -> str:
+    def colorize_text(text: str, color: str) -> str:
         """Return a colorized string of text for BearLibTerminal."""
         return f"[color={color}]{text}[/color]"
 
-    def _colorize_gamelog(self, lines: typing.Sequence[game.types.LogLine]) -> str:
+    def colorize_gamelog(self, lines: typing.Sequence[game.types.LogLine]) -> str:
         """Return a colorized string of log lines for BearLibTerminal."""
-        return "".join([self._colorize_text(l.message, l.color) for l in lines])
+        return "".join([self.colorize_text(l.message, l.color) for l in lines])

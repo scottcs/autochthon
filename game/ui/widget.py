@@ -108,8 +108,8 @@ class VerticalLayout(Layout):
 
     def reposition(self, parent: Widget, children: typing.Sequence[Widget]) -> None:
         """Calculate the positions for each child widget relative to the parent."""
-        x = parent.rect.x1 + self.spacing
-        y = parent.rect.y1
+        x = parent.rect.x1 + self.margin + self.spacing
+        y = parent.rect.y1 + self.margin
         for child in children:
             y += self.spacing
             child.move_to(x, y)
@@ -121,8 +121,8 @@ class HorizontalLayout(Layout):
 
     def reposition(self, parent: Widget, children: typing.Sequence[Widget]) -> None:
         """Calculate the positions for each child widget relative to the parent."""
-        x = parent.rect.x1
-        y = parent.rect.y1 + self.spacing
+        x = parent.rect.x1 + self.margin
+        y = parent.rect.y1 + self.margin + self.spacing
         for child in children:
             x += self.spacing
             child.rect.move_to(x, y)

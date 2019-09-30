@@ -19,12 +19,14 @@ class Frame(game.ui.widget.Widget):
         self.style: typing.Optional[game.types.UIFrameStyle] = style
         self._rng = game.utils.random.RNGCache.get("UIFrame")
 
-    def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
+    def render(self, renderer: game.render.BaseRenderer, layer: int) -> None:
+        """Render this widget; OVERRIDES parent."""
+        if not self._visible:
+            return
         if self.style is not None:
-            self._paint_background(renderer, layer)
-            self._paint_foreground(renderer, layer + 1)
-        else:
-            self._paint_foreground(renderer, layer)
+            self._paint(renderer, layer)
+        for child in self.children:
+            child.render(renderer, layer + 1)
 
     def _get_style_tile_id(self, x: int, y: int, w: int, h: int):
         if self.style is None:
@@ -72,7 +74,7 @@ class Frame(game.ui.widget.Widget):
             }[self.style]
         return game.render.TileCache.get("interface", name, direction=direction)
 
-    def _paint_background(self, renderer: game.render.BaseRenderer, layer: int) -> None:
+    def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
         renderer.clear_layer(layer, rect=self.rect)
         spacing_x, spacing_y = renderer.spacing["interface"]
         w = self.rect.w // spacing_x
@@ -83,10 +85,3 @@ class Frame(game.ui.widget.Widget):
                 renderer.draw_on_layer(
                     layer, self.rect.x1 + (x * spacing_x), self.rect.y1 + (y * spacing_y), tile_id
                 )
-
-    def _paint_foreground(self, renderer: game.render.BaseRenderer, layer: int) -> None:
-        renderer.clear_layer(layer, rect=self.rect)
-        color = "white"
-        if self.style in (game.types.UIFrameStyle.scroll, game.types.UIFrameStyle.bubble):
-            color = "black"
-        renderer.draw_text_on_layer(layer, self.rect.x1 + 1, self.rect.y1 + 1, "TEST", color=color)
