@@ -157,11 +157,48 @@ class BaseRenderer:
     def __init__(self) -> None:
         self.width: int = game.data.tileset["window"]["width"]
         self.height: int = game.data.tileset["window"]["height"]
+        self.cell_pixel_w: int = game.data.tileset["window"]["cellsize"][0]
+        self.cell_pixel_h: int = game.data.tileset["window"]["cellsize"][1]
         self.center: typing.List[int] = [self.width // 2, self.height // 2]
         self.font_size = game.data.tileset["font"]["size"]
         self.font_file = pathlib.Path(f"{game.data.FONT_PATH}/{game.data.tileset['font']['file']}")
         self.title = f"{game.data.config['title']} v{game.VERSION}"
-        self.spacing: typing.Dict[str, typing.List[int]] = {}
+
+    def to_grid_x(self, category: str, tile_x: int) -> int:
+        """Get the grid x coordinate for a tile."""
+        if category == "font":
+            size_x = game.data.tileset["font"]["size"][0]
+        else:
+            size_x = game.data.tileset["tilesets"][category]["size"][0]
+            size_x *= game.data.config["tile_scale"]
+        return int(tile_x * (size_x / self.cell_pixel_w))
+
+    def to_grid_y(self, category: str, tile_y: int) -> int:
+        """Get the grid y coordinate for a tile."""
+        if category == "font":
+            size_y = game.data.tileset["font"]["size"][1]
+        else:
+            size_y = game.data.tileset["tilesets"][category]["size"][1]
+            size_y *= game.data.config["tile_scale"]
+        return int(tile_y * (size_y / self.cell_pixel_h))
+
+    def from_grid_x(self, category: str, grid_x: int) -> int:
+        """Get the adjusted x coordinate for a tile."""
+        if category == "font":
+            size_x = game.data.tileset["font"]["size"][0]
+        else:
+            size_x = game.data.tileset["tilesets"][category]["size"][0]
+            size_x *= game.data.config["tile_scale"]
+        return int(grid_x // (size_x / self.cell_pixel_w))
+
+    def from_grid_y(self, category: str, grid_y: int) -> int:
+        """Get the adjusted y coordinate for a tile."""
+        if category == "font":
+            size_y = game.data.tileset["font"]["size"][1]
+        else:
+            size_y = game.data.tileset["tilesets"][category]["size"][1]
+            size_y *= game.data.config["tile_scale"]
+        return int(grid_y // (size_y / self.cell_pixel_h))
 
     def refresh(self) -> None:
         """Refresh graphics."""
@@ -214,34 +251,27 @@ class BearLibRenderer(BaseRenderer):
         if not blt.open():
             log.critical("Unable to initialize terminal window!")
         window_size = f"size={self.width}x{self.height}"
-        blt.set(f"window: {window_size}, title='{self.title}'")
+        cell_size = f"cellsize={self.cell_pixel_w}x{self.cell_pixel_h}"
+        blt.set(f"window: {window_size}, title='{self.title}', {cell_size}")
         blt.set(f"font: {self.font_file}, size={str(self.font_size[0])}x{str(self.font_size[1])}")
         blt.color("white")
         self._load_tilesets()
 
     def _load_tilesets(self) -> None:
-        tile_scale = game.data.config.get("tile_scale", 1)
+        tile_scale = game.data.config["tile_scale"]
         for tileset_name, item in game.data.tileset["tilesets"].items():
             item_file = pathlib.Path(f"{game.data.TILES_PATH}/{item['file']}")
             load_str = f"{item['offset']}: {item_file}"
-            if "size" in item:
-                width, height = item["size"]
-                load_str += f", size={str(width)}x{str(height)}"
-                if tile_scale != 1:
-                    width *= tile_scale
-                    height *= tile_scale
-                    load_str += f", resize={str(width)}x{str(height)}, resize-filter=nearest"
-            if "align" in item:
-                load_str += f", align={item['align']}"
-            if "spacing" in item:
-                x, y = item["spacing"]
-                if tile_scale != 1:
-                    x *= tile_scale
-                    y *= tile_scale
-                load_str += f", spacing={str(x)}x{str(y)}"
-                self.spacing[tileset_name] = [x, y]
-            else:
-                self.spacing[tileset_name] = game.data.tileset["font"]["spacing"]
+            width, height = item["size"]
+            load_str += f", size={str(width)}x{str(height)}"
+            if tile_scale != 1:
+                width *= tile_scale
+                height *= tile_scale
+                load_str += f", resize={str(width)}x{str(height)}, resize-filter=nearest"
+            load_str += f", align={item['align']}"
+            x = width // self.cell_pixel_w
+            y = height // self.cell_pixel_h
+            load_str += f", spacing={str(x)}x{str(y)}"
             blt.set(load_str)
 
     def refresh(self) -> None:

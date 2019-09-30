@@ -31,8 +31,8 @@ class GameLog(game.state.base.BaseState):
 
     def _on_enter(self):
         """Called when this state is entered."""
-        outer_margin = 6
-        inner_margin = 1
+        outer_margin = 8
+        inner_margin = 2
         for log_component in game.processor.gamelog.buffer:
             self.lines.append(log_component.lines)
         inner_height = self.renderer.height - (outer_margin * 2) - (inner_margin * 2)

@@ -56,9 +56,8 @@ class Render(esper.Processor):
 
         refresh = False
         player_data = self._get_player_render_data()
-        spacing = self.renderer.spacing["monsters"]
-        viewport_x = (player_data.x * spacing[0]) - self.renderer.center[0]
-        viewport_y = (player_data.y * spacing[1]) - self.renderer.center[1]
+        viewport_x = self.renderer.to_grid_x("monsters", player_data.x) - self.renderer.center[0]
+        viewport_y = self.renderer.to_grid_y("monsters", player_data.y) - self.renderer.center[1]
 
         self._update_fov(player_data)
 
@@ -146,8 +145,8 @@ class Render(esper.Processor):
             if pos_x is not None and pos_y is not None:
                 self.renderer.draw_on_layer(
                     renderable.layer,
-                    (pos_x * self.renderer.spacing["monsters"][0]) - viewport_x,
-                    (pos_y * self.renderer.spacing["monsters"][1]) - viewport_y,
+                    self.renderer.to_grid_x("monsters", pos_x) - viewport_x,
+                    self.renderer.to_grid_y("monsters", pos_y) - viewport_y,
                     tile_id,
                     color=color,
                 )
@@ -155,27 +154,27 @@ class Render(esper.Processor):
     def _draw_map(self, viewport_x: int, viewport_y: int) -> None:
         self.renderer.clear_layer(game.types.RenderLayer.floor)
         self.renderer.clear_layer(game.types.RenderLayer.wall)
-        spacing_x, spacing_y = self.renderer.spacing["world"]
-
-        for draw_x in range(0, self.renderer.width, spacing_x):
-            x: int = (draw_x + viewport_x) // spacing_x
-            if x >= self.world.map.width:
+        for tile_x in range(self.renderer.from_grid_x("world", self.renderer.width)):
+            draw_x: int = self.renderer.to_grid_x("world", tile_x)
+            map_x: int = self.renderer.from_grid_x("world", draw_x + viewport_x)
+            if map_x >= self.world.map.width:
                 break
-            if x < 0:
+            if map_x < 0:
                 continue
-            for draw_y in range(0, self.renderer.height, spacing_y):
-                y: int = (draw_y + viewport_y) // spacing_y
-                if y >= self.world.map.height:
+            for tile_y in range(self.renderer.from_grid_y("world", self.renderer.height)):
+                draw_y: int = self.renderer.to_grid_y("world", tile_y)
+                map_y: int = self.renderer.from_grid_y("world", draw_y + viewport_y)
+                if map_y >= self.world.map.height:
                     break
-                if y < 0:
+                if map_y < 0:
                     continue
-                tile_id, tile_type = self.world.map.get_tile(y, x)
+                tile_id, tile_type = self.world.map.get_tile(map_y, map_x)
                 # TODO: support tile colorization?
                 tile_color = "#00FFFFFF"
-                if self.world.map.explored[y, x]:
+                if self.world.map.explored[map_y, map_x]:
                     tile_color = "#60FFFFFF"
-                if self.world.map.fov[y, x]:
-                    self.world.map.explored[y, x] = True
+                if self.world.map.fov[map_y, map_x]:
+                    self.world.map.explored[map_y, map_x] = True
                     tile_color = "#FFFFFFFF"
                 if tile_color.startswith("#00"):
                     continue

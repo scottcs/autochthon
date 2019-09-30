@@ -5,6 +5,7 @@ import typing
 import game.render
 import game.types
 import game.ui.widget
+import game.utils.geometry
 import game.utils.random
 
 log = logging.getLogger(__name__)
@@ -75,13 +76,19 @@ class Frame(game.ui.widget.Widget):
         return game.render.TileCache.get("interface", name, direction=direction)
 
     def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
-        renderer.clear_layer(layer, rect=self.rect)
-        spacing_x, spacing_y = renderer.spacing["interface"]
-        w = self.rect.w // spacing_x
-        h = self.rect.h // spacing_y
+        x1 = self.rect.x1
+        y1 = self.rect.x2
+        w = renderer.from_grid_x("interface", self.rect.w)
+        h = renderer.from_grid_y("interface", self.rect.h)
+        renderer.clear_layer(
+            layer, rect=game.utils.geometry.Rect(x1, y1, self.rect.w, self.rect.h)
+        )
         for x in range(w):
             for y in range(h):
                 tile_id = self._get_style_tile_id(x, y, w - 1, h - 1)
                 renderer.draw_on_layer(
-                    layer, self.rect.x1 + (x * spacing_x), self.rect.y1 + (y * spacing_y), tile_id
+                    layer,
+                    x1 + renderer.to_grid_x("interface", x),
+                    y1 + renderer.to_grid_y("interface", y),
+                    tile_id,
                 )
