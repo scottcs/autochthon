@@ -211,7 +211,7 @@ class BearLibRenderer(BaseRenderer):
         self._load_tilesets()
 
         for y in range(self.height):
-            self.draw_text_on_layer(game.types.RenderLayer.ui_panel, 4, y, str(y))
+            self.draw_text_on_layer(game.types.RenderLayer.ui_hi_menu_fg, 4, y, str(y))
 
     def _load_tilesets(self) -> None:
         tile_scale = game.data.config.get("tile_scale", 1)

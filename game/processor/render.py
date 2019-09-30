@@ -215,9 +215,9 @@ class Render(esper.Processor):
         self.should_render_map = True
 
     def _on_game_log(self, event: game.types.Event) -> None:
-        self.renderer.clear_layer(game.types.RenderLayer.ui_last_game_message)
+        self.renderer.clear_layer(game.types.RenderLayer.ui_game_message_fg)
         self.renderer.draw_gamelog_on_layer(
-            game.types.RenderLayer.ui_last_game_message,
+            game.types.RenderLayer.ui_game_message_fg,
             4,
             self.renderer.height - 6,
             event["log_component"].lines,

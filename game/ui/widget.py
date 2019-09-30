@@ -1,10 +1,14 @@
 """Widget: basic building block of UI."""
 from __future__ import annotations
 
+import logging
 import typing
 
 import game.render
 import game.utils.geometry
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class Widget:
@@ -16,6 +20,9 @@ class Widget:
         self._visible: bool = False
         self._layout: typing.Optional[Layout] = None
         # TODO: input events
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}<{self.rect} ({id(self)})>"
 
     @property
     def visible(self) -> bool:

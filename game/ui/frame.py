@@ -1,8 +1,12 @@
 """Draw a UI Frame."""
+import logging
 import typing
 
 import game.render
 import game.ui.widget
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class Frame(game.ui.widget.Widget):
@@ -13,18 +17,16 @@ class Frame(game.ui.widget.Widget):
         self.style: typing.Optional[str] = style
 
     def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
-        if self.style:
+        if self.style is not None:
             self._paint_background(renderer, layer)
             self._paint_foreground(renderer, layer + 1)
         else:
             self._paint_foreground(renderer, layer)
 
-    def _get_style_tile_id(self, x: int, y: int):
+    def _get_style_tile_id(self, x: int, y: int, w: int, h: int):
         if self.style is None:
             return
         direction = "base"
-        w = self.rect.w - 1
-        h = self.rect.h - 1
         if x == 0:
             if y == 0:
                 direction = "nw"
@@ -47,11 +49,16 @@ class Frame(game.ui.widget.Widget):
 
     def _paint_background(self, renderer: game.render.BaseRenderer, layer: int) -> None:
         renderer.clear_layer(layer, rect=self.rect)
-        for x in range(self.rect.w):
-            for y in range(self.rect.h):
-                tile_id = self._get_style_tile_id(x, y)
-                renderer.draw_on_layer(layer, self.rect.x1 + x, self.rect.y1 + y, tile_id)
+        spacing_x, spacing_y = renderer.spacing["interface"]
+        w = self.rect.w // spacing_x
+        h = self.rect.h // spacing_y
+        for x in range(w):
+            for y in range(h):
+                tile_id = self._get_style_tile_id(x, y, w - 1, h - 1)
+                renderer.draw_on_layer(
+                    layer, self.rect.x1 + (x * spacing_x), self.rect.y1 + (y * spacing_y), tile_id
+                )
 
     def _paint_foreground(self, renderer: game.render.BaseRenderer, layer: int) -> None:
         renderer.clear_layer(layer, rect=self.rect)
-        renderer.draw_text_on_layer(layer, 4, 4, "TEST")
+        renderer.draw_text_on_layer(layer, self.rect.x1 + 1, self.rect.y1 + 1, "TEST")

@@ -51,7 +51,6 @@ class Playing(game.state.base.BaseState):
         layout_name: str,
         seed: typing.Optional[str] = None,
     ) -> None:
-        super().__init__()
         self.renderer = renderer
         self.layout_name = layout_name
         self.seed = seed
@@ -59,9 +58,8 @@ class Playing(game.state.base.BaseState):
         self.layout: game.types.Layout = {}
         self.morgue = game.utils.morgue.new()
 
-    def on_enter(self) -> None:
+    def _on_enter(self) -> None:
         """Called when this state is entered."""
-        super().on_enter()
         self.morgue.info(game.data.VERSION_STRING)
         self.layout = game.level_layout.DATA[self.layout_name]
         game.utils.random.RNGCache.init(self.seed)
@@ -72,26 +70,23 @@ class Playing(game.state.base.BaseState):
         self._setup_processors()
         self._setup_map()
 
-    def on_exit(self):
+    def _on_exit(self):
         """Called when this state is discarded or popped off the stack."""
-        super().on_exit()
         self.world.clear_database()
         game.events.GameLog.unhandle(self._on_game_log)
         game.events.GameOver.unhandle(self._on_game_over)
 
-    def on_pause(self):
+    def _on_pause(self):
         """Called when another state is pushed on top of this one."""
-        super().on_pause()
         game.events.GameLog.unhandle(self._on_game_log)
         game.events.GameOver.unhandle(self._on_game_over)
 
-    def on_resume(self):
+    def _on_resume(self):
         """Called when this state becomes top-most on the stack after having been pushed down."""
-        super().on_resume()
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
-    def update(self) -> None:
+    def _update(self) -> None:
         """Update iteration."""
         self.world.process()
 

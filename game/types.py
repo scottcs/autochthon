@@ -25,9 +25,16 @@ class RenderLayer(enum.IntEnum):
     enemy = enum.auto()
     player = enum.auto()
     effect = enum.auto()
-    ui_last_game_message = enum.auto()
-    ui_background = enum.auto()
-    ui_panel = enum.auto()
+    ui_game_message_bg = enum.auto()
+    ui_game_message_fg = enum.auto()
+    ui_hud_bg = enum.auto()
+    ui_hud_fg = enum.auto()
+    ui_low_menu_bg = enum.auto()
+    ui_low_menu_fg = enum.auto()
+    ui_mid_menu_bg = enum.auto()
+    ui_mid_menu_fg = enum.auto()
+    ui_hi_menu_bg = enum.auto()
+    ui_hi_menu_fg = enum.auto()
 
 
 class Priority(enum.IntEnum):

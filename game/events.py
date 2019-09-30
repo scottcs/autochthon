@@ -53,7 +53,8 @@ class Event:
         """Fire the event."""
         self._remove_unhandled_handlers()
         # print(f"{self} fire event: {event}")
-        for handler in self.handlers.keys():
+        to_iterate = list(self.handlers.keys())
+        for handler in to_iterate:
             handler(event or {})
         self._remove_unhandled_handlers()
 

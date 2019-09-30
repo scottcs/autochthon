@@ -1,6 +1,5 @@
 """Game state."""
 import collections
-import typing
 
 import game.events
 import game.types
@@ -14,31 +13,52 @@ class EmptyStateQueueException(Exception):
 class BaseState:
     """Game state base class."""
 
-    def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
-        pass
-
     def on_enter(self) -> None:
         """Called when this state is entered."""
         game.events.Input.handle(self._on_input)
+        self._on_enter()
+
+    def _on_enter(self) -> None:
+        """Overwrite in child class."""
+        pass
 
     def on_exit(self) -> None:
         """Called when this state is discarded or popped off the stack."""
         game.events.Input.unhandle(self._on_input)
+        self._on_exit()
+
+    def _on_exit(self) -> None:
+        """Overwrite in child class."""
+        pass
 
     def on_pause(self) -> None:
         """Called when another state is pushed on top of this one."""
         game.events.Input.unhandle(self._on_input)
+        self._on_pause()
+
+    def _on_pause(self) -> None:
+        """Overwrite in child class."""
+        pass
 
     def on_resume(self) -> None:
         """Called when this state becomes top-most on the stack after having been pushed down."""
         game.events.Input.handle(self._on_input)
+        self._on_resume()
+
+    def _on_resume(self) -> None:
+        """Overwrite in child class."""
+        pass
 
     def _on_input(self, event: game.types.Event):
-        """Handle input."""
-        raise NotImplementedError()
+        """Handle input; overwrite in child class."""
+        pass
 
     def update(self) -> None:
         """Update iteration."""
+        self._update()
+
+    def _update(self) -> None:
+        """Overwrite in child class."""
         pass
 
 
