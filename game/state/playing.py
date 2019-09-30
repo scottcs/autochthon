@@ -30,6 +30,7 @@ import game.processor.render
 import game.processor.time
 import game.render
 import game.state.base
+import game.state.gamelog
 import game.types
 import game.utils.dataloader
 import game.utils.language
@@ -44,14 +45,19 @@ log.setLevel(logging.DEBUG)
 class Playing(game.state.base.BaseState):
     """Playing game state."""
 
-    def __init__(self, layout_name: str, seed: typing.Optional[str] = None) -> None:
+    def __init__(
+        self,
+        renderer: game.render.BaseRenderer,
+        layout_name: str,
+        seed: typing.Optional[str] = None,
+    ) -> None:
         super().__init__()
+        self.renderer = renderer
         self.layout_name = layout_name
         self.seed = seed
         self.world: game.world.World = game.world.World()
         self.layout: game.types.Layout = {}
         self.morgue = game.utils.morgue.new()
-        self.input_handler = PlayingInput(self.world)
 
     def on_enter(self) -> None:
         """Called when this state is entered."""
@@ -157,9 +163,8 @@ class Playing(game.state.base.BaseState):
         self.world.add_processor(
             game.processor.gamelog.GameLog(), priority=game.types.Priority.gamelog
         )
-        renderer = game.render.BearLibRenderer()
         self.world.add_processor(
-            game.processor.render.Render(renderer), priority=game.types.Priority.render
+            game.processor.render.Render(self.renderer), priority=game.types.Priority.render
         )
 
     def _setup_map(self) -> None:
@@ -185,24 +190,16 @@ class Playing(game.state.base.BaseState):
             for _ in range(item["count"]):
                 item_factory.make(item["assemblages"])
 
-
-class PlayingInput(game.state.base.StateInput):
-    """Input handler for playing state."""
-
-    def __init__(self, world: game.world.World) -> None:
-        super().__init__()
-        self.world = world
-
-    def handle(self, input_key: game.types.InputKey) -> None:
+    def _on_input(self, event: game.types.Event) -> None:
         """Handle an input key."""
+        input_key = event["key"]
         if not self._try_bump(input_key):
-            if not self._try_command(input_key):
-                # TODO: more?
-                if game.input.GameInterface.match("quit", input_key):
-                    # TODO: remove this (quit through menu)
-                    game.events.GameOver()
-                else:
-                    super().handle(input_key)
+            if not self._try_menu(input_key):
+                if not self._try_command(input_key):
+                    # TODO: more?
+                    if game.input.GameInterface.match("quit", input_key):
+                        # TODO: remove this (quit through menu)
+                        game.events.GameOver()
 
     def _try_bump(self, input_key: game.types.InputKey) -> bool:
         dx = 0
@@ -230,6 +227,13 @@ class PlayingInput(game.state.base.StateInput):
         for ent, _ in self.world.get_component(game.component.player.Player):
             self.world.add_component(ent, game.component.player.TMPPlayerBump(dx, dy))
         return True
+
+    def _try_menu(self, input_key: game.types.InputKey) -> bool:
+        handled = False
+        if game.input.GameMenu.match("gamelog", input_key):
+            game.state.base.Stack.push(game.state.gamelog.GameLog(self.renderer))
+            handled = True
+        return handled
 
     def _try_command(self, input_key: game.types.InputKey) -> bool:
         handled = True

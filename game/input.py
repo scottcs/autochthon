@@ -89,3 +89,4 @@ class KeyMap:
 GameMovement = KeyMap("game", "movement")
 GameCommand = KeyMap("game", "command")
 GameInterface = KeyMap("game", "interface")
+GameMenu = KeyMap("game", "command")

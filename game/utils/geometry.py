@@ -61,3 +61,10 @@ class Rect:
             and self.y1 <= other.y2
             and self.y2 >= other.y1
         )
+
+    def move_to(self, x: int, y: int) -> None:
+        """Move the top-left point of this rect but keep dimensions."""
+        self.x1 = x
+        self.y1 = y
+        self.x2 = x + (self.w - 1)
+        self.y2 = y + (self.h - 1)

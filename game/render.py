@@ -7,6 +7,7 @@ import bearlibterminal.terminal as blt
 
 import game.data
 import game.types
+import game.utils.geometry
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -153,7 +154,7 @@ TileCache = _TileCache()
 class BaseRenderer:
     """Base renderer class."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.width: int = game.data.tileset["window"]["width"]
         self.height: int = game.data.tileset["window"]["height"]
         self.center: typing.List[int] = [self.width // 2, self.height // 2]
@@ -162,30 +163,36 @@ class BaseRenderer:
         self.title = f"{game.data.config['title']} v{game.VERSION}"
         self.spacing: typing.Dict[str, typing.List[int]] = {}
 
-    def refresh(self):
+    def refresh(self) -> None:
         """Refresh graphics."""
         raise NotImplementedError()
 
-    def clear_layer(self, layer: game.types.RenderLayer):
-        """Clear the given layer."""
+    def clear_layer(
+        self, layer: int, rect: typing.Optional[game.utils.geometry.Rect] = None
+    ) -> None:
+        """Clear the given layer or part of the layer."""
         raise NotImplementedError()
 
     @staticmethod
     def draw_on_layer(
-        layer: game.types.RenderLayer,
-        x: int,
-        y: int,
-        tile_id: int,
-        color: typing.Optional[str] = None,
-    ):
+        layer: int, x: int, y: int, tile_id: int, color: typing.Optional[str] = None
+    ) -> None:
         """Draw on the given layer."""
         raise NotImplementedError()
 
-    def draw_gamelog(self, x: int, y: int, lines: typing.Sequence[game.types.LogLine]) -> None:
+    def draw_text_on_layer(
+        self, layer: int, x: int, y: int, text: str, color: typing.Optional[str] = None
+    ) -> None:
+        """Draw some text."""
+        raise NotImplementedError()
+
+    def draw_gamelog_on_layer(
+        self, layer: int, x: int, y: int, lines: typing.Sequence[game.types.LogLine]
+    ) -> None:
         """Draw a game log line."""
         raise NotImplementedError()
 
-    def close(self):
+    def close(self) -> None:
         """Close all windows."""
         raise NotImplementedError()
 
@@ -193,7 +200,7 @@ class BaseRenderer:
 class BearLibRenderer(BaseRenderer):
     """Bearlibterminal renderer."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         if not blt.open():
             log.critical("Unable to initialize terminal window!")
@@ -202,6 +209,9 @@ class BearLibRenderer(BaseRenderer):
         blt.set(f"font: {self.font_file}, size={str(self.font_size[0])}x{str(self.font_size[1])}")
         blt.color("white")
         self._load_tilesets()
+
+        for y in range(self.height):
+            self.draw_text_on_layer(game.types.RenderLayer.ui_panel, 4, y, str(y))
 
     def _load_tilesets(self) -> None:
         tile_scale = game.data.config.get("tile_scale", 1)
@@ -228,25 +238,26 @@ class BearLibRenderer(BaseRenderer):
                 self.spacing[tileset_name] = game.data.tileset["font"]["spacing"]
             blt.set(load_str)
 
-    def refresh(self):
+    def refresh(self) -> None:
         """Refresh graphics."""
         blt.refresh()
 
-    def clear_layer(self, layer: game.types.RenderLayer):
-        """Clear the given layer."""
+    def clear_layer(
+        self, layer: int, rect: typing.Optional[game.utils.geometry.Rect] = None
+    ) -> None:
+        """Clear the given layer, or part of the layer."""
         current_layer = blt.state(blt.TK_LAYER)
         blt.layer(layer)
-        blt.clear_area(0, 0, self.width, self.height)
+        if rect is None:
+            blt.clear_area(0, 0, self.width, self.height)
+        else:
+            blt.clear_area(rect.x1, rect.x2, rect.w, rect.h)
         blt.layer(current_layer)
 
     @staticmethod
     def draw_on_layer(
-        layer: game.types.RenderLayer,
-        x: int,
-        y: int,
-        tile_id: int,
-        color: typing.Optional[str] = None,
-    ):
+        layer: int, x: int, y: int, tile_id: int, color: typing.Optional[str] = None
+    ) -> None:
         """Draw on the given layer."""
         current_layer = blt.state(blt.TK_LAYER)
         current_color = blt.state(blt.TK_COLOR)
@@ -257,20 +268,32 @@ class BearLibRenderer(BaseRenderer):
         blt.layer(current_layer)
         blt.color(current_color)
 
-    def draw_gamelog(self, x: int, y: int, lines: typing.Sequence[game.types.LogLine]) -> None:
-        """Draw a game log line."""
-        self.clear_layer(game.types.RenderLayer.ui_last_game_message)
-        log_line = f"[offset={x},{y}]{self._colorize_gamelog(lines)}"
+    def draw_text_on_layer(
+        self, layer: int, x: int, y: int, text: str, color: typing.Optional[str] = None
+    ) -> None:
+        """Draw some text."""
+        if color is not None:
+            text = self._colorize_text(text, color)
         current_layer = blt.state(blt.TK_LAYER)
-        blt.layer(game.types.RenderLayer.ui_last_game_message)
-        blt.puts(0, self.height - 2, log_line)
+        blt.layer(layer)
+        blt.puts(x, y, f"[offset={x},{y}]{text}")
         blt.layer(current_layer)
+
+    def draw_gamelog_on_layer(
+        self, layer: int, x: int, y: int, lines: typing.Sequence[game.types.LogLine]
+    ) -> None:
+        """Draw a game log line."""
+        self.draw_text_on_layer(layer, x, y, self._colorize_gamelog(lines))
 
     def close(self):
         """Close all windows."""
         blt.close()
 
     @staticmethod
-    def _colorize_gamelog(lines: typing.Sequence[game.types.LogLine]) -> str:
+    def _colorize_text(text: str, color: str) -> str:
+        """Return a colorized string of text for BearLibTerminal."""
+        return f"[color={color}]{text}[/color]"
+
+    def _colorize_gamelog(self, lines: typing.Sequence[game.types.LogLine]) -> str:
         """Return a colorized string of log lines for BearLibTerminal."""
-        return "".join([f"[color={l.color}]{l.message}[/color]" for l in lines])
+        return "".join([self._colorize_text(l.message, l.color) for l in lines])

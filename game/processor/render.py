@@ -215,7 +215,13 @@ class Render(esper.Processor):
         self.should_render_map = True
 
     def _on_game_log(self, event: game.types.Event) -> None:
-        self.renderer.draw_gamelog(4, 0, event["log_component"].lines)
+        self.renderer.clear_layer(game.types.RenderLayer.ui_last_game_message)
+        self.renderer.draw_gamelog_on_layer(
+            game.types.RenderLayer.ui_last_game_message,
+            4,
+            self.renderer.height - 6,
+            event["log_component"].lines,
+        )
 
     def _on_game_over(self, event: game.types.Event) -> None:
         """Game shutdown callback."""
