@@ -205,13 +205,10 @@ class BearLibRenderer(BaseRenderer):
         if not blt.open():
             log.critical("Unable to initialize terminal window!")
         window_size = f"size={self.width}x{self.height}"
-        blt.set(f"window: {window_size}, resizable=true, title='{self.title}'")
+        blt.set(f"window: {window_size}, title='{self.title}'")
         blt.set(f"font: {self.font_file}, size={str(self.font_size[0])}x{str(self.font_size[1])}")
         blt.color("white")
         self._load_tilesets()
-
-        for y in range(self.height):
-            self.draw_text_on_layer(game.types.RenderLayer.ui_hi_menu_fg, 4, y, str(y))
 
     def _load_tilesets(self) -> None:
         tile_scale = game.data.config.get("tile_scale", 1)
@@ -276,7 +273,7 @@ class BearLibRenderer(BaseRenderer):
             text = self._colorize_text(text, color)
         current_layer = blt.state(blt.TK_LAYER)
         blt.layer(layer)
-        blt.puts(x, y, f"[offset={x},{y}]{text}")
+        blt.puts(x, y, text)
         blt.layer(current_layer)
 
     def draw_gamelog_on_layer(

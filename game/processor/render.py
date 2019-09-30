@@ -218,8 +218,8 @@ class Render(esper.Processor):
         self.renderer.clear_layer(game.types.RenderLayer.ui_game_message_fg)
         self.renderer.draw_gamelog_on_layer(
             game.types.RenderLayer.ui_game_message_fg,
-            4,
-            self.renderer.height - 6,
+            2,
+            self.renderer.height - 2,
             event["log_component"].lines,
         )
 
