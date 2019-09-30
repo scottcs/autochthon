@@ -36,7 +36,7 @@ class GameLog(game.state.base.BaseState):
             self.lines.append(log_component.lines)
         self.num_lines = self.renderer.height // self.line_height
         self.frame = game.ui.frame.Frame(
-            game.utils.geometry.Rect(10, 10, 80, 20), style="panel_stone_cracked"
+            game.utils.geometry.Rect(10, 10, 80, 20), style=game.types.UIFrameStyle.stone
         )
         # self.frame.set_layout(game.ui.widget.VerticalLayout(4, 4))
         self.frame.show()

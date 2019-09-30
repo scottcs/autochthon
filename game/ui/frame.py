@@ -3,7 +3,9 @@ import logging
 import typing
 
 import game.render
+import game.types
 import game.ui.widget
+import game.utils.random
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -12,9 +14,10 @@ log.setLevel(logging.DEBUG)
 class Frame(game.ui.widget.Widget):
     """Generic UI Frame."""
 
-    def __init__(self, *args, style: typing.Optional[str] = None) -> None:
+    def __init__(self, *args, style: typing.Optional[game.types.UIFrameStyle] = None) -> None:
         super().__init__(*args)
-        self.style: typing.Optional[str] = style
+        self.style: typing.Optional[game.types.UIFrameStyle] = style
+        self._rng = game.utils.random.RNGCache.get("UIFrame")
 
     def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
         if self.style is not None:
@@ -45,7 +48,29 @@ class Frame(game.ui.widget.Widget):
             direction = "n"
         elif y == h:
             direction = "s"
-        return game.render.TileCache.get("interface", self.style, direction=direction)
+        if direction in ("nw", "sw", "ne", "se") or (
+            self._rng.percent(0.40)
+            and (
+                (direction == "w" and (y % 3 == 0))
+                or (direction == "e" and (y % 3 == 2))
+                or (direction == "n" and (x % 3 == 0))
+                or (direction == "s" and (x % 3 == 2))
+            )
+        ):
+            name = {
+                game.types.UIFrameStyle.stone: "panel_stone_cracked",
+                game.types.UIFrameStyle.scroll: "panel_scroll_worn",
+                game.types.UIFrameStyle.window: "panel_window",
+                game.types.UIFrameStyle.bubble: "bubble",
+            }[self.style]
+        else:
+            name = {
+                game.types.UIFrameStyle.stone: "panel_stone",
+                game.types.UIFrameStyle.scroll: "panel_scroll",
+                game.types.UIFrameStyle.window: "panel_window",
+                game.types.UIFrameStyle.bubble: "bubble",
+            }[self.style]
+        return game.render.TileCache.get("interface", name, direction=direction)
 
     def _paint_background(self, renderer: game.render.BaseRenderer, layer: int) -> None:
         renderer.clear_layer(layer, rect=self.rect)
@@ -61,4 +86,7 @@ class Frame(game.ui.widget.Widget):
 
     def _paint_foreground(self, renderer: game.render.BaseRenderer, layer: int) -> None:
         renderer.clear_layer(layer, rect=self.rect)
-        renderer.draw_text_on_layer(layer, self.rect.x1 + 1, self.rect.y1 + 1, "TEST")
+        color = "white"
+        if self.style in (game.types.UIFrameStyle.scroll, game.types.UIFrameStyle.bubble):
+            color = "black"
+        renderer.draw_text_on_layer(layer, self.rect.x1 + 1, self.rect.y1 + 1, "TEST", color=color)

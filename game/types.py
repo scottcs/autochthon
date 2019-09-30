@@ -194,3 +194,12 @@ class InputKey(typing.NamedTuple):
     shift: bool
     ctrl: bool
     alt: bool
+
+
+class UIFrameStyle(enum.Enum):
+    """Frame styles."""
+
+    stone = enum.auto()
+    scroll = enum.auto()
+    window = enum.auto()
+    bubble = enum.auto()
