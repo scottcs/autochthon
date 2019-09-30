@@ -58,7 +58,7 @@ class BearLibRender(esper.Processor):
         font_data = game.data.tileset["font"]
         font_file = pathlib.Path(f"{game.data.FONT_PATH}/{font_data['file']}")
 
-        title = game.data.config["title"]
+        title = f"{game.data.config['title']} v{game.VERSION}"
         blt.set(f"window: {window_size}, resizable=true, title='{title}'")
         blt.set(f"font: {font_file}, size={str(font_data['size'][0])}x{str(font_data['size'][1])}")
         blt.color("white")

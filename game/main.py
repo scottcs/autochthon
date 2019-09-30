@@ -1,6 +1,7 @@
 """Main game class."""
 import logging
 
+import game.data
 import game.events
 import game.input
 import game.state.base
@@ -18,6 +19,7 @@ class App:
         self.input_handler = input_handler
         self.shutting_down: bool = False
         game.events.ShutDown.handle(self._on_shutdown)
+        log.info(game.data.VERSION_STRING)
 
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
