@@ -1,196 +1,45 @@
 """Main game class."""
 import logging
-import pathlib
-import time
-import typing
 
-import appdirs
-
-import game
-import game.base_engine_values
-import game.component.action
-import game.component.attack
-import game.data
 import game.events
-import game.factory
-import game.level_layout
-import game.map
-import game.processor.ai
-import game.processor.attack
-import game.processor.attribute
-import game.processor.container
-import game.processor.damage
-import game.processor.gamelog
-import game.processor.movement
-import game.processor.player_bump
-import game.processor.player_input
-import game.processor.psychopomps
-import game.processor.render
-import game.processor.time
+import game.input
+import game.state.base
+import game.state.playing
 import game.types
-import game.utils.dataloader
-import game.utils.language
-import game.utils.random
-import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-def _safe_dir(name: str) -> str:
-    return name.lower().replace(" ", "_")
-
-
-class Game:
+class App:
     """Main game object."""
 
-    def __init__(self) -> None:
-        self.dirs = appdirs.AppDirs(
-            _safe_dir(game.data.config["title"]), _safe_dir(game.data.config["org"])
-        )
-        self.game_over: bool = False
-        self.world: game.world.World = game.world.World()
-        self.layout: game.types.Layout = {}
-        self.state: game.types.GameState = game.types.GameState.unknown
-        self.loader: game.utils.dataloader.DataLoader = game.utils.dataloader.DataLoader()
-        self.loader.load_all_json()
-        self.morgue: logging.Logger = self._setup_morgue()
-        version_string = f'* {game.data.config["title"]} version {game.VERSION}'
-        log.info(version_string)
-        self.morgue.info(version_string)
+    def __init__(self, input_handler: game.input.InputHandler) -> None:
+        self.input_handler = input_handler
+        self.shutting_down: bool = False
+        game.events.ShutDown.handle(self._on_shutdown)
 
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
-        self.set_state_playing("Test1")
+        game.state.base.Stack.push(game.state.playing.Playing("Test1"))
 
-    def _setup_morgue(self) -> logging.Logger:
-        """Set up the morgue log."""
-        morgue_dir = (
-            pathlib.Path(self.dirs.user_log_dir)
-            / pathlib.Path(game.data.config["directories"]["base"])
-            / pathlib.Path(game.data.config["directories"]["morgue"])
-            / pathlib.Path(game.data.config["player"]["name"])
-        )
-        morgue_dir.mkdir(parents=True, exist_ok=True)
-        log_file = morgue_dir / pathlib.Path(f"{time.time()}.morgue")
-        handler = logging.FileHandler(str(log_file))
-        handler.setLevel(logging.INFO)
-        handler.setFormatter(logging.Formatter("%(message)s"))
-        morgue_log = logging.getLogger("morgue")
-        morgue_log.setLevel(logging.INFO)
-        for old_handler in morgue_log.handlers[:]:
-            log.removeHandler(old_handler)
-        morgue_log.addHandler(handler)
-        morgue_log.propagate = False
-        return morgue_log
+    def update(self):
+        """Game update."""
+        if not self.shutting_down:
+            self.input_handler.process()
+            try:
+                game.state.base.Stack.current.update()
+            except game.state.base.EmptyStateQueueException:
+                log.debug("No current state; initiating shutdown")
+                game.events.ShutDown()
 
-    def set_state_playing(self, layout_name, seed: typing.Optional[str] = None) -> None:
-        """Set the game state to playing."""
-        self.layout = game.level_layout.DATA[layout_name]
+    def _on_shutdown(self, _event: game.types.Event) -> None:
+        log.info("Shutting down.")
+        self.shutting_down = True
 
-        game.utils.random.RNGCache.init(seed)
-        self.state = game.types.GameState.playing
 
-        game.events.GameLog.handle(self._on_game_log)
-        game.events.GameOver.handle(self._on_game_over)
-
-        dodge_processor = game.processor.attack.AttackDefense(
-            game.utils.language.Verb("dodges", "dodged"),
-            game.component.attack.DodgeModifier,
-            game.component.attack.ImmuneToDodge,
-            game.base_engine_values.DODGE_CHANCE,
-        )
-        block_processor = game.processor.attack.AttackDefense(
-            game.utils.language.Verb("blocks", "blocked"),
-            game.component.attack.BlockModifier,
-            game.component.attack.ImmuneToBlock,
-            game.base_engine_values.BLOCK_CHANCE,
-        )
-        deflect_processor = game.processor.attack.AttackDefense(
-            game.utils.language.Verb("deflects", "deflected"),
-            game.component.attack.DeflectModifier,
-            game.component.attack.ImmuneToDeflect,
-            game.base_engine_values.DEFLECT_CHANCE,
-        )
-
-        self.world.add_processor(
-            game.processor.player_input.PlayerInput(), priority=game.types.Priority.player_input
-        )
-        self.world.add_processor(
-            game.processor.player_bump.PlayerBump(), priority=game.types.Priority.player_bump
-        )
-        self.world.add_processor(game.processor.time.Turn(), priority=game.types.Priority.turn)
-        self.world.add_processor(
-            game.processor.container.Container(), priority=game.types.Priority.container
-        )
-        self.world.add_processor(game.processor.ai.AI(), priority=game.types.Priority.ai)
-        self.world.add_processor(
-            game.processor.movement.Movement(), priority=game.types.Priority.movement
-        )
-        self.world.add_processor(
-            game.processor.attack.AttackTargeting(), priority=game.types.Priority.targeting
-        )
-        self.world.add_processor(
-            game.processor.attack.AttackMiss(), priority=game.types.Priority.attack_miss
-        )
-        self.world.add_processor(dodge_processor, priority=game.types.Priority.attack_dodge)
-        self.world.add_processor(block_processor, priority=game.types.Priority.attack_block)
-        self.world.add_processor(deflect_processor, priority=game.types.Priority.attack_deflect)
-        self.world.add_processor(
-            game.processor.attack.AttackHit(), priority=game.types.Priority.attack_hit
-        )
-        self.world.add_processor(
-            game.processor.damage.DamageBludgeoningMitigation(),
-            priority=game.types.Priority.defense,
-        )
-        self.world.add_processor(
-            game.processor.damage.DamageBludgeoning(),
-            priority=game.types.Priority.damage_resolution,
-        )
-        self.world.add_processor(
-            game.processor.attribute.HP(), priority=game.types.Priority.attributes
-        )
-        self.world.add_processor(
-            game.processor.psychopomps.Psychopomps(), priority=game.types.Priority.psychopomps
-        )
-        self.world.add_processor(
-            game.processor.gamelog.GameLog(), priority=game.types.Priority.gamelog
-        )
-        self.world.add_processor(
-            game.processor.render.BearLibRender(), priority=game.types.Priority.render
-        )
-
-        current_map = game.map.ClassicMap(
-            game.data.config["map"]["max_tiles_w"],
-            game.data.config["map"]["max_tiles_h"],
-            config=self.layout["map"],
-        )
-        current_map.create()
-        self.world.map = current_map
-        self._populate_map()
-
-    def _populate_map(self) -> None:
-        player_factory = game.factory.Player(self.loader, self.world)
-        enemy_factory = game.factory.Enemy(self.loader, self.world)
-        item_factory = game.factory.Item(self.loader, self.world)
-
-        player = player_factory.make(self.layout["player"])
-        self.world.add_component(player, game.component.action.TMPMyTurn())
-        for enemy in self.layout["enemies"]:
-            for _ in range(enemy["count"]):
-                enemy_factory.make(enemy["assemblages"])
-        for item in self.layout["items"]:
-            for _ in range(item["count"]):
-                item_factory.make(item["assemblages"])
-
-    def _on_game_log(self, event: game.types.Event) -> None:
-        self.morgue.info(str(event["log_component"]))
-
-    def _on_game_over(self, event: game.types.Event) -> None:
-        if event.get("shutdown"):
-            log.info("Shutting down.")
-            self.game_over = True
-
-    def update(self) -> None:
-        """Update the game world."""
-        self.world.process(state=self.state)
+def run() -> None:
+    """Run the game."""
+    app = App(game.input.BearLibInput())
+    while not app.shutting_down:
+        app.update()

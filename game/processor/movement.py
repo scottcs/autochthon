@@ -59,7 +59,7 @@ class Movement(esper.Processor):
                 position.y = moving.y
                 entities_need_rendering = True
                 if ent in self.world.players:
-                    game.events.RenderMap.fire()
+                    game.events.RenderMap()
                     item = self.world.get_item_at_position(moving.x, moving.y)
                     if item:
                         name = self.world.optional_component_for_entity(
@@ -73,4 +73,4 @@ class Movement(esper.Processor):
                             desc_log.add_raw(" is here.")
             self.world.actor_takes_turn(ent, game.component.movement.TMPMoving)
             if entities_need_rendering:
-                game.events.RenderEntities.fire()
+                game.events.RenderEntities()

@@ -2,9 +2,11 @@
 import json
 import pathlib
 
+import appdirs
 import toml
 
 import game.types
+import game.utils.dataloader
 
 DEFAULT_CONFIG_PATH = pathlib.Path("data/default_config.toml")
 
@@ -27,3 +29,15 @@ KEYBINDINGS_PATH = pathlib.Path("data/keybindings.toml")
 
 with KEYBINDINGS_PATH.open() as keybindings_file:
     keybindings: game.types.ImportedData = toml.load(keybindings_file)
+
+VERSION_STRING = f'* {config["title"]} version {game.VERSION}'
+
+
+def _safe_dir(name: str) -> str:
+    return name.lower().replace(" ", "_")
+
+
+DIRS = appdirs.AppDirs(_safe_dir(config["title"]), _safe_dir(config["org"]))
+
+LOADER: game.utils.dataloader.DataLoader = game.utils.dataloader.DataLoader()
+LOADER.load_all_json()

@@ -33,7 +33,7 @@ class Drop(game.command.base.BaseCommand):
             if items_carried:
                 game.events.ChoiceFromList.handle(self.on_choice)
                 game.events.MenuClosed.handle(self._on_menu_closed)
-                game.events.ChooseFromList.fire(
+                game.events.ChooseFromList(
                     {"header": "Drop what?", "items": items_carried, "multiple": True}
                 )
             else:
@@ -50,7 +50,7 @@ class Drop(game.command.base.BaseCommand):
                 contained, name = components
                 if contained.by_ent == ent and contained.label == input_key.key:
                     if self.world.drop_item(ent, item_ent):
-                        game.events.ChoiceAccepted.fire()
+                        game.events.ChoiceAccepted()
                     else:
                         cmd_log = self.world.get_or_add_component(
                             ent, game.component.gamelog.TMPCommand
@@ -59,5 +59,5 @@ class Drop(game.command.base.BaseCommand):
                             "There is already an item on the ground here!",
                             game.palette.Message.negative,
                         )
-                        game.events.ChoiceDeclined.fire({"status": "You can't drop that!"})
+                        game.events.ChoiceDeclined({"status": "You can't drop that!"})
                     break

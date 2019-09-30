@@ -126,7 +126,7 @@ class Container(esper.Processor):
                         cmd_log.add(f"{name.generic}", color=game.palette.Item.epic)
                         cmd_log.add_raw(f" is put into {container_name}.")
         if entities_need_rendering:
-            game.events.RenderEntities.fire()
+            game.events.RenderEntities()
 
     def _get_next_free_slot(
         self, ent: game.types.Entity, container: game.component.container.Container

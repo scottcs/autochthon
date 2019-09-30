@@ -26,9 +26,7 @@ class Inventory(game.command.base.BaseCommand):
             if items_carried:
                 game.events.ChoiceFromList.handle(self.on_choice)
                 game.events.MenuClosed.handle(self._on_menu_closed)
-                game.events.ChooseFromList.fire(
-                    {"header": "Describe what?", "items": items_carried}
-                )
+                game.events.ChooseFromList({"header": "Describe what?", "items": items_carried})
             else:
                 cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add("You aren't carrying anything!")
@@ -40,12 +38,12 @@ class Inventory(game.command.base.BaseCommand):
             if self.submenu:
                 if input_key.key == "d":
                     game.command.drop.Drop(self.world).on_choice(self.selected)
-                    game.events.ChoiceAccepted.fire()
+                    game.events.ChoiceAccepted()
                 elif input_key.key == "e":
                     game.command.equip.Equip(self.world).on_choice(self.selected)
-                    game.events.ChoiceAccepted.fire()
+                    game.events.ChoiceAccepted()
                 else:
-                    game.events.ChoiceDeclined.fire({"substatus": "Do what?"})
+                    game.events.ChoiceDeclined({"substatus": "Do what?"})
             else:
                 for item_ent, components in self.world.get_components(
                     game.component.container.TMPContained, game.component.descriptive.Name
@@ -53,7 +51,7 @@ class Inventory(game.command.base.BaseCommand):
                     contained, name = components
                     if contained.by_ent == ent and contained.label == input_key.key:
                         self.selected = event
-                        game.events.Describe.fire(
+                        game.events.Describe(
                             {
                                 "name": (name.generic, game.palette.Item.epic),
                                 "msg": [

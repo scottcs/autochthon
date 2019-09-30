@@ -1,10 +1,10 @@
 """Start the game."""
 import logging
 
-import game.loop
+import game.main
 
 logging.basicConfig(level=logging.ERROR)
 
 
 if __name__ == "__main__":
-    game.loop.run()
+    game.main.run()
