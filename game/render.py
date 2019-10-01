@@ -163,22 +163,22 @@ def _get_conversion_value(category: str, index: int) -> float:
 
 def to_grid_x(category: str, tile_x: int) -> int:
     """Get the grid x coordinate for a tile."""
-    return int(tile_x * _get_conversion_value(category, 0))
+    return int((tile_x * _get_conversion_value(category, 0)) + 0.5)
 
 
 def to_grid_y(category: str, tile_y: int) -> int:
     """Get the grid y coordinate for a tile."""
-    return int(tile_y * _get_conversion_value(category, 1))
+    return int((tile_y * _get_conversion_value(category, 1)) + 0.5)
 
 
 def from_grid_x(category: str, grid_x: int) -> int:
     """Get the adjusted x coordinate for a tile."""
-    return int(grid_x // _get_conversion_value(category, 0))
+    return int((grid_x / _get_conversion_value(category, 0)) + 0.5)
 
 
 def from_grid_y(category: str, grid_y: int) -> int:
     """Get the adjusted y coordinate for a tile."""
-    return int(grid_y // _get_conversion_value(category, 1))
+    return int((grid_y / _get_conversion_value(category, 1)) + 0.5)
 
 
 class BaseRenderer:
