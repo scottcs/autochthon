@@ -138,15 +138,15 @@ class Render(esper.Processor):
             else:
                 continue
 
-            category, name = renderable.tile_id
+            category, name = renderable.tile
             tile_id = game.render.TileCache.get(
                 category, name, direction=facing, frame=self.anim_tick
             )
             if pos_x is not None and pos_y is not None:
                 self.renderer.draw_on_layer(
                     renderable.layer,
-                    game.render.to_grid_x("monsters", pos_x) - viewport_x,
-                    game.render.to_grid_y("monsters", pos_y) - viewport_y,
+                    game.render.to_grid_x(category, pos_x) - viewport_x,
+                    game.render.to_grid_y(category, pos_y) - viewport_y,
                     tile_id,
                     color=color,
                 )
@@ -195,7 +195,7 @@ class Render(esper.Processor):
             game.component.movement.Position,
         ):
             player, renderable, position = components
-            category, name = renderable.tile_id
+            category, name = renderable.tile
             player_tile_id = game.render.TileCache.get(category, name)
             return game.types.PlayerRenderData(
                 position.x,

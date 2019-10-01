@@ -9,7 +9,7 @@
         "first": "bat"
       },
       "render.Renderable": {
-        "tile_id": ["monsters", "bat"],
+        "tile": ["monsters", "bat"],
         "tint": "Palette.blue",
         "layer": "RenderLayer.enemy"
       }

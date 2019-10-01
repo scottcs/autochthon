@@ -1,7 +1,7 @@
 title = "Autochthon"
 org = "Precipitation Studios"
 tileset = "oryx_td"
-tile_scale = 2
+tile_scale = 4
 max_game_log_buffer = 1000
 
 [player]

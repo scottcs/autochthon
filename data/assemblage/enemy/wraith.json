@@ -7,7 +7,7 @@
         "first": "wraith"
       },
       "render.Renderable": {
-        "tile_id": ["monsters", "wraith"],
+        "tile": ["monsters", "wraith"],
         "tint": "Palette.purple",
         "layer": "RenderLayer.enemy"
       }

@@ -10,7 +10,7 @@
         "last": "warrior"
       },
       "render.Renderable": {
-        "tile_id": ["monsters", "skeleton_warrior"],
+        "tile": ["monsters", "skeleton_warrior"],
         "tint": "Palette.green",
         "layer": "RenderLayer.enemy"
       }
