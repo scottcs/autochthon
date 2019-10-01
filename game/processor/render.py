@@ -56,8 +56,8 @@ class Render(esper.Processor):
 
         refresh = False
         player_data = self._get_player_render_data()
-        viewport_x = self.renderer.to_grid_x("monsters", player_data.x) - self.renderer.center[0]
-        viewport_y = self.renderer.to_grid_y("monsters", player_data.y) - self.renderer.center[1]
+        viewport_x = game.render.to_grid_x("monsters", player_data.x) - self.renderer.center[0]
+        viewport_y = game.render.to_grid_y("monsters", player_data.y) - self.renderer.center[1]
 
         self._update_fov(player_data)
 
@@ -145,8 +145,8 @@ class Render(esper.Processor):
             if pos_x is not None and pos_y is not None:
                 self.renderer.draw_on_layer(
                     renderable.layer,
-                    self.renderer.to_grid_x("monsters", pos_x) - viewport_x,
-                    self.renderer.to_grid_y("monsters", pos_y) - viewport_y,
+                    game.render.to_grid_x("monsters", pos_x) - viewport_x,
+                    game.render.to_grid_y("monsters", pos_y) - viewport_y,
                     tile_id,
                     color=color,
                 )
@@ -154,16 +154,16 @@ class Render(esper.Processor):
     def _draw_map(self, viewport_x: int, viewport_y: int) -> None:
         self.renderer.clear_layer(game.types.RenderLayer.floor)
         self.renderer.clear_layer(game.types.RenderLayer.wall)
-        for tile_x in range(self.renderer.from_grid_x("world", self.renderer.width)):
-            draw_x: int = self.renderer.to_grid_x("world", tile_x)
-            map_x: int = self.renderer.from_grid_x("world", draw_x + viewport_x)
+        for tile_x in range(game.render.from_grid_x("world", self.renderer.width)):
+            draw_x: int = game.render.to_grid_x("world", tile_x)
+            map_x: int = game.render.from_grid_x("world", draw_x + viewport_x)
             if map_x >= self.world.map.width:
                 break
             if map_x < 0:
                 continue
-            for tile_y in range(self.renderer.from_grid_y("world", self.renderer.height)):
-                draw_y: int = self.renderer.to_grid_y("world", tile_y)
-                map_y: int = self.renderer.from_grid_y("world", draw_y + viewport_y)
+            for tile_y in range(game.render.from_grid_y("world", self.renderer.height)):
+                draw_y: int = game.render.to_grid_y("world", tile_y)
+                map_y: int = game.render.from_grid_y("world", draw_y + viewport_y)
                 if map_y >= self.world.map.height:
                     break
                 if map_y < 0:
@@ -217,8 +217,8 @@ class Render(esper.Processor):
         self.renderer.clear_layer(game.types.RenderLayer.ui_game_message_fg)
         self.renderer.draw_gamelog_on_layer(
             game.types.RenderLayer.ui_game_message_fg,
-            2,
-            self.renderer.height - 2,
+            game.render.to_grid_x("font", 1),
+            self.renderer.height - game.render.to_grid_y("font", 1),
             event["log_component"].lines,
         )
 

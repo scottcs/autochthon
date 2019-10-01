@@ -14,8 +14,8 @@ log.setLevel(logging.DEBUG)
 class Widget:
     """A basic UI element."""
 
-    def __init__(self, rect: game.utils.geometry.Rect) -> None:
-        self.rect: game.utils.geometry.Rect = rect
+    def __init__(self, rect: typing.Optional[game.utils.geometry.Rect] = None) -> None:
+        self.rect: game.utils.geometry.Rect = rect or game.utils.geometry.Rect(0, 0, 1, 1)
         self.children: typing.List[Widget] = []
         self._visible: bool = False
         self._layout: typing.Optional[Layout] = None

@@ -7,13 +7,11 @@ import game.utils.geometry
 class Text(game.ui.widget.Widget):
     """Text widget."""
 
-    def __init__(self, text: str, offset_x: int = 0, offset_y: int = 0) -> None:
+    def __init__(self, text: str) -> None:
+        grid_w = game.render.to_grid_x("font", len(text))
+        grid_h = game.render.to_grid_y("font", 1)
+        super().__init__(game.utils.geometry.Rect(0, 0, grid_w, grid_h))
         self.text = text
-        self.offset_x = offset_x
-        self.offset_y = offset_y
-        w = len(self.text)
-        h = 1
-        super().__init__(game.utils.geometry.Rect(self.offset_x, self.offset_y, w, h))
 
     def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
         renderer.draw_text_on_layer(layer, self.rect.x1, self.rect.y1, self.text)

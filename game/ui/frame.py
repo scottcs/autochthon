@@ -76,19 +76,19 @@ class Frame(game.ui.widget.Widget):
         return game.render.TileCache.get("interface", name, direction=direction)
 
     def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
-        x1 = self.rect.x1
-        y1 = self.rect.x2
-        w = renderer.from_grid_x("interface", self.rect.w)
-        h = renderer.from_grid_y("interface", self.rect.h)
-        renderer.clear_layer(
-            layer, rect=game.utils.geometry.Rect(x1, y1, self.rect.w, self.rect.h)
-        )
-        for x in range(w):
-            for y in range(h):
-                tile_id = self._get_style_tile_id(x, y, w - 1, h - 1)
+        grid_x = self.rect.x1
+        grid_y = self.rect.y1
+        w = self.rect.w
+        h = self.rect.h
+        tile_w = game.render.from_grid_x("interface", w)
+        tile_h = game.render.from_grid_y("interface", h)
+        renderer.clear_layer(layer, rect=game.utils.geometry.Rect(grid_x, grid_y, w, h))
+        for tile_x in range(tile_w):
+            for tile_y in range(tile_h):
+                tile_id = self._get_style_tile_id(tile_x, tile_y, tile_w - 1, tile_h - 1)
                 renderer.draw_on_layer(
                     layer,
-                    x1 + renderer.to_grid_x("interface", x),
-                    y1 + renderer.to_grid_y("interface", y),
+                    grid_x + game.render.to_grid_x("interface", tile_x),
+                    grid_y + game.render.to_grid_y("interface", tile_y),
                     tile_id,
                 )
