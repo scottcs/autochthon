@@ -31,15 +31,15 @@ class Danger:
 class Message:
     """Message colors."""
 
-    danger = "#FF6666"
-    warning = "#FFFF66"
-    side_note = "#666666"
-    default = "#AAAAAA"
-    very_negative = "#FF6699"
-    negative = "#654321"
-    positive = "#669966"
-    very_positive = "#66FF66"
-    holy_crap = "#FF66FF"
+    danger = "#FF3434"
+    warning = "#FFB600"
+    side_note = "#B0B0B0"
+    default = "#DFDFDF"
+    very_negative = "#FF8054"
+    negative = "#C0AA32"
+    positive = "#31CC08"
+    very_positive = "#5BFFFD"
+    holy_crap = "#ED2DFF"
 
 
 class Item:
