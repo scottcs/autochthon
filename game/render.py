@@ -151,48 +151,34 @@ class _TileCache:
 TileCache = _TileCache()
 
 
+def _get_conversion_value(category: str, index: int) -> float:
+    if category == "font":
+        size: int = game.data.tileset["font"]["size"][index]
+    else:
+        size = game.data.tileset["tilesets"][category]["size"][index]
+        size *= game.data.config["tile_scale"]
+    cell_pixel_size: int = game.data.tileset["window"]["cellsize"][index]
+    return size / cell_pixel_size
+
+
 def to_grid_x(category: str, tile_x: int) -> int:
     """Get the grid x coordinate for a tile."""
-    if category == "font":
-        size_x = game.data.tileset["font"]["size"][0]
-    else:
-        size_x = game.data.tileset["tilesets"][category]["size"][0]
-        size_x *= game.data.config["tile_scale"]
-    cell_pixel_w: int = game.data.tileset["window"]["cellsize"][0]
-    return int(tile_x * (size_x / cell_pixel_w))
+    return int(tile_x * _get_conversion_value(category, 0))
 
 
 def to_grid_y(category: str, tile_y: int) -> int:
     """Get the grid y coordinate for a tile."""
-    if category == "font":
-        size_y = game.data.tileset["font"]["size"][1]
-    else:
-        size_y = game.data.tileset["tilesets"][category]["size"][1]
-        size_y *= game.data.config["tile_scale"]
-    cell_pixel_h: int = game.data.tileset["window"]["cellsize"][1]
-    return int(tile_y * (size_y / cell_pixel_h))
+    return int(tile_y * _get_conversion_value(category, 1))
 
 
 def from_grid_x(category: str, grid_x: int) -> int:
     """Get the adjusted x coordinate for a tile."""
-    if category == "font":
-        size_x = game.data.tileset["font"]["size"][0]
-    else:
-        size_x = game.data.tileset["tilesets"][category]["size"][0]
-        size_x *= game.data.config["tile_scale"]
-    cell_pixel_w: int = game.data.tileset["window"]["cellsize"][0]
-    return int(grid_x // (size_x / cell_pixel_w))
+    return int(grid_x // _get_conversion_value(category, 0))
 
 
 def from_grid_y(category: str, grid_y: int) -> int:
     """Get the adjusted y coordinate for a tile."""
-    if category == "font":
-        size_y = game.data.tileset["font"]["size"][1]
-    else:
-        size_y = game.data.tileset["tilesets"][category]["size"][1]
-        size_y *= game.data.config["tile_scale"]
-    cell_pixel_h: int = game.data.tileset["window"]["cellsize"][1]
-    return int(grid_y // (size_y / cell_pixel_h))
+    return int(grid_y // _get_conversion_value(category, 1))
 
 
 class BaseRenderer:
