@@ -19,8 +19,8 @@ class RenderLayer(enum.IntEnum):
 
     background = 0
     floor = 1
-    item = 2
-    wall = 3
+    wall = 2
+    item = 3
     icon = 4
     enemy = 5
     player = 6
