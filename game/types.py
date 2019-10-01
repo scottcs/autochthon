@@ -17,24 +17,17 @@ Entity = int
 class RenderLayer(enum.IntEnum):
     """Render layers, from bottom to top."""
 
-    background = enum.auto()
-    floor = enum.auto()
-    item = enum.auto()
-    wall = enum.auto()
-    icon = enum.auto()
-    enemy = enum.auto()
-    player = enum.auto()
-    effect = enum.auto()
-    ui_game_message_bg = enum.auto()
-    ui_game_message_fg = enum.auto()
-    ui_hud_bg = enum.auto()
-    ui_hud_fg = enum.auto()
-    ui_low_menu_bg = enum.auto()
-    ui_low_menu_fg = enum.auto()
-    ui_mid_menu_bg = enum.auto()
-    ui_mid_menu_fg = enum.auto()
-    ui_hi_menu_bg = enum.auto()
-    ui_hi_menu_fg = enum.auto()
+    background = 0
+    floor = 1
+    item = 2
+    wall = 3
+    icon = 4
+    enemy = 5
+    player = 6
+    effect = 7
+    ui_game_message = 10
+    ui_hud = 15
+    ui_menu = 20
 
 
 class Priority(enum.IntEnum):
