@@ -151,7 +151,8 @@ class _TileCache:
 TileCache = _TileCache()
 
 
-def _get_conversion_value(category: str, index: int) -> float:
+def get_conversion_value(category: str, index: int) -> float:
+    """Get the conversion value of a tileset to the grid."""
     if category == "font":
         size: int = game.data.tileset["font"]["size"][index]
     else:
@@ -161,24 +162,24 @@ def _get_conversion_value(category: str, index: int) -> float:
     return size / cell_pixel_size
 
 
-def to_grid_x(category: str, tile_x: int) -> int:
-    """Get the grid x coordinate for a tile."""
-    return int((tile_x * _get_conversion_value(category, 0)) + 0.5)
+def snap_tile_to_grid_x(category: str, tile_x: int) -> int:
+    """Get the snapped grid x coordinate for a tile (this is lossy)."""
+    return int(tile_x * get_conversion_value(category, 0))
 
 
-def to_grid_y(category: str, tile_y: int) -> int:
-    """Get the grid y coordinate for a tile."""
-    return int((tile_y * _get_conversion_value(category, 1)) + 0.5)
+def snap_tile_to_grid_y(category: str, tile_y: int) -> int:
+    """Get the snapped grid y coordinate for a tile (this is lossy)."""
+    return int(tile_y * get_conversion_value(category, 1))
 
 
-def from_grid_x(category: str, grid_x: int) -> int:
-    """Get the adjusted x coordinate for a tile."""
-    return int((grid_x / _get_conversion_value(category, 0)) + 0.5)
+def grid_to_tile_x(category: str, grid_x: int) -> int:
+    """Get the tile x coord for a grid x coord (several grid coords return the same tile coord)."""
+    return int(grid_x / get_conversion_value(category, 0))
 
 
-def from_grid_y(category: str, grid_y: int) -> int:
-    """Get the adjusted y coordinate for a tile."""
-    return int((grid_y / _get_conversion_value(category, 1)) + 0.5)
+def grid_to_tile_y(category: str, grid_y: int) -> int:
+    """Get the tile y coord for a grid y coord (several grid coords return the same tile coord)."""
+    return int(grid_y / get_conversion_value(category, 1))
 
 
 class BaseRenderer:
@@ -188,6 +189,7 @@ class BaseRenderer:
         self.width: int = game.data.tileset["window"]["width"]
         self.height: int = game.data.tileset["window"]["height"]
         self.center: typing.List[int] = [self.width // 2, self.height // 2]
+        log.debug(f"BaseRenderer w: {self.width}, h: {self.height}, c: {self.center}")
         self.font_size = game.data.tileset["font"]["size"]
         self.font_file = pathlib.Path(f"{game.data.FONT_PATH}/{game.data.tileset['font']['file']}")
         self.title = f"{game.data.config['title']} v{game.VERSION}"

@@ -80,15 +80,15 @@ class Frame(game.ui.widget.Widget):
         grid_y = self.rect.y1
         w = self.rect.w
         h = self.rect.h
-        tile_w = game.render.from_grid_x("interface", w)
-        tile_h = game.render.from_grid_y("interface", h)
+        tile_w = game.render.grid_to_tile_x("interface", w)
+        tile_h = game.render.grid_to_tile_y("interface", h)
         renderer.clear_layer(layer, rect=game.utils.geometry.Rect(grid_x, grid_y, w, h))
         for tile_x in range(tile_w):
             for tile_y in range(tile_h):
                 tile_id = self._get_style_tile_id(tile_x, tile_y, tile_w - 1, tile_h - 1)
                 renderer.draw_on_layer(
                     layer,
-                    grid_x + game.render.to_grid_x("interface", tile_x),
-                    grid_y + game.render.to_grid_y("interface", tile_y),
+                    grid_x + game.render.snap_tile_to_grid_x("interface", tile_x),
+                    grid_y + game.render.snap_tile_to_grid_y("interface", tile_y),
                     tile_id,
                 )

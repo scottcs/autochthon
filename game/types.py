@@ -28,6 +28,7 @@ class RenderLayer(enum.IntEnum):
     ui_game_message = 10
     ui_hud = 15
     ui_menu = 20
+    debug = 200
 
 
 class Priority(enum.IntEnum):

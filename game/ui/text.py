@@ -8,8 +8,8 @@ class Text(game.ui.widget.Widget):
     """Text widget."""
 
     def __init__(self, text: str) -> None:
-        grid_w = game.render.to_grid_x("font", len(text))
-        grid_h = game.render.to_grid_y("font", 1)
+        grid_w = game.render.snap_tile_to_grid_x("font", len(text))
+        grid_h = game.render.snap_tile_to_grid_y("font", 1)
         super().__init__(game.utils.geometry.Rect(0, 0, grid_w, grid_h))
         self.text = text
 
