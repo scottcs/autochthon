@@ -150,69 +150,54 @@ class Render(esper.Processor):
 
             is_dead = self.world.has_component(ent, game.component.status.TMPDead)
             is_contained = self.world.has_component(ent, game.component.container.TMPContained)
-            if is_dead or is_contained:
+            if is_dead or is_contained or position is None:
                 continue
 
-            map_x: typing.Optional[int] = None
-            map_y: typing.Optional[int] = None
-            facing: typing.Optional[str] = None
-            can_see_now: bool = False
-            can_see_prev: bool = False
-            seen: bool = False
+            can_see_now: bool = self.world.map.fov[position.y, position.x]
+            if not can_see_now and renderable.last_seen_x is None:
+                # we've never seen it, so skip it
+                continue
 
-            if position is not None:
-                map_x = position.x
-                map_y = position.y
-                facing = position.facing
-                can_see_now = self.world.map.fov[position.y, position.x]
-
-            color = "#00FFFFFF"
-            if renderable.last_seen_x is not None and renderable.last_seen_y is not None:
-                seen = True
-                can_see_prev = self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]
-
-            # if we can see it now, draw it and update seen pos
             if can_see_now:
+                map_x = renderable.last_seen_x = position.x
+                map_y = renderable.last_seen_y = position.y
+                facing = renderable.facing = position.facing
                 color = "#FFFFFFFF"
-                renderable.last_seen_x = position.x
-                renderable.last_seen_y = position.y
-                renderable.facing = position.facing
-            # else if we can see where it last was, forget where we've seen it and don't draw it
-            elif can_see_prev:
-                renderable.last_seen_y = None
-                renderable.last_seen_x = None
-                renderable.facing = None
-            # else if we've seen it, draw it faded where we last saw it
-            elif seen:
-                color = "#60FFFFFF"
-                map_y = renderable.last_seen_y
-                map_x = renderable.last_seen_x
-                facing = renderable.last_seen_facing
-            # else don't draw it
             else:
+                # we've seen it before, but don't see it now
+                if self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]:
+                    # we can see the spot where it used to be, and it's not there, so don't draw it
+                    renderable.last_seen_y = None
+                    renderable.last_seen_x = None
+                    renderable.facing = None
+                    continue
+                else:
+                    # it might still be there, so draw it faded
+                    color = "#60FFFFFF"
+                    map_y = renderable.last_seen_y
+                    map_x = renderable.last_seen_x
+                    facing = renderable.last_seen_facing
+
+            # don't draw it if it's not in the viewport
+            adjusted_x: int = map_x - map_x1
+            adjusted_y: int = map_y - map_y1
+            if (
+                adjusted_x < tile_viewport.x1
+                or adjusted_x > tile_viewport.x2
+                or adjusted_y < tile_viewport.y1
+                or adjusted_y > tile_viewport.y2
+            ):
                 continue
 
+            # finally, draw it
             category, name = renderable.tile
             tile_id = game.render.TileCache.get(
                 category, name, direction=facing, frame=self.anim_tick
             )
-            if map_x is not None and map_y is not None:
-                adjusted_x: int = map_x - map_x1
-                adjusted_y: int = map_y - map_y1
-                if (
-                    adjusted_x < tile_viewport.x1
-                    or adjusted_x > tile_viewport.x2
-                    or adjusted_y < tile_viewport.y1
-                    or adjusted_y > tile_viewport.y2
-                ):
-                    continue
-
-                draw_x = game.render.snap_tile_to_grid_x(category, adjusted_x)
-                draw_y = game.render.snap_tile_to_grid_y(category, adjusted_y)
-                if 0 <= draw_x < self.renderer.width and 0 <= draw_y < self.renderer.height:
-                    self.renderer.draw_on_layer(
-                        renderable.layer, draw_x, draw_y, tile_id, color=color
-                    )
+            draw_x = game.render.snap_tile_to_grid_x(category, adjusted_x)
+            draw_y = game.render.snap_tile_to_grid_y(category, adjusted_y)
+            if 0 <= draw_x < self.renderer.width and 0 <= draw_y < self.renderer.height:
+                self.renderer.draw_on_layer(renderable.layer, draw_x, draw_y, tile_id, color=color)
 
     def _draw_map(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
