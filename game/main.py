@@ -1,6 +1,8 @@
 """Main game class."""
 import logging
 
+import pprofile
+
 import game.data
 import game.events
 import game.input
@@ -49,3 +51,24 @@ def run() -> None:
     app = App(game.render.BearLibRenderer(), game.input.BearLibInput())
     while not app.shutting_down:
         app.update()
+
+
+def run_with_profiler() -> None:
+    """Run the game with a deterministic profiler."""
+    app = App(game.render.BearLibRenderer(), game.input.BearLibInput())
+    profiler = pprofile.Profile()
+    with profiler:
+        while not app.shutting_down:
+            app.update()
+    profiler.dump_stats("cachegrind.out.prof")
+
+
+def run_with_statistic_profiler() -> None:
+    """Run the game with a statistic profiler."""
+    app = App(game.render.BearLibRenderer(), game.input.BearLibInput())
+    profiler = pprofile.StatisticalProfile()
+    # period = 1ms, only sample current thread
+    with profiler(period=0.001, single=True):
+        while not app.shutting_down:
+            app.update()
+    profiler.dump_stats("cachegrind.out.prof")

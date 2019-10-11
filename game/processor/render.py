@@ -35,7 +35,8 @@ class Render(esper.Processor):
 
     def __init__(self, renderer: game.render.BaseRenderer) -> None:
         self.renderer = renderer
-        self.last_process_time: int = time.time_ns()
+        self.last_refresh_time: int = time.time_ns()
+        self.last_anim_time: int = time.time_ns()
         self.anim_tick: int = 0
         self.should_render_map: bool = True
         self.should_render_entities: bool = True
@@ -87,9 +88,9 @@ class Render(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
-        elapsed = time.time_ns() - self.last_process_time
-        if elapsed >= ANIM_FRAME_TIME:
-            self.last_process_time = time.time_ns()
+        anim_elapsed = time.time_ns() - self.last_anim_time
+        if anim_elapsed >= ANIM_FRAME_TIME:
+            self.last_anim_time = time.time_ns()
             self.anim_tick = (self.anim_tick + 1) % MAX_ANIM_FRAMES
             self.should_render_entities = True
 
@@ -120,6 +121,11 @@ class Render(esper.Processor):
             refresh = True
 
         if refresh:
+            # refresh_elapsed = time.time_ns() - self.last_refresh_time
+            # if refresh_elapsed >= NS / 30:
+            #     print(f"refresh - {refresh_elapsed / NS}")
+            #     self.last_refresh_time = time.time_ns()
+            #     self.renderer.refresh()
             self.renderer.refresh()
 
     def _update_fov(self, player_data):
