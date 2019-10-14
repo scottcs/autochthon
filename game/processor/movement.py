@@ -59,6 +59,8 @@ class Movement(esper.Processor):
                 position.y = moving.y
                 entities_need_rendering = True
                 if ent in self.world.players:
+                    player = self.world.component_for_entity(ent, game.component.player.Player)
+                    self.world.map.update_fov(position.x, position.y, radius=player.fov)
                     game.events.RenderMap()
                     item = self.world.get_item_at_position(moving.x, moving.y)
                     if item:

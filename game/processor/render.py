@@ -4,7 +4,6 @@ import time
 import typing
 
 import esper
-import tcod
 
 import game.component.container
 import game.component.gamelog
@@ -108,7 +107,6 @@ class Render(esper.Processor):
             game.render.grid_to_tile_y("world", self.renderer.height) - (border * 2),
         )
 
-        self._update_fov(player_data)
         player_pos = game.utils.geometry.Point(player_data.x, player_data.y)
 
         if self.should_render_map:
@@ -122,17 +120,6 @@ class Render(esper.Processor):
 
         if refresh:
             self.renderer.refresh()
-
-    def _update_fov(self, player_data):
-        if [player_data.x, player_data.y] != self.known_player_xy:
-            self.world.map.compute_fov(
-                player_data.x,
-                player_data.y,
-                algorithm=tcod.FOV_PERMISSIVE_3,
-                radius=player_data.fov,
-                light_walls=True,
-            )
-        self.known_player_xy = [player_data.x, player_data.y]
 
     def _draw_entities(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
@@ -253,17 +240,15 @@ class Render(esper.Processor):
     def _get_player_render_data(self) -> game.types.PlayerRenderData:
         # TODO: handle more than one player controlled object?
         for ent, components in self.world.get_components(
-            game.component.player.Player,
-            game.component.render.Renderable,
-            game.component.movement.Position,
+            game.component.render.Renderable, game.component.movement.Position
         ):
-            player, renderable, position = components
+            renderable, position = components
             category, name = renderable.tile
             player_tile_id = game.render.TileCache.get(category, name)
             return game.types.PlayerRenderData(
-                position.x, position.y, player.fov, player_tile_id, renderable.tint
+                position.x, position.y, player_tile_id, renderable.tint
             )
-        return game.types.PlayerRenderData(0, 0, 0, 0, "white")
+        return game.types.PlayerRenderData(0, 0, 0, "white")
 
     def _on_render_entities(self, _event: game.types.Event) -> None:
         self.should_render_entities = True
