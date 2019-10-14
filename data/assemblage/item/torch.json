@@ -6,8 +6,7 @@
       },
       "render.Renderable": {
         "tile": ["items", "torch"],
-        "tint": "Palette.cyan",
-        "layer": "RenderLayer.item"
+        "tint": "Palette.cyan"
       },
       "container.Containable": {
         "equip_type": "Equip.melee"

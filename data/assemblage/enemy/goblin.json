@@ -11,8 +11,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "goblin_grunt"],
-        "tint": "Palette.red",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.red"
       }
     }
   },
@@ -28,8 +27,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "goblin_mage"],
-        "tint": "Palette.red",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.red"
       }
     }
   },
@@ -45,8 +43,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "goblin_captain"],
-        "tint": "Palette.red",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.red"
       }
     }
   }

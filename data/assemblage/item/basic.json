@@ -6,8 +6,7 @@
       },
       "render.Renderable": {
         "tile": ["items", "feather"],
-        "tint": "Palette.white",
-        "layer": "RenderLayer.item"
+        "tint": "Palette.white"
       },
       "movement.Position": {},
       "container.Containable": {},

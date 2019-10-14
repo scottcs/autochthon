@@ -27,7 +27,7 @@ class Frame(game.ui.widget.Widget):
         if self.style is not None:
             self._paint(renderer, layer)
         for child in self.children:
-            child.render(renderer, layer + 1)
+            child.render(renderer, layer)
 
     def _get_style_tile_id(self, x: int, y: int, w: int, h: int):
         if self.style is None:

@@ -6,8 +6,7 @@
       },
       "render.Renderable": {
         "tile": ["items", "weapon_shortsword"],
-        "tint": "Palette.purple",
-        "layer": "RenderLayer.item"
+        "tint": "Palette.purple"
       },
       "attack.HitModifier": {
         "factor": 0.1

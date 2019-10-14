@@ -7,8 +7,7 @@
       },
       "render.Renderable": {
         "tile": ["items", "chest_steel"],
-        "tint": "Palette.green",
-        "layer": "RenderLayer.item"
+        "tint": "Palette.green"
       },
       "attack.HitModifier": {
         "factor": 0.05

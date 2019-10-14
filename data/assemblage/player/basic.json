@@ -29,8 +29,7 @@
       "movement.Position": {},
       "render.Renderable": {
         "tile": ["monsters", "fighter"],
-        "tint": "Palette.yellow",
-        "layer": "RenderLayer.player"
+        "tint": "Palette.yellow"
       },
       "container.Container": {
         "name": "your backpack",
