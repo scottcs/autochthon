@@ -14,7 +14,7 @@
       },
       "movement.Position": {},
       "render.Renderable": {
-        "tile_id": ["monster", "angel"],
+        "tile": ["monster", "angel"],
         "tint": "Palette.white",
         "layer": "RenderLayer.enemy"
       }

@@ -6,11 +6,11 @@ import typing
 import game.component.movement
 import game.data
 import game.palette
+import game.render
 import game.types
 import game.utils.dataloader
 import game.utils.geometry
 import game.utils.random
-import game.utils.render
 import game.world
 
 ON_CREATE = "=="

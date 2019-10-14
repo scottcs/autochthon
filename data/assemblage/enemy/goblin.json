@@ -10,7 +10,7 @@
         "last": "grunt"
       },
       "render.Renderable": {
-        "tile_id": ["monsters", "goblin_grunt"],
+        "tile": ["monsters", "goblin_grunt"],
         "tint": "Palette.red",
         "layer": "RenderLayer.enemy"
       }
@@ -27,7 +27,7 @@
         "last": "mage"
       },
       "render.Renderable": {
-        "tile_id": ["monsters", "goblin_mage"],
+        "tile": ["monsters", "goblin_mage"],
         "tint": "Palette.red",
         "layer": "RenderLayer.enemy"
       }
@@ -44,7 +44,7 @@
         "last": "captain"
       },
       "render.Renderable": {
-        "tile_id": ["monsters", "goblin_captain"],
+        "tile": ["monsters", "goblin_captain"],
         "tint": "Palette.red",
         "layer": "RenderLayer.enemy"
       }

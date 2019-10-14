@@ -17,15 +17,18 @@ Entity = int
 class RenderLayer(enum.IntEnum):
     """Render layers, from bottom to top."""
 
-    background = enum.auto()
-    floor = enum.auto()
-    item = enum.auto()
-    wall = enum.auto()
-    icon = enum.auto()
-    enemy = enum.auto()
-    player = enum.auto()
-    effect = enum.auto()
-    ui_log = enum.auto()
+    background = 0
+    floor = 1
+    wall = 2
+    item = 3
+    icon = 4
+    enemy = 5
+    player = 6
+    effect = 7
+    ui_game_message = 10
+    ui_hud = 15
+    ui_menu = 20
+    debug = 200
 
 
 class Priority(enum.IntEnum):
@@ -185,3 +188,12 @@ class InputKey(typing.NamedTuple):
     shift: bool
     ctrl: bool
     alt: bool
+
+
+class UIFrameStyle(enum.Enum):
+    """Frame styles."""
+
+    stone = enum.auto()
+    scroll = enum.auto()
+    window = enum.auto()
+    bubble = enum.auto()

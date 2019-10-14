@@ -27,13 +27,11 @@ class Event:
         """Register a handler."""
         self.handlers[handler] = True
         self._to_handle.append(handler)
-        # print(f"{self} added handler")
         return self
 
     def unhandle(self, handler: game.types.EventHandler) -> Event:
         """Unregister a handler."""
         self._to_unhandle.append(handler)
-        # print(f"{self} unhandle")
         return self
 
     def _remove_unhandled_handlers(self) -> None:
@@ -43,7 +41,6 @@ class Event:
                 # it's been added at some point after we wanted to remove it, so don't remove it
                 continue
             try:
-                # print(f"{self} removed handler")
                 del self.handlers[handler]
             except KeyError:
                 raise ValueError("Handler is not handling this event, so cannot unhandle it.")
@@ -52,8 +49,8 @@ class Event:
     def fire(self, event: typing.Optional[game.types.Event] = None) -> None:
         """Fire the event."""
         self._remove_unhandled_handlers()
-        # print(f"{self} fire event: {event}")
-        for handler in self.handlers.keys():
+        to_iterate = list(self.handlers.keys())
+        for handler in to_iterate:
             handler(event or {})
         self._remove_unhandled_handlers()
 

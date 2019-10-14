@@ -9,7 +9,7 @@
         "first": "flies"
       },
       "render.Renderable": {
-        "tile_id": ["monsters", "flies"],
+        "tile": ["monsters", "flies"],
         "tint": "Palette.cyan",
         "layer": "RenderLayer.enemy"
       },

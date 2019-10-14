@@ -6,7 +6,7 @@
         "last": "armor"
       },
       "render.Renderable": {
-        "tile_id": ["items", "chest_steel"],
+        "tile": ["items", "chest_steel"],
         "tint": "Palette.green",
         "layer": "RenderLayer.item"
       },

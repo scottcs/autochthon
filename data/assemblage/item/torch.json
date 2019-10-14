@@ -5,7 +5,7 @@
         "first": "torch"
       },
       "render.Renderable": {
-        "tile_id": ["items", "torch"],
+        "tile": ["items", "torch"],
         "tint": "Palette.cyan",
         "layer": "RenderLayer.item"
       },

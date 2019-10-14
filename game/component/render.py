@@ -10,7 +10,7 @@ import game.types
 class Renderable:
     """Renderable component."""
 
-    tile_id: int
+    tile: int
     tint: game.palette.Base
     layer: game.types.RenderLayer
 
