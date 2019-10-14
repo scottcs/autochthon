@@ -57,7 +57,7 @@ class Render(esper.Processor):
         tile_center_y = game.render.grid_to_tile_y("world", self.renderer.center[1])
         log.debug(f"tile_w/h: {tile_width}x{tile_height} c: {tile_center_x}, {tile_center_y}")
         self.renderer.set_layer(game.types.RenderLayer.debug)
-        self.renderer.set_color("#60FFFFFF")
+        self.renderer.set_color(game.palette.Renderer.remembered)
         for x in range(tile_width):
             for y in range(tile_height):
                 do_x = x in (0, tile_width - 1, tile_center_x)
@@ -146,7 +146,7 @@ class Render(esper.Processor):
                 # we've never seen it, so skip it
                 continue
 
-            color: str = "#FFFFFFFF"
+            color = game.palette.Renderer.visible
             category, name = renderable.tile
             if can_see_now:
                 map_x = renderable.last_seen_x = position.x
@@ -163,7 +163,7 @@ class Render(esper.Processor):
                         # just draw an indicator that there's something beneath
                         category = "interface"
                         name = "beneath_indicator"
-                        color = "#FF0090FF"
+                        color = game.palette.Renderer.beneath
             else:
                 # we've seen it before, but don't see it now
                 if self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]:
@@ -174,7 +174,7 @@ class Render(esper.Processor):
                     continue
                 else:
                     # it might still be there, so draw it faded
-                    color = "#60FFFFFF"
+                    color = game.palette.Renderer.remembered
                     map_y = renderable.last_seen_y
                     map_x = renderable.last_seen_x
                     facing = renderable.last_seen_facing
@@ -229,13 +229,13 @@ class Render(esper.Processor):
                     continue
                 tile_id, tile_type = self.world.map.get_tile(map_y, map_x)
                 # TODO: support tile colorization?
-                tile_color = "#00FFFFFF"
+                tile_color = ""
                 if self.world.map.explored[map_y, map_x]:
-                    tile_color = "#60FFFFFF"
+                    tile_color = game.palette.Renderer.remembered
                 if self.world.map.fov[map_y, map_x]:
                     self.world.map.explored[map_y, map_x] = True
-                    tile_color = "#FFFFFFFF"
-                if tile_color.startswith("#00"):
+                    tile_color = game.palette.Renderer.visible
+                if not tile_color:
                     continue
 
                 draw_x = game.render.snap_tile_to_grid_x("world", tile_x)
