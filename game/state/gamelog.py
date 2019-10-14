@@ -55,14 +55,13 @@ class GameLog(game.state.base.BaseState):
     def _on_exit(self):
         """Called when this state is dropped."""
         self.frame.hide()
-        self.renderer.clear_layer(game.types.RenderLayer.ui_menu)
-        self.renderer.clear_layer(game.types.RenderLayer.ui_menu + 1)
+        self.renderer.clear_layer(game.types.RenderLayer.ui)
 
     def _update(self):
         """Update the game log menu."""
         if self.do_render:
             self.do_render = False
-            self.frame.render(self.renderer, game.types.RenderLayer.ui_menu)
+            self.frame.render(self.renderer, game.types.RenderLayer.ui)
             self.renderer.refresh()
 
     def _on_input(self, event: game.types.Event) -> None:

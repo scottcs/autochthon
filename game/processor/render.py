@@ -70,16 +70,16 @@ class Render(esper.Processor):
         #             )
         for x in range(self.renderer.width):
             self.renderer.draw_text_on_layer(
-                game.types.RenderLayer.debug + 1, x, self.renderer.center[1], "-", color="red"
+                game.types.RenderLayer.debug, x, self.renderer.center[1], "-", color="red"
             )
 
         for y in range(self.renderer.height):
             self.renderer.draw_text_on_layer(
-                game.types.RenderLayer.debug + 1, self.renderer.center[0], y, "|", color="red"
+                game.types.RenderLayer.debug, self.renderer.center[0], y, "|", color="red"
             )
 
         self.renderer.draw_text_on_layer(
-            game.types.RenderLayer.debug + 1,
+            game.types.RenderLayer.debug,
             self.renderer.center[0],
             self.renderer.center[1],
             "+",
@@ -137,9 +137,7 @@ class Render(esper.Processor):
     def _draw_entities(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
     ) -> None:
-        self.renderer.clear_layer(game.types.RenderLayer.enemy)
-        self.renderer.clear_layer(game.types.RenderLayer.item)
-        self.renderer.clear_layer(game.types.RenderLayer.player)
+        self.renderer.clear_layer(game.types.RenderLayer.entities)
 
         map_x1: int = player_pos.x - tile_viewport.center.x
         map_y1: int = player_pos.y - tile_viewport.center.y
@@ -198,13 +196,14 @@ class Render(esper.Processor):
             draw_x = game.render.snap_tile_to_grid_x(category, adjusted_x)
             draw_y = game.render.snap_tile_to_grid_y(category, adjusted_y)
             if 0 <= draw_x < self.renderer.width and 0 <= draw_y < self.renderer.height:
-                self.renderer.draw_on_layer(renderable.layer, draw_x, draw_y, tile_id, color=color)
+                self.renderer.draw_on_layer(
+                    game.types.RenderLayer.entities, draw_x, draw_y, tile_id, color=color
+                )
 
     def _draw_map(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
     ) -> None:
-        self.renderer.clear_layer(game.types.RenderLayer.floor)
-        self.renderer.clear_layer(game.types.RenderLayer.wall)
+        self.renderer.clear_layer(game.types.RenderLayer.map)
         map_x1: int = player_pos.x - tile_viewport.center.x + 1
         map_y1: int = player_pos.y - tile_viewport.center.y + 1
         map_x = map_x1 - 1
@@ -235,11 +234,7 @@ class Render(esper.Processor):
                 draw_x = game.render.snap_tile_to_grid_x("world", tile_x)
                 draw_y = game.render.snap_tile_to_grid_y("world", tile_y)
                 self.renderer.draw_on_layer(
-                    _render_layer_from_tile_type(tile_type),
-                    draw_x,
-                    draw_y,
-                    tile_id,
-                    color=tile_color,
+                    game.types.RenderLayer.map, draw_x, draw_y, tile_id, color=tile_color
                 )
 
     def _get_player_render_data(self) -> game.types.PlayerRenderData:
@@ -253,14 +248,9 @@ class Render(esper.Processor):
             category, name = renderable.tile
             player_tile_id = game.render.TileCache.get(category, name)
             return game.types.PlayerRenderData(
-                position.x,
-                position.y,
-                player.fov,
-                renderable.layer,
-                player_tile_id,
-                renderable.tint,
+                position.x, position.y, player.fov, player_tile_id, renderable.tint
             )
-        return game.types.PlayerRenderData(0, 0, 0, game.types.RenderLayer.player, 0, "white")
+        return game.types.PlayerRenderData(0, 0, 0, 0, "white")
 
     def _on_render_entities(self, _event: game.types.Event) -> None:
         self.should_render_entities = True
@@ -269,9 +259,9 @@ class Render(esper.Processor):
         self.should_render_map = True
 
     def _on_game_log(self, event: game.types.Event) -> None:
-        self.renderer.clear_layer(game.types.RenderLayer.ui_game_message)
+        self.renderer.clear_layer(game.types.RenderLayer.ui)
         self.renderer.draw_gamelog_on_layer(
-            game.types.RenderLayer.ui_game_message,
+            game.types.RenderLayer.ui,
             game.render.snap_tile_to_grid_x("font", 1),
             self.renderer.height - game.render.snap_tile_to_grid_y("font", 1),
             event["log_component"].lines,
@@ -282,11 +272,3 @@ class Render(esper.Processor):
         if event.get("shutdown"):
             log.info("Closing terminal window.")
             self.renderer.close()
-
-
-def _render_layer_from_tile_type(tile_type: game.types.TileType) -> game.types.RenderLayer:
-    return {
-        game.types.TileType.wall_v: game.types.RenderLayer.wall,
-        game.types.TileType.wall_h: game.types.RenderLayer.wall,
-        game.types.TileType.floor: game.types.RenderLayer.floor,
-    }[tile_type]

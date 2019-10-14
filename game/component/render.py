@@ -12,7 +12,6 @@ class Renderable:
 
     tile: int
     tint: game.palette.Base
-    layer: game.types.RenderLayer
 
     def __post_init__(self) -> None:
         self.last_seen_x: typing.Optional[int] = None

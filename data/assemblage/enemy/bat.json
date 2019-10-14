@@ -10,8 +10,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "bat"],
-        "tint": "Palette.blue",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.blue"
       }
     }
   }

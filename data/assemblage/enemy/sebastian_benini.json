@@ -13,8 +13,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "cleric"],
-        "tint": "Palette.orange",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.orange"
       },
       "damage.ModifierInflictPiercing": {
         "addend": "2d5+10"

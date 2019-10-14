@@ -11,8 +11,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "yeti"],
-        "tint": "Palette.white",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.white"
       },
       "ai.DummyMind": {}
     }

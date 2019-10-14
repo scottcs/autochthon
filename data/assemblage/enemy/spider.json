@@ -16,8 +16,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "spider"],
-        "tint": "Palette.orange",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.orange"
       }
     }
   }

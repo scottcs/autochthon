@@ -11,8 +11,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "skeleton_warrior"],
-        "tint": "Palette.green",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.green"
       }
     }
   }

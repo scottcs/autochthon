@@ -17,18 +17,11 @@ Entity = int
 class RenderLayer(enum.IntEnum):
     """Render layers, from bottom to top."""
 
-    background = 0
-    floor = 1
-    wall = 2
-    item = 3
-    icon = 4
-    enemy = 5
-    player = 6
-    effect = 7
-    ui_game_message = 10
-    ui_hud = 15
-    ui_menu = 20
-    debug = 200
+    map = enum.auto()
+    entities = enum.auto()
+    effects = enum.auto()
+    ui = enum.auto()
+    debug = enum.auto()
 
 
 class Priority(enum.IntEnum):
@@ -168,7 +161,6 @@ class PlayerRenderData(typing.NamedTuple):
     x: int
     y: int
     fov: int
-    layer: RenderLayer
     tile_id: int
     color: str
 

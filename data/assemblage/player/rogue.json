@@ -4,8 +4,7 @@
       "attack.ImmuneToDeflect": {},
       "render.Renderable": {
         "tile": ["monsters", "rogue"],
-        "tint": "Palette.yellow",
-        "layer": "RenderLayer.player"
+        "tint": "Palette.yellow"
       }
     }
   }

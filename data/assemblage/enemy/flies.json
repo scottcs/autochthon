@@ -10,8 +10,7 @@
       },
       "render.Renderable": {
         "tile": ["monsters", "flies"],
-        "tint": "Palette.cyan",
-        "layer": "RenderLayer.enemy"
+        "tint": "Palette.cyan"
       },
       "attack.DodgeModifier": {
         "factor": 0.3
