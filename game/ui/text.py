@@ -13,5 +13,5 @@ class Text(game.ui.widget.Widget):
         super().__init__(game.utils.geometry.Rect(0, 0, grid_w, grid_h))
         self.text = text
 
-    def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
-        renderer.draw_text_on_layer(layer, self.rect.x1, self.rect.y1, self.text)
+    def _paint(self, renderer: game.render.BaseRenderer) -> None:
+        renderer.draw_text(self.rect.x1, self.rect.y1, self.text)

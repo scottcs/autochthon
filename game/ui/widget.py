@@ -5,6 +5,7 @@ import logging
 import typing
 
 import game.render
+import game.types
 import game.utils.geometry
 
 log = logging.getLogger(__name__)
@@ -59,15 +60,17 @@ class Widget:
         for child in self.children:
             child.move_to(child.rect.x1 + dx, child.rect.y1 + dy)
 
-    def render(self, renderer: game.render.BaseRenderer, layer: int) -> None:
+    def render(self, renderer: game.render.BaseRenderer, set_layer: bool = True) -> None:
         """Render this widget."""
         if not self._visible:
             return
-        self._paint(renderer, layer)
+        if set_layer:
+            renderer.set_layer(game.types.RenderLayer.ui)
+        self._paint(renderer)
         for child in self.children:
-            child.render(renderer, layer)
+            child.render(renderer, set_layer=False)
 
-    def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
+    def _paint(self, renderer: game.render.BaseRenderer) -> None:
         """Paint only this widget, not children."""
         pass
 

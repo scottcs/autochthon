@@ -205,21 +205,15 @@ class BaseRenderer:
         raise NotImplementedError()
 
     @staticmethod
-    def draw_on_layer(
-        layer: int, x: int, y: int, tile_id: int, color: typing.Optional[str] = None
-    ) -> None:
-        """Draw on the given layer."""
+    def draw_tile(x: int, y: int, tile_id: int) -> None:
+        """Draw a tile."""
         raise NotImplementedError()
 
-    def draw_text_on_layer(
-        self, layer: int, x: int, y: int, text: str, color: typing.Optional[str] = None
-    ) -> None:
+    def draw_text(self, x: int, y: int, text: str) -> None:
         """Draw some text."""
         raise NotImplementedError()
 
-    def draw_gamelog_on_layer(
-        self, layer: int, x: int, y: int, lines: typing.Sequence[game.types.LogLine]
-    ) -> None:
+    def draw_gamelog(self, x: int, y: int, lines: typing.Sequence[game.types.LogLine]) -> None:
         """Draw a game log line."""
         raise NotImplementedError()
 
@@ -234,6 +228,18 @@ class BaseRenderer:
 
     def colorize_gamelog(self, lines: typing.Sequence[game.types.LogLine]) -> str:
         """Return a colorized string of log lines for BearLibTerminal."""
+        raise NotImplementedError()
+
+    def set_color(self, color: str) -> None:
+        """Set the color for drawing."""
+        raise NotImplementedError()
+
+    def reset_color(self) -> None:
+        """Set the color for drawing to the default value."""
+        raise NotImplementedError()
+
+    def set_layer(self, layer: int) -> None:
+        """Set the layer for drawing."""
         raise NotImplementedError()
 
 
@@ -286,30 +292,30 @@ class BearLibRenderer(BaseRenderer):
         else:
             blt.clear_area(rect.x1, rect.x2, rect.w, rect.h)
 
-    @staticmethod
-    def draw_on_layer(
-        layer: int, x: int, y: int, tile_id: int, color: typing.Optional[str] = None
-    ) -> None:
-        """Draw on the given layer."""
+    def set_color(self, color: str) -> None:
+        """Set the color for drawing."""
+        blt.color(color)
+
+    def reset_color(self) -> None:
+        """Set the color for drawing to the default value."""
+        blt.color("white")
+
+    def set_layer(self, layer: int) -> None:
+        """Set the layer for drawing."""
         blt.layer(layer)
-        if color is not None:
-            blt.color(color)
+
+    @staticmethod
+    def draw_tile(x: int, y: int, tile_id: int) -> None:
+        """Draw on the given layer."""
         blt.put(x, y, tile_id)
 
-    def draw_text_on_layer(
-        self, layer: int, x: int, y: int, text: str, color: typing.Optional[str] = None
-    ) -> None:
+    def draw_text(self, x: int, y: int, text: str) -> None:
         """Draw some text."""
-        if color is not None:
-            text = self.colorize_text(text, color)
-        blt.layer(layer)
         blt.puts(x, y, text)
 
-    def draw_gamelog_on_layer(
-        self, layer: int, x: int, y: int, lines: typing.Sequence[game.types.LogLine]
-    ) -> None:
+    def draw_gamelog(self, x: int, y: int, lines: typing.Sequence[game.types.LogLine]) -> None:
         """Draw a game log line."""
-        self.draw_text_on_layer(layer, x, y, self.colorize_gamelog(lines))
+        self.draw_text(x, y, self.colorize_gamelog(lines))
 
     def close(self):
         """Close all windows."""
