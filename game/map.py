@@ -320,3 +320,7 @@ class ClassicMap(Map):
                         self.create_v_tunnel(prev_center.y, new_center.y, prev_center.x)
                         self.create_h_tunnel(prev_center.x, new_center.x, new_center.y)
                 rooms.append(new_room)
+
+    def update_fov(self, x: int, y: int, radius: int) -> None:
+        """Update the fov calculations."""
+        self.compute_fov(x, y, algorithm=tcod.FOV_PERMISSIVE_3, radius=radius, light_walls=True)

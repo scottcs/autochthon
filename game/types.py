@@ -160,7 +160,6 @@ class PlayerRenderData(typing.NamedTuple):
 
     x: int
     y: int
-    fov: int
     tile_id: int
     color: str
 

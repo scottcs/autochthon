@@ -10,6 +10,7 @@ import game.command.pickup
 import game.command.show_log
 import game.component.action
 import game.component.attack
+import game.component.movement
 import game.component.player
 import game.data
 import game.events
@@ -184,6 +185,10 @@ class Playing(game.state.base.BaseState):
         for item in self.layout["items"]:
             for _ in range(item["count"]):
                 item_factory.make(item["assemblages"])
+
+        position = self.world.component_for_entity(player, game.component.movement.Position)
+        player_component = self.world.component_for_entity(player, game.component.player.Player)
+        current_map.update_fov(position.x, position.y, radius=player_component.fov)
 
     def _on_input(self, event: game.types.Event) -> None:
         """Handle an input key."""
