@@ -47,27 +47,27 @@ class Render(esper.Processor):
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
 
-        self._draw_debug_overlay()
+        # self._draw_debug_overlay()
 
     def _draw_debug_overlay(self):
-        # debug_tile_id = game.render.TileCache.get("world", "floor_tile2", variant=2)
-        # debug_tile_id2 = game.render.TileCache.get("world", "floor_tile3", variant=2)
-        # tile_width = game.render.grid_to_tile_x("world", self.renderer.width)
-        # tile_height = game.render.grid_to_tile_y("world", self.renderer.height)
-        # tile_center_x = game.render.grid_to_tile_x("world", self.renderer.center[0])
-        # tile_center_y = game.render.grid_to_tile_y("world", self.renderer.center[1])
-        # log.debug(f"tile_w/h: {tile_width}x{tile_height} c: {tile_center_x}, {tile_center_y}")
-        # for x in range(tile_width):
-        #     for y in range(tile_height):
-        #         do_x = x in (0, tile_width - 1, tile_center_x)
-        #         do_y = y in (0, tile_height - 1, tile_center_y)
-        #         if do_x or do_y:
-        #             tile_id = (x + y) % 2 == 0 and debug_tile_id or debug_tile_id2
-        #             draw_x = game.render.snap_tile_to_grid_x("world", x)
-        #             draw_y = game.render.snap_tile_to_grid_y("world", y)
-        #             self.renderer.draw_on_layer(
-        #                 game.types.RenderLayer.debug, draw_x, draw_y, tile_id
-        #             )
+        debug_tile_id = game.render.TileCache.get("world", "floor_tile2", variant=2)
+        debug_tile_id2 = game.render.TileCache.get("world", "floor_tile3", variant=2)
+        tile_width = game.render.grid_to_tile_x("world", self.renderer.width)
+        tile_height = game.render.grid_to_tile_y("world", self.renderer.height)
+        tile_center_x = game.render.grid_to_tile_x("world", self.renderer.center[0])
+        tile_center_y = game.render.grid_to_tile_y("world", self.renderer.center[1])
+        log.debug(f"tile_w/h: {tile_width}x{tile_height} c: {tile_center_x}, {tile_center_y}")
+        for x in range(tile_width):
+            for y in range(tile_height):
+                do_x = x in (0, tile_width - 1, tile_center_x)
+                do_y = y in (0, tile_height - 1, tile_center_y)
+                if do_x or do_y:
+                    tile_id = (x + y) % 2 == 0 and debug_tile_id or debug_tile_id2
+                    draw_x = game.render.snap_tile_to_grid_x("world", x)
+                    draw_y = game.render.snap_tile_to_grid_y("world", y)
+                    self.renderer.draw_on_layer(
+                        game.types.RenderLayer.debug, draw_x, draw_y, tile_id, color="#60FFFFFF"
+                    )
         for x in range(self.renderer.width):
             self.renderer.draw_text_on_layer(
                 game.types.RenderLayer.debug, x, self.renderer.center[1], "-", color="red"
