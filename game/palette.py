@@ -54,6 +54,14 @@ class Item:
     artifact = "#FF9999"
 
 
+class Renderer:
+    """Colors for the renderer to use."""
+
+    beneath = "#FF62C2EA"
+    remembered = "#60FFFFFF"
+    visible = "#FFFFFFFF"
+
+
 def color_from_class_string(class_string: str) -> str:
     """Get a palette color string from a class string like `Base.brown`."""
     palette_class, color_name = class_string.split(".")

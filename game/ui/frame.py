@@ -20,14 +20,15 @@ class Frame(game.ui.widget.Widget):
         self.style: typing.Optional[game.types.UIFrameStyle] = style
         self._rng = game.utils.random.RNGCache.get("UIFrame")
 
-    def render(self, renderer: game.render.BaseRenderer, layer: int) -> None:
+    def render(self, renderer: game.render.BaseRenderer, set_layer: bool = True) -> None:
         """Render this widget; OVERRIDES parent."""
         if not self._visible:
             return
+        renderer.set_layer(game.types.RenderLayer.ui)
         if self.style is not None:
-            self._paint(renderer, layer)
+            self._paint(renderer)
         for child in self.children:
-            child.render(renderer, layer)
+            child.render(renderer, set_layer=False)
 
     def _get_style_tile_id(self, x: int, y: int, w: int, h: int):
         if self.style is None:
@@ -75,19 +76,20 @@ class Frame(game.ui.widget.Widget):
             }[self.style]
         return game.render.TileCache.get("interface", name, direction=direction)
 
-    def _paint(self, renderer: game.render.BaseRenderer, layer: int) -> None:
+    def _paint(self, renderer: game.render.BaseRenderer) -> None:
         grid_x = self.rect.x1
         grid_y = self.rect.y1
         w = self.rect.w
         h = self.rect.h
         tile_w = game.render.grid_to_tile_x("interface", w)
         tile_h = game.render.grid_to_tile_y("interface", h)
-        renderer.clear_layer(layer, rect=game.utils.geometry.Rect(grid_x, grid_y, w, h))
+        renderer.clear_layer(
+            game.types.RenderLayer.ui, rect=game.utils.geometry.Rect(grid_x, grid_y, w, h)
+        )
         for tile_x in range(tile_w):
             for tile_y in range(tile_h):
                 tile_id = self._get_style_tile_id(tile_x, tile_y, tile_w - 1, tile_h - 1)
-                renderer.draw_on_layer(
-                    layer,
+                renderer.draw_tile(
                     grid_x + game.render.snap_tile_to_grid_x("interface", tile_x),
                     grid_y + game.render.snap_tile_to_grid_y("interface", tile_y),
                     tile_id,

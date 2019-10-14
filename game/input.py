@@ -11,14 +11,15 @@ import game.types
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+KEYCODES = {k[3:]: v for k, v in blt.__dict__.items() if k.startswith("TK_")}
+
 
 def key_to_keycode(key: str) -> typing.Optional[int]:
     """Convert a key by name to a key code."""
-    for k, v in blt.__dict__.items():
-        if k.startswith("TK_"):
-            if k[3:] == key.upper():
-                return v
-    return None
+    try:
+        return KEYCODES[key.upper()]
+    except IndexError:
+        return None
 
 
 class InputHandler:

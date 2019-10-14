@@ -56,6 +56,8 @@ class Render(esper.Processor):
         tile_center_x = game.render.grid_to_tile_x("world", self.renderer.center[0])
         tile_center_y = game.render.grid_to_tile_y("world", self.renderer.center[1])
         log.debug(f"tile_w/h: {tile_width}x{tile_height} c: {tile_center_x}, {tile_center_y}")
+        self.renderer.set_layer(game.types.RenderLayer.debug)
+        self.renderer.set_color(game.palette.Renderer.remembered)
         for x in range(tile_width):
             for y in range(tile_height):
                 do_x = x in (0, tile_width - 1, tile_center_x)
@@ -64,25 +66,23 @@ class Render(esper.Processor):
                     tile_id = (x + y) % 2 == 0 and debug_tile_id or debug_tile_id2
                     draw_x = game.render.snap_tile_to_grid_x("world", x)
                     draw_y = game.render.snap_tile_to_grid_y("world", y)
-                    self.renderer.draw_on_layer(
-                        game.types.RenderLayer.debug, draw_x, draw_y, tile_id, color="#60FFFFFF"
-                    )
+                    self.renderer.draw_tile(draw_x, draw_y, tile_id)
+        self.renderer.reset_color()
+
         for x in range(self.renderer.width):
-            self.renderer.draw_text_on_layer(
-                game.types.RenderLayer.debug, x, self.renderer.center[1], "-", color="red"
+            self.renderer.draw_text(
+                x, self.renderer.center[1], self.renderer.colorize_text("-", "red")
             )
 
         for y in range(self.renderer.height):
-            self.renderer.draw_text_on_layer(
-                game.types.RenderLayer.debug, self.renderer.center[0], y, "|", color="red"
+            self.renderer.draw_text(
+                self.renderer.center[0], y, self.renderer.colorize_text("|", "red")
             )
 
-        self.renderer.draw_text_on_layer(
-            game.types.RenderLayer.debug,
+        self.renderer.draw_text(
             self.renderer.center[0],
             self.renderer.center[1],
-            "+",
-            color="red",
+            self.renderer.colorize_text("+", "red"),
         )
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -125,9 +125,11 @@ class Render(esper.Processor):
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
     ) -> None:
         self.renderer.clear_layer(game.types.RenderLayer.entities)
+        self.renderer.set_layer(game.types.RenderLayer.entities)
 
         map_x1: int = player_pos.x - tile_viewport.center.x
         map_y1: int = player_pos.y - tile_viewport.center.y
+        last_color: str = ""
 
         for ent, components in self.world.get_components(
             game.component.render.Renderable, game.component.movement.Position
@@ -144,13 +146,13 @@ class Render(esper.Processor):
                 # we've never seen it, so skip it
                 continue
 
+            color = game.palette.Renderer.visible
             category, name = renderable.tile
             if can_see_now:
                 map_x = renderable.last_seen_x = position.x
                 map_y = renderable.last_seen_y = position.y
                 facing = renderable.facing = position.facing
                 variant = None
-                color = "#FFFFFFFF"
 
                 # check if this is an item and another entity is standing on it
                 if self.world.has_component(ent, game.component.container.Item):
@@ -161,7 +163,7 @@ class Render(esper.Processor):
                         # just draw an indicator that there's something beneath
                         category = "interface"
                         name = "beneath_indicator"
-                        color = "#FF0090FF"
+                        color = game.palette.Renderer.beneath
             else:
                 # we've seen it before, but don't see it now
                 if self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]:
@@ -172,7 +174,7 @@ class Render(esper.Processor):
                     continue
                 else:
                     # it might still be there, so draw it faded
-                    color = "#60FFFFFF"
+                    color = game.palette.Renderer.remembered
                     map_y = renderable.last_seen_y
                     map_x = renderable.last_seen_x
                     facing = renderable.last_seen_facing
@@ -196,24 +198,29 @@ class Render(esper.Processor):
             draw_x = game.render.snap_tile_to_grid_x(category, adjusted_x)
             draw_y = game.render.snap_tile_to_grid_y(category, adjusted_y)
             if 0 <= draw_x < self.renderer.width and 0 <= draw_y < self.renderer.height:
-                self.renderer.draw_on_layer(
-                    game.types.RenderLayer.entities, draw_x, draw_y, tile_id, color=color
-                )
+                if color != last_color:
+                    self.renderer.set_color(color)
+                    last_color = color
+                self.renderer.draw_tile(draw_x, draw_y, tile_id)
 
     def _draw_map(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
     ) -> None:
         self.renderer.clear_layer(game.types.RenderLayer.map)
+        self.renderer.set_layer(game.types.RenderLayer.map)
+
         map_x1: int = player_pos.x - tile_viewport.center.x + 1
         map_y1: int = player_pos.y - tile_viewport.center.y + 1
-        map_x = map_x1 - 1
+        map_x: int = map_x1 - 1
+        last_tile_color: str = ""
+
         for tile_x in range(tile_viewport.x1, tile_viewport.x2 + 1):
             map_x += 1
             if map_x >= self.world.map.width:
                 break
             if map_x < 0:
                 continue
-            map_y = map_y1 - 1
+            map_y: int = map_y1 - 1
             for tile_y in range(tile_viewport.y1, tile_viewport.y2 + 1):
                 map_y += 1
                 if map_y >= self.world.map.height:
@@ -222,20 +229,21 @@ class Render(esper.Processor):
                     continue
                 tile_id, tile_type = self.world.map.get_tile(map_y, map_x)
                 # TODO: support tile colorization?
-                tile_color = "#00FFFFFF"
+                tile_color = ""
                 if self.world.map.explored[map_y, map_x]:
-                    tile_color = "#60FFFFFF"
+                    tile_color = game.palette.Renderer.remembered
                 if self.world.map.fov[map_y, map_x]:
                     self.world.map.explored[map_y, map_x] = True
-                    tile_color = "#FFFFFFFF"
-                if tile_color.startswith("#00"):
+                    tile_color = game.palette.Renderer.visible
+                if not tile_color:
                     continue
 
                 draw_x = game.render.snap_tile_to_grid_x("world", tile_x)
                 draw_y = game.render.snap_tile_to_grid_y("world", tile_y)
-                self.renderer.draw_on_layer(
-                    game.types.RenderLayer.map, draw_x, draw_y, tile_id, color=tile_color
-                )
+                if tile_color != last_tile_color:
+                    self.renderer.set_color(tile_color)
+                    last_tile_color = tile_color
+                self.renderer.draw_tile(draw_x, draw_y, tile_id)
 
     def _get_player_render_data(self) -> game.types.PlayerRenderData:
         # TODO: handle more than one player controlled object?
@@ -258,8 +266,8 @@ class Render(esper.Processor):
 
     def _on_game_log(self, event: game.types.Event) -> None:
         self.renderer.clear_layer(game.types.RenderLayer.ui)
-        self.renderer.draw_gamelog_on_layer(
-            game.types.RenderLayer.ui,
+        self.renderer.set_layer(game.types.RenderLayer.ui)
+        self.renderer.draw_gamelog(
             game.render.snap_tile_to_grid_x("font", 1),
             self.renderer.height - game.render.snap_tile_to_grid_y("font", 1),
             event["log_component"].lines,
