@@ -121,11 +121,6 @@ class Render(esper.Processor):
             refresh = True
 
         if refresh:
-            # refresh_elapsed = time.time_ns() - self.last_refresh_time
-            # if refresh_elapsed >= NS / 30:
-            #     print(f"refresh - {refresh_elapsed / NS}")
-            #     self.last_refresh_time = time.time_ns()
-            #     self.renderer.refresh()
             self.renderer.refresh()
 
     def _update_fov(self, player_data):
