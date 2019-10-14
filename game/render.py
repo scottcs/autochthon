@@ -280,27 +280,21 @@ class BearLibRenderer(BaseRenderer):
         self, layer: int, rect: typing.Optional[game.utils.geometry.Rect] = None
     ) -> None:
         """Clear the given layer, or part of the layer."""
-        current_layer = blt.state(blt.TK_LAYER)
         blt.layer(layer)
         if rect is None:
             blt.clear_area(0, 0, self.width, self.height)
         else:
             blt.clear_area(rect.x1, rect.x2, rect.w, rect.h)
-        blt.layer(current_layer)
 
     @staticmethod
     def draw_on_layer(
         layer: int, x: int, y: int, tile_id: int, color: typing.Optional[str] = None
     ) -> None:
         """Draw on the given layer."""
-        current_layer = blt.state(blt.TK_LAYER)
-        current_color = blt.state(blt.TK_COLOR)
         blt.layer(layer)
         if color is not None:
             blt.color(color)
         blt.put(x, y, tile_id)
-        blt.layer(current_layer)
-        blt.color(current_color)
 
     def draw_text_on_layer(
         self, layer: int, x: int, y: int, text: str, color: typing.Optional[str] = None
@@ -308,10 +302,8 @@ class BearLibRenderer(BaseRenderer):
         """Draw some text."""
         if color is not None:
             text = self.colorize_text(text, color)
-        current_layer = blt.state(blt.TK_LAYER)
         blt.layer(layer)
         blt.puts(x, y, text)
-        blt.layer(current_layer)
 
     def draw_gamelog_on_layer(
         self, layer: int, x: int, y: int, lines: typing.Sequence[game.types.LogLine]
