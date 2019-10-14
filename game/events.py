@@ -27,35 +27,32 @@ class Event:
         """Register a handler."""
         self.handlers[handler] = True
         self._to_handle.append(handler)
-        # print(f"{self} added handler")
         return self
 
     def unhandle(self, handler: game.types.EventHandler) -> Event:
         """Unregister a handler."""
         self._to_unhandle.append(handler)
-        # print(f"{self} unhandle")
         return self
 
-    def _remove_handlers(self) -> None:
+    def _remove_unhandled_handlers(self) -> None:
         while self._to_unhandle:
             handler = self._to_unhandle.pop()
             if handler in self._to_handle:
                 # it's been added at some point after we wanted to remove it, so don't remove it
                 continue
             try:
-                # print(f"{self} removed handler")
                 del self.handlers[handler]
             except KeyError:
                 raise ValueError("Handler is not handling this event, so cannot unhandle it.")
         self._to_handle.clear()
 
-    def fire(self, event: typing.Optional[game.types.EventType] = None) -> None:
+    def fire(self, event: typing.Optional[game.types.Event] = None) -> None:
         """Fire the event."""
-        self._remove_handlers()
-        # print(f"{self} fire event: {event}")
-        for handler in self.handlers.keys():
+        self._remove_unhandled_handlers()
+        to_iterate = list(self.handlers.keys())
+        for handler in to_iterate:
             handler(event or {})
-        self._remove_handlers()
+        self._remove_unhandled_handlers()
 
     def num_handlers(self) -> int:
         """Get the number of handlers."""
@@ -75,10 +72,9 @@ ChoiceDeclined: Event = Event("ChoiceDeclined")
 Describe: Event = Event("Describe")
 GameLog: Event = Event("GameLog")
 GameOver: Event = Event("GameOver")
+ShutDown: Event = Event("Shutdown")
 Input: Event = Event("Input")
 MenuClosed: Event = Event("MenuClosed")
 SubMenuClosed: Event = Event("SubMenuClosed")
 RenderEntities: Event = Event("RenderEntities")
 RenderMap: Event = Event("RenderMap")
-RequestRender: Event = Event("RequestRender")
-UpdateMapRender: Event = Event("UpdateMapRender")

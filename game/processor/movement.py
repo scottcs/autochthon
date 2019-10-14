@@ -1,4 +1,5 @@
 """Movement processor."""
+import logging
 import typing
 
 import esper
@@ -11,7 +12,10 @@ import game.component.movement
 import game.component.player
 import game.component.status
 import game.events
-import gamedata.palette
+import game.palette
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class Movement(esper.Processor):
@@ -19,23 +23,23 @@ class Movement(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process movement components."""
-        entities_to_render: list = []
+        entities_need_rendering: bool = False
         for ent, components in self.world.get_components(
             game.component.action.Actor,
-            game.component.movement.GUTWaiting,
-            game.component.action.GUTMyTurn,
+            game.component.movement.TMPWaiting,
+            game.component.action.TMPMyTurn,
         ):
-            if self.world.has_component(ent, game.component.status.GUTDead):
+            if self.world.has_component(ent, game.component.status.TMPDead):
                 continue
-            self.world.actor_takes_turn(ent, game.component.movement.GUTWaiting)
+            self.world.actor_takes_turn(ent, game.component.movement.TMPWaiting)
 
         for ent, components in self.world.get_components(
             game.component.movement.Position,
             game.component.action.Actor,
-            game.component.movement.GUTMoving,
-            game.component.action.GUTMyTurn,
+            game.component.movement.TMPMoving,
+            game.component.action.TMPMyTurn,
         ):
-            if self.world.has_component(ent, game.component.status.GUTDead):
+            if self.world.has_component(ent, game.component.status.TMPDead):
                 continue
             position, actor, moving = components[:3]
             if (
@@ -53,9 +57,9 @@ class Movement(esper.Processor):
                     self.world.map.contains_enemy[moving.y, moving.x] = True
                 position.x = moving.x
                 position.y = moving.y
-                entities_to_render.append(ent)
+                entities_need_rendering = True
                 if ent in self.world.players:
-                    game.events.RenderMap.fire()
+                    game.events.RenderMap()
                     item = self.world.get_item_at_position(moving.x, moving.y)
                     if item:
                         name = self.world.optional_component_for_entity(
@@ -63,10 +67,10 @@ class Movement(esper.Processor):
                         )
                         if name:
                             desc_log = self.world.get_or_add_component(
-                                ent, game.component.gamelog.GUTDescription
+                                ent, game.component.gamelog.TMPDescription
                             )
-                            desc_log.add(f"{name.generic}", gamedata.palette.ItemPalette.epic)
-                            desc_log.append(" is here.")
-            self.world.actor_takes_turn(ent, game.component.movement.GUTMoving)
-            if entities_to_render:
-                game.events.RenderEntities.fire({"entities": entities_to_render})
+                            desc_log.add(f"{name.generic}", game.palette.Item.epic)
+                            desc_log.add_raw(" is here.")
+            self.world.actor_takes_turn(ent, game.component.movement.TMPMoving)
+            if entities_need_rendering:
+                game.events.RenderEntities()

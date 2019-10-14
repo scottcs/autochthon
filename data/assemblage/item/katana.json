@@ -5,7 +5,7 @@
         "first": "katana"
       },
       "render.Renderable": {
-        "tile_id": "item_katana",
+        "tile": ["items", "weapon_shortsword"],
         "tint": "Palette.purple",
         "layer": "RenderLayer.item"
       },
@@ -19,7 +19,7 @@
         "addend": "3d6"
       },
       "container.Containable": {
-        "equip_type": "EquipType.melee"
+        "equip_type": "Equip.melee"
       }
     }
   }

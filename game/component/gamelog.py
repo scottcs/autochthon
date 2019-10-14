@@ -1,8 +1,8 @@
 """Game log components."""
 import typing
 
+import game.palette
 import game.types
-import gamedata.palette
 
 
 class BaseLog:
@@ -11,46 +11,49 @@ class BaseLog:
     def __init__(
         self,
         initial_line: typing.Optional[str] = None,
-        initial_color: int = gamedata.palette.MessagePalette.default,
+        initial_color: str = game.palette.Message.default,
     ) -> None:
-        self.lines: list = []
+        self.lines: typing.List[game.types.LogLine] = []
         if initial_line is not None:
             self.add(initial_line, color=initial_color)
 
-    def add(self, message: str, color: int = gamedata.palette.MessagePalette.default) -> None:
+    def add(self, message: str, color: str = game.palette.Message.default) -> None:
         """Add a new line to the log."""
         # capitalize
         message = f"{message[0].upper()}{message[1:]}"
 
-        # if this isn't the first line, add a space before it
         try:
             last = self.lines.pop()
         except IndexError:
-            last = None
-        if last:
-            if last.color == color:
-                message = f"{last.message} {message}"
-            else:
-                self.lines.append(last)
-                message = " " + message
-        self.append(message, color)
+            self.add_raw(message, color)
+            return
 
-    def append(self, message: str, color: int = gamedata.palette.MessagePalette.default) -> None:
-        """Append to the log without a space."""
+        if last.color == color:
+            message = f"{last.message} {message}"
+        else:
+            self.lines.append(last)
+            message = " " + message
+        self.add_raw(message, color)
+
+    def add_raw(self, message: str, color: str = game.palette.Message.default) -> None:
+        """Append to the log without any additional formatting."""
         self.lines.append(game.types.LogLine(message, color))
 
+    def __str__(self) -> str:
+        return "".join([l.message for l in self.lines])
 
-class GUTCombat(BaseLog):
+
+class TMPCombat(BaseLog):
     """Combat log."""
 
 
-class GUTStatus(BaseLog):
+class TMPStatus(BaseLog):
     """Log status effects."""
 
 
-class GUTCommand(BaseLog):
+class TMPCommand(BaseLog):
     """Log command results."""
 
 
-class GUTDescription(BaseLog):
+class TMPDescription(BaseLog):
     """Log descriptions."""

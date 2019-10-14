@@ -1,0 +1,24 @@
+{
+  "Spider": {
+    "Components": {
+      "ai.SimpleMind": {},
+      "attribute.HP": {
+        "initial": "==1d10+15"
+      },
+      "attack.DeflectModifier": {
+        "factor": 0.65
+      },
+      "attack.DodgeModifier": {
+        "factor": 0.3
+      },
+      "descriptive.Name": {
+        "first": "spider"
+      },
+      "render.Renderable": {
+        "tile": ["monsters", "spider"],
+        "tint": "Palette.orange",
+        "layer": "RenderLayer.enemy"
+      }
+    }
+  }
+}

@@ -31,7 +31,7 @@ class Containable:
 
 
 @dataclasses.dataclass
-class GUTContained:
+class TMPContained:
     """This entity is contained by another entity."""
 
     by_ent: game.types.Entity
@@ -52,7 +52,7 @@ class GUTContained:
 
 
 @dataclasses.dataclass
-class GUTTransfer:
+class TMPTransfer:
     """Remove or insert a Containable entity out of or into a Container.
 
     If to_ent is None, assume it's to the floor

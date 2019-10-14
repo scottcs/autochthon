@@ -7,10 +7,10 @@ authors = ["scott <dev@cracklebones.com>"]
 [tool.poetry.dependencies]
 python = "^3.7"
 tdl = "^6.0"
-tornado = "^6.0"
 esper = "^1.2"
 bearlibterminal = "^0.15.7"
 toml = "^0.10.0"
+appdirs = "^1.4"
 
 [tool.poetry.dev-dependencies]
 PySide2 = "^5.13"
@@ -23,6 +23,8 @@ flake8 = "^3.7"
 pytest = "^5.1"
 pytest-cov = "^2.7"
 pre-commit = "^1.18"
+snakeviz = "^2.0"
+pprofile = "^2.0"
 [tool.black]
 line-length = 99
 target_version = ["py37"]

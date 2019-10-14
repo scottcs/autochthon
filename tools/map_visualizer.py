@@ -5,7 +5,6 @@ This tool is used to quickly visualize map generation algorithms.
 TODO: render path analysis and loops analysis
 
 """
-import json
 import pathlib
 import pydoc
 import sys
@@ -15,11 +14,11 @@ import PySide2.QtCore
 import PySide2.QtGui
 import PySide2.QtWidgets
 
-import game.core.map
+import game.data
+import game.map
 import game.utils.random
 import tools.widgets
 
-CONFIG_FILE = pathlib.Path("data") / pathlib.Path("config.json")
 MIN_WIDTH, MIN_HEIGHT = 1150, 800
 
 MAP_LAYERS = {
@@ -38,7 +37,7 @@ MAP_LAYERS = {
 # TODO: Maybe we can define this in the map module and use it there too? Or in data files?
 ALGORITHMS = {
     "ClassicMap": {
-        "class": game.core.map.ClassicMap,
+        "class": game.map.ClassicMap,
         "opts": {
             "max_rooms": {"type": "int", "min": 0, "max": 1000, "default": 50},
             "room_min_size": {"type": "int", "min": 0, "max": 1000, "default": 5},
@@ -344,7 +343,7 @@ class ImageWidget(PySide2.QtWidgets.QWidget):
         self.layers = {n: not n.startswith("alt_") for n in MAP_LAYERS.keys()}
         self.show()
 
-    def draw_map(self, game_map: game.core.map.Map, scale_factor: int) -> None:
+    def draw_map(self, game_map: game.map.Map, scale_factor: int) -> None:
         """Draw the map to an image."""
         img = PySide2.QtGui.QImage(
             game_map.width, game_map.height, PySide2.QtGui.QImage.Format_RGB32
@@ -387,7 +386,7 @@ class ImageWidget(PySide2.QtWidgets.QWidget):
         """Set a particular layer to enabled or disabled."""
         self.layers[name] = enabled
 
-    def _get_cell_color(self, game_map: game.core.map.Map, x: int, y: int) -> PySide2.QtGui.qRgb:
+    def _get_cell_color(self, game_map: game.map.Map, x: int, y: int) -> PySide2.QtGui.qRgb:
         color = MAP_LAYERS["base"]
         # color gets replaced by each layer in order until the highest wins
         for layer_name, layer_color in MAP_LAYERS.items():
@@ -429,7 +428,7 @@ class CentralWidget(PySide2.QtWidgets.QWidget):
         self.options.scale_changed.connect(self._on_scale_changed)
         self.options.seed_reset.connect(self._on_seed_reset)
 
-    def set_map(self, game_map: game.core.map.Map, scale_factor: int) -> None:
+    def set_map(self, game_map: game.map.Map, scale_factor: int) -> None:
         """Set our map."""
         self.game_map = game_map
         self.scale_factor = scale_factor
@@ -547,8 +546,7 @@ def main() -> int:
     except IndexError:
         parent_seed = "MapVisualizer"
     app = tools.widgets.ToolApp(sys.argv)
-    with CONFIG_FILE.open() as f:
-        map_config: typing.MutableMapping = json.load(f)["map"]
+    map_config: typing.MutableMapping = game.data.config["map"]
     map_config["parent_seed"] = parent_seed
     map_visualizer = MapVisualizer(map_config)
     map_visualizer.show()

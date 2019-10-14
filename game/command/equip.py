@@ -5,8 +5,8 @@ import game.component.descriptive
 import game.component.gamelog
 import game.component.player
 import game.events
+import game.palette
 import game.types
-import gamedata.palette
 
 
 class Equip(game.command.base.BaseCommand):
@@ -19,7 +19,7 @@ class Equip(game.command.base.BaseCommand):
             if items_carried:
                 game.events.ChoiceFromList.handle(self.on_choice)
                 game.events.MenuClosed.handle(self._on_menu_closed)
-                game.events.ChooseFromList.fire(
+                game.events.ChooseFromList(
                     {
                         "header": "Equip/Unequip what?",
                         "items": items_carried,
@@ -27,17 +27,17 @@ class Equip(game.command.base.BaseCommand):
                     }
                 )
             else:
-                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add("You have nothing to eqiup!")
 
-    def on_choice(self, event: game.types.EventType) -> None:
+    def on_choice(self, event: game.types.Event) -> None:
         """Callback for ChoiceFromList event."""
-        input_key = self._keys_from_event(event)
+        input_key = event["char"]
         for ent, _ in self.world.get_component(game.component.player.Player):
             equipment = self.world.component_for_entity(ent, game.component.container.Equipment)
             want_to_equip = None
             for item_ent, components in self.world.get_components(
-                game.component.container.GUTContained,
+                game.component.container.TMPContained,
                 game.component.descriptive.Name,
                 game.component.container.Containable,
             ):
@@ -49,7 +49,7 @@ class Equip(game.command.base.BaseCommand):
             if want_to_equip:
                 equip_count = 0
                 for item_ent, components in self.world.get_components(
-                    game.component.container.GUTContained, game.component.container.Containable
+                    game.component.container.TMPContained, game.component.container.Containable
                 ):
                     contained, containable = components
                     if (
@@ -62,29 +62,29 @@ class Equip(game.command.base.BaseCommand):
                 if want_to_equip[0].equipped:
                     want_to_equip[0].equipped = False
                     cmd_log = self.world.get_or_add_component(
-                        ent, game.component.gamelog.GUTCommand
+                        ent, game.component.gamelog.TMPCommand
                     )
                     cmd_log.add("You unequip ")
-                    cmd_log.append(want_to_equip[1].generic, gamedata.palette.ItemPalette.epic)
-                    cmd_log.append(f" from your {name} slot.")
-                    game.events.ChoiceAccepted.fire()
+                    cmd_log.add_raw(want_to_equip[1].generic, game.palette.Item.epic)
+                    cmd_log.add_raw(f" from your {name} slot.")
+                    game.events.ChoiceAccepted()
                 else:
                     if equipment_slot["max"] > equip_count:
                         want_to_equip[0].equipped = True
                         cmd_log = self.world.get_or_add_component(
-                            ent, game.component.gamelog.GUTCommand
+                            ent, game.component.gamelog.TMPCommand
                         )
                         cmd_log.add("You equip ")
-                        cmd_log.append(want_to_equip[1].generic, gamedata.palette.ItemPalette.epic)
-                        cmd_log.append(f" in your {name} slot.")
-                        game.events.ChoiceAccepted.fire()
+                        cmd_log.add_raw(want_to_equip[1].generic, game.palette.Item.epic)
+                        cmd_log.add_raw(f" in your {name} slot.")
+                        game.events.ChoiceAccepted()
                     else:
                         msg = f"You can't equip any more items in your {name} slot."
                         cmd_log = self.world.get_or_add_component(
-                            ent, game.component.gamelog.GUTCommand
+                            ent, game.component.gamelog.TMPCommand
                         )
                         cmd_log.add(msg)
-                        game.events.ChoiceDeclined.fire({"status": msg})
+                        game.events.ChoiceDeclined({"status": msg})
             else:
-                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add("You can't find the item you want to equip.")

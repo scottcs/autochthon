@@ -13,7 +13,7 @@ class BaseDamageComponent:
 
 
 @dataclasses.dataclass
-class GUTTakeBludgeoning(BaseDamageComponent):
+class TMPTakeBludgeoning(BaseDamageComponent):
     """Take Bludgeoning damage."""
 
 
@@ -30,7 +30,7 @@ class ImmuneBludgeoning:
 
 
 @dataclasses.dataclass
-class GUTTakePiercing(BaseDamageComponent):
+class TMPTakePiercing(BaseDamageComponent):
     """Take Piercing damage."""
 
 
@@ -47,7 +47,7 @@ class ImmunePiercing:
 
 
 @dataclasses.dataclass
-class GUTTakeSlashing(BaseDamageComponent):
+class TMPTakeSlashing(BaseDamageComponent):
     """Take Slashing damage."""
 
 
@@ -59,12 +59,12 @@ class ModifierTakeSlashing(game.component.base.BaseModifierComponent):
     """Slashing damage vulnerability/resistance."""
 
 
-class ImmuneDamage:
+class ImmuneSlashing:
     """Entity is immune to Slashing damage."""
 
 
 @dataclasses.dataclass
-class GUTTakeElectric(BaseDamageComponent):
+class TMPTakeElectric(BaseDamageComponent):
     """Take Electric damage."""
 
 

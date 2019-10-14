@@ -10,14 +10,15 @@ import PySide2.QtCore
 import PySide2.QtGui
 import PySide2.QtWidgets
 
-import game.utils.factory
-import game.utils.render
+import game.data
+import game.factory
+import game.render
 import tools.widgets
 
 DATA_DIR = pathlib.Path("data/assemblage")
 COMPONENT_DIR = pathlib.Path("game/component")
 COMPONENT_RE = re.compile(r"(?<=^class )\w+")
-IGNORE_COMPONENT_PREFIXES = ("Base", "GUT")
+IGNORE_COMPONENT_PREFIXES = ("Base", "TMP")
 
 
 class RenderWidget(PySide2.QtWidgets.QWidget):
@@ -27,27 +28,40 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
         super().__init__(parent)
         self.setMinimumSize(32, 48)
         self.setMaximumSize(32, 48)
-        self.tile_data = None
+        self.tileset = None
+        self.tile_size = None
+        self.tile_coords = None
         self.color = None
         self.sprite = None
 
     def clear_sprite(self) -> None:
         """Clear the sprite."""
-        self.tile_data = None
+        self.tileset = None
+        self.tile_size = None
+        self.tile_coords = None
         self.color = None
         self.sprite = None
         self.update()
         self.repaint()
 
-    def update_tile(self, tile_id: str, color: str) -> None:
+    def update_tile(self, tile_id: typing.Sequence[str], color: str) -> None:
         """Update the rendered tile."""
         try:
-            self.tile_data = game.utils.render.TileCache.data_from_name(tile_id)
+            self.tileset = game.data.TILES_PATH / pathlib.Path(
+                game.data.tileset["tilesets"][tile_id[0]]["file"]
+            )
+            self.tile_size = game.data.tileset["tilesets"][tile_id[0]]["size"]
+            total_offset = game.render.TileCache.get(*tile_id)
+            offset = total_offset - int(game.data.tileset["tilesets"][tile_id[0]]["offset"], 0)
+            x = offset % int(self.tile_size[0])
+            y = offset // int(self.tile_size[1])
+            self.tile_coords = [x * self.tile_size[0], y * self.tile_size[1]]
         except KeyError:
-            tools.widgets.msg_error(f"Tile id not found: {tile_id}", self)
+            tools.widgets.msg_error(f"Tileset not found for: {tile_id}", self)
             return
+
         try:
-            self.color = game.utils.factory.convert_datum(color)
+            self.color = game.factory.convert_datum(color)
         except AttributeError:
             tools.widgets.msg_error(f"Unknown color: {color}", self)
             return
@@ -57,20 +71,10 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
 
     def set_sprite(self) -> None:
         """Draw the image."""
-        tileset = pathlib.Path(self.tile_data["tileset"])
-        tile = self.tile_data["tiles"][0]
-        with tileset.open() as f:
-            tileset_data = json.load(f)
-        frame = None
-        for frame_name, frame_data in tileset_data["frames"].items():
-            if frame_name == tile:
-                frame = frame_data["frame"]
-                break
-        if not frame:
-            tools.widgets.msg_error(f"Could not find frame for {tile}", self)
-            return
-        sheet = PySide2.QtGui.QImage(str(tileset.parent / tileset_data["meta"]["image"]))
-        self.sprite = sheet.copy(frame["x"], frame["y"], frame["w"], frame["h"])
+        x, y = self.tile_coords
+        w, h = self.tile_size
+        sheet = PySide2.QtGui.QImage(str(self.tileset))
+        self.sprite = sheet.copy(x, y, w, h)
 
     def paintEvent(self, event):
         """Called when this widget should be painted."""
@@ -80,10 +84,11 @@ class RenderWidget(PySide2.QtWidgets.QWidget):
         mask = PySide2.QtGui.QImage(self.sprite)
         painter = PySide2.QtGui.QPainter()
 
-        painter.begin(mask)
-        painter.setCompositionMode(PySide2.QtGui.QPainter.CompositionMode_SourceIn)
-        painter.fillRect(mask.rect(), PySide2.QtGui.QColor(self.color))
-        painter.end()
+        # TODO: fix colorization
+        # painter.begin(mask)
+        # painter.setCompositionMode(PySide2.QtGui.QPainter.CompositionMode_SourceIn)
+        # painter.fillRect(mask.rect(), PySide2.QtGui.QColor(self.color))
+        # painter.end()
 
         painter.begin(self)
         painter.fillRect(self.rect(), PySide2.QtCore.Qt.black)
@@ -369,7 +374,7 @@ class ComponentPane(PySide2.QtWidgets.QWidget):
         self.data.setdefault(selected, {})
         if self.params_widget.widget() is not None:
             self.params_widget.widget().parameters_changed.disconnect(self._on_parameters_changed)
-        component_class = game.utils.factory.get_component_class(selected)
+        component_class = game.factory.get_component_class(selected)
         widget = tools.widgets.ComponentPanel(selected, component_class, data=self.data[selected])
         widget.parameters_changed.connect(self._on_parameters_changed)
         self.params_widget.setWidget(widget)

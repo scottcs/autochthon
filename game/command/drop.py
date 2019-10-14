@@ -8,8 +8,8 @@ import game.component.gamelog
 import game.component.movement
 import game.component.player
 import game.events
+import game.palette
 import game.types
-import gamedata.palette
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -24,41 +24,40 @@ class Drop(game.command.base.BaseCommand):
             pos = self.world.component_for_entity(ent, game.component.movement.Position)
             item = self.world.get_item_at_position(pos.x, pos.y)
             if item:
-                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add(
-                    "There is already an item on the ground here!",
-                    gamedata.palette.MessagePalette.negative,
+                    "There is already an item on the ground here!", game.palette.Message.negative
                 )
                 return
             items_carried = self._get_items_carried(ent)
             if items_carried:
                 game.events.ChoiceFromList.handle(self.on_choice)
                 game.events.MenuClosed.handle(self._on_menu_closed)
-                game.events.ChooseFromList.fire(
+                game.events.ChooseFromList(
                     {"header": "Drop what?", "items": items_carried, "multiple": True}
                 )
             else:
-                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.GUTCommand)
+                cmd_log = self.world.get_or_add_component(ent, game.component.gamelog.TMPCommand)
                 cmd_log.add("You have nothing to drop!")
 
-    def on_choice(self, event: game.types.EventType) -> None:
+    def on_choice(self, event: game.types.Event) -> None:
         """Callback for ChoiceFromList event."""
-        input_key = self._keys_from_event(event)
+        input_key = event["char"]
         for ent, _ in self.world.get_component(game.component.player.Player):
             for item_ent, components in self.world.get_components(
-                game.component.container.GUTContained, game.component.descriptive.Name
+                game.component.container.TMPContained, game.component.descriptive.Name
             ):
                 contained, name = components
                 if contained.by_ent == ent and contained.label == input_key.key:
                     if self.world.drop_item(ent, item_ent):
-                        game.events.ChoiceAccepted.fire()
+                        game.events.ChoiceAccepted()
                     else:
                         cmd_log = self.world.get_or_add_component(
-                            ent, game.component.gamelog.GUTCommand
+                            ent, game.component.gamelog.TMPCommand
                         )
                         cmd_log.add(
                             "There is already an item on the ground here!",
-                            gamedata.palette.MessagePalette.negative,
+                            game.palette.Message.negative,
                         )
-                        game.events.ChoiceDeclined.fire({"status": "You can't drop that!"})
+                        game.events.ChoiceDeclined({"status": "You can't drop that!"})
                     break

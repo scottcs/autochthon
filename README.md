@@ -50,16 +50,11 @@ poetry run pre-commit install
 
 Note: _Any of the below commands can be run in a poetry subshell using `poetry shell`, removing the need to preface each command with `poetry run`._
 
-To run as a web server using the host and port defined in `data/config.json`:
+To run:
 
 ```
 poetry run python start.py
 ```
-
-
-To run in a local window (not yet implemented):
-
-`poetry run python start.py --local`
 
 ## Development
 
@@ -76,23 +71,6 @@ After merging your branch into master. Bump the version for release:
 
 ```
 poetry run bumpversion release
-```
-
-### Creating Tile Atlases
-
-Run `tools.build_atlas` as in this example:
-
-```
-tile=Avatar_Equipment
-poetry run python -m tools.build_atlas  static/img/oryx_ur/$tile.png static/img/oryx_ur/$tile.txt static/img/oryx_ur/$tile.json
-```
-
-### Building the tile index
-
-Run `tools.make_tile_ids`:
-
-```
-poetry run python -m tools.make_tile_ids static/img/oryx_ur
 ```
 
 ### Running the Assemblage Editor

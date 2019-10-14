@@ -1,0 +1,16 @@
+{
+  "Wraith": {
+    "Components": {
+      "ai.SimpleMind": {},
+      "attribute.HP": {},
+      "descriptive.Name": {
+        "first": "wraith"
+      },
+      "render.Renderable": {
+        "tile": ["monsters", "wraith"],
+        "tint": "Palette.purple",
+        "layer": "RenderLayer.enemy"
+      }
+    }
+  }
+}

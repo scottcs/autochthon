@@ -7,7 +7,7 @@ import game.types
 
 
 @dataclasses.dataclass
-class GUTCurrentTarget:
+class TMPCurrentTarget:
     """Component for targeting an entity or location."""
 
     x: int

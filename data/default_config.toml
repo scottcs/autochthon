@@ -1,0 +1,26 @@
+title = "Autochthon"
+org = "Precipitation Studios"
+tileset = "oryx_td"
+tile_scale = 4
+max_game_log_buffer = 1000
+
+[player]
+name = "UNKNOWN"
+
+[directories]
+base = "autochthon"
+morgue = "morgue"
+
+[map]
+max_tiles_w = 100
+max_tiles_h = 100
+
+[map_bits]
+x = 1
+y = 2
+tile_id = 4
+tint = 8
+alpha = 16
+layer = 32
+unused = 64
+delete = 128

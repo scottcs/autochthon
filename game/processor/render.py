@@ -1,315 +1,292 @@
 """Render processors."""
 import logging
+import time
 import typing
 
 import esper
 import tcod
 
 import game.component.container
+import game.component.gamelog
 import game.component.movement
 import game.component.player
 import game.component.render
 import game.component.status
+import game.data
 import game.events
+import game.palette
+import game.render
 import game.types
-import gamedata.config
-import gamedata.palette
+import game.utils.geometry
 
-MAP_BITS = gamedata.config.CONFIG["map_bits"]
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+# 1 second = 1 billion nanoseconds
+NS = 1_000_000_000
+# animate a frame every quarter of a second
+ANIM_FRAME_TIME = NS // 4
+# maximum number of frames in an animation
+MAX_ANIM_FRAMES = 8
 
-class WebRender(esper.Processor):
-    """Game render processor for web socket."""
 
-    def __init__(self) -> None:
-        self.cache: typing.Dict[str, typing.Any] = {"player_x": -1, "player_y": -1, "cells": {}}
-        self.render_map: bool = True
-        self.render_full_map: bool = True
-        self.render_entities: set = set()
+class Render(esper.Processor):
+    """Game render processor for BearLibTerminal console."""
+
+    def __init__(self, renderer: game.render.BaseRenderer) -> None:
+        self.renderer = renderer
+        self.last_refresh_time: int = time.time_ns()
+        self.last_anim_time: int = time.time_ns()
+        self.anim_tick: int = 0
+        self.should_render_map: bool = True
+        self.should_render_entities: bool = True
+        self.known_player_xy: typing.List[int] = [-1, -1]
+
         game.events.RenderEntities.handle(self._on_render_entities)
         game.events.RenderMap.handle(self._on_render_map)
+        game.events.GameLog.handle(self._on_game_log)
+        game.events.GameOver.handle(self._on_game_over)
 
-    def _on_render_entities(self, event: game.types.EventType) -> None:
-        entities_to_render = event["entities"]
-        if event.get("all", False):
-            entities_to_render.extend(
-                [ent for ent, _ in self.world.get_components(game.component.render.Renderable)]
-            )
-        for ent in entities_to_render:
-            renderable = self.world.optional_component_for_entity(
-                ent, game.component.render.Renderable
-            )
-            if renderable is None:
-                log.warning(f"Attempt to render non-renderable entity {ent}")
-                continue
-            self.render_entities.add((renderable.layer.value, ent))
+        self._draw_debug_overlay()
 
-    def _on_render_map(self, event: game.types.EventType) -> None:
-        self.render_map = True
-        self.render_full_map = event.get("full", False)
+    def _draw_debug_overlay(self):
+        # debug_tile_id = game.render.TileCache.get("world", "floor_tile2", variant=2)
+        # debug_tile_id2 = game.render.TileCache.get("world", "floor_tile3", variant=2)
+        # tile_width = game.render.grid_to_tile_x("world", self.renderer.width)
+        # tile_height = game.render.grid_to_tile_y("world", self.renderer.height)
+        # tile_center_x = game.render.grid_to_tile_x("world", self.renderer.center[0])
+        # tile_center_y = game.render.grid_to_tile_y("world", self.renderer.center[1])
+        # log.debug(f"tile_w/h: {tile_width}x{tile_height} c: {tile_center_x}, {tile_center_y}")
+        # for x in range(tile_width):
+        #     for y in range(tile_height):
+        #         do_x = x in (0, tile_width - 1, tile_center_x)
+        #         do_y = y in (0, tile_height - 1, tile_center_y)
+        #         if do_x or do_y:
+        #             tile_id = (x + y) % 2 == 0 and debug_tile_id or debug_tile_id2
+        #             draw_x = game.render.snap_tile_to_grid_x("world", x)
+        #             draw_y = game.render.snap_tile_to_grid_y("world", y)
+        #             self.renderer.draw_on_layer(
+        #                 game.types.RenderLayer.debug, draw_x, draw_y, tile_id
+        #             )
+        for x in range(self.renderer.width):
+            self.renderer.draw_text_on_layer(
+                game.types.RenderLayer.debug + 1, x, self.renderer.center[1], "-", color="red"
+            )
+
+        for y in range(self.renderer.height):
+            self.renderer.draw_text_on_layer(
+                game.types.RenderLayer.debug + 1, self.renderer.center[0], y, "|", color="red"
+            )
+
+        self.renderer.draw_text_on_layer(
+            game.types.RenderLayer.debug + 1,
+            self.renderer.center[0],
+            self.renderer.center[1],
+            "+",
+            color="red",
+        )
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
-        if not (self.render_map or self.render_entities):
-            return
+        anim_elapsed = time.time_ns() - self.last_anim_time
+        if anim_elapsed >= ANIM_FRAME_TIME:
+            self.last_anim_time = time.time_ns()
+            self.anim_tick = (self.anim_tick + 1) % MAX_ANIM_FRAMES
+            self.should_render_entities = True
 
-        b_cells: bytearray = bytearray()
-        data_length: int = 0
-        player_x: int = 0
-        player_y: int = 0
-        fov: int = 1
+        refresh = False
+        player_data = self._get_player_render_data()
+        border: int = 1
+        tile_viewport = game.utils.geometry.Rect(
+            game.render.grid_to_tile_x(
+                "world", int(border * game.render.get_conversion_value("world", 0))
+            ),
+            game.render.grid_to_tile_y(
+                "world", int(border * game.render.get_conversion_value("world", 1))
+            ),
+            game.render.grid_to_tile_x("world", self.renderer.width) - (border * 2),
+            game.render.grid_to_tile_y("world", self.renderer.height) - (border * 2),
+        )
 
-        # PLAYER POSITION
+        self._update_fov(player_data)
+        player_pos = game.utils.geometry.Point(player_data.x, player_data.y)
+
+        if self.should_render_map:
+            self._draw_map(tile_viewport, player_pos)
+            self.should_render_map = False
+            refresh = True
+        if self.should_render_entities:
+            self._draw_entities(tile_viewport, player_pos)
+            self.should_render_entities = False
+            refresh = True
+
+        if refresh:
+            self.renderer.refresh()
+
+    def _update_fov(self, player_data):
+        if [player_data.x, player_data.y] != self.known_player_xy:
+            self.world.map.compute_fov(
+                player_data.x,
+                player_data.y,
+                algorithm=tcod.FOV_PERMISSIVE_3,
+                radius=player_data.fov,
+                light_walls=True,
+            )
+        self.known_player_xy = [player_data.x, player_data.y]
+
+    def _draw_entities(
+        self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
+    ) -> None:
+        self.renderer.clear_layer(game.types.RenderLayer.enemy)
+        self.renderer.clear_layer(game.types.RenderLayer.item)
+        self.renderer.clear_layer(game.types.RenderLayer.player)
+
+        map_x1: int = player_pos.x - tile_viewport.center.x
+        map_y1: int = player_pos.y - tile_viewport.center.y
+
+        for ent, components in self.world.get_components(
+            game.component.render.Renderable, game.component.movement.Position
+        ):
+            renderable, position = components
+
+            is_dead = self.world.has_component(ent, game.component.status.TMPDead)
+            is_contained = self.world.has_component(ent, game.component.container.TMPContained)
+            if is_dead or is_contained or position is None:
+                continue
+
+            can_see_now: bool = self.world.map.fov[position.y, position.x]
+            if not can_see_now and renderable.last_seen_x is None:
+                # we've never seen it, so skip it
+                continue
+
+            if can_see_now:
+                map_x = renderable.last_seen_x = position.x
+                map_y = renderable.last_seen_y = position.y
+                facing = renderable.facing = position.facing
+                color = "#FFFFFFFF"
+            else:
+                # we've seen it before, but don't see it now
+                if self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]:
+                    # we can see the spot where it used to be, and it's not there, so don't draw it
+                    renderable.last_seen_y = None
+                    renderable.last_seen_x = None
+                    renderable.facing = None
+                    continue
+                else:
+                    # it might still be there, so draw it faded
+                    color = "#60FFFFFF"
+                    map_y = renderable.last_seen_y
+                    map_x = renderable.last_seen_x
+                    facing = renderable.last_seen_facing
+
+            # don't draw it if it's not in the viewport
+            adjusted_x: int = map_x - map_x1
+            adjusted_y: int = map_y - map_y1
+            if (
+                adjusted_x < tile_viewport.x1
+                or adjusted_x > tile_viewport.x2
+                or adjusted_y < tile_viewport.y1
+                or adjusted_y > tile_viewport.y2
+            ):
+                continue
+
+            # finally, draw it
+            category, name = renderable.tile
+            tile_id = game.render.TileCache.get(
+                category, name, direction=facing, frame=self.anim_tick
+            )
+            draw_x = game.render.snap_tile_to_grid_x(category, adjusted_x)
+            draw_y = game.render.snap_tile_to_grid_y(category, adjusted_y)
+            if 0 <= draw_x < self.renderer.width and 0 <= draw_y < self.renderer.height:
+                self.renderer.draw_on_layer(renderable.layer, draw_x, draw_y, tile_id, color=color)
+
+    def _draw_map(
+        self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
+    ) -> None:
+        self.renderer.clear_layer(game.types.RenderLayer.floor)
+        self.renderer.clear_layer(game.types.RenderLayer.wall)
+        map_x1: int = player_pos.x - tile_viewport.center.x + 1
+        map_y1: int = player_pos.y - tile_viewport.center.y + 1
+        map_x = map_x1 - 1
+        for tile_x in range(tile_viewport.x1, tile_viewport.x2 + 1):
+            map_x += 1
+            if map_x >= self.world.map.width:
+                break
+            if map_x < 0:
+                continue
+            map_y = map_y1 - 1
+            for tile_y in range(tile_viewport.y1, tile_viewport.y2 + 1):
+                map_y += 1
+                if map_y >= self.world.map.height:
+                    break
+                if map_y < 0:
+                    continue
+                tile_id, tile_type = self.world.map.get_tile(map_y, map_x)
+                # TODO: support tile colorization?
+                tile_color = "#00FFFFFF"
+                if self.world.map.explored[map_y, map_x]:
+                    tile_color = "#60FFFFFF"
+                if self.world.map.fov[map_y, map_x]:
+                    self.world.map.explored[map_y, map_x] = True
+                    tile_color = "#FFFFFFFF"
+                if tile_color.startswith("#00"):
+                    continue
+
+                draw_x = game.render.snap_tile_to_grid_x("world", tile_x)
+                draw_y = game.render.snap_tile_to_grid_y("world", tile_y)
+                self.renderer.draw_on_layer(
+                    _render_layer_from_tile_type(tile_type),
+                    draw_x,
+                    draw_y,
+                    tile_id,
+                    color=tile_color,
+                )
+
+    def _get_player_render_data(self) -> game.types.PlayerRenderData:
+        # TODO: handle more than one player controlled object?
         for ent, components in self.world.get_components(
             game.component.player.Player,
             game.component.render.Renderable,
             game.component.movement.Position,
         ):
-            position = components[-1]
-            player_x = position.x
-            player_y = position.y
-            fov = components[0].fov
-            # TODO: handle more than one player controlled object?
-            break
-
-        # HEADER
-        b_cells.extend(player_x.to_bytes(2, "big"))
-        b_cells.extend(player_y.to_bytes(2, "big"))
-        b_cells.extend(data_length.to_bytes(2, "big"))
-
-        if self.render_map:
-            data_length += self._append_map_bytes(b_cells, player_x, player_y, fov)
-            self.render_map = False
-        if self.render_entities:
-            data_length += self._append_entity_bytes(b_cells)
-            self.render_entities.clear()
-
-        # Overwrite data_length now that we've counted them
-        b_cells[4:6] = data_length.to_bytes(2, "big")
-        ##########################################
-        # Map Data:
-        #     Header:
-        #        2 bytes: player x position
-        #        2 bytes: player y position
-        #        2 bytes: num cells
-        #     Each Cell:
-        #        2 bytes: entity id
-        #        1 byte: bitmask of what changed
-        #        2 bytes: position x if it changed
-        #        2 bytes: position y if it changed
-        #        2 bytes: tile id if it changed
-        #        3 bytes: tint if it changed
-        #        1 byte : alpha if it changed
-        #        1 byte : render layer if it changed
-        #
-        # Bitmask:
-        #   1 - position x
-        #   2 - position y
-        #   4 - tile id
-        #   8 - tint
-        #   16 - alpha
-        #   32 - render layer
-        #   64 - ?
-        #   128 - ?
-        #
-        # So:    header = 6 bytes
-        #     each cell = 3 bytes + (1-11 bytes) = 4-14 bytes, but usually 4-5 bytes
-        # AND we only send a cell if something has changed.
-        ##########################################
-        game.events.UpdateMapRender.fire({"bytearray": b_cells})
-
-    def _append_map_bytes(self, b_cells: bytearray, player_x: int, player_y: int, fov: int) -> int:
-        self._render_map_if_needed(fov, player_x, player_y)
-        self.cache["player_x"] = player_x
-        self.cache["player_y"] = player_y
-
-        data_append_length = 0
-        for y, x in self.world.map:
-            alpha = 0x00
-            if self.world.map.explored[y, x]:
-                alpha = 0x60
-            if self.world.map.fov[y, x]:
-                self.world.map.explored[y, x] = True
-                alpha = 0xFF
-            if alpha == 0:
-                continue
-
-            tile_id, color = self.world.map.get_tile(y, x)
-
-            # WARNING: this will override any entities with ID >= 10000!
-            #          also limits map size to about 235x235
-            cell_id = 10000 + y + self.world.map.width * x
-            layer = game.types.RenderLayer.floor.value
-
-            if self.world.map.spawnable_player[y, x]:
-                # TODO: move this to map
-                tile_id = 229
-                color = gamedata.palette.Palette.cyan
-
-            if not self.world.map.walkable[y, x]:
-                # TODO: other layers (debris, decoration)
-                layer = game.types.RenderLayer.wall.value
-
-            cell_cache = self.cache["cells"].get(cell_id, None)
-            if self.render_full_map or cell_cache is None:
-                bitmask = (
-                    MAP_BITS["x"]
-                    | MAP_BITS["y"]
-                    | MAP_BITS["tile_id"]
-                    | MAP_BITS["tint"]
-                    | MAP_BITS["alpha"]
-                    | MAP_BITS["layer"]
-                )
-                self.cache["cells"][cell_id] = {
-                    "x": x,
-                    "y": y,
-                    "tile_id": tile_id,
-                    "tint": color,
-                    "alpha": alpha,
-                    "layer": layer,
-                }
-            else:
-                bitmask = 0
-                if cell_cache["x"] != x:
-                    bitmask |= MAP_BITS["x"]
-                    cell_cache["x"] = x
-                if cell_cache["y"] != y:
-                    bitmask |= MAP_BITS["y"]
-                    cell_cache["y"] = y
-                if cell_cache["tile_id"] != tile_id:
-                    bitmask |= MAP_BITS["tile_id"]
-                    cell_cache["tile_id"] = tile_id
-                if cell_cache["tint"] != color:
-                    bitmask |= MAP_BITS["tint"]
-                    cell_cache["tint"] = color
-                if cell_cache["alpha"] != alpha:
-                    bitmask |= MAP_BITS["alpha"]
-                    cell_cache["alpha"] = alpha
-                if cell_cache["layer"] != layer:
-                    bitmask |= MAP_BITS["layer"]
-                    cell_cache["layer"] = layer
-
-            if bitmask > 0:
-                self._append_map_data(b_cells, bitmask, cell_id)
-                data_append_length += 1
-        self.render_full_map = False
-        return data_append_length
-
-    def _append_map_data(self, b_cells, bitmask, cell_id):
-        b_cells.extend(cell_id.to_bytes(2, "big"))
-        b_cells.extend(bitmask.to_bytes(1, "big"))
-        if bitmask & MAP_BITS["x"]:
-            b_cells.extend(self.cache["cells"][cell_id]["x"].to_bytes(2, "big"))
-        if bitmask & MAP_BITS["y"]:
-            b_cells.extend(self.cache["cells"][cell_id]["y"].to_bytes(2, "big"))
-        if bitmask & MAP_BITS["tile_id"]:
-            b_cells.extend(self.cache["cells"][cell_id]["tile_id"].to_bytes(2, "big"))
-        if bitmask & MAP_BITS["tint"]:
-            b_cells.extend(self.cache["cells"][cell_id]["tint"].to_bytes(3, "big"))
-        if bitmask & MAP_BITS["alpha"]:
-            b_cells.extend(self.cache["cells"][cell_id]["alpha"].to_bytes(1, "big"))
-        if bitmask & MAP_BITS["layer"]:
-            b_cells.extend(self.cache["cells"][cell_id]["layer"].to_bytes(1, "big"))
-
-    def _render_map_if_needed(self, fov, player_x, player_y):
-        if self.render_full_map or (
-            player_x != self.cache["player_x"] or player_y != self.cache["player_y"]
-        ):
-            self.world.map.compute_fov(
-                player_x, player_y, algorithm=tcod.FOV_PERMISSIVE_3, radius=fov, light_walls=True
+            player, renderable, position = components
+            category, name = renderable.tile
+            player_tile_id = game.render.TileCache.get(category, name)
+            return game.types.PlayerRenderData(
+                position.x,
+                position.y,
+                player.fov,
+                renderable.layer,
+                player_tile_id,
+                renderable.tint,
             )
-            self._add_fov_entities_to_render()
+        return game.types.PlayerRenderData(0, 0, 0, game.types.RenderLayer.player, 0, "white")
 
-    def _add_fov_entities_to_render(self) -> None:
-        for ent, renderable in self.world.get_component(game.component.render.Renderable):
-            position = self.world.optional_component_for_entity(
-                ent, game.component.movement.Position
-            )
-            if position is not None:
-                if self.world.map.fov[position.y, position.x]:
-                    # we can see it now
-                    self.render_entities.add((renderable.layer.value, ent))
-            if renderable.last_seen_x is not None:
-                # we've seen it before
-                self.render_entities.add((renderable.layer.value, ent))
+    def _on_render_entities(self, _event: game.types.Event) -> None:
+        self.should_render_entities = True
 
-    def _append_entity_bytes(self, b_cells: bytearray) -> int:
-        data_append_length = 0
-        for _, ent in sorted(self.render_entities):
-            renderable = self.world.component_for_entity(ent, game.component.render.Renderable)
-            position = self.world.optional_component_for_entity(
-                ent, game.component.movement.Position
-            )
-            is_dead = self.world.has_component(ent, game.component.status.GUTDead)
-            is_contained = self.world.has_component(ent, game.component.container.GUTContained)
-            pos_x = pos_y = None
-            can_see_now = can_see_prev = seen = False
+    def _on_render_map(self, _event: game.types.Event) -> None:
+        self.should_render_map = True
 
-            if position is not None:
-                pos_x = position.x
-                pos_y = position.y
-                can_see_now = self.world.map.fov[position.y, position.x]
+    def _on_game_log(self, event: game.types.Event) -> None:
+        self.renderer.clear_layer(game.types.RenderLayer.ui_game_message)
+        self.renderer.draw_gamelog_on_layer(
+            game.types.RenderLayer.ui_game_message,
+            game.render.snap_tile_to_grid_x("font", 1),
+            self.renderer.height - game.render.snap_tile_to_grid_y("font", 1),
+            event["log_component"].lines,
+        )
 
-            alpha = 0x00
-            if renderable.last_seen_x is not None:
-                seen = True
-                can_see_prev = self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]
-
-            # if we can see it now, draw it and update seen pos
-            if can_see_now:
-                alpha = 0xFF
-                renderable.last_seen_y = position.y
-                renderable.last_seen_x = position.x
-            # else if we can see where it last was, forget where we've seen it and don't draw it
-            elif can_see_prev:
-                renderable.last_seen_y = None
-                renderable.last_seen_x = None
-            # else if we've seen it, draw it faded where we last saw it
-            elif seen:
-                alpha = 0x60
-                pos_y = renderable.last_seen_y
-                pos_x = renderable.last_seen_x
-            # else don't draw it
-
-            if is_dead or is_contained or position is None:
-                bitmask = MAP_BITS["delete"]
-            else:
-                bitmask = (
-                    MAP_BITS["x"]
-                    | MAP_BITS["y"]
-                    | MAP_BITS["tile_id"]
-                    | MAP_BITS["tint"]
-                    | MAP_BITS["alpha"]
-                    | MAP_BITS["layer"]
-                )
-            if bitmask > 0:
-                b_cells.extend(ent.to_bytes(2, "big"))
-                b_cells.extend(bitmask.to_bytes(1, "big"))
-                if pos_x and bitmask & MAP_BITS["x"]:
-                    b_cells.extend(pos_x.to_bytes(2, "big"))
-                if pos_y and bitmask & MAP_BITS["y"]:
-                    b_cells.extend(pos_y.to_bytes(2, "big"))
-                if bitmask & MAP_BITS["tile_id"]:
-                    b_cells.extend(renderable.tile_id.to_bytes(2, "big"))
-                if bitmask & MAP_BITS["tint"]:
-                    b_cells.extend(renderable.tint.to_bytes(3, "big"))
-                if bitmask & MAP_BITS["alpha"]:
-                    b_cells.extend(alpha.to_bytes(1, "big"))
-                if bitmask & MAP_BITS["layer"]:
-                    b_cells.extend(renderable.layer.value.to_bytes(1, "big"))
-                data_append_length += 1
-        return data_append_length
+    def _on_game_over(self, event: game.types.Event) -> None:
+        """Game shutdown callback."""
+        if event.get("shutdown"):
+            log.info("Closing terminal window.")
+            self.renderer.close()
 
 
-class TCODRender(esper.Processor):
-    """Game render processor for local TCOD console."""
-
-    def __init__(self, _title: str, width: int = 80, height: int = 40) -> None:
-        # Someday, implement this?
-        log.error(f"Someday maybe this will be a {width}x{height} console.")
-
-    def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
-        """Process all renderables."""
-        pass
+def _render_layer_from_tile_type(tile_type: game.types.TileType) -> game.types.RenderLayer:
+    return {
+        game.types.TileType.wall_v: game.types.RenderLayer.wall,
+        game.types.TileType.wall_h: game.types.RenderLayer.wall,
+        game.types.TileType.floor: game.types.RenderLayer.floor,
+    }[tile_type]

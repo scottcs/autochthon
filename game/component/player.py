@@ -3,7 +3,7 @@ import dataclasses
 
 
 @dataclasses.dataclass
-class GUTPlayerBump:
+class TMPPlayerBump:
     """Player wants to do something that passes time, maybe in a direction."""
 
     dx: int = 0

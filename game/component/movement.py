@@ -8,15 +8,16 @@ class Position:
 
     x: int = 0
     y: int = 0
+    facing: str = "base"
 
 
 @dataclasses.dataclass
-class GUTMoving:
+class TMPMoving:
     """Entity wants to move to destination position."""
 
     x: int
     y: int
 
 
-class GUTWaiting:
+class TMPWaiting:
     """Waiting component."""

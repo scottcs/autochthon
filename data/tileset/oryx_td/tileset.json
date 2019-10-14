@@ -1,0 +1,49 @@
+{
+  "window": {
+    "width": 200,
+    "height": 112,
+    "cellsize": [8, 8]
+  },
+  "font": {
+    "file": "FiraMono-Regular.ttf",
+    "size": [8, 16]
+  },
+  "tilesets": {
+    "fx": {
+      "file": "fx.png",
+      "size": [16, 16],
+      "offset": "0x1000",
+      "align": "top-left"
+    },
+    "interface": {
+      "file": "interface.png",
+      "size": [16, 16],
+      "offset": "0x2000",
+      "align": "top-left"
+    },
+    "items": {
+      "file": "items.png",
+      "size": [16, 16],
+      "offset": "0x3000",
+      "align": "top-left"
+    },
+    "monsters": {
+      "file": "monsters.png",
+      "size": [16, 16],
+      "offset": "0x4000",
+      "align": "top-left"
+    },
+    "portraits": {
+      "file": "portraits.png",
+      "size": [32, 32],
+      "offset": "0x5000",
+      "align": "top-left"
+    },
+    "world": {
+      "file": "world.png",
+      "size": [16, 16],
+      "offset": "0x6000",
+      "align": "top-left"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "Torch": {
+    "Components": {
+      "descriptive.Name": {
+        "first": "torch"
+      },
+      "render.Renderable": {
+        "tile": ["items", "torch"],
+        "tint": "Palette.cyan",
+        "layer": "RenderLayer.item"
+      },
+      "container.Containable": {
+        "equip_type": "Equip.melee"
+      }
+    }
+  }
+}

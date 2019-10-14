@@ -1,0 +1,53 @@
+{
+  "GoblinGrunt": {
+    "Components": {
+      "ai.SimpleMind": {},
+      "attribute.HP": {
+        "initial": "==5d3+30"
+      },
+      "descriptive.Name": {
+        "first": "goblin",
+        "last": "grunt"
+      },
+      "render.Renderable": {
+        "tile": ["monsters", "goblin_grunt"],
+        "tint": "Palette.red",
+        "layer": "RenderLayer.enemy"
+      }
+    }
+  },
+  "GoblinMage": {
+    "Components": {
+      "ai.SimpleMind": {},
+      "attribute.HP": {
+        "initial": "==5d3+30"
+      },
+      "descriptive.Name": {
+        "first": "goblin",
+        "last": "mage"
+      },
+      "render.Renderable": {
+        "tile": ["monsters", "goblin_mage"],
+        "tint": "Palette.red",
+        "layer": "RenderLayer.enemy"
+      }
+    }
+  },
+  "GoblinCaptain": {
+    "Components": {
+      "ai.SimpleMind": {},
+      "attribute.HP": {
+        "initial": "==5d3+30"
+      },
+      "descriptive.Name": {
+        "first": "goblin",
+        "last": "captain"
+      },
+      "render.Renderable": {
+        "tile": ["monsters", "goblin_captain"],
+        "tint": "Palette.red",
+        "layer": "RenderLayer.enemy"
+      }
+    }
+  }
+}

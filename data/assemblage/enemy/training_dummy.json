@@ -10,7 +10,7 @@
         "proper": false
       },
       "render.Renderable": {
-        "tile_id": "monster_bear3",
+        "tile": ["monsters", "yeti"],
         "tint": "Palette.white",
         "layer": "RenderLayer.enemy"
       },

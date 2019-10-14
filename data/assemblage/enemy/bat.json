@@ -1,0 +1,18 @@
+{
+  "Bat": {
+    "Components": {
+      "ai.SimpleMind": {},
+      "attribute.HP": {
+        "initial": 10
+      },
+      "descriptive.Name": {
+        "first": "bat"
+      },
+      "render.Renderable": {
+        "tile": ["monsters", "bat"],
+        "tint": "Palette.blue",
+        "layer": "RenderLayer.enemy"
+      }
+    }
+  }
+}

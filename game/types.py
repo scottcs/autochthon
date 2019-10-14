@@ -3,33 +3,39 @@ import enum
 import inspect
 import typing
 
+import game.palette
 import game.utils.random
-import gamedata.palette
 
-EventType = typing.Dict[typing.Any, typing.Any]
-EventHandler = typing.Callable[[EventType], typing.Any]
+ImportedData = typing.MutableMapping[typing.Any, typing.Any]
+Event = typing.Dict[typing.Any, typing.Any]
+EventHandler = typing.Callable[[Event], typing.Any]
+Layout = typing.Dict[str, typing.Any]
 
 Entity = int
 
 
-class RenderLayer(enum.Enum):
+class RenderLayer(enum.IntEnum):
     """Render layers, from bottom to top."""
 
-    background = enum.auto()
-    floor = enum.auto()
-    item = enum.auto()
-    wall = enum.auto()
-    icon = enum.auto()
-    enemy = enum.auto()
-    player = enum.auto()
-    effect = enum.auto()
+    background = 0
+    floor = 1
+    wall = 2
+    item = 3
+    icon = 4
+    enemy = 5
+    player = 6
+    effect = 7
+    ui_game_message = 10
+    ui_hud = 15
+    ui_menu = 20
+    debug = 200
 
 
 class Priority(enum.IntEnum):
     """Processor priorities."""
 
-    gamelog = enum.auto()
     render = enum.auto()
+    gamelog = enum.auto()
     psychopomps = enum.auto()
     attributes = enum.auto()
     damage_resolution = enum.auto()
@@ -47,28 +53,6 @@ class Priority(enum.IntEnum):
     time = enum.auto()
     player_bump = enum.auto()
     player_input = enum.auto()
-
-
-class ProcessGroup(enum.Enum):
-    """Groups of processors."""
-
-    default = enum.auto()
-    player = enum.auto()
-    time = enum.auto()
-    render = enum.auto()
-    gamelog = enum.auto()
-
-
-class GameState(enum.Enum):
-    """Game states."""
-
-    unknown = enum.auto()
-    loading = enum.auto()
-    main_menu = enum.auto()
-    creating = enum.auto()
-    playing = enum.auto()
-    in_game_menu = enum.auto()
-    shutdown = enum.auto()
 
 
 class Attack(enum.Enum):
@@ -145,7 +129,7 @@ class LogLine(typing.NamedTuple):
     """A Game log message with color."""
 
     message: str = ""
-    color: int = gamedata.palette.MessagePalette.default
+    color: str = game.palette.Message.default
 
 
 def get_union_types(union_type: typing.Any) -> tuple:
@@ -176,3 +160,40 @@ def parameter_types(func: typing.Callable) -> dict:
         if parameter.default != inspect.Parameter.empty:
             result[name]["default"] = parameter.default
     return result
+
+
+class PlayerRenderData(typing.NamedTuple):
+    """Player render data."""
+
+    x: int
+    y: int
+    fov: int
+    layer: RenderLayer
+    tile_id: int
+    color: str
+
+
+class TileType(enum.Enum):
+    """Tile types."""
+
+    floor = enum.auto()
+    wall_v = enum.auto()
+    wall_h = enum.auto()
+
+
+class InputKey(typing.NamedTuple):
+    """Input key values."""
+
+    key_code: int
+    shift: bool
+    ctrl: bool
+    alt: bool
+
+
+class UIFrameStyle(enum.Enum):
+    """Frame styles."""
+
+    stone = enum.auto()
+    scroll = enum.auto()
+    window = enum.auto()
+    bubble = enum.auto()

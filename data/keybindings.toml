@@ -1,0 +1,25 @@
+# Keybindings
+# special keys are named, as in "space" instead of " " and "comma" instead of ","
+[game]
+    [game.movement]
+    N = {key = "k", shift = false, ctrl = false, alt = false}
+    S = {key = "j", shift = false, ctrl = false, alt = false}
+    E = {key = "l", shift = false, ctrl = false, alt = false}
+    W = {key = "h", shift = false, ctrl = false, alt = false}
+    NE = {key = "u", shift = false, ctrl = false, alt = false}
+    NW = {key = "y", shift = false, ctrl = false, alt = false}
+    SE = {key = "n", shift = false, ctrl = false, alt = false}
+    SW = {key = "b", shift = false, ctrl = false, alt = false}
+
+    [game.command]
+    WAIT = {key = "period", shift = false, ctrl = false, alt = false}
+    OPEN = {key = "o", shift = false, ctrl = false, alt = false}
+    CLOSE = {key = "c", shift = false, ctrl = false, alt = false}
+    PICK_UP = {key = "comma", shift = false, ctrl = false, alt = false}
+    DROP = {key = "d", shift = false, ctrl = false, alt = false}
+    EQUIP = {key = "e", shift = false, ctrl = false, alt = false}
+    INVENTORY = {key = "i", shift = false, ctrl = false, alt = false}
+    GAMELOG = {key = "space", shift = false, ctrl = false, alt = false}
+
+    [game.interface]
+    QUIT = {key = "escape", shift = false, ctrl = false, alt = false}

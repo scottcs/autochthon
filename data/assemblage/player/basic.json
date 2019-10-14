@@ -28,14 +28,14 @@
       "player.Player": {},
       "movement.Position": {},
       "render.Renderable": {
-        "tile_id": "avatar_A",
+        "tile": ["monsters", "fighter"],
         "tint": "Palette.yellow",
         "layer": "RenderLayer.player"
       },
       "container.Container": {
         "name": "your backpack",
         "max_slots": 62,
-        "equip_type": "EquipType.any"
+        "equip_type": "Equip.any"
       },
       "container.Equipment": {}
     }
