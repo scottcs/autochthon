@@ -2323,6 +2323,10 @@
         {"base": [12, 28]},
         {"base": [13, 29]}
       ]
+    },
+    "beneath_indicator": {
+      "offset": 192,
+      "base": [0, 1]
     }
   },
   "portraits": {

@@ -157,11 +157,24 @@ class Render(esper.Processor):
                 # we've never seen it, so skip it
                 continue
 
+            category, name = renderable.tile
             if can_see_now:
                 map_x = renderable.last_seen_x = position.x
                 map_y = renderable.last_seen_y = position.y
                 facing = renderable.facing = position.facing
+                variant = None
                 color = "#FFFFFFFF"
+
+                # check if this is an item and another entity is standing on it
+                if self.world.has_component(ent, game.component.container.Item):
+                    if (
+                        self.world.map.contains_enemy[map_y, map_x]
+                        or self.world.map.contains_player[map_y, map_x]
+                    ):
+                        # just draw an indicator that there's something beneath
+                        category = "interface"
+                        name = "beneath_indicator"
+                        color = "#FF0090FF"
             else:
                 # we've seen it before, but don't see it now
                 if self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]:
@@ -176,6 +189,7 @@ class Render(esper.Processor):
                     map_y = renderable.last_seen_y
                     map_x = renderable.last_seen_x
                     facing = renderable.last_seen_facing
+                    variant = None
 
             # don't draw it if it's not in the viewport
             adjusted_x: int = map_x - map_x1
@@ -189,9 +203,8 @@ class Render(esper.Processor):
                 continue
 
             # finally, draw it
-            category, name = renderable.tile
             tile_id = game.render.TileCache.get(
-                category, name, direction=facing, frame=self.anim_tick
+                category, name, direction=facing, frame=self.anim_tick, variant=variant
             )
             draw_x = game.render.snap_tile_to_grid_x(category, adjusted_x)
             draw_y = game.render.snap_tile_to_grid_y(category, adjusted_y)

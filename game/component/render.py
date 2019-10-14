@@ -10,7 +10,7 @@ import game.types
 class Renderable:
     """Renderable component."""
 
-    tile: int
+    tile: typing.Tuple[str, str]
     tint: game.palette.Base
 
     def __post_init__(self) -> None:

@@ -249,6 +249,7 @@ class BearLibRenderer(BaseRenderer):
         cell_size = f"cellsize={cell_pixel_w}x{cell_pixel_h}"
         blt.set(f"window: {window_size}, title='{self.title}', {cell_size}")
         blt.set(f"font: {self.font_file}, size={str(self.font_size[0])}x{str(self.font_size[1])}")
+        blt.composition(blt.TK_ON)
         blt.color("white")
         self._load_tilesets()
 
