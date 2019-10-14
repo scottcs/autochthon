@@ -17,6 +17,8 @@ DIE_DEF = re.compile(r"(\d+d\d+)([+-]\d+)?")
 WORDS_FILE = pathlib.Path(
     "/usr/share/dict/words"
 )  # TODO: replace with one in this repo with game terms?
+UINT32 = 0xFFFFFFFF
+UINT64 = 0xFFFFFFFFFFFFFFFF
 T = typing.TypeVar("T")
 
 
@@ -28,14 +30,6 @@ T = typing.TypeVar("T")
 # For the original docs, read
 # `this <http://www.pcg-random.org/using-pcg-c-basic.html>`_.
 ######################################################################
-
-
-def _uint32(n: int) -> int:
-    return n & 0xFFFFFFFF
-
-
-def _uint64(n: int) -> int:
-    return n & 0xFFFFFFFFFFFFFFFF
 
 
 class PCG32Generator:
@@ -63,17 +57,17 @@ class PCG32Generator:
         with each other (i.e., their sequences will not overlap at all).
         """
         self.state = 0
-        self.inc = _uint64(seq << 1) | 1
+        self.inc = ((seq << 1) & UINT64) | 1
         self._advance()
-        self.state = _uint64(self.state + state)
+        self.state = (self.state + state) & UINT64
         self._advance()
 
     def _advance(self) -> int:
         old_state = self.state
-        self.state = _uint64(old_state * 6_364_136_223_846_793_005 + self.inc)
-        xor_shifted = _uint32(((old_state >> 18) ^ old_state) >> 27)
-        rot = _uint32(old_state >> 59)
-        return _uint32((xor_shifted >> rot) | (xor_shifted << ((-rot) & 31)))
+        self.state = (old_state * 6_364_136_223_846_793_005 + self.inc) & UINT64
+        xor_shifted = (((old_state >> 18) ^ old_state) >> 27) & UINT32
+        rot = (old_state >> 59) & UINT32
+        return ((xor_shifted >> rot) | (xor_shifted << ((-rot) & 31))) & UINT32
 
     def get_next_uint32(self) -> int:
         """
@@ -101,8 +95,8 @@ class PCG32Generator:
         #
         # because this version will calculate the same modulus, but the LHS
         # value is less than 2^32.
-        bound = _uint32(bound)
-        threshold = _uint32(-bound) % bound
+        bound = bound & UINT32
+        threshold = ((-bound) & UINT32) % bound
 
         # Uniformity guarantees that this loop will terminate. In practice, it
         # should usually terminate quickly; on average (assuming all bounds are

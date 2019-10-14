@@ -1,5 +1,6 @@
 alias run='poetry run python start.py'
-alias runp='rm start.prof; poetry run python -m cProfile -o start.prof start.py; snakeviz start.prof'
+alias runp='rm start.prof; poetry run python -m cProfile -o start.prof -s time start.py; snakeviz start.prof'
+alias runq='rm cachegrind.out.prof; poetry run pprofile --format callgrind --out cachegrind.out.prof start.py; qcachegrind cachegrind.out.prof'
 alias rund='poetry run python -m pdb start.py'
 alias runt='poetry run python -m trace --trace start.py > trace.txt'
 alias ae='poetry run python -m tools.assemblage_edit'
