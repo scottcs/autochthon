@@ -1,6 +1,5 @@
 """Attack components."""
 import dataclasses
-import typing
 
 import game.component.base
 import game.types
@@ -13,7 +12,7 @@ class TMPCurrentTarget:
     x: int
     y: int
     attack: game.types.Attack
-    entity: typing.Optional[game.types.Entity] = None
+    entity: game.types.Entity
 
 
 class HitModifier(game.component.base.BaseModifierComponent):

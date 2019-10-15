@@ -105,7 +105,7 @@ class Equipment:
         ranged_name: str = "ranged",
         ranged_max: int = 1,
     ) -> None:
-        self.slots = {
+        self.slots: typing.Dict[game.types.Equip, typing.Dict[str, typing.Any]] = {
             game.types.Equip.head: {"name": head_name, "max": head_max},
             game.types.Equip.face: {"name": face_name, "max": face_max},
             game.types.Equip.neck: {"name": neck_name, "max": neck_max},

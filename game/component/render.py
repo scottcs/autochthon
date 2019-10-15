@@ -12,8 +12,7 @@ class Renderable:
 
     tile: typing.Tuple[str, str]
     tint: game.palette.Base
-
-    def __post_init__(self) -> None:
-        self.last_seen_x: typing.Optional[int] = None
-        self.last_seen_y: typing.Optional[int] = None
-        self.last_seen_facing: typing.Optional[str] = None
+    remembered: bool = False  # if True, the player remembers where it was
+    last_seen_x: int = 0
+    last_seen_y: int = 0
+    last_seen_facing: str = ""

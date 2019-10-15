@@ -497,7 +497,7 @@ class AssemblageEditor(PySide2.QtWidgets.QWidget):
         components = data.get("Components", {})
         renderable = components.get("render.Renderable", None)
         if renderable:
-            self.render_widget.update_tile(renderable["tile_id"], renderable["tint"])
+            self.render_widget.update_tile(renderable["tile"], renderable["tint"])
 
 
 def main() -> int:

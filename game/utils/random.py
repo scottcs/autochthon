@@ -204,9 +204,11 @@ class RNGCache:
         return result
 
 
-def _parse_weighted(rng: GameRNG, items_str: str, weights_str: str) -> typing.Callable:
-    items: typing.List[str] = [i.strip(" '\"") for i in items_str.split(",")]
-    weights: typing.List[int] = [int(w.strip()) for w in weights_str.split(",")]
+def _parse_weighted(
+    rng: GameRNG, items_str: str, weights_str: str
+) -> typing.Callable[[], typing.Any]:
+    items = [i.strip(" '\"") for i in items_str.split(",")]
+    weights = [int(w.strip()) for w in weights_str.split(",")]
     choices: typing.List[str] = []
     for i, item in enumerate(items):
         choices.extend([item for _ in range(weights[i])])
@@ -223,9 +225,9 @@ class _MinMaxStep(typing.NamedTuple):
     step: typing.Union[int, float]
 
 
-def _parse_step(rng: GameRNG, expr: str) -> typing.Callable:
+def _parse_step(rng: GameRNG, expr: str) -> typing.Callable[[], typing.Any]:
     try:
-        s: _MinMaxStep = _MinMaxStep(*[int(e.strip()) for e in expr.split(",")])
+        s = _MinMaxStep(*[int(e.strip()) for e in expr.split(",")])
     except ValueError:
         s = _MinMaxStep(*[float(e.strip()) for e in expr.split(",")])
     x = s.min
@@ -246,14 +248,16 @@ class _Die(typing.NamedTuple):
     sides: int
 
 
-def _parse_die(rng: GameRNG, expr: str, addend: typing.Optional[str] = None) -> typing.Callable:
-    _addend: int = 0
+def _parse_die(
+    rng: GameRNG, expr: str, addend: typing.Optional[str] = None
+) -> typing.Callable[[], typing.Any]:
+    _addend = 0
     if addend is not None:
         _addend = int(addend.strip())
     die = _Die(*[int(x.strip()) for x in expr.split("d")])
 
     def _closure() -> int:
-        total: int = _addend
+        total = _addend
         for _ in range(die.amt):
             total += rng.rand(1, die.sides)
         return total
@@ -261,7 +265,7 @@ def _parse_die(rng: GameRNG, expr: str, addend: typing.Optional[str] = None) -> 
     return _closure
 
 
-def parse(text: str, rng: GameRNG) -> typing.Optional[typing.Callable]:
+def parse(text: str, rng: GameRNG) -> typing.Optional[typing.Callable[[], typing.Any]]:
     """Parse a string and return a function to provide the requested randomness.
 
     Looks for:

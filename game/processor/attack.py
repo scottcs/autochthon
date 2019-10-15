@@ -1,8 +1,6 @@
 """Attack processors."""
 import typing
 
-import esper
-
 import game.base_engine_values
 import game.component.action
 import game.component.attack
@@ -14,9 +12,10 @@ import game.messages.combat
 import game.types
 import game.utils.language
 import game.utils.random
+import game.world
 
 
-class AttackTargeting(esper.Processor):
+class AttackTargeting(game.world.Processor):
     """Attack targeting processor."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -61,7 +60,7 @@ class AttackTargeting(esper.Processor):
         return False
 
 
-class AttackMiss(esper.Processor):
+class AttackMiss(game.world.Processor):
     """Process whether attack missed."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -91,7 +90,7 @@ class AttackMiss(esper.Processor):
                     self.world.remove_component(ent, game.component.attack.TMPCurrentTarget)
 
 
-class AttackDefense(esper.Processor):
+class AttackDefense(game.world.Processor):
     """Process whether attack was defended."""
 
     def __init__(
@@ -99,12 +98,12 @@ class AttackDefense(esper.Processor):
         verb: game.utils.language.Verb,
         modifier_component_class: typing.Any,
         immunity_component_class: typing.Any,
-        base_chance: game.types.Number,
+        base_chance: float,
     ) -> None:
-        self.verb: game.utils.language.Verb = verb
-        self.modifier_component_class: typing.Any = modifier_component_class
-        self.immunity_component_class: typing.Any = immunity_component_class
-        self.base_chance: game.types.Number = base_chance
+        self.verb = verb
+        self.modifier_component_class = modifier_component_class
+        self.immunity_component_class = immunity_component_class
+        self.base_chance = base_chance
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process whether an attack was defended."""
@@ -159,7 +158,7 @@ class AttackDefense(esper.Processor):
                         self.world.remove_component(ent, game.component.attack.TMPCurrentTarget)
 
 
-class AttackHit(esper.Processor):
+class AttackHit(game.world.Processor):
     """Attack happened, nothing stopped it, so generate AttackHit."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -182,7 +181,7 @@ class AttackHit(esper.Processor):
         for mod in self.world.try_component(ent, game.component.damage.ModifierInflictBludgeoning):
             mods.append(mod)
         modifier = game.component.base.accumulate_modifiers(*mods)
-        damage = modifier.addend * (1 + modifier.factor)
+        damage = round(modifier.addend * (1 + modifier.factor))
         if damage > 0:
             self.world.add_component(
                 target.entity, game.component.damage.TMPTakeBludgeoning(damage)

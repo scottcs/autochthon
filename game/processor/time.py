@@ -2,18 +2,17 @@
 import logging
 import typing
 
-import esper
-
 import game.component.action
 import game.component.status
 import game.types
 import game.utils.random
+import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class Turn(esper.Processor):
+class Turn(game.world.Processor):
     """Turn processor."""
 
     queue: typing.List[game.types.Entity] = []

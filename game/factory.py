@@ -51,7 +51,7 @@ def get_component_class(class_substring: str) -> typing.Any:
     return getattr(_tmp, component_class)
 
 
-def validate_kwargs(kwargs: typing.MutableMapping) -> None:
+def validate_kwargs(kwargs: typing.Mapping[typing.Any, typing.Any]) -> None:
     """Validate keyword arguments for components."""
     for key, value in kwargs.items():
         if value is None:
@@ -62,7 +62,7 @@ class BaseEntityFactory:
     """Entity Factory."""
 
     def __init__(self, world: game.world.World) -> None:
-        self._world: game.world.World = world
+        self._world = world
         self._rng: typing.Optional[game.utils.random.GameRNG] = None
         self._data_key: typing.Optional[str] = None
 
@@ -106,7 +106,9 @@ class BaseEntityFactory:
                     raise FactoryException(f"Error in {self._data_key}.{template}: {exc}")
         return self._world.create_entity(*components)
 
-    def _convert_data(self, data: typing.Mapping) -> dict:
+    def _convert_data(
+        self, data: typing.Mapping[typing.Any, typing.Any]
+    ) -> typing.Dict[typing.Any, typing.Any]:
         """Convert data to globals."""
         new_data = {}
         for key, value in data.items():
@@ -133,8 +135,8 @@ class Player(BaseEntityFactory):
 
     def __init__(self, world: game.world.World) -> None:
         super().__init__(world)
-        self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("PlayerFactory")
-        self._data_key: str = "assemblage.player"
+        self._rng = game.utils.random.RNGCache.get("PlayerFactory")
+        self._data_key = "assemblage.player"
 
     def make(self, templates: typing.MutableSequence[str]) -> game.types.Entity:
         """Make a player entity."""
@@ -144,7 +146,7 @@ class Player(BaseEntityFactory):
             templates.insert(0, "BasicPlayer")
         ent = self._make_entity(templates)
         self._world.players.add(ent)
-        loc: typing.Optional[game.utils.geometry.Point] = self._world.map.find_player_spawn()
+        loc = self._world.map.find_player_spawn()
         if loc is None:
             raise FactoryException(f"Could not place player entity: {ent}")
         else:
@@ -158,8 +160,8 @@ class Enemy(BaseEntityFactory):
 
     def __init__(self, world: game.world.World) -> None:
         super().__init__(world)
-        self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("EnemyFactory")
-        self._data_key: str = "assemblage.enemy"
+        self._rng = game.utils.random.RNGCache.get("EnemyFactory")
+        self._data_key = "assemblage.enemy"
 
     def make(self, templates: typing.MutableSequence[str]) -> game.types.Entity:
         """Make a player entity."""
@@ -168,7 +170,7 @@ class Enemy(BaseEntityFactory):
         if "BasicEnemy" not in templates:
             templates.insert(0, "BasicEnemy")
         ent = self._make_entity(templates)
-        loc: typing.Optional[game.utils.geometry.Point] = self._world.map.find_enemy_spawn()
+        loc = self._world.map.find_enemy_spawn()
         if loc is None:
             raise FactoryException(f"Could not place enemy entity: {ent}")
         else:
@@ -182,8 +184,8 @@ class Item(BaseEntityFactory):
 
     def __init__(self, world: game.world.World) -> None:
         super().__init__(world)
-        self._rng: game.utils.random.GameRNG = game.utils.random.RNGCache.get("ItemFactory")
-        self._data_key: str = "assemblage.item"
+        self._rng = game.utils.random.RNGCache.get("ItemFactory")
+        self._data_key = "assemblage.item"
 
     def make(self, templates: typing.MutableSequence[str]) -> game.types.Entity:
         """Make a player entity."""
@@ -192,7 +194,7 @@ class Item(BaseEntityFactory):
         if "BasicItem" not in templates:
             templates.insert(0, "BasicItem")
         ent = self._make_entity(templates)
-        loc: typing.Optional[game.utils.geometry.Point] = self._world.map.find_item_spawn()
+        loc = self._world.map.find_item_spawn()
         if loc is None:
             raise FactoryException(f"Could not place item entity: {ent}")
         else:

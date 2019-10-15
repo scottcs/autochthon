@@ -4,6 +4,7 @@ from __future__ import annotations
 import typing
 
 import numpy as np
+import tcod
 import tcod.map
 
 import game.palette
@@ -36,26 +37,26 @@ class Map(tcod.map.Map):
         width: int,
         height: int,
         seed: typing.Optional[str] = None,
-        config: typing.Optional[typing.Mapping] = None,
+        config: typing.Optional[typing.Mapping[typing.Any, typing.Any]] = None,
     ) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
-        self._iter_x: int = 0
-        self._iter_y: int = 0
+        self._iter_x = 0
+        self._iter_y = 0
         self.config = config or {}
         self._rng = game.utils.random.RNGCache.get(seed)
-        self._buffer2: np.array = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
+        self._buffer2 = np.zeros((height, width, len(MAP_BITS)), dtype=np.bool_)
 
     @property
     def explored(self) -> np.array:
         """Array of cells that have been explored."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("explored")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("explored")]
         return buffer
 
     @property
     def spawnable_player(self) -> np.array:
         """Array of cells that can spawn a player."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_player")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("spawnable_player")]
         return buffer
 
     def spawnable_player_list(self) -> typing.List[game.utils.geometry.Point]:
@@ -68,7 +69,7 @@ class Map(tcod.map.Map):
     @property
     def spawnable_enemy(self) -> np.array:
         """Array of cells that can spawn enemies."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_enemy")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("spawnable_enemy")]
         return buffer
 
     def spawnable_enemy_list(self) -> typing.List[game.utils.geometry.Point]:
@@ -81,7 +82,7 @@ class Map(tcod.map.Map):
     @property
     def spawnable_item(self) -> np.array:
         """Array of cells that can spawn items."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("spawnable_item")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("spawnable_item")]
         return buffer
 
     def spawnable_item_list(self) -> typing.List[game.utils.geometry.Point]:
@@ -94,37 +95,37 @@ class Map(tcod.map.Map):
     @property
     def contains_player(self) -> np.array:
         """Array of cells that contain players."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_player")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("contains_player")]
         return buffer
 
     @property
     def contains_enemy(self) -> np.array:
         """Array of cells that contain enemies."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_enemy")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("contains_enemy")]
         return buffer
 
     @property
     def contains_item(self) -> np.array:
         """Array of cells that can spawn items."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("contains_item")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("contains_item")]
         return buffer
 
     @property
     def alt_tile_1(self) -> np.array:
         """Array of cells that the alt tile 1 bit set."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("alt_tile_1")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("alt_tile_1")]
         return buffer
 
     @property
     def alt_tile_2(self) -> np.array:
         """Array of cells that the alt tile 2 bit set."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("alt_tile_2")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("alt_tile_2")]
         return buffer
 
     @property
     def alt_tile_3(self) -> np.array:
         """Array of cells that the alt tile 3 bit set."""
-        buffer: np.array = self._buffer2[:, :, MAP_BITS.index("alt_tile_3")]
+        buffer = self._buffer2[:, :, MAP_BITS.index("alt_tile_3")]
         return buffer
 
     def create(self) -> None:
@@ -225,6 +226,10 @@ class Map(tcod.map.Map):
         tile_type = self._calculate_tile_type(y, x)
         return self._tile_id_from_type(tile_type, y, x), tile_type
 
+    def update_fov(self, x: int, y: int, radius: int) -> None:
+        """Update the fov calculations."""
+        self.compute_fov(x, y, algorithm=tcod.FOV_PERMISSIVE_3, radius=radius, light_walls=True)
+
     def __len__(self) -> int:
         return self.width * self.height
 
@@ -295,13 +300,13 @@ class ClassicMap(Map):
         rooms: typing.List[game.utils.geometry.Rect] = []
 
         for _ in range(self.max_rooms):
-            w: int = self._rng.rand(self.room_min_size, self.room_max_size)
-            h: int = self._rng.rand(self.room_min_size, self.room_max_size)
-            x: int = self._rng.rand(self.width - w - 1)
-            y: int = self._rng.rand(self.height - h - 1)
+            w = self._rng.rand(self.room_min_size, self.room_max_size)
+            h = self._rng.rand(self.room_min_size, self.room_max_size)
+            x = self._rng.rand(self.width - w - 1)
+            y = self._rng.rand(self.height - h - 1)
 
-            new_room: game.utils.geometry.Rect = game.utils.geometry.Rect(x, y, w, h)
-            new_center: game.utils.geometry.Point = new_room.center
+            new_room = game.utils.geometry.Rect(x, y, w, h)
+            new_center = new_room.center
 
             for other_room in rooms:
                 if new_room.intersects(other_room):
@@ -312,7 +317,7 @@ class ClassicMap(Map):
                 if len(rooms) == 0:  # first room
                     self.spawnable_player[new_room.center.y, new_room.center.x] = True
                 else:
-                    prev_center: game.utils.geometry.Point = rooms[-1].center
+                    prev_center = rooms[-1].center
                     if self._rng.coin():
                         self.create_h_tunnel(prev_center.x, new_center.x, prev_center.y)
                         self.create_v_tunnel(prev_center.y, new_center.y, new_center.x)
@@ -320,7 +325,3 @@ class ClassicMap(Map):
                         self.create_v_tunnel(prev_center.y, new_center.y, prev_center.x)
                         self.create_h_tunnel(prev_center.x, new_center.x, new_center.y)
                 rooms.append(new_room)
-
-    def update_fov(self, x: int, y: int, radius: int) -> None:
-        """Update the fov calculations."""
-        self.compute_fov(x, y, algorithm=tcod.FOV_PERMISSIVE_3, radius=radius, light_walls=True)

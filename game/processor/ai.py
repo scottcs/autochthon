@@ -1,8 +1,6 @@
 """AI Processor."""
 import typing
 
-import esper
-
 import game.component.action
 import game.component.ai
 import game.component.movement
@@ -10,9 +8,10 @@ import game.events
 import game.render
 import game.types
 import game.utils.random
+import game.world
 
 
-class AI(esper.Processor):
+class AI(game.world.Processor):
     """Artificial Intelligence processor."""
 
     def __init__(self) -> None:
@@ -20,12 +19,17 @@ class AI(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process AI Components."""
+        if self.world.map is None:
+            return
+
         for ent, components in self.world.get_components(
             game.component.movement.Position,
             game.component.action.Actor,
             game.component.ai.DummyMind,
             game.component.action.TMPMyTurn,
         ):
+            position: game.component.movement.Position
+            actor: game.component.action.Actor
             position, actor = components[:2]
             position.facing = game.render.get_facing(self._rng.rand(-1, 1), self._rng.rand(-1, 1))
             self.world.add_component(ent, game.component.movement.TMPWaiting())
@@ -41,6 +45,9 @@ class AI(esper.Processor):
     def _try_moving(
         self, ent: game.types.Entity, position: game.component.movement.Position
     ) -> None:
+        if self.world.map is None:
+            return
+
         for _ in range(100):  # try up to 100 times
             dx = self._rng.rand(-1, 1)
             dy = self._rng.rand(-1, 1)

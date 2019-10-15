@@ -2,8 +2,6 @@
 import logging
 import typing
 
-import esper
-
 import game.component.action
 import game.component.ai
 import game.component.descriptive
@@ -13,17 +11,20 @@ import game.component.player
 import game.component.status
 import game.events
 import game.palette
+import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class Movement(esper.Processor):
+class Movement(game.world.Processor):
     """Movement processor."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process movement components."""
-        entities_need_rendering: bool = False
+        if self.world.map is None:
+            return
+        entities_need_rendering = False
         for ent, components in self.world.get_components(
             game.component.action.Actor,
             game.component.movement.TMPWaiting,

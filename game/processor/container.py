@@ -2,8 +2,6 @@
 import logging
 import typing
 
-import esper
-
 import game.component.container
 import game.component.descriptive
 import game.component.gamelog
@@ -11,17 +9,21 @@ import game.component.movement
 import game.events
 import game.palette
 import game.types
+import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class Container(esper.Processor):
+class Container(game.world.Processor):
     """Process containers."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process container components."""
-        entities_need_rendering: bool = False
+        if self.world.map is None:
+            return
+
+        entities_need_rendering = False
 
         # TODO: process unequip
 
@@ -33,6 +35,9 @@ class Container(esper.Processor):
             game.component.container.Containable,
             game.component.descriptive.Name,
         ):
+            transfer: game.component.container.TMPTransfer
+            containable: game.component.container.Containable
+            name: game.component.descriptive.Name
             transfer, containable, name = components
             self.world.remove_component(containable_ent, game.component.container.TMPTransfer)
             cmd_log = self.world.get_or_add_component(
@@ -64,22 +69,23 @@ class Container(esper.Processor):
                 position = self.world.optional_component_for_entity(
                     containable_ent, game.component.movement.Position
                 )
-                container_ent_name = self.world.optional_component_for_entity(
-                    transfer.to_ent, game.component.descriptive.Name
-                )
-                if position:
+                if position is not None:
                     # it's on the ground, so something is picking it up
                     self.world.remove_component(containable_ent, game.component.movement.Position)
                     self.world.map.contains_item[position.y, position.x] = False
-                    if container_ent_name:
-                        if transfer.to_ent in self.world.players:
-                            cmd_log.add("You pick up ")
-                        else:
-                            cmd_log.add(f"{container_ent_name.generic} picks up ")
-                        # TODO: colorize the item by rarity?
-                        cmd_log.add_raw(f"{name.generic}", color=game.palette.Item.epic)
-                        cmd_log.add_raw(f".")
-                        log.debug(f"Picked up {containable_ent}")
+                    if transfer.to_ent is not None:
+                        container_ent_name = self.world.optional_component_for_entity(
+                            transfer.to_ent, game.component.descriptive.Name
+                        )
+                        if container_ent_name:
+                            if transfer.to_ent in self.world.players:
+                                cmd_log.add("You pick up ")
+                            else:
+                                cmd_log.add(f"{container_ent_name.generic} picks up ")
+                            # TODO: colorize the item by rarity?
+                            cmd_log.add_raw(f"{name.generic}", color=game.palette.Item.epic)
+                            cmd_log.add_raw(f".")
+                            log.debug(f"Picked up {containable_ent}")
                     entities_need_rendering = True
                 else:
                     # TODO: what to do if can't pick up?

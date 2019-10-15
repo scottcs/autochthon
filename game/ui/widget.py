@@ -16,9 +16,9 @@ class Widget:
     """A basic UI element."""
 
     def __init__(self, rect: typing.Optional[game.utils.geometry.Rect] = None) -> None:
-        self.rect: game.utils.geometry.Rect = rect or game.utils.geometry.Rect(0, 0, 1, 1)
+        self.rect = rect or game.utils.geometry.Rect(0, 0, 1, 1)
         self.children: typing.List[Widget] = []
-        self._visible: bool = False
+        self._visible = False
         self._layout: typing.Optional[Layout] = None
         # TODO: input events
 
@@ -92,8 +92,8 @@ class Layout:
             margin = 2
         if spacing is None:
             spacing = 2
-        self.margin: int = margin
-        self.spacing: int = spacing
+        self.margin = margin
+        self.spacing = spacing
 
     def reposition(self, parent: Widget, children: typing.Sequence[Widget]) -> None:
         """Calculate the positions for each child widget relative to the parent."""

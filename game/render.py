@@ -41,7 +41,7 @@ class _TileCache:
     """Tile Cache."""
 
     def __init__(self) -> None:
-        self._cache: typing.Dict[typing.Sequence, int] = {}
+        self._cache: typing.Dict[typing.Sequence[typing.Union[str, int]], int] = {}
 
     def get(
         self,
@@ -120,14 +120,15 @@ class _TileCache:
             return "w"
         else:
             try:
-                return [k for k in data.keys() if k not in ("offset", "variations")][0]
+                result: str = [k for k in data.keys() if k not in ("offset", "variations")][0]
+                return result
             except IndexError:
                 return None
 
     def _get_local_tile_offset(
         self, tile_data: typing.Dict[str, typing.Any], variant: int, direction: str, frame: int
     ) -> typing.Optional[int]:
-        local_offset = tile_data.get("offset", None)
+        local_offset: typing.Optional[int] = tile_data.get("offset", None)
         if local_offset is None:
             return None
         try:
@@ -188,7 +189,7 @@ class BaseRenderer:
     def __init__(self) -> None:
         self.width: int = game.data.tileset["window"]["width"]
         self.height: int = game.data.tileset["window"]["height"]
-        self.center: typing.List[int] = [self.width // 2, self.height // 2]
+        self.center = [self.width // 2, self.height // 2]
         log.debug(f"BaseRenderer w: {self.width}, h: {self.height}, c: {self.center}")
         self.font_size = game.data.tileset["font"]["size"]
         self.font_file = pathlib.Path(f"{game.data.FONT_PATH}/{game.data.tileset['font']['file']}")
@@ -317,7 +318,7 @@ class BearLibRenderer(BaseRenderer):
         """Draw a game log line."""
         self.draw_text(x, y, self.colorize_gamelog(lines))
 
-    def close(self):
+    def close(self) -> None:
         """Close all windows."""
         blt.close()
 

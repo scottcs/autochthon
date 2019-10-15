@@ -2,17 +2,16 @@
 import logging
 import typing
 
-import esper
-
 import game.component.action
 import game.component.descriptive
 import game.component.status
+import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class Psychopomps(esper.Processor):
+class Psychopomps(game.world.Processor):
     """Escort of the dead."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

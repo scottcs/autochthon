@@ -13,4 +13,4 @@ class HP(game.component.base.BaseIntMinMaxComponent):
 class TMPChangeHP:
     """Change the HP attribute."""
 
-    amount: game.types.Number
+    amount: int

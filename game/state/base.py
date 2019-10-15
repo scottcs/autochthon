@@ -1,5 +1,6 @@
 """Game state."""
 import collections
+import typing
 
 import game.events
 import game.types
@@ -49,7 +50,7 @@ class BaseState:
         """Overwrite in child class."""
         pass
 
-    def _on_input(self, event: game.types.Event):
+    def _on_input(self, event: game.types.Event) -> None:
         """Handle input; overwrite in child class."""
         pass
 
@@ -66,7 +67,7 @@ class _Stack:
     """Game state stack."""
 
     def __init__(self) -> None:
-        self._stack: collections.deque = collections.deque()
+        self._stack: typing.Deque[BaseState] = collections.deque()
 
     @property
     def size(self) -> int:

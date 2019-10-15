@@ -3,8 +3,6 @@ import logging
 import time
 import typing
 
-import esper
-
 import game.component.container
 import game.component.gamelog
 import game.component.movement
@@ -17,6 +15,7 @@ import game.palette
 import game.render
 import game.types
 import game.utils.geometry
+import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -29,17 +28,17 @@ ANIM_FRAME_TIME = NS // 4
 MAX_ANIM_FRAMES = 8
 
 
-class Render(esper.Processor):
+class Render(game.world.Processor):
     """Game render processor for BearLibTerminal console."""
 
     def __init__(self, renderer: game.render.BaseRenderer) -> None:
         self.renderer = renderer
-        self.last_refresh_time: int = time.time_ns()
-        self.last_anim_time: int = time.time_ns()
-        self.anim_tick: int = 0
-        self.should_render_map: bool = True
-        self.should_render_entities: bool = True
-        self.known_player_xy: typing.List[int] = [-1, -1]
+        self.last_refresh_time = time.time_ns()
+        self.last_anim_time = time.time_ns()
+        self.anim_tick = 0
+        self.should_render_map = True
+        self.should_render_entities = True
+        self.known_player_xy = [-1, -1]
 
         game.events.RenderEntities.handle(self._on_render_entities)
         game.events.RenderMap.handle(self._on_render_map)
@@ -48,7 +47,7 @@ class Render(esper.Processor):
 
         # self._draw_debug_overlay()
 
-    def _draw_debug_overlay(self):
+    def _draw_debug_overlay(self) -> None:
         debug_tile_id = game.render.TileCache.get("world", "floor_tile2", variant=2)
         debug_tile_id2 = game.render.TileCache.get("world", "floor_tile3", variant=2)
         tile_width = game.render.grid_to_tile_x("world", self.renderer.width)
@@ -87,6 +86,8 @@ class Render(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
+        if self.world.map is None:
+            return
         anim_elapsed = time.time_ns() - self.last_anim_time
         if anim_elapsed >= ANIM_FRAME_TIME:
             self.last_anim_time = time.time_ns()
@@ -95,7 +96,7 @@ class Render(esper.Processor):
 
         refresh = False
         player_data = self._get_player_render_data()
-        border: int = 1
+        border = 1
         tile_viewport = game.utils.geometry.Rect(
             game.render.grid_to_tile_x(
                 "world", int(border * game.render.get_conversion_value("world", 0))
@@ -124,16 +125,20 @@ class Render(esper.Processor):
     def _draw_entities(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
     ) -> None:
+        if self.world.map is None:
+            return
         self.renderer.clear_layer(game.types.RenderLayer.entities)
         self.renderer.set_layer(game.types.RenderLayer.entities)
 
-        map_x1: int = player_pos.x - tile_viewport.center.x
-        map_y1: int = player_pos.y - tile_viewport.center.y
-        last_color: str = ""
+        map_x1 = player_pos.x - tile_viewport.center.x
+        map_y1 = player_pos.y - tile_viewport.center.y
+        last_color = ""
 
         for ent, components in self.world.get_components(
             game.component.render.Renderable, game.component.movement.Position
         ):
+            renderable: game.component.render.Renderable
+            position: game.component.movement.Position
             renderable, position = components
 
             is_dead = self.world.has_component(ent, game.component.status.TMPDead)
@@ -141,9 +146,9 @@ class Render(esper.Processor):
             if is_dead or is_contained or position is None:
                 continue
 
-            can_see_now: bool = self.world.map.fov[position.y, position.x]
-            if not can_see_now and renderable.last_seen_x is None:
-                # we've never seen it, so skip it
+            can_see_now = self.world.map.fov[position.y, position.x]
+            if not (can_see_now or renderable.remembered):
+                # the player has no idea where it is, so skip it
                 continue
 
             color = game.palette.Renderer.visible
@@ -151,7 +156,8 @@ class Render(esper.Processor):
             if can_see_now:
                 map_x = renderable.last_seen_x = position.x
                 map_y = renderable.last_seen_y = position.y
-                facing = renderable.facing = position.facing
+                facing = renderable.last_seen_facing = position.facing
+                renderable.remembered = True
                 variant = None
 
                 # check if this is an item and another entity is standing on it
@@ -168,9 +174,7 @@ class Render(esper.Processor):
                 # we've seen it before, but don't see it now
                 if self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]:
                     # we can see the spot where it used to be, and it's not there, so don't draw it
-                    renderable.last_seen_y = None
-                    renderable.last_seen_x = None
-                    renderable.facing = None
+                    renderable.remembered = False
                     continue
                 else:
                     # it might still be there, so draw it faded
@@ -181,8 +185,8 @@ class Render(esper.Processor):
                     variant = None
 
             # don't draw it if it's not in the viewport
-            adjusted_x: int = map_x - map_x1
-            adjusted_y: int = map_y - map_y1
+            adjusted_x = map_x - map_x1
+            adjusted_y = map_y - map_y1
             if (
                 adjusted_x < tile_viewport.x1
                 or adjusted_x > tile_viewport.x2
@@ -206,13 +210,15 @@ class Render(esper.Processor):
     def _draw_map(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
     ) -> None:
+        if self.world.map is None:
+            return
         self.renderer.clear_layer(game.types.RenderLayer.map)
         self.renderer.set_layer(game.types.RenderLayer.map)
 
-        map_x1: int = player_pos.x - tile_viewport.center.x + 1
-        map_y1: int = player_pos.y - tile_viewport.center.y + 1
-        map_x: int = map_x1 - 1
-        last_tile_color: str = ""
+        map_x1 = player_pos.x - tile_viewport.center.x + 1
+        map_y1 = player_pos.y - tile_viewport.center.y + 1
+        map_x = map_x1 - 1
+        last_tile_color = ""
 
         for tile_x in range(tile_viewport.x1, tile_viewport.x2 + 1):
             map_x += 1
@@ -220,7 +226,7 @@ class Render(esper.Processor):
                 break
             if map_x < 0:
                 continue
-            map_y: int = map_y1 - 1
+            map_y = map_y1 - 1
             for tile_y in range(tile_viewport.y1, tile_viewport.y2 + 1):
                 map_y += 1
                 if map_y >= self.world.map.height:
