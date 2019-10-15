@@ -27,7 +27,9 @@ class Frame(game.ui.widget.Widget):
         """Render this widget; OVERRIDES parent."""
         if not self._visible:
             return
-        renderer.set_layer(game.types.RenderLayer.ui)
+        if set_layer:
+            renderer.set_layer(game.types.RenderLayer.ui)
+            renderer.reset_color()
         self._paint(renderer)
         for child in self.children:
             child.render(renderer, set_layer=False)

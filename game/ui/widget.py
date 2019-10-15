@@ -66,6 +66,7 @@ class Widget:
             return
         if set_layer:
             renderer.set_layer(game.types.RenderLayer.ui)
+            renderer.reset_color()
         self._paint(renderer)
         for child in self.children:
             child.render(renderer, set_layer=False)
