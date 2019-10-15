@@ -20,7 +20,7 @@ def msg(
     players: typing.AbstractSet[game.types.Entity],
     entities: typing.Iterable[game.types.Entity],
     messages: typing.Tuple[typing.Tuple[str, str], typing.Tuple[str, str], typing.Tuple[str, str]],
-    *args: typing.Any
+    *args: typing.Any,
 ) -> typing.Tuple[str, str]:
     """Determine the message based on which entity, if any, is the player."""
     for i, ent in enumerate(entities):
