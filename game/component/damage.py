@@ -9,7 +9,7 @@ import game.types
 class BaseDamageComponent:
     """Base damage component."""
 
-    amount: game.types.Number
+    amount: int
 
 
 @dataclasses.dataclass

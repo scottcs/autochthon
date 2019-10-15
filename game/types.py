@@ -79,42 +79,41 @@ class Equip(enum.Enum):
     any = enum.auto()
 
 
-Number = typing.Union[int, float]
-
-
 class Modifier:
     """Modifier set."""
 
     def __init__(
-        self, addend: typing.Union[Number, str] = 0, factor: typing.Union[Number, str] = 0
+        self, addend: typing.Union[str, int] = 0, factor: typing.Union[str, float] = 0.0
     ) -> None:
-        self._addend: Number = 0
-        self._factor: Number = 0
-        self._addend_func: typing.Optional[typing.Callable[[], Number]] = None
-        self._factor_func: typing.Optional[typing.Callable[[], Number]] = None
+        self._addend: typing.Union[typing.Callable[[], int], int]
+        self._factor: typing.Union[typing.Callable[[], float], float]
         # TODO: I'm not convinced this is the best way to do this. RNG per entity instead? How?
         rng = game.utils.random.RNGCache.get("ModifierClass")
         if isinstance(addend, str):
-            self._addend_func = game.utils.random.parse(addend, rng)
+            self._addend = typing.cast(
+                typing.Callable[[], int], game.utils.random.parse(addend, rng)
+            )
         else:
             self._addend = addend
         if isinstance(factor, str):
-            self._factor_func = game.utils.random.parse(factor, rng)
+            self._factor = typing.cast(
+                typing.Callable[[], float], game.utils.random.parse(factor, rng)
+            )
         else:
             self._factor = factor
 
     @property
-    def addend(self) -> Number:
+    def addend(self) -> int:
         """Get addend, calling its func if it exists."""
-        if self._addend_func is not None:
-            return self._addend_func()
+        if callable(self._addend):
+            return self._addend()
         return self._addend
 
     @property
-    def factor(self) -> Number:
+    def factor(self) -> float:
         """Get factor, calling its func if it exists."""
-        if self._factor_func is not None:
-            return self._factor_func()
+        if callable(self._factor):
+            return self._factor()
         return self._factor
 
 

@@ -98,7 +98,7 @@ class AttackDefense(game.world.Processor):
         verb: game.utils.language.Verb,
         modifier_component_class: typing.Any,
         immunity_component_class: typing.Any,
-        base_chance: game.types.Number,
+        base_chance: float,
     ) -> None:
         self.verb = verb
         self.modifier_component_class = modifier_component_class
@@ -181,7 +181,7 @@ class AttackHit(game.world.Processor):
         for mod in self.world.try_component(ent, game.component.damage.ModifierInflictBludgeoning):
             mods.append(mod)
         modifier = game.component.base.accumulate_modifiers(*mods)
-        damage = modifier.addend * (1 + modifier.factor)
+        damage = round(modifier.addend * (1 + modifier.factor))
         if damage > 0:
             self.world.add_component(
                 target.entity, game.component.damage.TMPTakeBludgeoning(damage)
