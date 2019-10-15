@@ -1,8 +1,6 @@
 """Player bump processor."""
 import typing
 
-import esper
-
 import game.component.attack
 import game.component.attribute
 import game.component.movement
@@ -10,9 +8,10 @@ import game.component.player
 import game.events
 import game.render
 import game.types
+import game.world
 
 
-class PlayerBump(esper.Processor):
+class PlayerBump(game.world.Processor):
     """Player bump processor.
 
     Determine what player action was meant.
@@ -40,7 +39,10 @@ class PlayerBump(esper.Processor):
             enemy = self.world.get_enemy_at_position(destination.x, destination.y)
             if enemy:
                 self._try_attacking(ent, enemy)
-            elif self.world.map.walkable[destination.y, destination.x]:
+            elif (
+                self.world.map is not None
+                and self.world.map.walkable[destination.y, destination.x]
+            ):
                 self._try_moving(ent, destination)
             # TODO: resolve other kinds of collisions? Digging?
 

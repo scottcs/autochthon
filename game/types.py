@@ -125,23 +125,19 @@ class LogLine(typing.NamedTuple):
     color: str = game.palette.Message.default
 
 
-def get_union_types(union_type: typing.Any) -> tuple:
+def get_union_types(union_type: typing.Any) -> typing.Tuple[typing.Any, ...]:
     """Get a tuple of the types of a union."""
     try:
         if union_type.__origin__ is typing.Union:
             return tuple(union_type.__args__)
     except (AttributeError, TypeError):
         pass
-    # noinspection PyRedundantParentheses
     return (union_type,)
 
 
-def is_in_union(arg: typing.Any, union_type: typing.Union) -> bool:
-    """Return true if the given argument is included in the union type."""
-    return isinstance(arg, get_union_types(union_type))
-
-
-def parameter_types(func: typing.Callable) -> dict:
+def parameter_types(
+    func: typing.Callable[[typing.Any], typing.Any]
+) -> typing.Dict[str, typing.Dict[str, typing.Any]]:
     """Get a dict of parameter names and allowed types from a function."""
     result = {}
     sig = inspect.signature(func)

@@ -11,7 +11,9 @@ import game.types
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
-KEYCODES = {k[3:]: v for k, v in blt.__dict__.items() if k.startswith("TK_")}
+KEYCODES: typing.Dict[str, int] = {
+    k[3:]: v for k, v in blt.__dict__.items() if k.startswith("TK_")
+}
 
 
 def key_to_keycode(key: str) -> typing.Optional[int]:

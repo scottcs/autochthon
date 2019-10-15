@@ -4,6 +4,7 @@ from __future__ import annotations
 import typing
 
 import numpy as np
+import tcod
 import tcod.map
 
 import game.palette
@@ -36,7 +37,7 @@ class Map(tcod.map.Map):
         width: int,
         height: int,
         seed: typing.Optional[str] = None,
-        config: typing.Optional[typing.Mapping] = None,
+        config: typing.Optional[typing.Mapping[typing.Any, typing.Any]] = None,
     ) -> None:
         """Create a new map with the given dimensions."""
         super().__init__(width, height)
@@ -225,6 +226,10 @@ class Map(tcod.map.Map):
         tile_type = self._calculate_tile_type(y, x)
         return self._tile_id_from_type(tile_type, y, x), tile_type
 
+    def update_fov(self, x: int, y: int, radius: int) -> None:
+        """Update the fov calculations."""
+        self.compute_fov(x, y, algorithm=tcod.FOV_PERMISSIVE_3, radius=radius, light_walls=True)
+
     def __len__(self) -> int:
         return self.width * self.height
 
@@ -320,7 +325,3 @@ class ClassicMap(Map):
                         self.create_v_tunnel(prev_center.y, new_center.y, prev_center.x)
                         self.create_h_tunnel(prev_center.x, new_center.x, new_center.y)
                 rooms.append(new_room)
-
-    def update_fov(self, x: int, y: int, radius: int) -> None:
-        """Update the fov calculations."""
-        self.compute_fov(x, y, algorithm=tcod.FOV_PERMISSIVE_3, radius=radius, light_walls=True)

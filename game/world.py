@@ -1,4 +1,6 @@
 """ECS world, based on esper's World, with more utilities."""
+from __future__ import annotations
+
 import logging
 import typing
 
@@ -18,8 +20,14 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
+class Processor(esper.Processor):
+    """Wrap Esper's Processor class."""
+
+    world: World
+
+
 class World(esper.World):
-    """Esper's World class that always iterates the Player first."""
+    """Wrap Esper's World class."""
 
     def __init__(self, timed: bool = False) -> None:
         super().__init__(timed)

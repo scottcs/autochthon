@@ -71,18 +71,18 @@ class Playing(game.state.base.BaseState):
         self._setup_processors()
         self._setup_map()
 
-    def _on_exit(self):
+    def _on_exit(self) -> None:
         """Called when this state is discarded or popped off the stack."""
         self.world.clear_database()
         game.events.GameLog.unhandle(self._on_game_log)
         game.events.GameOver.unhandle(self._on_game_over)
 
-    def _on_pause(self):
+    def _on_pause(self) -> None:
         """Called when another state is pushed on top of this one."""
         game.events.GameLog.unhandle(self._on_game_log)
         game.events.GameOver.unhandle(self._on_game_over)
 
-    def _on_resume(self):
+    def _on_resume(self) -> None:
         """Called when this state becomes top-most on the stack after having been pushed down."""
         game.events.GameLog.handle(self._on_game_log)
         game.events.GameOver.handle(self._on_game_over)
@@ -99,7 +99,7 @@ class Playing(game.state.base.BaseState):
         log.info("Game Over.")
         game.state.base.Stack.pop_to(self)
 
-    def _setup_processors(self):
+    def _setup_processors(self) -> None:
         dodge_processor = game.processor.attack.AttackDefense(
             game.utils.language.Verb("dodges", "dodged"),
             game.component.attack.DodgeModifier,

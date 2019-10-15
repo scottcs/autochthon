@@ -19,9 +19,9 @@ class Verb:
 def msg(
     players: typing.AbstractSet[game.types.Entity],
     entities: typing.Iterable[game.types.Entity],
-    messages: tuple,
+    messages: typing.Tuple[typing.Tuple[str, str], typing.Tuple[str, str], typing.Tuple[str, str]],
     *args: typing.Any
-) -> typing.Tuple[str, int]:
+) -> typing.Tuple[str, str]:
     """Determine the message based on which entity, if any, is the player."""
     for i, ent in enumerate(entities):
         if ent in players:

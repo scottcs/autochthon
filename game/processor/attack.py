@@ -1,8 +1,6 @@
 """Attack processors."""
 import typing
 
-import esper
-
 import game.base_engine_values
 import game.component.action
 import game.component.attack
@@ -14,9 +12,10 @@ import game.messages.combat
 import game.types
 import game.utils.language
 import game.utils.random
+import game.world
 
 
-class AttackTargeting(esper.Processor):
+class AttackTargeting(game.world.Processor):
     """Attack targeting processor."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -61,7 +60,7 @@ class AttackTargeting(esper.Processor):
         return False
 
 
-class AttackMiss(esper.Processor):
+class AttackMiss(game.world.Processor):
     """Process whether attack missed."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -91,7 +90,7 @@ class AttackMiss(esper.Processor):
                     self.world.remove_component(ent, game.component.attack.TMPCurrentTarget)
 
 
-class AttackDefense(esper.Processor):
+class AttackDefense(game.world.Processor):
     """Process whether attack was defended."""
 
     def __init__(
@@ -159,7 +158,7 @@ class AttackDefense(esper.Processor):
                         self.world.remove_component(ent, game.component.attack.TMPCurrentTarget)
 
 
-class AttackHit(esper.Processor):
+class AttackHit(game.world.Processor):
     """Attack happened, nothing stopped it, so generate AttackHit."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

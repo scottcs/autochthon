@@ -2,16 +2,17 @@
 import collections
 import typing
 
-import esper
-
 import game.component.gamelog
 import game.data
 import game.events
+import game.world
 
-buffer: collections.deque = collections.deque(maxlen=game.data.config["max_game_log_buffer"])
+buffer: typing.Deque[game.component.gamelog.BaseLog] = collections.deque(
+    maxlen=game.data.config["max_game_log_buffer"]
+)
 
 
-class GameLog(esper.Processor):
+class GameLog(game.world.Processor):
     """Process the game log."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

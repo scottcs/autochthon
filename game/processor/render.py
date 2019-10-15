@@ -3,8 +3,6 @@ import logging
 import time
 import typing
 
-import esper
-
 import game.component.container
 import game.component.gamelog
 import game.component.movement
@@ -17,6 +15,7 @@ import game.palette
 import game.render
 import game.types
 import game.utils.geometry
+import game.world
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -29,7 +28,7 @@ ANIM_FRAME_TIME = NS // 4
 MAX_ANIM_FRAMES = 8
 
 
-class Render(esper.Processor):
+class Render(game.world.Processor):
     """Game render processor for BearLibTerminal console."""
 
     def __init__(self, renderer: game.render.BaseRenderer) -> None:
@@ -48,7 +47,7 @@ class Render(esper.Processor):
 
         # self._draw_debug_overlay()
 
-    def _draw_debug_overlay(self):
+    def _draw_debug_overlay(self) -> None:
         debug_tile_id = game.render.TileCache.get("world", "floor_tile2", variant=2)
         debug_tile_id2 = game.render.TileCache.get("world", "floor_tile3", variant=2)
         tile_width = game.render.grid_to_tile_x("world", self.renderer.width)
@@ -87,6 +86,8 @@ class Render(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process all renderables."""
+        if self.world.map is None:
+            return
         anim_elapsed = time.time_ns() - self.last_anim_time
         if anim_elapsed >= ANIM_FRAME_TIME:
             self.last_anim_time = time.time_ns()
@@ -124,6 +125,8 @@ class Render(esper.Processor):
     def _draw_entities(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
     ) -> None:
+        if self.world.map is None:
+            return
         self.renderer.clear_layer(game.types.RenderLayer.entities)
         self.renderer.set_layer(game.types.RenderLayer.entities)
 
@@ -134,6 +137,8 @@ class Render(esper.Processor):
         for ent, components in self.world.get_components(
             game.component.render.Renderable, game.component.movement.Position
         ):
+            renderable: game.component.render.Renderable
+            position: game.component.movement.Position
             renderable, position = components
 
             is_dead = self.world.has_component(ent, game.component.status.TMPDead)
@@ -142,8 +147,8 @@ class Render(esper.Processor):
                 continue
 
             can_see_now = self.world.map.fov[position.y, position.x]
-            if not can_see_now and renderable.last_seen_x is None:
-                # we've never seen it, so skip it
+            if not (can_see_now or renderable.remembered):
+                # the player has no idea where it is, so skip it
                 continue
 
             color = game.palette.Renderer.visible
@@ -151,7 +156,8 @@ class Render(esper.Processor):
             if can_see_now:
                 map_x = renderable.last_seen_x = position.x
                 map_y = renderable.last_seen_y = position.y
-                facing = renderable.facing = position.facing
+                facing = renderable.last_seen_facing = position.facing
+                renderable.remembered = True
                 variant = None
 
                 # check if this is an item and another entity is standing on it
@@ -168,9 +174,7 @@ class Render(esper.Processor):
                 # we've seen it before, but don't see it now
                 if self.world.map.fov[renderable.last_seen_y, renderable.last_seen_x]:
                     # we can see the spot where it used to be, and it's not there, so don't draw it
-                    renderable.last_seen_y = None
-                    renderable.last_seen_x = None
-                    renderable.facing = None
+                    renderable.remembered = False
                     continue
                 else:
                     # it might still be there, so draw it faded
@@ -206,6 +210,8 @@ class Render(esper.Processor):
     def _draw_map(
         self, tile_viewport: game.utils.geometry.Rect, player_pos: game.utils.geometry.Point
     ) -> None:
+        if self.world.map is None:
+            return
         self.renderer.clear_layer(game.types.RenderLayer.map)
         self.renderer.set_layer(game.types.RenderLayer.map)
 

@@ -51,7 +51,7 @@ def get_component_class(class_substring: str) -> typing.Any:
     return getattr(_tmp, component_class)
 
 
-def validate_kwargs(kwargs: typing.MutableMapping) -> None:
+def validate_kwargs(kwargs: typing.Mapping[typing.Any, typing.Any]) -> None:
     """Validate keyword arguments for components."""
     for key, value in kwargs.items():
         if value is None:
@@ -106,7 +106,9 @@ class BaseEntityFactory:
                     raise FactoryException(f"Error in {self._data_key}.{template}: {exc}")
         return self._world.create_entity(*components)
 
-    def _convert_data(self, data: typing.Mapping) -> dict:
+    def _convert_data(
+        self, data: typing.Mapping[typing.Any, typing.Any]
+    ) -> typing.Dict[typing.Any, typing.Any]:
         """Convert data to globals."""
         new_data = {}
         for key, value in data.items():

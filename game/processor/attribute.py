@@ -2,8 +2,6 @@
 import logging
 import typing
 
-import esper
-
 import game.component.ai
 import game.component.attribute
 import game.component.descriptive
@@ -12,15 +10,19 @@ import game.component.movement
 import game.component.player
 import game.messages.status
 import game.utils.language
+import game.world
 
 log = logging.getLogger(__name__)
 
 
-class HP(esper.Processor):
+class HP(game.world.Processor):
     """HP Processor."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process ChangeHP."""
+        if self.world.map is None:
+            return
+
         for ent, components in self.world.get_components(
             game.component.attribute.HP, game.component.attribute.TMPChangeHP
         ):

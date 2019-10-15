@@ -31,7 +31,7 @@ class App:
         # TODO: allow player to set seed and pass it here
         game.state.base.Stack.push(game.state.playing.Playing(self.renderer, "Test1"))
 
-    def update(self):
+    def update(self) -> None:
         """Game update."""
         if not self.shutting_down:
             self.input_handler.process()

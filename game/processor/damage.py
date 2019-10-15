@@ -1,8 +1,6 @@
 """Damage processors."""
 import typing
 
-import esper
-
 import game.component.attribute
 import game.component.base
 import game.component.damage
@@ -10,9 +8,10 @@ import game.component.descriptive
 import game.component.gamelog
 import game.messages.combat
 import game.utils.language
+import game.world
 
 
-class DamageBludgeoningMitigation(esper.Processor):
+class DamageBludgeoningMitigation(game.world.Processor):
     """Processor for mitigating Bludgeoning damage."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
@@ -83,7 +82,7 @@ class DamageBludgeoningMitigation(esper.Processor):
                     self.world.remove_component(ent, game.component.damage.TMPTakeBludgeoning)
 
 
-class DamageBludgeoning(esper.Processor):
+class DamageBludgeoning(game.world.Processor):
     """Processor for applying Bludgeoning damage."""
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:

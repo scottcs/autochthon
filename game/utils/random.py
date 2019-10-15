@@ -204,7 +204,9 @@ class RNGCache:
         return result
 
 
-def _parse_weighted(rng: GameRNG, items_str: str, weights_str: str) -> typing.Callable:
+def _parse_weighted(
+    rng: GameRNG, items_str: str, weights_str: str
+) -> typing.Callable[[], typing.Any]:
     items = [i.strip(" '\"") for i in items_str.split(",")]
     weights = [int(w.strip()) for w in weights_str.split(",")]
     choices: typing.List[str] = []
@@ -223,7 +225,7 @@ class _MinMaxStep(typing.NamedTuple):
     step: typing.Union[int, float]
 
 
-def _parse_step(rng: GameRNG, expr: str) -> typing.Callable:
+def _parse_step(rng: GameRNG, expr: str) -> typing.Callable[[], typing.Any]:
     try:
         s = _MinMaxStep(*[int(e.strip()) for e in expr.split(",")])
     except ValueError:
@@ -246,7 +248,9 @@ class _Die(typing.NamedTuple):
     sides: int
 
 
-def _parse_die(rng: GameRNG, expr: str, addend: typing.Optional[str] = None) -> typing.Callable:
+def _parse_die(
+    rng: GameRNG, expr: str, addend: typing.Optional[str] = None
+) -> typing.Callable[[], typing.Any]:
     _addend = 0
     if addend is not None:
         _addend = int(addend.strip())
@@ -261,7 +265,7 @@ def _parse_die(rng: GameRNG, expr: str, addend: typing.Optional[str] = None) -> 
     return _closure
 
 
-def parse(text: str, rng: GameRNG) -> typing.Optional[typing.Callable]:
+def parse(text: str, rng: GameRNG) -> typing.Optional[typing.Callable[[], typing.Any]]:
     """Parse a string and return a function to provide the requested randomness.
 
     Looks for:
