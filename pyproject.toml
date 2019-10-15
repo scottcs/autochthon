@@ -6,11 +6,11 @@ authors = ["scott <dev@cracklebones.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-tdl = "^6.0"
 esper = "^1.2"
 bearlibterminal = "^0.15.7"
 toml = "^0.10.0"
 appdirs = "^1.4"
+tcod = "^11.4"
 
 [tool.poetry.dev-dependencies]
 PySide2 = "^5.13"
