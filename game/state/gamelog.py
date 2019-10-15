@@ -68,5 +68,7 @@ class GameLog(game.state.base.BaseState):
 
     def _on_input(self, event: game.types.Event) -> None:
         input_key = event["key"]
-        if game.input.GameInterface.match("quit", input_key):
+        if game.input.GameCommand.match("gamelog", input_key):
+            game.state.base.Stack.pop_to(self)
+        elif game.input.GameInterface.match("quit", input_key):
             game.state.base.Stack.pop_to(self)
