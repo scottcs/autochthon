@@ -1,37 +1,24 @@
 # Autochthon
 
-## NOTE:
-
-The game code is currently broken!
-
-I was using a modified esper.py which I accidentally deleted when
-upgrading the python virtual environment.
-
-Why I didn't make the changes in this git repo, I don't know. Big mistake.
-
-To get this working again, I'll need to recreate the modifications I had
-made to esper.World (and possibly other classes as well.), which I have
-by now forgotten.
-
 ### Setup
 
-If not already installed, install Python 3.7+, with pyenv:
+If not already installed, install Python 3.8+, with pyenv:
 
 ```
-pyenv install 3.7.4
+pyenv install 3.8.0
 ```
 
 Create a virtual environment with pyenv-virtualenv:
 
 ```
-pyenv virtualenv 3.7.4 autochthon
+pyenv virtualenv 3.8.0 autochthon
 ```
 
 Change into the autochthon project directory and set it as the local virtualenv:
 
 ```
 cd autochthon
-pyenv local autochthon 3.7.4
+pyenv local autochthon 3.8.0
 ```
 
 Install dependencies using poetry:
