@@ -10,7 +10,7 @@ class BaseModifierComponent:
     """Base modifier component."""
 
     def __init__(
-        self, addend: typing.Union[int, str] = 0, factor: typing.Union[float, str] = 0
+        self, addend: typing.Union[int, str] = 0, factor: typing.Union[float, str] = 0.0
     ) -> None:
         self.modifier = game.types.Modifier(addend, factor)
 
