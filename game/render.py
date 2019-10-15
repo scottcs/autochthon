@@ -188,7 +188,7 @@ class BaseRenderer:
     def __init__(self) -> None:
         self.width: int = game.data.tileset["window"]["width"]
         self.height: int = game.data.tileset["window"]["height"]
-        self.center: typing.List[int] = [self.width // 2, self.height // 2]
+        self.center = [self.width // 2, self.height // 2]
         log.debug(f"BaseRenderer w: {self.width}, h: {self.height}, c: {self.center}")
         self.font_size = game.data.tileset["font"]["size"]
         self.font_file = pathlib.Path(f"{game.data.FONT_PATH}/{game.data.tileset['font']['file']}")

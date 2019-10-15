@@ -17,7 +17,7 @@ class Frame(game.ui.widget.Widget):
 
     def __init__(self, *args, style: typing.Optional[game.types.UIFrameStyle] = None) -> None:
         super().__init__(*args)
-        self.style: typing.Optional[game.types.UIFrameStyle] = style
+        self.style = style
         self._rng = game.utils.random.RNGCache.get("UIFrame")
 
     def render(self, renderer: game.render.BaseRenderer, set_layer: bool = True) -> None:

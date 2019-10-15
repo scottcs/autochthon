@@ -16,7 +16,7 @@ class DataLoader:
 
     def __init__(self, data_path: typing.Optional[typing.Union[str, pathlib.Path]] = None) -> None:
         self.base_path = pathlib.Path(data_path or DEFAULT_PATH)
-        self.data: dict = {}
+        self.data: typing.Dict[typing.Any, typing.Any] = {}
 
     def load_all_json(self) -> None:
         """Load all JSON data files recursively into our data object."""

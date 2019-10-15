@@ -101,10 +101,10 @@ class AttackDefense(esper.Processor):
         immunity_component_class: typing.Any,
         base_chance: game.types.Number,
     ) -> None:
-        self.verb: game.utils.language.Verb = verb
-        self.modifier_component_class: typing.Any = modifier_component_class
-        self.immunity_component_class: typing.Any = immunity_component_class
-        self.base_chance: game.types.Number = base_chance
+        self.verb = verb
+        self.modifier_component_class = modifier_component_class
+        self.immunity_component_class = immunity_component_class
+        self.base_chance = base_chance
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process whether an attack was defended."""

@@ -9,7 +9,7 @@ class Actor:
     base_initiative: int
 
     def __post_init__(self) -> None:
-        self.initiative: int = self.base_initiative
+        self.initiative = self.base_initiative
 
 
 class TMPMyTurn:

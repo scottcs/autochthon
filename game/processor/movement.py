@@ -23,7 +23,7 @@ class Movement(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process movement components."""
-        entities_need_rendering: bool = False
+        entities_need_rendering = False
         for ent, components in self.world.get_components(
             game.component.action.Actor,
             game.component.movement.TMPWaiting,

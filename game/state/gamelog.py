@@ -23,11 +23,11 @@ class GameLog(game.state.base.BaseState):
     border = 4
 
     def __init__(self, renderer: game.render.BaseRenderer) -> None:
-        self.renderer: game.render.BaseRenderer = renderer
+        self.renderer = renderer
         self.lines: typing.List[game.types.LogLine] = []
-        self.num_lines: int = 0
+        self.num_lines = 0
         self.frame: typing.Optional[game.ui.frame.Frame] = None
-        self.do_render: bool = False
+        self.do_render = False
 
     def _on_enter(self):
         """Called when this state is entered."""
@@ -61,7 +61,7 @@ class GameLog(game.state.base.BaseState):
         """Update the game log menu."""
         if self.do_render:
             self.do_render = False
-            self.frame.render(self.renderer, game.types.RenderLayer.ui)
+            self.frame.render(self.renderer)
             self.renderer.refresh()
 
     def _on_input(self, event: game.types.Event) -> None:

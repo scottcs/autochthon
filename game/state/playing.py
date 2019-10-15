@@ -55,7 +55,7 @@ class Playing(game.state.base.BaseState):
         self.renderer = renderer
         self.layout_name = layout_name
         self.seed = seed
-        self.world: game.world.World = game.world.World()
+        self.world = game.world.World()
         self.layout: game.types.Layout = {}
         self.morgue = game.utils.morgue.new()
 

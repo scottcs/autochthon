@@ -23,7 +23,7 @@ class App:
     ) -> None:
         self.renderer = renderer
         self.input_handler = input_handler
-        self.shutting_down: bool = False
+        self.shutting_down = False
         game.events.ShutDown.handle(self._on_shutdown)
         log.info(game.data.VERSION_STRING)
 

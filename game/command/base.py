@@ -1,4 +1,6 @@
 """Base player command."""
+import typing
+
 import game.component.container
 import game.component.descriptive
 import game.events
@@ -11,15 +13,20 @@ class BaseCommand:
     """Base player command."""
 
     def __init__(self, world: game.world.World) -> None:
-        self.world: game.world.World = world
+        self.world = world
         self.submenu = False
 
     def run(self) -> None:
         """Run the command."""
         raise NotImplementedError("Must implement in child class.")
 
-    def _get_items_carried(self, ent: game.types.Entity) -> dict:
-        items_carried: dict = {"equipped": [], "unequipped": []}
+    def _get_items_carried(
+        self, ent: game.types.Entity
+    ) -> typing.Dict[str, typing.List[typing.Any]]:
+        items_carried: typing.Dict[str, typing.List[typing.Any]] = {
+            "equipped": [],
+            "unequipped": [],
+        }
         for item_ent, components in self.world.get_components(
             game.component.container.TMPContained,
             game.component.descriptive.Name,

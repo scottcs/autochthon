@@ -34,12 +34,12 @@ class Render(esper.Processor):
 
     def __init__(self, renderer: game.render.BaseRenderer) -> None:
         self.renderer = renderer
-        self.last_refresh_time: int = time.time_ns()
-        self.last_anim_time: int = time.time_ns()
-        self.anim_tick: int = 0
-        self.should_render_map: bool = True
-        self.should_render_entities: bool = True
-        self.known_player_xy: typing.List[int] = [-1, -1]
+        self.last_refresh_time = time.time_ns()
+        self.last_anim_time = time.time_ns()
+        self.anim_tick = 0
+        self.should_render_map = True
+        self.should_render_entities = True
+        self.known_player_xy = [-1, -1]
 
         game.events.RenderEntities.handle(self._on_render_entities)
         game.events.RenderMap.handle(self._on_render_map)
@@ -95,7 +95,7 @@ class Render(esper.Processor):
 
         refresh = False
         player_data = self._get_player_render_data()
-        border: int = 1
+        border = 1
         tile_viewport = game.utils.geometry.Rect(
             game.render.grid_to_tile_x(
                 "world", int(border * game.render.get_conversion_value("world", 0))
@@ -127,9 +127,9 @@ class Render(esper.Processor):
         self.renderer.clear_layer(game.types.RenderLayer.entities)
         self.renderer.set_layer(game.types.RenderLayer.entities)
 
-        map_x1: int = player_pos.x - tile_viewport.center.x
-        map_y1: int = player_pos.y - tile_viewport.center.y
-        last_color: str = ""
+        map_x1 = player_pos.x - tile_viewport.center.x
+        map_y1 = player_pos.y - tile_viewport.center.y
+        last_color = ""
 
         for ent, components in self.world.get_components(
             game.component.render.Renderable, game.component.movement.Position
@@ -141,7 +141,7 @@ class Render(esper.Processor):
             if is_dead or is_contained or position is None:
                 continue
 
-            can_see_now: bool = self.world.map.fov[position.y, position.x]
+            can_see_now = self.world.map.fov[position.y, position.x]
             if not can_see_now and renderable.last_seen_x is None:
                 # we've never seen it, so skip it
                 continue
@@ -181,8 +181,8 @@ class Render(esper.Processor):
                     variant = None
 
             # don't draw it if it's not in the viewport
-            adjusted_x: int = map_x - map_x1
-            adjusted_y: int = map_y - map_y1
+            adjusted_x = map_x - map_x1
+            adjusted_y = map_y - map_y1
             if (
                 adjusted_x < tile_viewport.x1
                 or adjusted_x > tile_viewport.x2
@@ -209,10 +209,10 @@ class Render(esper.Processor):
         self.renderer.clear_layer(game.types.RenderLayer.map)
         self.renderer.set_layer(game.types.RenderLayer.map)
 
-        map_x1: int = player_pos.x - tile_viewport.center.x + 1
-        map_y1: int = player_pos.y - tile_viewport.center.y + 1
-        map_x: int = map_x1 - 1
-        last_tile_color: str = ""
+        map_x1 = player_pos.x - tile_viewport.center.x + 1
+        map_y1 = player_pos.y - tile_viewport.center.y + 1
+        map_x = map_x1 - 1
+        last_tile_color = ""
 
         for tile_x in range(tile_viewport.x1, tile_viewport.x2 + 1):
             map_x += 1
@@ -220,7 +220,7 @@ class Render(esper.Processor):
                 break
             if map_x < 0:
                 continue
-            map_y: int = map_y1 - 1
+            map_y = map_y1 - 1
             for tile_y in range(tile_viewport.y1, tile_viewport.y2 + 1):
                 map_y += 1
                 if map_y >= self.world.map.height:

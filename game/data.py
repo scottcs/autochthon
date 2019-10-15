@@ -39,5 +39,5 @@ def _safe_dir(name: str) -> str:
 
 DIRS = appdirs.AppDirs(_safe_dir(config["title"]), _safe_dir(config["org"]))
 
-LOADER: game.utils.dataloader.DataLoader = game.utils.dataloader.DataLoader()
+LOADER = game.utils.dataloader.DataLoader()
 LOADER.load_all_json()

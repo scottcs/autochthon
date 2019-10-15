@@ -14,7 +14,7 @@ class BaseModifierComponent:
         addend: typing.Union[game.types.Number, str] = 0,
         factor: typing.Union[game.types.Number, str] = 0,
     ) -> None:
-        self.modifier: game.types.Modifier = game.types.Modifier(addend, factor)
+        self.modifier = game.types.Modifier(addend, factor)
 
 
 class BaseIntMinMaxComponent:
@@ -26,9 +26,9 @@ class BaseIntMinMaxComponent:
         minimum: typing.Optional[game.types.Number] = None,
         maximum: typing.Optional[game.types.Number] = None,
     ) -> None:
-        self.value: int = math.floor(initial)
-        self.min: int = math.floor(minimum or 0)
-        self.max: int = math.floor(maximum or initial)
+        self.value = math.floor(initial)
+        self.min = math.floor(minimum or 0)
+        self.max = math.floor(maximum or initial)
 
     # TODO: maybe this functionality should be moved into a function in a helper module
     def _set_clamp(self, value: game.types.Number) -> None:
@@ -52,8 +52,8 @@ class BaseTemporaryComponent:
 
 def accumulate_modifiers(*modifiers: BaseModifierComponent) -> game.types.Modifier:
     """Accumulate all modifiers and return the result."""
-    addend: float = 0
-    factor: float = 0
+    addend = 0.0
+    factor = 0.0
     for mod in modifiers:
         addend += mod.modifier.addend
         factor += mod.modifier.factor

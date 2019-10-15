@@ -49,8 +49,8 @@ class Rect:
     @property
     def center(self) -> Point:
         """Calculate the center point."""
-        center_x: int = (self.x1 + self.x2) // 2
-        center_y: int = (self.y1 + self.y2) // 2
+        center_x = (self.x1 + self.x2) // 2
+        center_y = (self.y1 + self.y2) // 2
         return Point(center_x, center_y)
 
     def intersects(self, other: Rect) -> bool:

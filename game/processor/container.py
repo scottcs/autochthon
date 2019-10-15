@@ -21,7 +21,7 @@ class Container(esper.Processor):
 
     def process(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         """Process container components."""
-        entities_need_rendering: bool = False
+        entities_need_rendering = False
 
         # TODO: process unequip
 
