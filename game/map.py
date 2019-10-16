@@ -187,7 +187,9 @@ class Map(tcod.map.Map):
             pass
         return game.types.TileType.wall_v
 
-    def _tile_id_from_type(self, tile_type: game.types.TileType, y: int, x: int) -> int:
+    def _tile_id_from_type(
+        self, tile_type: game.types.TileType, y: int, x: int, frame: int
+    ) -> int:
         idx = 0
         if self.alt_tile_3[y, x]:
             idx += 1
@@ -197,15 +199,15 @@ class Map(tcod.map.Map):
             idx += 1
         if tile_type == game.types.TileType.wall_v:
             return game.render.TileCache.get(
-                "world", self.config["tile_ids"]["wall_v"], variant=idx
+                "world", self.config["tile_ids"]["wall_v"], variant=idx, frame=frame
             )
         elif tile_type == game.types.TileType.wall_h:
             return game.render.TileCache.get(
-                "world", self.config["tile_ids"]["wall_h"], variant=idx
+                "world", self.config["tile_ids"]["wall_h"], variant=idx, frame=frame
             )
         elif tile_type == game.types.TileType.floor:
             return game.render.TileCache.get(
-                "world", self.config["tile_ids"]["floor"], variant=idx
+                "world", self.config["tile_ids"]["floor"], variant=idx, frame=frame
             )
         else:
             raise RuntimeError(f"Unknown tile type: {tile_type}")
@@ -224,10 +226,10 @@ class Map(tcod.map.Map):
             raise StopIteration
         return self._iter_y, self._iter_x
 
-    def get_tile(self, y: int, x: int) -> typing.Tuple[int, game.types.TileType]:
+    def get_tile(self, y: int, x: int, frame: int) -> typing.Tuple[int, game.types.TileType]:
         """Determine the tile id at the given coordinate."""
         tile_type = self._calculate_tile_type(y, x)
-        return self._tile_id_from_type(tile_type, y, x), tile_type
+        return self._tile_id_from_type(tile_type, y, x, frame), tile_type
 
     def update_fov(self, x: int, y: int, radius: int) -> None:
         """Update the fov calculations."""
@@ -260,6 +262,16 @@ class REXPaintMap(Map):
         Overrides `super().create()`
 
         """
+        # make some layers of noise
+        for x in range(self.width):
+            for y in range(self.height):
+                if self._rng.percent(0.02):
+                    self.alt_tile_1[y, x] = True
+                elif self._rng.percent(0.02):
+                    self.alt_tile_2[y, x] = True
+                elif self._rng.percent(0.02):
+                    self.alt_tile_3[y, x] = True
+
         # floors
         for x, col in enumerate(self.xp_data.layers[self.LAYER_FLOOR].columns):
             for y, cell in enumerate(col):
@@ -270,12 +282,7 @@ class REXPaintMap(Map):
                     self.spawnable_enemy[y, x] = data["spawnable_enemy"]
                     self.spawnable_player[y, x] = data["spawnable_enemy"]
                     self.spawnable_item[y, x] = data["spawnable_item"]
-                    if self._rng.percent(0.01):
-                        self.alt_tile_1[y, x] = True
-                    if self._rng.percent(0.01):
-                        self.alt_tile_2[y, x] = True
-                    if self._rng.percent(0.01):
-                        self.alt_tile_3[y, x] = True
+
         # walls
         for x, col in enumerate(self.xp_data.layers[self.LAYER_WALL].columns):
             for y, cell in enumerate(col):
@@ -284,24 +291,27 @@ class REXPaintMap(Map):
                     self.walkable[y, x] = data["walkable"]
                     self.transparent[y, x] = data["transparent"]
                     self.spawnable_enemy[y, x] = data["spawnable_enemy"]
+                    self.spawnable_player[y, x] = data["spawnable_enemy"]
                     self.spawnable_item[y, x] = data["spawnable_item"]
-                    if self._rng.percent(0.01):
-                        self.alt_tile_1[y, x] = True
-                    if self._rng.percent(0.01):
-                        self.alt_tile_2[y, x] = True
-                    if self._rng.percent(0.01):
-                        self.alt_tile_3[y, x] = True
 
-    def get_tile(self, y: int, x: int) -> typing.Tuple[int, game.types.TileType]:
+    def get_tile(self, y: int, x: int, frame: int) -> typing.Tuple[int, game.types.TileType]:
         """Determine the tile id at the given coordinate.
 
         Overrides `super().get_tile()`
 
         """
+        variant = 0
+        if self.alt_tile_1[y, x]:
+            variant = 1
+        elif self.alt_tile_2[y, x]:
+            variant = 2
+        elif self.alt_tile_3[y, x]:
+            variant = 3
+
         try:
-            cell = self.xp_data.layers[self.LAYER_WALL].columns[y][x]
+            cell = self.xp_data.layers[self.LAYER_WALL].columns[x][y]
             data = self._get_cell_data("wall", cell)
-            tile = data["tile"]
+            category, name = data["tile"]
             if data["alignment"] == "h":
                 tile_type = game.types.TileType.wall_h
             else:
@@ -309,11 +319,11 @@ class REXPaintMap(Map):
         except (KeyError, IndexError):
             tile_type = game.types.TileType.floor
             try:
-                cell = self.xp_data.layers[self.LAYER_FLOOR].columns[y][x]
-                tile = self._get_cell_data("floor", cell)["tile"]
+                cell = self.xp_data.layers[self.LAYER_FLOOR].columns[x][y]
+                category, name = self._get_cell_data("floor", cell)["tile"]
             except (KeyError, IndexError):
-                tile = ("world", "blank")
-        return game.render.TileCache.get(*tile), tile_type
+                category, name = "world", "blank"
+        return game.render.TileCache.get(category, name, variant=variant, frame=frame), tile_type
 
     def _get_cell_data(
         self, layer: str, cell: game.utils.rexpaint.Cell

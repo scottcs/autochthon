@@ -93,6 +93,7 @@ class Render(game.world.Processor):
             self.last_anim_time = time.time_ns()
             self.anim_tick = (self.anim_tick + 1) % MAX_ANIM_FRAMES
             self.should_render_entities = True
+            self.should_render_map = True
 
         refresh = False
         player_data = self._get_player_render_data()
@@ -233,7 +234,7 @@ class Render(game.world.Processor):
                     break
                 if map_y < 0:
                     continue
-                tile_id, tile_type = self.world.map.get_tile(map_y, map_x)
+                tile_id, tile_type = self.world.map.get_tile(map_y, map_x, self.anim_tick)
                 # TODO: support tile colorization?
                 tile_color = ""
                 if self.world.map.explored[map_y, map_x]:
