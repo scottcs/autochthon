@@ -87,7 +87,9 @@ class _TileCache:
             tile_data = category_data.get(name, None)
             if tile_data:
                 if "variations" in tile_data:
-                    if variant is not None:
+                    if variant is not None and "variations" in tile_data:
+                        if variant >= len(tile_data["variations"]):
+                            variant = 0
                         direction = self._find_best_direction(
                             tile_data["variations"][variant], direction
                         )
@@ -141,6 +143,8 @@ class _TileCache:
                 if found_direction is None:
                     raise RuntimeError(f"No direction found for {tile_data}")
                 sequence = tile_data[found_direction]
+        except IndexError:
+            sequence = tile_data["variations"][0][direction]
         if isinstance(sequence, int):
             local_offset += sequence
         else:

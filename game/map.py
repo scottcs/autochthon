@@ -1,6 +1,7 @@
 """Game map."""
 from __future__ import annotations
 
+import pathlib
 import typing
 
 import numpy as np
@@ -12,7 +13,9 @@ import game.render
 import game.types
 import game.utils.geometry
 import game.utils.random
+import game.utils.rexpaint
 
+MAP_PATH = pathlib.Path("data/map")
 LOOP_TRIES = 10000
 MAP_BITS = (
     "explored",
@@ -184,7 +187,9 @@ class Map(tcod.map.Map):
             pass
         return game.types.TileType.wall_v
 
-    def _tile_id_from_type(self, tile_type: game.types.TileType, y: int, x: int) -> int:
+    def _tile_id_from_type(
+        self, tile_type: game.types.TileType, y: int, x: int, frame: int
+    ) -> int:
         idx = 0
         if self.alt_tile_3[y, x]:
             idx += 1
@@ -194,15 +199,15 @@ class Map(tcod.map.Map):
             idx += 1
         if tile_type == game.types.TileType.wall_v:
             return game.render.TileCache.get(
-                "world", self.config["tile_ids"]["wall_v"], variant=idx
+                "world", self.config["tile_ids"]["wall_v"], variant=idx, frame=frame
             )
         elif tile_type == game.types.TileType.wall_h:
             return game.render.TileCache.get(
-                "world", self.config["tile_ids"]["wall_h"], variant=idx
+                "world", self.config["tile_ids"]["wall_h"], variant=idx, frame=frame
             )
         elif tile_type == game.types.TileType.floor:
             return game.render.TileCache.get(
-                "world", self.config["tile_ids"]["floor"], variant=idx
+                "world", self.config["tile_ids"]["floor"], variant=idx, frame=frame
             )
         else:
             raise RuntimeError(f"Unknown tile type: {tile_type}")
@@ -221,10 +226,10 @@ class Map(tcod.map.Map):
             raise StopIteration
         return self._iter_y, self._iter_x
 
-    def get_tile(self, y: int, x: int) -> typing.Tuple[int, game.types.TileType]:
+    def get_tile(self, y: int, x: int, frame: int) -> typing.Tuple[int, game.types.TileType]:
         """Determine the tile id at the given coordinate."""
         tile_type = self._calculate_tile_type(y, x)
-        return self._tile_id_from_type(tile_type, y, x), tile_type
+        return self._tile_id_from_type(tile_type, y, x, frame), tile_type
 
     def update_fov(self, x: int, y: int, radius: int) -> None:
         """Update the fov calculations."""
@@ -232,6 +237,104 @@ class Map(tcod.map.Map):
 
     def __len__(self) -> int:
         return self.width * self.height
+
+
+class REXPaintMap(Map):
+    """Map loaded from a REXPaint .xp file."""
+
+    LAYER_META = 0
+    LAYER_FLOOR = 1
+    LAYER_WALL = 2
+    LAYER_ITEM = 3
+    LAYER_MONSTER = 4
+    LAYER_MECHANISM = 5
+    CELL_EMPTY = 32  # space keycode
+
+    def __init__(self, _width: int, _height: int, *args: typing.Any, **kwargs: typing.Any) -> None:
+        # We ignore any passed-in width and height because the file has that information.
+        filename: str = kwargs.get("config", {})["filename"]
+        self.xp_data = game.utils.rexpaint.load_xp(MAP_PATH / filename)
+        super().__init__(self.xp_data.width, self.xp_data.height, *args, **kwargs)
+
+    def create(self) -> None:
+        """Create the map.
+
+        Overrides `super().create()`
+
+        """
+        # make some layers of noise
+        for x in range(self.width):
+            for y in range(self.height):
+                if self._rng.percent(0.02):
+                    self.alt_tile_1[y, x] = True
+                elif self._rng.percent(0.02):
+                    self.alt_tile_2[y, x] = True
+                elif self._rng.percent(0.02):
+                    self.alt_tile_3[y, x] = True
+
+        # floors
+        for x, col in enumerate(self.xp_data.layers[self.LAYER_FLOOR].columns):
+            for y, cell in enumerate(col):
+                if cell.keycode != self.CELL_EMPTY:
+                    data = self._get_cell_data("floor", cell)
+                    self.walkable[y, x] = data["walkable"]
+                    self.transparent[y, x] = data["transparent"]
+                    self.spawnable_enemy[y, x] = data["spawnable_enemy"]
+                    self.spawnable_player[y, x] = data["spawnable_enemy"]
+                    self.spawnable_item[y, x] = data["spawnable_item"]
+
+        # walls
+        for x, col in enumerate(self.xp_data.layers[self.LAYER_WALL].columns):
+            for y, cell in enumerate(col):
+                if cell.keycode != self.CELL_EMPTY:
+                    data = self._get_cell_data("wall", cell)
+                    self.walkable[y, x] = data["walkable"]
+                    self.transparent[y, x] = data["transparent"]
+                    self.spawnable_enemy[y, x] = data["spawnable_enemy"]
+                    self.spawnable_player[y, x] = data["spawnable_enemy"]
+                    self.spawnable_item[y, x] = data["spawnable_item"]
+
+    def get_tile(self, y: int, x: int, frame: int) -> typing.Tuple[int, game.types.TileType]:
+        """Determine the tile id at the given coordinate.
+
+        Overrides `super().get_tile()`
+
+        """
+        variant = 0
+        if self.alt_tile_1[y, x]:
+            variant = 1
+        elif self.alt_tile_2[y, x]:
+            variant = 2
+        elif self.alt_tile_3[y, x]:
+            variant = 3
+
+        try:
+            cell = self.xp_data.layers[self.LAYER_WALL].columns[x][y]
+            data = self._get_cell_data("wall", cell)
+            category, name = data["tile"]
+            if data["alignment"] == "h":
+                tile_type = game.types.TileType.wall_h
+            else:
+                tile_type = game.types.TileType.wall_v
+        except (KeyError, IndexError):
+            tile_type = game.types.TileType.floor
+            try:
+                cell = self.xp_data.layers[self.LAYER_FLOOR].columns[x][y]
+                category, name = self._get_cell_data("floor", cell)["tile"]
+            except (KeyError, IndexError):
+                category, name = "world", "blank"
+        return game.render.TileCache.get(category, name, variant=variant, frame=frame), tile_type
+
+    def _get_cell_data(
+        self, layer: str, cell: game.utils.rexpaint.Cell
+    ) -> typing.Dict[str, typing.Any]:
+        tiles = self.config["tiles"]
+        try:
+            cell_data: typing.Dict[str, typing.Any] = tiles[layer][cell.as_key()]
+            return cell_data
+        except KeyError:
+            # TODO: raise our own exception
+            raise
 
 
 class ClassicMap(Map):
@@ -296,7 +399,11 @@ class ClassicMap(Map):
                     pass
 
     def create(self) -> None:
-        """Create the map."""
+        """Create the map.
+
+        Overrides `super().create()`
+
+        """
         rooms: typing.List[game.utils.geometry.Rect] = []
 
         for _ in range(self.max_rooms):
@@ -325,3 +432,12 @@ class ClassicMap(Map):
                         self.create_v_tunnel(prev_center.y, new_center.y, prev_center.x)
                         self.create_h_tunnel(prev_center.x, new_center.x, new_center.y)
                 rooms.append(new_room)
+
+
+def new(class_name: str, *args: typing.Any, **kwargs: typing.Any) -> Map:
+    """Create a new map of the requested type."""
+    if class_name == "ClassicMap":
+        return ClassicMap(*args, **kwargs)
+    if class_name == "REXPaintMap":
+        return REXPaintMap(*args, **kwargs)
+    raise RuntimeError(f"Unknown map type: {class_name}")

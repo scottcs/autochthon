@@ -1,0 +1,101 @@
+[
+  {
+    "name": "TestREXPaint",
+    "player": ["Rogue"],
+    "enemies": [
+      {
+        "assemblages":  ["TrainingDummy"],
+        "count": 2
+      },
+      {
+        "assemblages":  ["Spider"],
+        "count": 1
+      },
+      {
+        "assemblages":  ["Bat"],
+        "count": 1
+      },
+      {
+        "assemblages":  ["GoblinMage"],
+        "count": 1
+      },
+      {
+        "assemblages":  ["GoblinGrunt"],
+        "count": 3
+      },
+      {
+        "assemblages":  ["Flies"],
+        "count": 2
+      },
+      {
+        "assemblages":  ["SebastianBenini"],
+        "count": 1
+      }
+    ],
+    "items": [
+      {
+        "assemblages":  ["Katana"],
+        "count": 2
+      },
+      {
+        "assemblages":  ["Mace"],
+        "count": 2
+      },
+      {
+        "assemblages":  ["PlateArmor"],
+        "count": 4
+      },
+      {
+        "assemblages":  ["Torch"],
+        "count": 3
+      }
+    ],
+    "map": {
+      "type": "REXPaintMap",
+      "filename": "test2.xp",
+      "tiles": {
+        "floor": {
+          "254,255,255,255": {
+            "tile": ["world", "floor_cobble"],
+            "walkable": true,
+            "transparent": true,
+            "spawnable_enemy": true,
+            "spawnable_item": true
+          },
+          "247,0,0,255": {
+            "tile": ["world", "water_anim"],
+            "walkable": false,
+            "transparent": true,
+            "spawnable_enemy": false,
+            "spawnable_item": false
+          },
+          "247,255,0,0": {
+            "tile": ["world", "lava_anim"],
+            "walkable": false,
+            "transparent": true,
+            "spawnable_enemy": false,
+            "spawnable_item": false
+          }
+        },
+        "wall": {
+          "196,255,255,255": {
+            "tile": ["world", "wall_stone_h"],
+            "alignment": "h",
+            "walkable": false,
+            "transparent": false,
+            "spawnable_enemy": false,
+            "spawnable_item": false
+          },
+          "179,255,255,255": {
+            "tile": ["world", "wall_stone_v"],
+            "alignment": "v",
+            "walkable": false,
+            "transparent": false,
+            "spawnable_enemy": false,
+            "spawnable_item": false
+          }
+        }
+      }
+    }
+  }
+]
