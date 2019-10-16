@@ -164,8 +164,8 @@ class Playing(game.state.base.BaseState):
         )
 
     def _setup_map(self) -> None:
-        # TODO: get map type from layout
-        current_map = game.map.ClassicMap(
+        current_map = game.map.new(
+            self.layout["map"]["type"],
             game.data.config["map"]["max_tiles_w"],
             game.data.config["map"]["max_tiles_h"],
             config=self.layout["map"],

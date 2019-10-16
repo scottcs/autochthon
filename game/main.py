@@ -29,7 +29,7 @@ class App:
 
         # TODO: menu state first
         # TODO: allow player to set seed and pass it here
-        game.state.base.Stack.push(game.state.playing.Playing(self.renderer, "Test1"))
+        game.state.base.Stack.push(game.state.playing.Playing(self.renderer, "TestREXPaint"))
 
     def update(self) -> None:
         """Game update."""

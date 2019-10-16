@@ -1,4 +1,5 @@
 """REXPaint utilities."""
+import dataclasses
 import gzip
 import pathlib
 import typing
@@ -12,37 +13,71 @@ LAYER_FG_COLOR_BYTES = 3
 LAYER_BG_COLOR_BYTES = 3
 LAYER_CELL_BYTES = LAYER_KEYCODE_BYTES + LAYER_FG_COLOR_BYTES + LAYER_BG_COLOR_BYTES
 
-Color = typing.Tuple[int, int, int]
-CellDict = typing.Dict[str, typing.Union[int, Color]]
-CellRow = typing.List[CellDict]
-CellList = typing.List[CellRow]
-LayerDict = typing.Dict[str, typing.Union[int, CellList]]
-LayerList = typing.List[LayerDict]
+
+class RGBColor(typing.NamedTuple):
+    """Represent an RGB color."""
+
+    r: int
+    g: int
+    b: int
+
+
+@dataclasses.dataclass
+class Cell:
+    """Represent a REXPaint cell."""
+
+    keycode: int
+    fg: RGBColor
+    bg: RGBColor
+
+    def as_key(self) -> str:
+        """Return a string to be used as a key in data files."""
+        # NOTE: ignoring bg color for now
+        return f"{self.keycode},{self.fg.r},{self.fg.g},{self.fg.b}"
+
+
+@dataclasses.dataclass
+class Layer:
+    """Represent a REXPaint layer."""
+
+    width: int
+    height: int
+    columns: typing.List[typing.List[Cell]]
+
+
+@dataclasses.dataclass
+class XPData:
+    """Represent the data in an entire file."""
+
+    version: int
+    width: int
+    height: int
+    layers: typing.List[Layer]
 
 
 def _bytes_to_int(arr: bytearray, offset: int, length: int) -> int:
     return int.from_bytes(arr[offset : offset + length], byteorder="little")
 
 
-def _parse_layer_data(data: bytearray) -> LayerDict:
+def _parse_layer_data(data: bytearray) -> Layer:
     offset = 0
     width = _bytes_to_int(data, offset, LAYER_WIDTH_BYTES)
     offset += LAYER_WIDTH_BYTES
     height = _bytes_to_int(data, offset, LAYER_HEIGHT_BYTES)
     offset += LAYER_HEIGHT_BYTES
 
-    cells: CellList = []
+    columns = []
 
     for x in range(width):
-        row: CellRow = []
+        col = []
         for y in range(height):
-            row.append(_parse_cell_data(data[offset : offset + LAYER_CELL_BYTES]))
+            col.append(_parse_cell_data(data[offset : offset + LAYER_CELL_BYTES]))
             offset += LAYER_CELL_BYTES
-        cells.append(row)
-    return {"width": width, "height": height, "cells": cells}
+        columns.append(col)
+    return Layer(width, height, columns)
 
 
-def _parse_cell_data(data: bytearray) -> CellDict:
+def _parse_cell_data(data: bytearray) -> Cell:
     offset = 0
 
     keycode = _bytes_to_int(data, offset, LAYER_KEYCODE_BYTES)
@@ -62,11 +97,11 @@ def _parse_cell_data(data: bytearray) -> CellDict:
     bg_b = _bytes_to_int(data, offset, 1)
     offset += 1
 
-    return {"keycode": keycode, "fg": (fg_r, fg_g, fg_b), "bg": (bg_r, bg_g, bg_b)}
+    return Cell(keycode, RGBColor(fg_r, fg_g, fg_b), RGBColor(bg_r, bg_g, bg_b))
 
 
-def load_xp(filename: pathlib.Path) -> typing.Dict[str, typing.Union[int, LayerList]]:
-    """Load a REXPaint .xp file and return its data as a dict."""
+def load_xp(filename: pathlib.Path) -> XPData:
+    """Load a REXPaint .xp file and return its data."""
     with gzip.open(filename) as f:
         xp_bytes = f.read()
 
@@ -95,9 +130,4 @@ def load_xp(filename: pathlib.Path) -> typing.Dict[str, typing.Union[int, LayerL
         )
         layers.append(_parse_layer_data(xp_bytes[offset : offset + layer_data_size]))
         offset += layer_data_size
-    return {
-        "version": version,
-        "width": current_largest_width,
-        "height": current_largest_height,
-        "layers": layers,
-    }
+    return XPData(version, current_largest_width, current_largest_height, layers)
