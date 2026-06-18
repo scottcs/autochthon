@@ -156,3 +156,4 @@ data/tiles/*
 data/sounds/*
 trace.txt
 *.prof
+.idea/
