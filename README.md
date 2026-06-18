@@ -2,7 +2,7 @@
 
 A traditional roguelike engine written in Python, built around a hand-rolled
 entity-component-system. This is an unfinished hobby project I worked on between
-2019 and 2022, shared as a code sample rather than a finished product.
+2018 and 2021, shared as a code sample rather than a finished product.
 
 ## What it is
 
